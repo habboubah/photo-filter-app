@@ -16,9 +16,12 @@ import { buildGroups, buildTrips, cleanupBlurry, detect, findBlurry, makeLibrary
 import { folderName } from './logic/naming';
 import { addMerge, addSplit, removeMerge, removeSplits, setIgnored, setName } from './logic/trips';
 import {
-  Decision, ReviewItem, Session, decide, keptAgainstSuggestion, reviewBlurry, reviewCleanup, reviewGroup, reviewTrip,
-  startSession, undo,
+  Decision, ReviewItem, Session, decide, isDone, keptAgainstSuggestion, reviewBlurry, reviewCleanup, reviewGroup,
+  reviewScreenshots, reviewTrip, startSession, undo,
 } from './logic/review';
+import { findScreenshots, isOldShot, oldShots } from './logic/screenshots';
+import { buildMonths, onThisDay } from './logic/months';
+import { cleanParts } from './logic/smartClean';
 import { feedbackMail, openExternal, privacyUrl, rateUrl, systemFromAgent } from './links';
 import { devNative, isAndroid, isIos } from './platform';
 import { Toast, useToast } from './ui/Toast';
@@ -32,11 +35,15 @@ import { CleanupView } from './components/CleanupView';
 import { SimilarView } from './components/SimilarView';
 import { GroupView } from './components/GroupView';
 import { BlurryView } from './components/BlurryView';
+import { ScreenshotsView } from './components/ScreenshotsView';
+import { QuickCleanView } from './components/QuickCleanView';
+import { MonthsView } from './components/MonthsView';
 import { ReviewView } from './components/ReviewView';
 import { PaywallSheet } from './components/PaywallSheet';
 import { LicencesView, SettingsView } from './components/SettingsView';
 
-interface Review { session: Session; finished: boolean }
+/** `onDone`: what happens once the review was gone through to its end (a month marked as done). */
+interface Review { session: Session; finished: boolean; onDone?: () => void }
 
 export default function App() {
   const store = useAppStore();
@@ -65,7 +72,17 @@ export default function App() {
   );
   const kept = useMemo(() => new Set(state.kept), [state.kept]);
   const blurry = useMemo(() => findBlurry(lib, groups).filter(p => !kept.has(p.id)), [lib, groups, kept]);
-  const summary = useMemo(() => (photos ? summarize(lib, groups, blurry, kept) : null), [photos, lib, groups, blurry, kept]);
+  const similarGroups = useMemo(() => groups.filter(g => g.kind === 'similar'), [groups]);
+  const dupGroups = useMemo(() => groups.filter(g => g.kind === 'duplicate'), [groups]);
+  // "Now" for the screenshots' age and "On this day": taken again whenever the photos change.
+  const now = useMemo(() => Date.now(), [photos]); // eslint-disable-line react-hooks/exhaustive-deps
+  const shots = useMemo(() => findScreenshots(lib.photos, kept), [lib, kept]);
+  const old = useMemo(() => oldShots(shots, now), [shots, now]);
+  const summary = useMemo(() => (photos ? summarize(lib, groups, blurry, kept, old) : null), [photos, lib, groups, blurry, kept, old]);
+  const parts = useMemo(() => cleanParts(groups, blurry, old, kept, lib.byId), [groups, blurry, old, kept, lib]);
+  const months = useMemo(() => buildMonths(lib.photos), [lib]);
+  const doneMonths = useMemo(() => new Set(state.months), [state.months]);
+  const today = useMemo(() => onThisDay(lib.photos, now), [lib, now]);
   const hasLocations = useMemo(() => lib.photos.some(p => p.lat !== undefined), [lib]);
 
   /* ---------------------------------------------------------- navigation */
@@ -77,6 +94,12 @@ export default function App() {
   const [similarShown, setSimilarShown] = useState(40);
   const [groupKey, setGroupKey] = useState<string | null>(null);
   const [showBlurry, setShowBlurry] = useState(false);
+  const [showDuplicates, setShowDuplicates] = useState(false);
+  const [duplicatesShown, setDuplicatesShown] = useState(40);
+  const [showScreenshots, setShowScreenshots] = useState(false);
+  const [showQuickClean, setShowQuickClean] = useState(false);
+  const [showMonths, setShowMonths] = useState(false);
+  const [monthsShown, setMonthsShown] = useState(24);
   const [showSettings, setShowSettings] = useState(false);
   const [showLicences, setShowLicences] = useState(false);
   const [review, setReview] = useState<Review | null>(null);
@@ -85,7 +108,10 @@ export default function App() {
   const group = groupKey ? groups.find(g => g.key === groupKey) ?? null : null;
 
   const closeReview = () => {
-    if (review) store.addKept(keptAgainstSuggestion(review.session));
+    if (review) {
+      store.addKept(keptAgainstSuggestion(review.session));
+      if (isDone(review.session)) review.onDone?.();
+    }
     setReview(null);
   };
 
@@ -97,8 +123,12 @@ export default function App() {
     ['group', !!group, () => setGroupKey(null)],
     ['trip', !!trip, () => setTripKey(null)],
     ['similar', showSimilar, () => setShowSimilar(false)],
+    ['duplicates', showDuplicates, () => setShowDuplicates(false)],
     ['blurry', showBlurry, () => setShowBlurry(false)],
+    ['screenshots', showScreenshots, () => setShowScreenshots(false)],
+    ['quickClean', showQuickClean, () => setShowQuickClean(false)],
     ['cleanup', showCleanup, () => setShowCleanup(false)],
+    ['months', showMonths, () => setShowMonths(false)],
     ['trips', showTrips, () => setShowTrips(false)],
     ['settings', showSettings, () => setShowSettings(false)],
   ];
@@ -168,8 +198,10 @@ export default function App() {
       if (r.cancelled) { show(t.deleteCancelled); return false; }
       store.addKept(keepIds);
       if (r.dryRun) { show(fmt(t.dryRunDelete, { photos: plural(t, 'photos', ids.length) })); return true; }
+      store.addFreed(r.trashed.length, r.trashed.reduce((sum, id) => sum + (lib.byId.get(id)?.bytes ?? 0), 0));
       store.removePhotos(r.trashed);
       forgetThumbs(r.trashed);
+      store.refreshStorage();
       notifySuccess();
       show(plural(t, 'deleted', r.trashed.length));
       return true;
@@ -202,11 +234,16 @@ export default function App() {
 
   /* -------------------------------------------------------------- review */
 
-  const startReview = (items: ReviewItem[]) => {
-    if (items.length) setReview({ session: startSession(items), finished: false });
+  const startReview = (items: ReviewItem[], onDone?: () => void) => {
+    if (items.length) setReview({ session: startSession(items), finished: false, onDone });
+  };
+  const isOld = (p: Photo) => isOldShot(p, now);
+  const openMonth = (key: string) => {
+    const m = months.find(x => x.key === key);
+    if (m) startReview(reviewTrip(m.ids, groups, lib.byId, kept, isOld), () => store.markMonthDone(key));
   };
   const onDecide = (d: Decision) => setReview(r => (r ? { ...r, session: decide(r.session, d) } : r));
-  const onUndo = () => setReview(r => (r ? { session: undo(r.session), finished: false } : r));
+  const onUndo = () => setReview(r => (r ? { ...r, session: undo(r.session), finished: false } : r));
 
   /* ----------------------------------------------------------- the rest */
 
@@ -227,7 +264,10 @@ export default function App() {
           t={t} session={review.session} finished={review.finished} byId={byId} debug={store.debug}
           onDecide={onDecide} onUndo={onUndo}
           onFinish={() => setReview(r => (r ? { ...r, finished: true } : r))}
-          onDelete={ids => deletePhotos(ids, keptAgainstSuggestion(review.session), () => setReview(null))}
+          onDelete={ids => deletePhotos(ids, keptAgainstSuggestion(review.session), () => {
+            if (isDone(review.session)) review.onDone?.();
+            setReview(null);
+          })}
           onClose={closeReview}
         />
       );
@@ -279,21 +319,63 @@ export default function App() {
     if (showSimilar) {
       return (
         <SimilarView
-          t={t} groups={groups} byId={byId} kept={kept} shown={similarShown}
+          t={t} groups={similarGroups} byId={byId} kept={kept} shown={similarShown}
           onMore={() => setSimilarShown(n => n + 40)}
           onBack={() => setShowSimilar(false)} onOpen={setGroupKey}
+        />
+      );
+    }
+    if (showDuplicates) {
+      return (
+        <SimilarView
+          t={t} kind="duplicate" groups={dupGroups} byId={byId} kept={kept} shown={duplicatesShown}
+          onMore={() => setDuplicatesShown(n => n + 40)}
+          onBack={() => setShowDuplicates(false)} onOpen={setGroupKey}
         />
       );
     }
     if (showBlurry) {
       return <BlurryView t={t} photos={blurry} onBack={() => setShowBlurry(false)} onReview={(list: Photo[]) => startReview(reviewBlurry(list))} />;
     }
+    if (showScreenshots) {
+      return (
+        <ScreenshotsView
+          t={t} photos={shots} now={now} onBack={() => setShowScreenshots(false)}
+          onReview={(list: Photo[]) => startReview(reviewScreenshots(list))}
+        />
+      );
+    }
+    if (showQuickClean) {
+      return (
+        <QuickCleanView
+          t={t} parts={parts} storage={store.storage}
+          onBack={() => setShowQuickClean(false)}
+          onReview={ids => {
+            const reasons = new Map(reviewCleanup(groups, cleanupBlurry(blurry, kept), kept, byId, old).map(i => [i.id, i]));
+            startReview(ids.map(id => reasons.get(id)).filter((i): i is ReviewItem => !!i));
+          }}
+          onDelete={ids => deletePhotos(ids, [], () => setShowQuickClean(false))}
+        />
+      );
+    }
     if (showCleanup && summary) {
       return (
         <CleanupView
           t={t} summary={summary} onBack={() => setShowCleanup(false)}
+          onDuplicates={() => setShowDuplicates(true)}
           onSimilar={() => setShowSimilar(true)} onBlurry={() => setShowBlurry(true)}
-          onReviewAll={() => startReview(reviewCleanup(groups, cleanupBlurry(blurry, kept), kept, byId))}
+          onScreenshots={() => setShowScreenshots(true)}
+          onReviewAll={() => startReview(reviewCleanup(groups, cleanupBlurry(blurry, kept), kept, byId, old))}
+          onQuickClean={() => setShowQuickClean(true)}
+        />
+      );
+    }
+    if (showMonths) {
+      return (
+        <MonthsView
+          t={t} months={months} done={doneMonths} byId={byId} shown={monthsShown}
+          onMore={() => setMonthsShown(n => n + 24)}
+          onBack={() => setShowMonths(false)} onOpen={openMonth}
         />
       );
     }
@@ -302,7 +384,7 @@ export default function App() {
       return (
         <SettingsView
           t={t} language={language} themeMode={store.themeMode} access={access} owned={store.owned}
-          debug={store.debug} dryRun={store.dryRun}
+          debug={store.debug} dryRun={store.dryRun} storage={store.storage} freed={state.freed}
           onBack={() => setShowSettings(false)}
           onLanguage={store.setLanguage} onTheme={store.setThemeMode}
           onAddPhotos={addPhotos}
@@ -340,13 +422,21 @@ export default function App() {
       <HomeView
         t={t} access={access} photoCount={photos ? photos.length : null} scan={store.scan}
         trips={trips} hasLocations={hasLocations} summary={summary}
-        groupCount={groups.length} blurryCount={blurry.length}
+        groupCount={similarGroups.length} duplicateCount={dupGroups.length}
+        blurryCount={blurry.length} screenshotCount={shots.length}
+        storage={store.storage} freedBytes={state.freed.bytes}
+        months={{ done: months.filter(m => doneMonths.has(m.key)).length, total: months.length }}
+        onThisDay={{ photos: today.ids.length, years: today.years, cover: today.ids[0] }}
         onSettings={() => setShowSettings(true)}
         onRescan={store.startScan}
         onAddPhotos={addPhotos}
         onCleanup={() => setShowCleanup(true)}
         onSimilar={() => setShowSimilar(true)}
         onBlurry={() => setShowBlurry(true)}
+        onDuplicates={() => setShowDuplicates(true)}
+        onScreenshots={() => setShowScreenshots(true)}
+        onMonths={() => setShowMonths(true)}
+        onOnThisDay={() => startReview(reviewTrip(today.ids, groups, byId, kept))}
         onTrips={() => setShowTrips(true)}
         onTrip={setTripKey}
       />
@@ -393,7 +483,7 @@ export default function App() {
         onCancel={() => setAlbumFor(null)}
       />
 
-      <Toast toast={toast} onDone={hide} raised={['trip', 'group', 'blurry', 'cleanup', 'review'].includes(screen)} />
+      <Toast toast={toast} onDone={hide} raised={['trip', 'group', 'blurry', 'screenshots', 'quickClean', 'cleanup', 'review'].includes(screen)} />
     </div>
   );
 }

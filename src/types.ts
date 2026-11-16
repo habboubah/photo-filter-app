@@ -72,9 +72,13 @@ export interface Album {
   at: number;
 }
 
-/** Near-identical photos taken within a short time. */
+/** similar: near-identical shots taken within a short time; duplicate: the same picture again, however much later (src/logic/similar.ts). */
+export type GroupKind = 'similar' | 'duplicate';
+
+/** Photos that show the same picture: a series of near-identical shots, or copies. */
 export interface Group {
   key: string;
+  kind: GroupKind;
   /** In time order. */
   ids: string[];
   /** The one the app would keep, or the user's pick. */
@@ -85,8 +89,14 @@ export interface Group {
 
 export interface CleanupSummary {
   similar: { count: number; bytes: number; groups: number };
+  duplicates: { count: number; bytes: number; groups: number };
   blurry: { count: number; bytes: number };
+  /** Screenshots older than OLD_SHOT_DAYS (src/logic/screenshots.ts). */
+  screenshots: { count: number; bytes: number };
   total: { count: number; bytes: number };
 }
+
+/** Free and total space on the phone, in bytes (PhotoLibrary.getStorage). */
+export interface Storage { free: number; total: number }
 
 export type ThemeMode = 'system' | 'light' | 'dark';

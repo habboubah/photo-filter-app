@@ -93,9 +93,11 @@ function Card({ t, item, photo, debug, onDecide }: {
   const delOpacity = useTransform(x, [-THRESHOLD, -20, 0], [1, 0, 0]);
   const keepOpacity = useTransform(x, [0, 20, THRESHOLD], [0, 0, 1]);
   const levelText: Record<Confidence, string> = { high: t.levelHigh, medium: t.levelMedium, low: t.levelLow };
-  const reason = item.reason === 'best' ? t.reasonBest
-    : item.reason === 'similar' ? t.reasonSimilar
-      : item.reason === 'blurry' ? levelText[item.level ?? 'medium'] : '';
+  const reasons: Record<ReviewItem['reason'], string> = {
+    best: t.reasonBest, original: t.reasonOriginal, similar: t.reasonSimilar, duplicate: t.reasonDuplicate,
+    blurry: levelText[item.level ?? 'medium'], screenshot: t.reasonScreenshot, trip: '',
+  };
+  const reason = reasons[item.reason];
   const when = photo ? new Date(photo.t).toLocaleString(t.locale, { dateStyle: 'medium', timeStyle: 'short' }) : '';
 
   const fling = (d: Decision) => {

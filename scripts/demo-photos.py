@@ -203,6 +203,23 @@ def screenshot(rnd, v):
     return img
 
 
+# Drawn after everything else, with a random source of their own, so the
+# photos above keep their names and looks: copies of earlier photos "saved
+# again from a messenger" weeks later (smaller, recompressed, no location —
+# the duplicates), and more screenshots, old and new.
+COPIES = [('p040', datetime(2025, 9, 20, 20, 14)), ('p021', datetime(2026, 4, 2, 21, 5)), ('p060', datetime(2026, 6, 21, 19, 40))]
+SHOTS = [datetime(2026, 2, 12, 9, 30), datetime(2026, 4, 27, 18, 12), datetime(2026, 11, 9, 12, 5)]
+
+
+def extras(save):
+    rnd = random.Random(4711)
+    for original, when in COPIES:
+        img = Image.open(os.path.join(OUT, original + '.jpg')).convert('RGB').resize((800, 600), Image.LANCZOS)
+        save(img, when, None, {'copy': True}, quality=55)
+    for i, when in enumerate(SHOTS):
+        save(screenshot(rnd, 30 + i), when, None, {'shot': True})
+
+
 SCENES = {'paris': paris, 'garda': garda, 'amsterdam': amsterdam, 'vienna': vienna}
 PLACES = {
     'paris': (48.857, 2.352), 'garda': (45.886, 10.842), 'amsterdam': (52.372, 4.900),
@@ -219,11 +236,11 @@ def main():
     manifest = []
     n = 0
 
-    def save(img, when, place, extra=None):
+    def save(img, when, place, extra=None, quality=78):
         nonlocal n
         n += 1
         name = f'p{n:03d}'
-        img.save(os.path.join(OUT, name + '.jpg'), 'JPEG', quality=78, optimize=True)
+        img.save(os.path.join(OUT, name + '.jpg'), 'JPEG', quality=quality, optimize=True)
         g = img.convert('RGB')
         g.thumbnail((512, 512), Image.LANCZOS)
         w, h = g.size
@@ -296,6 +313,7 @@ def main():
     trip('vienna', datetime(2025, 12, 12, 0), 3, 2, [2], 1)
     trip('paris', datetime(2026, 5, 22, 0), 4, 3, [4, 3], 1)
     trip('garda', datetime(2026, 7, 28, 0), 4, 3, [3, 2], 2)
+    extras(save)
 
     with open(os.path.join(ROOT, 'src', 'native', 'demo', 'manifest.json'), 'w') as f:
         json.dump(sorted(manifest, key=lambda e: e['t']), f, indent=1)

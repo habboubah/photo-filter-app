@@ -40,6 +40,23 @@ The Swift code was written and its feature part tested (`swift test`), but
       Debug builds show each photo's sharpness in the review and the group
       view — the thresholds (`src/logic/blur.ts`, `similar.ts`) are first guesses.
 
+### New since the cleaner features (16 November 2026)
+
+- [ ] The new native method `getStorage` (Swift and Kotlin) has not been
+      compiled: build once in Xcode and with `npm run android:debug`. Home
+      should show *… von … auf dem Gerät frei* — compare it with Settings ›
+      General › iPhone Storage (and Android's storage settings).
+- [ ] `PrivacyInfo.xcprivacy` now declares the disk-space API (reason
+      85F4.1, shown to the user). Nothing to change in App Privacy.
+- [ ] Try *Duplikate*: save a photo from WhatsApp (or AirDrop it to yourself)
+      and scan again — the copy should appear with the original marked
+      *Original*. Tell Claude if two **different** moments show up as
+      duplicates (the thresholds are in `src/logic/similar.ts`).
+- [ ] *Schnell aufräumen* (Aufräumen › Schnell aufräumen) with the dry run on,
+      then once for real: one system dialog for all the switched-on kinds.
+- [ ] *Monat für Monat*: go through one month to the end — it is marked
+      *Durchgesehen*.
+
 ## 3. Android — the first run
 
 The Kotlin compiles, a debug APK and an R8 release build come out, the feature
@@ -113,5 +130,9 @@ tests pass — **but it has not run on a phone.**
 ## Known gaps (to decide later)
 
 - Arabic: the structure is there (RTL rules, the translation layout), the texts are not.
-- Videos, screenshot clean-up, shared iCloud libraries, who is in a photo: not in version 1.
+- Videos (largest videos, duplicate videos, screen recordings) and the Android
+  AI categories wait for your decisions in the plan (`claude/feature-gap-plan.md`
+  in the project). Live Photo to still, video compression, widgets and
+  reminders are next: native code that has to be built and tried on the phones.
+- Shared iCloud libraries, who is in a photo: not planned.
 - The rating row appears once `APP_STORE_ID` is set in `src/links.ts`.

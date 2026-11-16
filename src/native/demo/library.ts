@@ -4,10 +4,11 @@ import type { Access, PhotoLibraryPlugin, ScanState } from '../photoLibrary';
 import facts from './facts.json';
 
 /*
- * The demo library: the PhotoLibrary plugin in a browser. 82 drawn photos
+ * The demo library: the PhotoLibrary plugin in a browser. 88 drawn photos
  * (scripts/demo-photos.py) with the facts the native scan would report
  * (scripts/demo-facts.mjs) — a home near Hanau and trips to Amsterdam,
- * Vienna, Paris and Lake Garda, with bursts and blurry shots. It drives
+ * Vienna, Paris and Lake Garda, with bursts, blurry shots, screenshots and
+ * three copies "saved again from a messenger" (the duplicates). It drives
  * `npm run dev`, the privacy check, the screenshots, the preview video and
  * the App Review rehearsal; native builds never contain it (vite.config.ts).
  *
@@ -133,6 +134,13 @@ export class DemoLibrary extends WebPlugin implements PhotoLibraryPlugin {
   async clearCache() {
     set(K.scanned, null);
     set(K.trashed, null);
+  }
+
+  /** A 128 GB phone that is nearly full; what the demo "deleted" comes back as free space. */
+  async getStorage() {
+    const gone = new Set<string>(JSON.parse(get(K.trashed) ?? '[]'));
+    const freed = (facts as Photo[]).filter(p => gone.has(p.id)).reduce((s, p) => s + p.bytes, 0);
+    return { free: 2_400_000_000 + freed, total: 128_000_000_000 };
   }
 
   async isDebug() { return { debug: import.meta.env.DEV }; }

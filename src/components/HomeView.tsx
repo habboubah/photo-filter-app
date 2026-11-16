@@ -1,6 +1,6 @@
 import type React from 'react';
-import { Copy, Focus, ImagePlus, MapPin, RefreshCw, Settings, Sparkles } from 'lucide-react';
-import type { CleanupSummary, Trip } from '../types';
+import { CalendarDays, ChevronRight, Copy, Focus, History, ImagePlus, Layers, MapPin, RefreshCw, Settings, Smartphone, Sparkles } from 'lucide-react';
+import type { CleanupSummary, Storage, Trip } from '../types';
 import type { Access } from '../native/photoLibrary';
 import type { ScanView } from '../store';
 import { Strings, bytes, fmt, num, plural } from '../translations';
@@ -8,6 +8,7 @@ import { Empty, Screen } from '../ui/Screen';
 import { Button, IconButton } from '../ui/Button';
 import { Progress } from '../ui/Controls';
 import { tapLight } from '../ui/haptics';
+import { Thumb } from '../ui/Photo';
 import { TripCard } from './TripCard';
 
 interface Props {
@@ -19,13 +20,23 @@ interface Props {
   hasLocations: boolean;
   summary: CleanupSummary | null;
   groupCount: number;
+  duplicateCount: number;
   blurryCount: number;
+  screenshotCount: number;
+  storage: Storage | null;
+  freedBytes: number;
+  months: { done: number; total: number };
+  onThisDay: { photos: number; years: number[]; cover?: string };
   onSettings: () => void;
   onRescan: () => void;
   onAddPhotos: () => void;
   onCleanup: () => void;
   onSimilar: () => void;
   onBlurry: () => void;
+  onDuplicates: () => void;
+  onScreenshots: () => void;
+  onMonths: () => void;
+  onOnThisDay: () => void;
   onTrips: () => void;
   onTrip: (key: string) => void;
 }
@@ -71,13 +82,53 @@ export function HomeView(p: Props) {
         <Empty title={t.emptyLibraryTitle} body={t.emptyLibraryBody} />
       )}
 
-      {loaded && p.photoCount! > 0 && p.summary && <CleanupCard t={t} summary={p.summary} onOpen={p.onCleanup} />}
+      {loaded && p.photoCount! > 0 && p.summary && (
+        <CleanupCard t={t} summary={p.summary} storage={p.storage} freedBytes={p.freedBytes} onOpen={p.onCleanup} />
+      )}
 
       {loaded && p.photoCount! > 0 && (
         <div className="grid grid-cols-2 gap-[12px]">
+          <Tile hue="rose" icon={Layers} label={t.duplicatesTile} value={plural(t, 'groups', p.duplicateCount)} onClick={p.onDuplicates} />
           <Tile hue="lilac" icon={Copy} label={t.similarTile} value={plural(t, 'groups', p.groupCount)} onClick={p.onSimilar} />
           <Tile hue="sand" icon={Focus} label={t.blurryTile} value={plural(t, 'photos', p.blurryCount)} onClick={p.onBlurry} />
+          <Tile hue="sky" icon={Smartphone} label={t.screenshotsTile} value={plural(t, 'photos', p.screenshotCount)} onClick={p.onScreenshots} />
         </div>
+      )}
+
+      {loaded && p.photoCount! > 0 && p.onThisDay.photos > 0 && (
+        <button
+          type="button" onClick={() => { tapLight(); p.onOnThisDay(); }}
+          className="w-full rounded-md card p-[10px] flex items-center gap-3 text-start press focus-visible:ring-focus"
+        >
+          <span className="w-16 h-16 shrink-0 rounded-[12px] overflow-hidden">
+            {p.onThisDay.cover && <Thumb id={p.onThisDay.cover} className="!rounded-none" />}
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="flex items-center gap-1.5 text-body font-bold text-fg">
+              <History className="w-4 h-4 text-accent shrink-0" aria-hidden="true" />{t.onThisDay}
+            </span>
+            <span className="block text-caption text-fg-mute num wrap-compound">
+              {fmt(t.onThisDayBody, { photos: plural(t, 'photos', p.onThisDay.photos), years: p.onThisDay.years.map(y => String(y)).join(', ') })}
+            </span>
+          </span>
+          <span className="shrink-0 text-label font-bold text-accent pe-1">{t.onThisDayOpen}</span>
+        </button>
+      )}
+
+      {loaded && p.photoCount! > 0 && p.months.total > 0 && (
+        <button
+          type="button" onClick={() => { tapLight(); p.onMonths(); }}
+          className="w-full rounded-md card p-4 flex items-center gap-3 text-start press focus-visible:ring-focus"
+        >
+          <span data-hue="mint" className="w-10 h-10 shrink-0 rounded-[12px] bg-hue-bg text-hue-ink inline-flex items-center justify-center" aria-hidden="true">
+            <CalendarDays className="w-5 h-5" />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-body font-bold text-fg">{t.monthsCard}</span>
+            <span className="block text-caption text-fg-mute num">{fmt(t.monthsCardBody, { done: num(t, p.months.done), total: num(t, p.months.total) })}</span>
+          </span>
+          <ChevronRight className="w-5 h-5 text-fg-faint shrink-0 rtl:rotate-180" aria-hidden="true" />
+        </button>
       )}
 
       {loaded && p.photoCount! > 0 && (
@@ -130,22 +181,37 @@ function ScanCard({ t, scan, first }: { t: Strings; scan: ScanView; first: boole
   );
 }
 
-function CleanupCard({ t, summary, onOpen }: { t: Strings; summary: CleanupSummary; onOpen: () => void }) {
+function CleanupCard({ t, summary, storage, freedBytes, onOpen }: {
+  t: Strings; summary: CleanupSummary; storage: Storage | null; freedBytes: number; onOpen: () => void;
+}) {
+  const facts = (
+    <>
+      {storage && <p className="text-caption text-fg-mute num mt-1">{fmt(t.storageFree, { free: bytes(t, storage.free), total: bytes(t, storage.total) })}</p>}
+      {freedBytes > 0 && <p className="text-caption text-keep font-bold num mt-1">{fmt(t.freedSoFar, { size: bytes(t, freedBytes) })}</p>}
+    </>
+  );
   if (summary.total.count === 0) {
     return (
       <section className="rounded-lg card p-6">
         <p className="display text-title2 font-semibold text-fg">{t.cleanupNone}</p>
         <p className="text-label text-fg-mute mt-1">{t.cleanupNoneBody}</p>
+        {facts}
       </section>
     );
   }
+  const lines: [string, number, string][] = [
+    [t.cleanupDuplicates, summary.duplicates.count, 'rose'],
+    [t.cleanupSimilar, summary.similar.count, 'lilac'],
+    [t.cleanupBlurry, summary.blurry.count, 'sand'],
+    [t.cleanupScreenshots, summary.screenshots.count, 'sky'],
+  ];
   return (
     <section className="rounded-lg card p-6" aria-labelledby="cleanup-h">
       <p id="cleanup-h" className="eyebrow text-fg-mute">{t.cleanupCard}</p>
       <p className="display text-display font-semibold text-fg num mt-1">{bytes(t, summary.total.bytes)}</p>
+      {facts}
       <dl className="mt-4 space-y-2">
-        <Line label={t.cleanupSimilar} value={plural(t, 'photos', summary.similar.count)} hue="lilac" />
-        <Line label={t.cleanupBlurry} value={plural(t, 'photos', summary.blurry.count)} hue="sand" />
+        {lines.filter(([, n]) => n > 0).map(([label, n, hue]) => <Line key={label} label={label} value={plural(t, 'photos', n)} hue={hue} />)}
       </dl>
       <Button full size="lg" className="mt-5" onClick={onOpen}>{t.cleanupButton}</Button>
     </section>

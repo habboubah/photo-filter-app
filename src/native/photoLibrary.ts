@@ -67,6 +67,13 @@ export interface PhotoLibraryPlugin {
   setState(options: { json: string }): Promise<void>;
   /** Removes the scan cache and the thumbnails (Settings › reset). */
   clearCache(): Promise<void>;
+  /**
+   * Free and total space on the phone, in bytes. iPhone: the volume's
+   * capacity for important use (what Settings › General › iPhone Storage
+   * shows as free) and its total; Android: StorageStatsManager for the
+   * internal storage. Answers total 0 when it cannot tell.
+   */
+  getStorage(): Promise<{ free: number; total: number }>;
   /** True in a debug build: the dry run is on by default there. */
   isDebug(): Promise<{ debug: boolean }>;
 

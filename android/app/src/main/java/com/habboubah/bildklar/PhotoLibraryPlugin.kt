@@ -2,6 +2,7 @@ package com.habboubah.bildklar
 
 import android.Manifest
 import android.app.Activity
+import android.app.usage.StorageStatsManager
 import android.content.ContentUris
 import android.content.ContentValues
 import android.content.Context
@@ -12,8 +13,11 @@ import android.database.ContentObserver
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
+import android.os.Environment
 import android.os.Handler
 import android.os.Looper
+import android.os.StatFs
+import android.os.storage.StorageManager
 import android.provider.MediaStore
 import android.provider.Settings
 import android.util.Size
@@ -162,6 +166,30 @@ class PhotoLibraryPlugin : Plugin() {
     @PluginMethod
     fun isDebug(call: PluginCall) {
         call.resolve(JSObject().put("debug", (context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0))
+    }
+
+    /**
+     * Free and total space on the internal storage, shown to the user.
+     * StorageStatsManager gives the sizes Android's own settings show (no
+     * permission needed); StatFs on the data partition is the fallback.
+     */
+    @PluginMethod
+    fun getStorage(call: PluginCall) {
+        // Not on scanThread: a long scan must not hold this answer back.
+        Thread {
+            val (free, total) = try {
+                val stats = context.getSystemService(StorageStatsManager::class.java)
+                Pair(stats.getFreeBytes(StorageManager.UUID_DEFAULT), stats.getTotalBytes(StorageManager.UUID_DEFAULT))
+            } catch (e: Exception) {
+                try {
+                    val fs = StatFs(Environment.getDataDirectory().path)
+                    Pair(fs.availableBytes, fs.totalBytes)
+                } catch (e2: Exception) {
+                    Pair(0L, 0L)
+                }
+            }
+            call.resolve(JSObject().put("free", maxOf(0L, free)).put("total", maxOf(0L, total)))
+        }.start()
     }
 
     /* --------------------------------------------------------------- scan */

@@ -59,6 +59,7 @@ public class PhotoLibraryPlugin: CAPPlugin, CAPBridgedPlugin, PHPhotoLibraryChan
         CAPPluginMethod(name: "setState", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "clearCache", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "isDebug", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "getStorage", returnType: CAPPluginReturnPromise),
     ]
 
     /// The scan and every database access: one serial queue.
@@ -143,6 +144,23 @@ public class PhotoLibraryPlugin: CAPPlugin, CAPBridgedPlugin, PHPhotoLibraryChan
         #else
         call.resolve(["debug": false])
         #endif
+    }
+
+    /// Free and total space, shown to the user (home card, quick clean,
+    /// settings). "Important usage" is what Settings › General › iPhone
+    /// Storage counts as free. Declared in PrivacyInfo.xcprivacy
+    /// (NSPrivacyAccessedAPICategoryDiskSpace, reason 85F4.1: shown to the user).
+    @objc func getStorage(_ call: CAPPluginCall) {
+        let url = URL(fileURLWithPath: NSHomeDirectory())
+        do {
+            let values = try url.resourceValues(forKeys: [.volumeAvailableCapacityForImportantUsageKey, .volumeTotalCapacityKey])
+            // JS numbers: a Double holds every byte count a phone has exactly.
+            let free = Double(max(0, values.volumeAvailableCapacityForImportantUsage ?? 0))
+            let total = Double(max(0, values.volumeTotalCapacity ?? 0))
+            call.resolve(["free": free, "total": total])
+        } catch {
+            call.resolve(["free": 0.0, "total": 0.0])
+        }
     }
 
     public func photoLibraryDidChange(_ changeInstance: PHChange) {

@@ -23,6 +23,10 @@ export interface AppState {
   kept: string[];
   /** The unlock was bought (a hint for the first frame; the store's answer wins). */
   owned: boolean;
+  /** Months ("2026-03") gone through to the end in "Month by month". */
+  months: string[];
+  /** What the app has moved to Recently Deleted / the Trash so far (not in a dry run). */
+  freed: { count: number; bytes: number };
 }
 
 export const emptyState = (): AppState => ({
@@ -31,6 +35,8 @@ export const emptyState = (): AppState => ({
   best: {},
   kept: [],
   owned: false,
+  months: [],
+  freed: { count: 0, bytes: 0 },
 });
 
 const isObj = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
@@ -68,5 +74,12 @@ export function normalizeState(raw: unknown): AppState {
   s.best = stringMap(raw.best);
   s.kept = [...new Set(strings(raw.kept))];
   s.owned = raw.owned === true;
+  s.months = [...new Set(strings(raw.months).filter(k => /^\d{4}-\d{2}$/.test(k)))];
+  if (isObj(raw.freed)) {
+    const count = raw.freed.count;
+    const bytes = raw.freed.bytes;
+    if (typeof count === 'number' && Number.isFinite(count) && count > 0) s.freed.count = Math.round(count);
+    if (typeof bytes === 'number' && Number.isFinite(bytes) && bytes > 0) s.freed.bytes = Math.round(bytes);
+  }
   return s;
 }

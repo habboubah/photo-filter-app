@@ -73,9 +73,13 @@ are worked out on demand for a similar group and cached.
 | Edits | Cuts (`splits`), joins (`merges`), names, hidden — applied in that order, stored by key. | `logic/trips.ts` |
 | Name | "City, Month Year": the city most located photos are near (GeoNames cities ≥ 15,000 people, leaning towards bigger places), the country when none is within 60 km. German or English names. | `logic/naming.ts`, `src/data/cities.tsv` |
 | Similar | Hashes ≤ 10 bits apart, taken ≤ 3 min apart, linked into groups (union–find). | `logic/similar.ts` |
+| Duplicate | Hashes ≤ 2 bits apart at any time, same aspect ratio (±1 %), same light (brightness ±0.03, contrast ±8 %); hashes with < 12 or > 52 bits set (flat pictures) never link. Found through a 4 × 16-bit block index, not pair by pair. Same union–find as similar: a group with a link across more than 3 min is a duplicate group. Keep: favourite, most pixels, sharpest, oldest. | `logic/similar.ts`, `logic/best.ts` |
+| Screenshots | `shot` from the scan; the clean-up card counts those older than 30 days. | `logic/screenshots.ts` |
+| Quick clean | The clean-up card's photos by kind (duplicates, similar, blurry, old screenshots), each kind on or off, one system dialog. | `logic/smartClean.ts` |
+| Months | Calendar months in local time, newest first; a month reviewed to its end is stored as done (`months`). "On this day": today's date in earlier years, no screenshots. | `logic/months.ts` |
 | Best | 0.55 sharpness + 0.20 exposure (+ 0.15 face + 0.10 eyes on the iPhone); a favourite always wins; the user's pick wins over all. | `logic/best.ts` |
 | Blurry | Sharpness < 12 high, < 30 medium, < 60 low; low contrast moves a photo down a level. First guesses — debug builds show each photo's score to tune them. | `logic/blur.ts` |
-| Clean-up | Each group's extra shots + high/medium blurry photos, never a favourite or a photo kept in a review. | `logic/analyze.ts` |
+| Clean-up | Each group's extra shots (similar and duplicate apart) + high/medium blurry photos + screenshots older than 30 days, never a favourite or a photo kept in a review. | `logic/analyze.ts` |
 | Review | Keep / delete per photo with undo; "Delete N photos" at the end → the system's dialog. | `logic/review.ts` |
 
 ## Data model
@@ -189,4 +193,5 @@ sofa).
 | 4 | Review + delete (dry run first) | built |
 | 5 | Paywall + restore | built; needs the products in both consoles and sandbox / licence testers |
 | 6 | Polish: accessibility, Larger Text, dark mode, small phones, 50,000-photo performance | dark mode, Larger Text (rem scale), virtualised grids, the perf budget done; **a real 50,000-photo library is untested** |
+| 8 | Cleaner features from the competitor plan (`claude/feature-gap-plan.md` in the project): duplicates anywhere, screenshots, quick clean, storage on the device, "freed so far", month by month, on this day | built, unit-tested; `getStorage` (Swift, Kotlin) **not yet compiled** |
 | 7 | Store assets + checklists + `npm run release:dry` | texts, privacy pages, recorder scenes done; real demo photos, the composed store screenshots and the preview video still to do (docs/TODO.md) |

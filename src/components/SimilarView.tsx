@@ -1,5 +1,5 @@
 import { ChevronRight, Star } from 'lucide-react';
-import type { Group, Photo } from '../types';
+import type { Group, GroupKind, Photo } from '../types';
 import { Strings, fmt, num, plural } from '../translations';
 import { Empty, Screen } from '../ui/Screen';
 import { Thumb } from '../ui/Photo';
@@ -8,9 +8,10 @@ import { tapLight } from '../ui/haptics';
 /** How many groups are drawn at once; more come as the list is scrolled to its end. */
 const PAGE = 40;
 
-/** The similar groups, newest first: each a strip of its photos with the best one marked. */
-export function SimilarView({ t, groups, byId, kept, shown, onMore, onBack, onOpen }: {
+/** The similar (or duplicate) groups, newest first: each a strip of its photos with the one to keep marked. */
+export function SimilarView({ t, kind = 'similar', groups, byId, kept, shown, onMore, onBack, onOpen }: {
   t: Strings;
+  kind?: GroupKind;
   groups: Group[];
   byId: Map<string, Photo>;
   kept: Set<string>;
@@ -20,11 +21,12 @@ export function SimilarView({ t, groups, byId, kept, shown, onMore, onBack, onOp
   onOpen: (key: string) => void;
 }) {
   const visible = groups.slice(0, Math.max(PAGE, shown));
+  const dup = kind === 'duplicate';
   return (
-    <Screen title={t.similarTitle} subtitle={plural(t, 'groups', groups.length)} onBack={onBack} backLabel={t.back}>
-      {groups.length === 0 ? <Empty title={t.noGroups} body={t.noGroupsBody} /> : (
+    <Screen title={dup ? t.duplicatesTitle : t.similarTitle} subtitle={plural(t, 'groups', groups.length)} onBack={onBack} backLabel={t.back}>
+      {groups.length === 0 ? <Empty title={dup ? t.noDuplicates : t.noGroups} body={dup ? t.noDuplicatesBody : t.noGroupsBody} /> : (
         <>
-          <p className="text-label text-fg-mute px-1 -mt-2 wrap-prose">{t.similarIntro}</p>
+          <p className="text-label text-fg-mute px-1 -mt-2 wrap-prose">{dup ? t.duplicatesIntro : t.similarIntro}</p>
           <div className="space-y-[10px]">
             {visible.map(g => {
               const extra = g.ids.filter(id => id !== g.best && !kept.has(id) && !byId.get(id)?.fav).length;
