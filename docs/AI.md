@@ -11,6 +11,7 @@ nothing anywhere. Plan and reasoning: the "Bildklar — On-device AI plan" doc
 | Shared image model (labels, "Unwichtige Fotos", categories) | ONNX Runtime 1.24.2 (Swift package on the App target), CPU | ONNX Runtime 1.24.2 (`com.microsoft.onnxruntime:onnxruntime-android`), CPU |
 | Aesthetics score, utility flag | Vision `VNCalculateImageAestheticsScoresRequest` (iOS 18+) | — |
 | Faces, open eyes (best shot) | Vision (face capture quality, landmarks) | — (the face models of the plan come in a later step) |
+| Best shot | sharpness, exposure, faces, eyes, aesthetics (iOS 18+) | sharpness, exposure |
 
 Never: ML Kit, Gemini Nano, MediaPipe Tasks, LiteRT from Google Play services,
 Firebase, a network call, MobileCLIP or LAION/OpenAI CLIP weights
@@ -43,6 +44,13 @@ Firebase, a network call, MobileCLIP or LAION/OpenAI CLIP weights
 `ImageEmbedder.swift` and `ImageEmbedder.kt`: bump all four when the model,
 the labels or the pre-processing change — every photo gets its AI pass again,
 the classic features (`FEATURE_VERSION`) stay.
+
+## Size
+
+The model is 76 MB. ONNX Runtime adds about 26 MB per Android phone type
+(arm64; Play delivers only the phone's own type from the bundle — the
+universal debug APK carries all four) and a static library on the iPhone.
+Measure the store download sizes before release.
 
 ## Labels
 

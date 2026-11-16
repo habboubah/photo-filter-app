@@ -156,10 +156,38 @@ tests pass — **but it has not run on a phone.**
       iCloud get thumbnails from the local preview; do they also get
       features (sharpness, hash)? If many don't, tell Claude.
 
+## 7. The on-device AI (docs/AI.md)
+
+Built and tested in the cloud: the model export, the Android build (debug +
+R8 release), Android's golden-fixture test, all of `npm run check`. **The
+Swift side has not been compiled** (no Xcode in the cloud).
+
+- [ ] Xcode: open the project once so it fetches ONNX Runtime 1.24.2 (File ›
+      Packages › Resolve if it doesn't). `npm run build:ios`, ▶ on the iPhone.
+      Compile errors in `ImageEmbedder.swift` / the AI parts of
+      `PhotoLibraryPlugin.swift` → send them to Claude.
+- [ ] `npm run test:ios:ai` on the Mac: the iPhone's embedder against the
+      Python reference (golden fixtures).
+- [ ] On the iPhone: after the scan the subtitle says *KI: … von … Fotos*.
+      How long does the AI take for your library (minutes per 1,000 photos)?
+      Does the phone get warm? Write the numbers into docs/AI.md.
+- [ ] Android: `npm run android:debug` + install; the same check. The APK
+      now carries the model (76 MB) and ONNX Runtime (about 26 MB per phone
+      type, arm64); Play delivers only the phone's own type.
+- [ ] Look at *Unwichtige Fotos* and the categories on your own library:
+      any photo that should not be there? Any receipt or document missing?
+- [ ] **Label about 400 real photos** (docs/AI.md, "Test set") and run
+      `python ml/eval.py --set ml/testset/real` — the thresholds are
+      provisional until then.
+- [ ] Later steps of the plan, not built yet: Android's eyes-open face
+      models, smart similar groups + trip highlights, search by things, the
+      AI pass in the background while charging, the store texts and
+      screenshots for the AI.
+
 ## Known gaps (to decide later)
 
 - Arabic: the structure is there (RTL rules, the translation layout), the texts are not.
-- On-device AI categories: planned in `claude/ai-plan.md` (project), not built.
+- On-device AI: the core is built (section 7); the later steps of the plan are not.
 - Videos are not part of trips or trip albums yet (Android's folders for videos
   differ from photos'); Android's motion photos are not converted.
 - Shared iCloud libraries, who is in a photo: not planned.
