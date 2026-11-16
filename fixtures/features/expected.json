@@ -1,0 +1,55 @@
+{
+  "featureVersion": 1,
+  "pictures": {
+    "fog.pgm": {
+      "w": 512,
+      "h": 384,
+      "hash": "0606263796e5e4a9",
+      "sharp": 21.74,
+      "contrast": 5.44,
+      "expo": 0.749,
+      "clip": 0
+    },
+    "other.pgm": {
+      "w": 512,
+      "h": 384,
+      "hash": "a9eae5c737260606",
+      "sharp": 964.25,
+      "contrast": 36.65,
+      "expo": 0.5445,
+      "clip": 0
+    },
+    "scene-blur.pgm": {
+      "w": 512,
+      "h": 384,
+      "hash": "0606263796e5eca9",
+      "sharp": 2.64,
+      "contrast": 33.55,
+      "expo": 0.5468,
+      "clip": 0
+    },
+    "scene-copy.pgm": {
+      "w": 384,
+      "h": 288,
+      "hash": "0606263796e5c4b5",
+      "sharp": 566.21,
+      "contrast": 38.2,
+      "expo": 0.5774,
+      "clip": 0
+    },
+    "scene.pgm": {
+      "w": 512,
+      "h": 384,
+      "hash": "0606263796e5e4a9",
+      "sharp": 955.3,
+      "contrast": 36.78,
+      "expo": 0.5468,
+      "clip": 0
+    }
+  },
+  "checks": {
+    "scene sharper than its blurred copy": true,
+    "scene ~ scene-copy (distance 4)": true,
+    "scene ≠ other (distance 36)": true
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "locale": "en",
+  "dir": "ltr",
+  "appName": "Fotonest – Photo Cleanup",
+  "slides": {
+    "home": {
+      "headline": "Your photos, sorted at last",
+      "subline": "Trips sorted, duplicates and blurry shots found",
+      "points": [
+        "Trips sorted",
+        "Duplicates & blurry shots",
+        "Stays on your device"
+      ]
+    },
+    "trips": {
+      "headline": "Every trip, found for you",
+      "subline": "Named with place and month"
+    },
+    "album": {
+      "headline": "An album per trip",
+      "subline": "Right in your Photos app"
+    },
+    "group": {
+      "headline": "The best shot, suggested",
+      "subline": "Sharp, well exposed, eyes open"
+    },
+    "review": {
+      "headline": "Swipe: keep or delete",
+      "subline": "Every step can be undone"
+    },
+    "blurry": {
+      "headline": "Blurry photos at a glance",
+      "subline": "The clear cases first"
+    },
+    "cleanup": {
+      "headline": "See the space you'd free",
+      "subline": "Before you delete anything"
+    },
+    "private": {
+      "headline": "Everything stays on your device",
+      "subline": "No account, no cloud, no ads"
+    }
+  },
+  "featureGraphic": {
+    "headline": "Fotonest",
+    "subline": "Trips sorted, duplicates and blurry shots cleaned up – all on your phone.",
+    "points": [
+      "Trips sorted",
+      "Near-identical photos",
+      "Stays on your device"
+    ]
+  }
+}

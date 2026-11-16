@@ -1,0 +1,50 @@
+{
+  "//": "How the video is dressed. The colours are lifted from src/index.css (the \"Album\" look) and the icon, so the video cannot drift from the app or from the store screenshots next to it.",
+  "//font": "The app's own typefaces, loaded from the app's bundled files: `display` sets the captions and the name on the end card, `text` its points. `files` is the folder assets/fonts.css loads them from.",
+  "font": {
+    "display": "Fraunces",
+    "text": "Figtree",
+    "css": "assets/fonts.css",
+    "files": "src/assets/fonts"
+  },
+  "//icon": "The app's icon, for the end card.",
+  "icon": "public/icon.png",
+  "//veil": "What a caption stands on: the frozen screen under a veil. fill and opacity are the veil (the app's ink), blur how soft the screen goes under it (in pt; 0 for none), ink the caption.",
+  "veil": {
+    "fill": "#1D2427",
+    "opacity": 0.74,
+    "blur": 7,
+    "ink": "#F7F3EC"
+  },
+  "//caption": "The caption's type, in pt of the app's layout (the video is twice that in pixels): as large as fits `width` (a share of the screen) on at most `maxLines` lines, between `min` and `max`.",
+  "caption": {
+    "max": 50,
+    "min": 34,
+    "maxLines": 3,
+    "width": 0.84
+  },
+  "//light": "What is dimmed around a part of the screen that a chapter lights up.",
+  "light": {
+    "fill": "#1D2427",
+    "opacity": 0.6
+  },
+  "//touch": "The dot where a tap lands: its size in pt, its fill and its ring.",
+  "touch": {
+    "size": 46,
+    "fill": "rgb(29 36 39 / 0.26)",
+    "ring": "rgb(255 255 255 / 0.9)"
+  },
+  "//statusBar": "The ink of the status bar and the home indicator, by the app's theme at that moment.",
+  "statusBar": {
+    "light": "#1D2427",
+    "dark": "#FFFFFF"
+  },
+  "//card": "The end card: fill is the icon's own teal (--t-accent-fill), ink white; chip / chipInk / tick are a point's pill, its text and its tick.",
+  "card": {
+    "fill": "#1C6B65",
+    "ink": "#FFFFFF",
+    "chip": "#F7F3EC",
+    "chipInk": "#1D2427",
+    "tick": "#1C6B65"
+  }
+}

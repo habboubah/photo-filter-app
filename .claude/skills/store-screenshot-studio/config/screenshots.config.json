@@ -1,0 +1,283 @@
+{
+  "//rawDir": "Where scripts/screenshots.mjs writes its captures and, next to each, <capture>.marks.json; {locale} is replaced per language.",
+  "rawDir": "screenshots/{locale}",
+  "outDir": "screenshots/store",
+  "previewFile": "screenshots/store/contact-sheet.png",
+  "//locales": "Each locale needs a config/copy.<locale>.json and a capture folder. `dir` there drives RTL.",
+  "locales": [
+    "de",
+    "en"
+  ],
+  "//style": "For the whole set. sublines: show each slide's subline under its headline (off: a thumbnail has room for one message; a slide can still ask for its own with \"subline\": true). maxLines: a headline that needs more lines than this is stepped down in size until it fits.",
+  "style": {
+    "sublines": false,
+    "maxLines": 3
+  },
+  "//slides": "Order is the store order. raw: a capture in rawDir. layout: where the copy is — top (the phone runs off the bottom edge) or bottom (it runs off the top). Alternate them. background: a preset in theme.json. device: iphone | pixel. phone: { width (percent of the canvas height, 39 by default), tilt (degrees), nudge [x, y] (x in App Store canvas widths, y in canvas heights) }. second: another capture as a phone behind the first (raw, width, tilt, nudge; \"front\": true puts it in front). callouts: pieces of the capture lifted out of the phone — see //callouts. The whole model, with the reasons: reference/composition.md.",
+  "//callouts": "Each lifts one piece of the slide's own capture: { mark, scale, tilt, shift, anchor, pad, radius }. mark: a name from <capture>.marks.json (named in scripts/lib/shots.mjs, written by `npm run screenshots`), so the piece is found in every language and follows the app when a screen changes. scale: how much bigger than in the phone (1.1–1.5). tilt: degrees. shift: [x, y] in screen widths. anchor: the edge that stays put while it grows (center, top, bottom, start, end, top-start …). pad: grow the piece on every side, in capture widths (for a piece that has no card of its own). radius: its corner, in capture widths, when the mark's own is not wanted. A fixed \"crop\": [x, y, w, h] (fractions of the capture) works too, but is the same spot in every language.",
+  "slides": [
+    {
+      "//": "The opening slide says what the app is: home (the clean-up card, the tiles, the trips) in front, a trip behind it. No call-out: two phones are enough.",
+      "id": "home",
+      "raw": "02-home.png",
+      "layout": "top",
+      "device": "iphone",
+      "background": "teal",
+      "phone": {
+        "width": 34,
+        "nudge": [
+          0.14,
+          0.105
+        ],
+        "tilt": 3
+      },
+      "second": {
+        "raw": "04-trip.png",
+        "width": 32,
+        "nudge": [
+          -0.13,
+          0.005
+        ],
+        "tilt": -5
+      }
+    },
+    {
+      "//": "The first two trip cards lifted out: the place names are the promise.",
+      "id": "trips",
+      "raw": "03-trips.png",
+      "layout": "bottom",
+      "device": "iphone",
+      "background": "teal",
+      "callouts": [
+        {
+          "mark": "trip-1",
+          "scale": 1.14,
+          "tilt": -3,
+          "shift": [
+            -0.02,
+            0
+          ]
+        },
+        {
+          "mark": "trip-2",
+          "scale": 1.14,
+          "tilt": 3,
+          "shift": [
+            0.03,
+            0.02
+          ]
+        }
+      ]
+    },
+    {
+      "//": "iPhone only (Android makes a folder, not an album): Play's slide list leaves it out. The phone is smaller than usual, so its bottom bar with the button stays on the canvas and the button can be lifted.",
+      "id": "album",
+      "raw": "04-trip.png",
+      "layout": "top",
+      "device": "iphone",
+      "background": "teal",
+      "callouts": [
+        {
+          "mark": "album",
+          "scale": 1.3,
+          "anchor": "bottom",
+          "shift": [
+            0,
+            -0.01
+          ]
+        }
+      ],
+      "phone": {
+        "width": 30,
+        "nudge": [
+          0,
+          0.02
+        ]
+      }
+    },
+    {
+      "id": "group",
+      "raw": "06-group.png",
+      "layout": "bottom",
+      "device": "iphone",
+      "background": "teal",
+      "callouts": [
+        {
+          "mark": "best",
+          "scale": 1.12,
+          "tilt": -4
+        }
+      ]
+    },
+    {
+      "id": "review",
+      "raw": "08-review.png",
+      "layout": "top",
+      "device": "iphone",
+      "background": "teal",
+      "callouts": [
+        {
+          "mark": "card",
+          "scale": 1.08,
+          "tilt": 6,
+          "shift": [
+            0.03,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "id": "blurry",
+      "raw": "07-blurry.png",
+      "layout": "bottom",
+      "device": "iphone",
+      "background": "teal"
+    },
+    {
+      "//": "The clean-up card with its number: the screen's own words for the headline's promise.",
+      "id": "cleanup",
+      "raw": "02-home.png",
+      "layout": "top",
+      "device": "iphone",
+      "background": "teal",
+      "callouts": [
+        {
+          "mark": "cleanup",
+          "scale": 1.15
+        }
+      ]
+    },
+    {
+      "//": "The scan, with its line about staying on the device.",
+      "id": "private",
+      "raw": "01-scan.png",
+      "layout": "bottom",
+      "device": "iphone",
+      "background": "teal",
+      "callouts": [
+        {
+          "mark": "scan",
+          "scale": 1.12
+        }
+      ]
+    }
+  ],
+  "//stickers": "Drawings from assets/stickers/, anchored to a slide by id. x: in slide widths from that slide's leading edge to the sticker's centre — 1 is the seam to the next slide, so the sticker shows half on each and the listing reads as one strip. y: in slide heights from the top. size: its width, in App Store canvas widths. rotate: degrees. layer: front (default) or back (behind the phone). Keep them out of the copy: y roughly between 0.3 and 0.7 is clear on both layouts. A target with its own slide list keeps each sticker on its slide; the spill goes to whichever slide comes next there.",
+  "stickers": [
+    {
+      "art": "snapshot-hills",
+      "slide": "home",
+      "x": 0.95,
+      "y": 0.36,
+      "size": 0.26,
+      "rotate": -6,
+      "layer": "back"
+    },
+    {
+      "art": "pin",
+      "slide": "home",
+      "x": 1.0,
+      "y": 0.68,
+      "size": 0.22,
+      "rotate": 10
+    },
+    {
+      "art": "snapshot-sea",
+      "slide": "trips",
+      "x": 1.0,
+      "y": 0.62,
+      "size": 0.28,
+      "rotate": 8
+    },
+    {
+      "art": "star",
+      "slide": "group",
+      "x": 1.0,
+      "y": 0.6,
+      "size": 0.24,
+      "rotate": -10
+    },
+    {
+      "art": "snapshot-hills",
+      "slide": "blurry",
+      "x": 1.0,
+      "y": 0.64,
+      "size": 0.26,
+      "rotate": 6
+    }
+  ],
+  "//targets": "Exact export pixels. App Store Connect requires the \"iPhone with Dynamic Island (medium display)\" slot (iPhone 6.1\"/6.3\"), which accepts only 1206x2622 or 1179x2556 portrait; the large 6.9\"/6.5\" slots are optional and scaled from it. So one target, one folder: screenshots/store/iphone-6.3/<locale>/. Google Play is the second target, with its own captures (rawDir).",
+  "//ribbon": "The corner ribbon with the copy file's `ribbon` word, per target and on the feature graphic: true = every slide, \"first\" = the first slide only, false or absent = none. The same switch lets a target show the price points of the copy files ({ \"text\": …, \"price\": true }). Fotonest has an in-app purchase, so it is off everywhere and the copy files have no ribbon and no price points: \"free\" on a screenshot of an app that sells something is misleading on Play and rejected by Apple (guideline 2.3.7). See reference/store-specs.md.",
+  "targets": [
+    {
+      "id": "iphone-6.3",
+      "store": "apple",
+      "width": 1206,
+      "height": 2622,
+      "scale": 3,
+      "format": "png",
+      "ribbon": false
+    },
+    {
+      "//": "Google Play phone screenshots, from the Android captures (`npm run screenshots -- --android`: Ordner, Papierkorb, Google Play). `device` overrides each slide's frame (no iPhone on Play); `slides` picks the seven that fit Android — not \"album\" (Android makes a folder).",
+      "id": "play-phone",
+      "store": "play",
+      "width": 1080,
+      "height": 1920,
+      "scale": 3,
+      "format": "jpeg",
+      "quality": 92,
+      "device": "pixel",
+      "slides": [
+        "home",
+        "trips",
+        "group",
+        "review",
+        "blurry",
+        "cleanup",
+        "private"
+      ],
+      "ribbon": false,
+      "rawDir": "screenshots/{locale}-android"
+    }
+  ],
+  "//featureGraphic": "Google Play feature graphic, exactly 1024x500 JPEG. slide: whose screen the phone shows; rawDir: the Android captures, like play-phone. Its copy is the featureGraphic block of every copy file (its subline shows with \"subline\": true). phone: width in percent of the height, tilt, nudge [x in widths, y in heights]. stickers: placed straight on the canvas — x in widths, y in heights, size in heights.",
+  "featureGraphic": {
+    "slide": "home",
+    "rawDir": "screenshots/{locale}-android",
+    "background": "teal",
+    "device": "pixel",
+    "width": 1024,
+    "height": 500,
+    "scale": 2,
+    "format": "jpeg",
+    "quality": 92,
+    "ribbon": false,
+    "phone": {
+      "width": 52,
+      "tilt": 7,
+      "nudge": [
+        0,
+        0.13
+      ]
+    },
+    "stickers": [
+      {
+        "art": "snapshot-sea",
+        "x": 0.64,
+        "y": 0.78,
+        "size": 0.32,
+        "rotate": -10
+      },
+      {
+        "art": "pin",
+        "x": 0.975,
+        "y": 0.22,
+        "size": 0.24,
+        "rotate": 12,
+        "layer": "back"
+      }
+    ]
+  }
+}

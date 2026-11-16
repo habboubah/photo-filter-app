@@ -1,0 +1,17 @@
+{
+  "locale": "en",
+  "dir": "ltr",
+  "captions": {
+    "intro": "Your photos, sorted at last",
+    "trips": "An album for each trip",
+    "best": "Keep one, delete the rest",
+    "review": "Swipe: keep or delete"
+  },
+  "card": {
+    "name": "Fotonest",
+    "points": [
+      "Stays on your device",
+      "Never deletes by itself"
+    ]
+  }
+}

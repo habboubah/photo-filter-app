@@ -1,0 +1,115 @@
+import type { CleanupSummary, Confidence, Group, Photo, Trip } from '../types';
+import { rankGroup } from './best';
+import { blurLevel, sortBlurry } from './blur';
+import { CityIndex } from './geo';
+import { findHomes, Homes } from './home';
+import { tripDates, tripPlace } from './naming';
+import { findGroups, RawGroup } from './similar';
+import { AppState } from './state';
+import { applyEdits, detectTrips, RawTrip } from './trips';
+
+/*
+ * Everything the screens show, from the photos and the user's decisions.
+ * `detect` is the heavy part (homes, trips, similar groups) and runs once per
+ * set of photos; the rest is cheap and runs again on every edit. The budget
+ * for `detect` on 50,000 photos is in scripts/perf-check.mjs.
+ */
+
+export interface Library {
+  /** By time, oldest first. */
+  photos: Photo[];
+  byId: Map<string, Photo>;
+}
+
+export function makeLibrary(rows: Photo[]): Library {
+  const photos = [...rows].sort((a, b) => a.t - b.t || (a.id < b.id ? -1 : 1));
+  return { photos, byId: new Map(photos.map(p => [p.id, p])) };
+}
+
+export interface Detection {
+  homes: Homes;
+  trips: RawTrip[];
+  groups: RawGroup[];
+}
+
+export function detect(lib: Library): Detection {
+  const homes = findHomes(lib.photos);
+  return { homes, trips: detectTrips(lib.photos, homes), groups: findGroups(lib.photos) };
+}
+
+const sumBytes = (ids: string[], byId: Map<string, Photo>) => ids.reduce((s, id) => s + (byId.get(id)?.bytes ?? 0), 0);
+
+export function buildTrips(lib: Library, raw: RawTrip[], state: AppState, index: CityIndex | null, lang: string, locale: string): Trip[] {
+  const timeOf = (id: string) => lib.byId.get(id)?.t ?? 0;
+  return applyEdits(raw, state.trips, timeOf).map(t => {
+    const photos = t.ids.map(id => lib.byId.get(id)).filter((p): p is Photo => !!p);
+    const place = tripPlace(photos, index, lang) ?? '';
+    const dates = tripDates(t.start, t.end, locale);
+    const autoTitle = place ? `${place}, ${dates}` : dates;
+    return {
+      key: t.key, start: t.start, end: t.end, ids: t.ids,
+      place, dates, autoTitle, title: t.name ?? autoTitle,
+      ignored: t.ignored,
+      album: state.trips.albums[t.key],
+      bytes: sumBytes(t.ids, lib.byId),
+    };
+  });
+}
+
+/** `faces`: face scores the iPhone worked out after the scan (PhotoLibrary.scoreFaces), laid over the photos for ranking. */
+export function buildGroups(lib: Library, raw: RawGroup[], state: AppState, faces?: Map<string, Partial<Photo>>): Group[] {
+  return raw.map(g => {
+    const photos = g.ids.map(id => {
+      const p = lib.byId.get(id);
+      const f = faces?.get(id);
+      return p && f ? { ...p, ...f } : p;
+    }).filter((p): p is Photo => !!p);
+    const suggested = rankGroup(photos)[0]?.id ?? g.ids[0];
+    const picked = state.best[g.key];
+    return { key: g.key, ids: g.ids, suggested, best: picked && g.ids.includes(picked) ? picked : suggested };
+  }).sort((a, b) => (lib.byId.get(b.ids[0])?.t ?? 0) - (lib.byId.get(a.ids[0])?.t ?? 0));
+}
+
+/** The blurry photos worth listing, most certain first: not in a similar group (the group handles those), no favourites. */
+export function findBlurry(lib: Library, groups: Group[], levels: Confidence[] = ['high', 'medium', 'low']): Photo[] {
+  const grouped = new Set(groups.flatMap(g => g.ids));
+  const wanted = new Set(levels);
+  return sortBlurry(lib.photos.filter(p => {
+    if (p.fav || grouped.has(p.id)) return false;
+    const level = blurLevel(p);
+    return level !== null && wanted.has(level);
+  }));
+}
+
+/**
+ * What could go: each similar group's extra shots and the blurry photos the
+ * app is fairly sure about (high and medium), never a favourite and never a
+ * photo the user already chose to keep.
+ */
+export function summarize(lib: Library, groups: Group[], blurry: Photo[], kept: Set<string>): CleanupSummary {
+  let sc = 0; let sb = 0; let groupCount = 0;
+  for (const g of groups) {
+    let any = false;
+    for (const id of g.ids) {
+      const p = lib.byId.get(id);
+      if (!p || id === g.best || p.fav || kept.has(id)) continue;
+      sc++; sb += p.bytes; any = true;
+    }
+    if (any) groupCount++;
+  }
+  let bc = 0; let bb = 0;
+  for (const p of blurry) {
+    const level = blurLevel(p);
+    if (kept.has(p.id) || (level !== 'high' && level !== 'medium')) continue;
+    bc++; bb += p.bytes;
+  }
+  return {
+    similar: { count: sc, bytes: sb, groups: groupCount },
+    blurry: { count: bc, bytes: bb },
+    total: { count: sc + bc, bytes: sb + bb },
+  };
+}
+
+/** The blurry photos the clean-up card counts (high and medium, not kept). */
+export const cleanupBlurry = (blurry: Photo[], kept: Set<string>) =>
+  blurry.filter(p => !kept.has(p.id) && (blurLevel(p) === 'high' || blurLevel(p) === 'medium'));

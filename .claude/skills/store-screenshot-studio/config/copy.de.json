@@ -1,0 +1,53 @@
+{
+  "locale": "de",
+  "dir": "ltr",
+  "appName": "Fotonest – Fotos aufräumen",
+  "slides": {
+    "home": {
+      "headline": "Deine Fotos, endlich aufgeräumt",
+      "subline": "Reisen sortiert, Doppeltes und Unscharfes gefunden",
+      "points": [
+        "Reisen sortiert",
+        "Doppelte & Unscharfe",
+        "Alles auf deinem Gerät"
+      ]
+    },
+    "trips": {
+      "headline": "Jede Reise von selbst gefunden",
+      "subline": "Mit Ort und Monat im Namen"
+    },
+    "album": {
+      "headline": "Ein Album pro Reise",
+      "subline": "Direkt in deiner Fotos-App"
+    },
+    "group": {
+      "headline": "Das beste Foto vorgeschlagen",
+      "subline": "Scharf, gut belichtet, Augen offen"
+    },
+    "review": {
+      "headline": "Wischen: behalten oder weg",
+      "subline": "Jeder Schritt lässt sich zurücknehmen"
+    },
+    "blurry": {
+      "headline": "Unscharfe Fotos auf einen Blick",
+      "subline": "Die eindeutigen zuerst"
+    },
+    "cleanup": {
+      "headline": "Sieh, was frei wird",
+      "subline": "Bevor du irgendetwas löschst"
+    },
+    "private": {
+      "headline": "Alles bleibt auf deinem Gerät",
+      "subline": "Kein Konto, keine Cloud, keine Werbung"
+    }
+  },
+  "featureGraphic": {
+    "headline": "Fotonest",
+    "subline": "Reisen sortiert, Doppeltes und Unscharfes aufgeräumt – alles auf deinem Handy.",
+    "points": [
+      "Reisen sortiert",
+      "Fast gleiche Fotos",
+      "Alles auf dem Gerät"
+    ]
+  }
+}

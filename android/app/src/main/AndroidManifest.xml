@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
+    <!--
+      allowBackup: the scan cache (SQLite) is rebuilt from the photos and stays
+      out of a backup (res/xml/backup_rules.xml, data_extraction_rules.xml); the
+      user's own decisions (trip names, kept photos) may be part of the phone's
+      own Google backup when the user has that on. Nothing goes to the developer.
+    -->
+    <application
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+        <activity
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode|navigation|density"
+            android:name=".MainActivity"
+            android:label="@string/title_activity_main"
+            android:theme="@style/AppTheme.NoActionBarLaunch"
+            android:launchMode="singleTask"
+            android:screenOrientation="portrait"
+            tools:ignore="DiscouragedApi"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/file_paths" />
+        </provider>
+    </application>
+
+    <!-- Permissions (docs/PLAN.md, "Platform mapping") -->
+
+    <!-- The photos: Android 13+ asks for "Photos" (all, or only selected ones from Android 14); below 13 the older storage permission. -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+    <!-- Without it Android strips the GPS position from every photo, and trips can't be found. -->
+    <uses-permission android:name="android.permission.ACCESS_MEDIA_LOCATION" />
+
+    <!-- The web view loads the app from the APK through a local address; the app itself makes no
+         request to the internet (scripts/privacy-check.mjs proves it for the web build). Whether the
+         release build works without this permission is an open test on a real phone — see
+         docs/ANDROID_RELEASE.md, "The INTERNET permission". Until then it stays. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+</manifest>

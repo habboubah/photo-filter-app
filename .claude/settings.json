@@ -1,0 +1,6 @@
+{
+  "env": {
+    "IMPECCABLE_NO_UPDATE_CHECK": "1",
+    "IMPECCABLE_NO_TELEMETRY": "1"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "locale": "de",
+  "dir": "ltr",
+  "captions": {
+    "intro": "Deine Fotos, endlich aufgeräumt",
+    "trips": "Ein Album pro Reise",
+    "best": "Eins behalten, den Rest löschen",
+    "review": "Wischen: behalten oder weg"
+  },
+  "card": {
+    "name": "Fotonest",
+    "points": [
+      "Alles auf deinem Gerät",
+      "Löscht nie von selbst"
+    ]
+  }
+}

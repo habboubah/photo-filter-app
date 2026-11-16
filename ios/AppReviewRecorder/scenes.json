@@ -1,0 +1,111 @@
+{
+ "about": "The App Review screen recording for Fotonest (Fotonest – Fotos aufräumen / Fotonest – Photo Cleanup), one step per line, in the order a new user meets the app: the scan, a trip turned into an album, near-identical photos and the best shot, a review that deletes two photos with iOS's own dialog, the settings. About 2 minutes. The paywall shows only while the unlock isn't owned: on the iPhone it was bought beforehand with the TestFlight account (README.md, Preparation), so the album is made straight away; in the rehearsal the paywall appears and Restore Purchases unlocks it. The iPhone UI test (RecorderUITests) plays this file on a real iPhone that has the demo photos and has given Fotonest Limited Access to only those; scripts/rehearse-app-review.mjs plays the same file against the web build to check every label first. Step keys: see README.md.",
+ "app": {
+  "bundleId": "com.habboubah.fotonest",
+  "iconName": ["Fotonest"],
+  "minVersion": "0.1.0"
+ },
+ "preflight": {
+  "mustSee": ["Your photos", "Deine Fotos"],
+  "reset": [
+   {"tap": ["Settings", "Einstellungen"], "role": "button", "timeout": 20},
+   {"pause": 0.5},
+   {"select": "English", "in": ["Language", "Sprache"]},
+   {"pause": 0.5},
+   {"select": "Like the system", "in": "Appearance"},
+   {"scrollTo": "Reset my decisions"},
+   {"tap": "Reset my decisions"},
+   {"pause": 1},
+   {"tap": "Reset my decisions"},
+   {"pause": 0.5},
+   {"tap": "Back"},
+   {"pause": 0.5}
+  ]
+ },
+ "system": {
+  "screenRecording": ["Screen Recording", "Bildschirmaufnahme", "Stop Recording", "Aufnahme stoppen"],
+  "chooseFile": ["Choose File", "Datei auswählen", "Browse", "Durchsuchen"],
+  "done": ["Done", "Fertig"],
+  "update": ["Update", "Aktualisieren"],
+  "open": ["Open", "Öffnen"],
+  "photoAccess": ["Allow Full Access", "Limit Access…", "Zugriff auf alle Fotos erlauben", "Zugriff beschränken …", "Don’t Allow", "Nicht erlauben"],
+  "delete": ["Delete", "Löschen"],
+  "signIn": ["Sign In", "Anmelden", "Use Existing Apple Account", "Bestehenden Apple Account verwenden"],
+  "purchase": ["Purchase", "Kaufen", "Buy", "OK"]
+ },
+ "rehearsal": {
+  "locale": "en-GB",
+  "localStorage": {"fotonest-demo-access": "full", "fotonest-demo-scanned": "1", "fotonest-dry-run": "0", "fotonest-demo-restorable": "1"}
+ },
+ "scenes": [
+  { "name": "Launch and the scan", "steps": [
+    {"startRecording": true},
+    {"launch": true},
+    {"pause": 2},
+    {"optional": [{"systemAlert": ["Limit Access…", "Zugriff beschränken …"], "timeout": 3}, {"note": "The photo permission dialog was shown: the test can't pick photos in the system's picker — give Limited Access by hand before recording (README.md)."}]},
+    {"see": "Your photos", "timeout": 30},
+    {"pause": 4},
+    {"see": "Space you could free up", "timeout": 60},
+    {"pause": 2}
+  ]},
+  { "name": "A trip becomes an album", "steps": [
+    {"tap": "Open Paris"},
+    {"pause": 2},
+    {"tap": "Create album", "role": "button"},
+    {"pause": 1.5},
+    {"optional": [{"see": "Unlock Fotonest", "timeout": 3}, {"pause": 2}, {"tap": "Restore purchases"}, {"optional": [{"systemAlert": ["Sign In", "Anmelden", "OK"], "timeout": 4}, {"pause": 2}]}, {"pause": 3}]},
+    {"tap": "Create album", "role": "button", "timeout": 10},
+    {"pause": 2.5},
+    {"see": "Album made on"},
+    {"pause": 2},
+    {"tap": "Back"},
+    {"pause": 1.5}
+  ]},
+  { "name": "Near-identical photos and the best shot", "steps": [
+    {"tap": "Near-identical"},
+    {"pause": 1.5},
+    {"tap": "photos", "role": "button"},
+    {"pause": 2},
+    {"see": "Best"},
+    {"pause": 1.5},
+    {"tap": "as the best", "nth": 1},
+    {"pause": 2},
+    {"tap": "Back"},
+    {"pause": 1},
+    {"tap": "Back"},
+    {"pause": 1.5}
+  ]},
+  { "name": "A review that deletes", "steps": [
+    {"tap": "Clean up", "role": "button"},
+    {"pause": 1.5},
+    {"tap": "Go through all"},
+    {"pause": 2},
+    {"tap": "Delete", "role": "button"},
+    {"pause": 1.2},
+    {"tap": "Keep", "role": "button"},
+    {"pause": 1.2},
+    {"tap": "Delete", "role": "button"},
+    {"pause": 1.2},
+    {"tap": "Finish"},
+    {"pause": 2},
+    {"tap": "Delete 2 photos"},
+    {"pause": 1.5},
+    {"systemAlert": ["Delete", "Löschen"], "timeout": 8},
+    {"pause": 2.5},
+    {"see": "photos deleted"},
+    {"pause": 2}
+  ]},
+  { "name": "Settings and the end", "steps": [
+    {"tap": "Back"},
+    {"pause": 1.5},
+    {"tap": "Settings"},
+    {"pause": 1.5},
+    {"scrollTo": "Privacy"},
+    {"pause": 2},
+    {"tap": "Back"},
+    {"see": "Your photos"},
+    {"pause": 2},
+    {"stopRecording": true}
+  ]}
+ ]
+}

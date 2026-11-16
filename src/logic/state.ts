@@ -1,0 +1,72 @@
+import type { Album } from '../types';
+import { NO_EDITS, TripEdits } from './trips';
+
+/*
+ * The user's own decisions — everything the app cannot work out again from
+ * the photos: trip names, cuts, joins and hidden trips, the albums made, the
+ * best shot picked by hand, the photos kept in a review. On the phones this
+ * lives in the native SQLite database next to the scan cache (PhotoLibrary
+ * getState / setState): a phone short of space — this app's users — may
+ * clear a web view's localStorage. On the web (the demo) it is localStorage.
+ *
+ * Whatever is read goes through normalizeState() first. Add new fields as
+ * optional; bump SCHEMA_VERSION and migrate here when a shape changes.
+ */
+export const SCHEMA_VERSION = 1;
+
+export interface AppState {
+  schemaVersion: number;
+  trips: TripEdits & { albums: Record<string, Album> };
+  /** Similar group key → the photo the user picked as the best. */
+  best: Record<string, string>;
+  /** Photos the user chose to keep in a review: never suggested again. */
+  kept: string[];
+  /** The unlock was bought (a hint for the first frame; the store's answer wins). */
+  owned: boolean;
+}
+
+export const emptyState = (): AppState => ({
+  schemaVersion: SCHEMA_VERSION,
+  trips: { ...NO_EDITS, albums: {} },
+  best: {},
+  kept: [],
+  owned: false,
+});
+
+const isObj = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
+const strings = (v: unknown): string[] => (Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : []);
+function stringMap(v: unknown): Record<string, string> {
+  if (!isObj(v)) return {};
+  const out: Record<string, string> = {};
+  for (const [k, x] of Object.entries(v)) if (typeof x === 'string') out[k] = x;
+  return out;
+}
+
+export function normalizeState(raw: unknown): AppState {
+  const s = emptyState();
+  if (!isObj(raw)) return s;
+  if (typeof raw.schemaVersion === 'number' && raw.schemaVersion > SCHEMA_VERSION) {
+    // Written by a newer version: read what we know, never write back less.
+  }
+  const t = isObj(raw.trips) ? raw.trips : {};
+  s.trips.names = stringMap(t.names);
+  s.trips.ignored = strings(t.ignored);
+  s.trips.merges = Array.isArray(t.merges) ? t.merges.map(strings).filter(g => g.length > 1) : [];
+  if (isObj(t.splits)) {
+    for (const [k, v] of Object.entries(t.splits)) {
+      const cuts = Array.isArray(v) ? v.filter((x): x is number => typeof x === 'number' && Number.isFinite(x)) : [];
+      if (cuts.length) s.trips.splits[k] = cuts;
+    }
+  }
+  if (isObj(t.albums)) {
+    for (const [k, v] of Object.entries(t.albums)) {
+      if (isObj(v) && typeof v.title === 'string' && typeof v.count === 'number' && typeof v.at === 'number') {
+        s.trips.albums[k] = { title: v.title, count: v.count, at: v.at };
+      }
+    }
+  }
+  s.best = stringMap(raw.best);
+  s.kept = [...new Set(strings(raw.kept))];
+  s.owned = raw.owned === true;
+  return s;
+}
