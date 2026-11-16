@@ -208,7 +208,7 @@
     }
   ],
   "//targets": "Exact export pixels. App Store Connect requires the \"iPhone with Dynamic Island (medium display)\" slot (iPhone 6.1\"/6.3\"), which accepts only 1206x2622 or 1179x2556 portrait; the large 6.9\"/6.5\" slots are optional and scaled from it. So one target, one folder: screenshots/store/iphone-6.3/<locale>/. Google Play is the second target, with its own captures (rawDir).",
-  "//ribbon": "The corner ribbon with the copy file's `ribbon` word, per target and on the feature graphic: true = every slide, \"first\" = the first slide only, false or absent = none. The same switch lets a target show the price points of the copy files ({ \"text\": …, \"price\": true }). Fotonest has an in-app purchase, so it is off everywhere and the copy files have no ribbon and no price points: \"free\" on a screenshot of an app that sells something is misleading on Play and rejected by Apple (guideline 2.3.7). See reference/store-specs.md.",
+  "//ribbon": "The corner ribbon with the copy file's `ribbon` word, per target and on the feature graphic: true = every slide, \"first\" = the first slide only, false or absent = none. The same switch lets a target show the price points of the copy files ({ \"text\": …, \"price\": true }). Bildklar has an in-app purchase, so it is off everywhere and the copy files have no ribbon and no price points: \"free\" on a screenshot of an app that sells something is misleading on Play and rejected by Apple (guideline 2.3.7). See reference/store-specs.md.",
   "targets": [
     {
       "id": "iphone-6.3",

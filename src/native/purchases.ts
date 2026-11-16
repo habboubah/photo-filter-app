@@ -9,7 +9,7 @@ import { PluginListenerHandle, registerPlugin } from '@capacitor/core';
  */
 
 /** The unlock's product id in App Store Connect and the Play Console. */
-export const PRODUCT_ID = 'com.habboubah.fotonest.unlock';
+export const PRODUCT_ID = 'com.habboubah.bildklar.unlock';
 
 export interface Product {
   id: string;

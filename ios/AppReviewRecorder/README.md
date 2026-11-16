@@ -2,13 +2,13 @@
 
 Records the screen recording App Review asks for (Guideline 2.1: "captured
 on a physical device … beginning with launching the app"): a UI test taps
-through Fotonest installed on your iPhone while iOS records the screen. About
-2 minutes; the video ends up in Photos (a video, so Fotonest itself ignores it).
+through Bildklar installed on your iPhone while iOS records the screen. About
+2 minutes; the video ends up in Photos (a video, so Bildklar itself ignores it).
 
 It is the shopping list's recorder (originally Spartopf's,
 `../budget-app/ios/AppReviewRecorder`), copied on 16 November 2026: the
 runner, the test and the scripts are the same, only `scenes.json` is
-Fotonest's. Five scenes, from the icon on the home screen to the settings:
+Bildklar's. Five scenes, from the icon on the home screen to the settings:
 
 | Scene | Shows |
 |---|---|
@@ -37,14 +37,14 @@ The review notes (`store/listing.md`, 2.5) describe what the video leaves out.
    the phone). Then Settings › Developer › **Enable UI Automation** on.
 2. **Control Center:** long-press an empty spot › Add a Control › **Screen
    Recording**. Microphone off.
-3. Put **Fotonest's icon on the first home screen page**. No other app called
-   Fotonest on the home screen's pages.
+3. Put **Bildklar's icon on the first home screen page**. No other app called
+   Bildklar on the home screen's pages.
 4. iPhone language **English or German** — the system buttons the recorder
    taps (Screen Recording, Delete, Update …) are listed in those two in
    `scenes.json` › `system` and in the steps.
 5. **Mac:** Xcode signed in with the developer account. The first run creates
    the signing for the recorder's two bundle ids
-   (`com.habboubah.fotonest.recorder`, `….recorder.uitests`) by itself.
+   (`com.habboubah.bildklar.recorder`, `….recorder.uitests`) by itself.
 
 If the shopping list's or Spartopf's recorder has run on this iPhone, 1, 2
 and 5 are done.
@@ -56,7 +56,7 @@ and 5 are done.
    least one group of near-identical photos and at least three photos the
    review offers. AirDrop them to the iPhone (or import them on the Mac with
    Photos and let iCloud sync — then check the dates and places survived).
-2. **Limited Access to only those:** Settings › Apps › Fotonest › Photos ›
+2. **Limited Access to only those:** Settings › Apps › Bildklar › Photos ›
    **Limited Access** › select the demo photos. The video must not show your
    own photos. (If iOS asks during scene 1, the runner taps *Limit Access…*;
    then select the demo photos in the picker by hand once, and record again.)
@@ -76,7 +76,7 @@ and 5 are done.
    run prints which build the iPhone has; an older one it **updates from
    TestFlight by itself** before anything is reset or filmed (`UPDATE=0` only
    says so and stops).
-   Every full run **resets Fotonest's decisions before the screen recording
+   Every full run **resets Bildklar's decisions before the screen recording
    starts**, without asking — Settings › Language › English, Appearance ›
    Like the system, *Reset my decisions*. Your photos and the purchase stay.
 3. Connect the iPhone by cable, unlock it, **Do Not Disturb** on.
@@ -184,7 +184,7 @@ Any step with `"soft": true` may fail without stopping the recording.
 
 **Left out, because they leave the app or need another device:** Recently
 Deleted (in the Photos app), *Send feedback* and *Privacy* (mail and the
-browser), *Rate Fotonest* (not shown before the app is in the store), *Select
+browser), *Rate Bildklar* (not shown before the app is in the store), *Select
 photos* (iOS's picker), Android.
 
 **Left out to keep it short (about 2 minutes):** renaming, merging, splitting

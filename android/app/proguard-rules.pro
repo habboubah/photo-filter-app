@@ -1,4 +1,4 @@
-# R8 rules for Fotonest (release builds; minifyEnabled true in build.gradle).
+# R8 rules for Bildklar (release builds; minifyEnabled true in build.gradle).
 # The point is the mapping file Play uses to de-obfuscate crash and ANR reports,
 # so the app's own and the Capacitor code is kept whole: the bridge and the plugins
 # are found by reflection and called from JavaScript. Unused library code is still removed.
@@ -16,7 +16,7 @@
 -keep class com.capacitorjs.plugins.** { *; }
 
 # The app's own native code (MainActivity, the PhotoLibrary and Purchases plugins: found by reflection).
--keep class com.habboubah.fotonest.** { *; }
+-keep class com.habboubah.bildklar.** { *; }
 
 # Methods the WebView calls from JavaScript.
 -keepclassmembers class * {

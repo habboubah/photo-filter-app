@@ -1,4 +1,4 @@
-# Releasing Fotonest for Android
+# Releasing Bildklar for Android
 
 The Android app is the same web app in a Capacitor shell (`android/`), set up
 the way budget-app (Spartopf) has it. This is what it takes to get it onto a
@@ -6,7 +6,7 @@ phone and into Google Play.
 
 **Where it stands (16 November 2026):** the project compiles — a debug APK and
 an R8 release build come out of it (version 0.1.0, version code 10000, package
-`com.habboubah.fotonest`, minSdk 30), and the feature tests pass
+`com.habboubah.bildklar`, minSdk 30), and the feature tests pass
 (`npm run test:android`). **It has not run on a phone yet**, and there is no
 Play Console app yet. What to try first is in [TODO.md](TODO.md).
 
@@ -29,14 +29,14 @@ On the phone: *Settings › About phone › tap "Build number" seven times*, the
 ## Once: the upload key
 
 Google signs the app for users (Play App Signing); you sign what you upload
-with your own **upload key**. Fotonest gets its own — make it once:
+with your own **upload key**. Bildklar gets its own — make it once:
 
 ```
 npm run android:key
 ```
 
 `keytool` asks for a password and your name. The key goes to
-`~/.android-keys/fotonest-upload.jks`; its path and alias are written into
+`~/.android-keys/bildklar-upload.jks`; its path and alias are written into
 `.env.release` (gitignored). Keep a copy of the file and the password
 somewhere safe outside the computer — lose them and Google has to reset the
 key. Never commit the keystore, the password or `.env.release`.
@@ -51,16 +51,16 @@ release asks. Delete that line to be asked again.
 1. The Google Play developer account that ships Fahrtwerk and Spartopf. (A
    personal account created after November 2023 must run a **closed test with
    12 testers for 14 days** before a new app may go to production.)
-2. *Create app*: name *Fotonest – Fotos aufräumen*, default language German, App,
+2. *Create app*: name *Bildklar KI: Foto Reiniger*, default language German, App,
    Free (free to download — the unlock is an in-app product). The package name
-   `com.habboubah.fotonest` is fixed by the first upload.
+   `com.habboubah.bildklar` is fixed by the first upload.
 3. Fill in *Store listing*, *Data safety* and *App content* from
    `store/listing.md` (section 3, Google Play) — including the **Photo and
    video permissions** declaration (3.5): a photo manager whose core use is
    reading the whole library.
 4. *Monetize › Products › In-app products* → **Create product**: product ID
-   `com.habboubah.fotonest.unlock` (the same as the App Store's, `PRODUCT_ID` in
-   `src/native/purchases.ts`), name *Fotonest freischalten*, price **4,99 €**,
+   `com.habboubah.bildklar.unlock` (the same as the App Store's, `PRODUCT_ID` in
+   `src/native/purchases.ts`), name *Bildklar freischalten*, price **4,99 €**,
    *Activate*. A one-time product; the app acknowledges each purchase.
    *Setup › License testing* → add your Google account: its purchases are free
    test purchases.
@@ -73,11 +73,11 @@ release asks. Delete that line to be asked again.
 
 `npm run release:android` uploads through the Play Developer API as a
 **service account**. A service account belongs to the developer account, not
-to one app — the one that ships Spartopf ships Fotonest too:
+to one app — the one that ships Spartopf ships Bildklar too:
 
 1. *Play Console › Users and permissions*: open the service account (its
    address ends in `.iam.gserviceaccount.com`), *App permissions › Add app ›
-   Fotonest*, and tick *Release apps to testing tracks*.
+   Bildklar*, and tick *Release apps to testing tracks*.
 2. In `.env.release`, `PLAY_SERVICE_ACCOUNT_JSON` is the path of that JSON
    key — the same line as in budget-app's `.env.release`. The key stays
    outside the repository.
@@ -128,7 +128,7 @@ notes. Testers get it as an update a few minutes later.
 ## What is different from the iPhone
 
 - **Albums are folders.** Android has no albums shared by every gallery app,
-  so *Ordner erstellen* moves a trip's photos into `Pictures/Fotonest/<trip>/`
+  so *Ordner erstellen* moves a trip's photos into `Pictures/Bildklar/<trip>/`
   — after Android's own consent dialog (`MediaStore.createWriteRequest`).
   The files are moved, never copied, and their contents never change. Gallery
   apps show the folder as an album. **Check on your phone** whether Google

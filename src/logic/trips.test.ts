@@ -229,6 +229,6 @@ describe('trip names', () => {
 
   it('makes a safe folder name', () => {
     expect(folderName('Paris / Lyon: März 2026')).toBe('Paris Lyon März 2026');
-    expect(folderName('...')).toBe('Fotonest');
+    expect(folderName('...')).toBe('Bildklar');
   });
 });

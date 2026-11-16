@@ -11,7 +11,7 @@ import type { TripEdits } from './logic/trips';
  * All state lives here (no store library): the photo facts, the scan, the
  * access, the unlock, the user's decisions and the view preferences.
  *
- * - View preferences (language, theme, dry run) are `fotonest-*` keys in
+ * - View preferences (language, theme, dry run) are `bildklar-*` keys in
  *   localStorage: losing them costs nothing.
  * - The decisions (src/logic/state.ts) go through the native plugin into
  *   SQLite (PhotoLibrary getState/setState) — localStorage on the web —
@@ -20,11 +20,11 @@ import type { TripEdits } from './logic/trips';
  * - The photo facts come from the native scan cache, page by page.
  */
 
-export const KEY_PREFIX = 'fotonest-';
+export const KEY_PREFIX = 'bildklar-';
 const K = {
-  lang: 'fotonest-lang',
-  theme: 'fotonest-theme',
-  dryRun: 'fotonest-dry-run',
+  lang: 'bildklar-lang',
+  theme: 'bildklar-theme',
+  dryRun: 'bildklar-dry-run',
 } as const;
 
 const read = (key: string) => { try { return localStorage.getItem(key); } catch { return null; } };

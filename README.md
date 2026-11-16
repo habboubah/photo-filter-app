@@ -1,9 +1,9 @@
-# Fotonest 📸
+# Bildklar 📸
 
 A photo organizer for parents, for iPhone and Android: trips become albums,
 near-identical and blurry photos get cleaned up — all on the device.
-German *Fotonest – Fotos aufräumen*, English *Fotonest – Photo Cleanup*; code
-name fotonest. Bundle id `com.habboubah.fotonest`.
+German *Bildklar KI: Foto Reiniger*, English *Bildklar AI: Photo Cleaner*; code
+name bildklar. Bundle id `com.habboubah.bildklar`.
 
 ## Setup
 

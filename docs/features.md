@@ -1,4 +1,4 @@
-# Fotonest – features
+# Bildklar – features
 
 Every feature, as the user sees it (German labels, English in brackets).
 
@@ -44,7 +44,7 @@ Every feature, as the user sees it (German labels, English in brackets).
   the end of *Alle Reisen*), and undoing a split or a join.
 - **Album erstellen** [Create album] (iPhone): a real album in Apple Photos with
   the trip's name; the photos stay where they are. **Ordner erstellen** [Create
-  folder] (Android): the photos move into `Pictures/Fotonest/<trip>/` after
+  folder] (Android): the photos move into `Pictures/Bildklar/<trip>/` after
   Android asks; nothing is copied. Needs the unlock.
 - *Durchgehen* [Go through]: a review of the whole trip (see Review).
 

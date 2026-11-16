@@ -3,7 +3,7 @@ import type { Photo } from '../types';
 
 /*
  * The bridge to our own native plugin PhotoLibrary (PhotoLibraryPlugin.swift
- * in ios/App/App, PhotoLibraryPlugin.kt in android/…/fotonest): permission,
+ * in ios/App/App, PhotoLibraryPlugin.kt in android/…/bildklar): permission,
  * the scan and its SQLite cache, thumbnails, albums / folders and moving
  * photos to the trash. The native side does the heavy work off the main
  * thread and only ever hands over facts (src/types.ts Photo) — never image
@@ -55,7 +55,7 @@ export interface PhotoLibraryPlugin {
 
   /**
    * iPhone: a new album in Photos holding these photos. Android: these photos
-   * moved into Pictures/Fotonest/<title>/ after the system asked the user.
+   * moved into Pictures/Bildklar/<title>/ after the system asked the user.
    * With `dryRun` nothing is written; the answer says what would have happened.
    */
   createAlbum(options: { title: string; ids: string[]; dryRun: boolean }): Promise<{ done: number; cancelled: boolean; dryRun: boolean }>;

@@ -1,4 +1,4 @@
-package com.habboubah.fotonest
+package com.habboubah.bildklar
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue

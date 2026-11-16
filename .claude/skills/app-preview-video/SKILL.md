@@ -1,12 +1,12 @@
 ---
 name: app-preview-video
-description: Make, change or re-export the App Store app preview video of Fotonest (npm run app-preview) — the running app is filmed from a storyboard, then captions, a light on a part of the screen, touch dots and an end card with the icon are laid over it, and an 886 × 1920 MP4 per language comes out, checked against App Store Connect's specification. Use when asked for an app preview, a preview / promo / marketing video or trailer, "a video of the app" for the App Store or Google Play listing, a video like another app's listing has, to change the video's captions, chapters, length, music or poster frame, or after a screen or flow the video passes through has changed. Not the App Review screen recording on a real iPhone (app-review-recording) and not the store screenshots (store-screenshot-studio).
+description: Make, change or re-export the App Store app preview video of Bildklar (npm run app-preview) — the running app is filmed from a storyboard, then captions, a light on a part of the screen, touch dots and an end card with the icon are laid over it, and an 886 × 1920 MP4 per language comes out, checked against App Store Connect's specification. Use when asked for an app preview, a preview / promo / marketing video or trailer, "a video of the app" for the App Store or Google Play listing, a video like another app's listing has, to change the video's captions, chapters, length, music or poster frame, or after a screen or flow the video passes through has changed. Not the App Review screen recording on a real iPhone (app-review-recording) and not the store screenshots (store-screenshot-studio).
 ---
 
 # App preview video
 
 The app preview is the short video that plays, muted, in front of the
-screenshots on the App Store listing and in search results. Fotonest's is
+screenshots on the App Store listing and in search results. Bildklar's is
 built like the shopping list's (after Bring!'s, which Ahmad pointed at): a
 line of text on the dimmed screen, then the app doing what the line says —
 four times — and the icon at the end. About 24 seconds, German and English,
@@ -288,7 +288,7 @@ for the Mac.
 
 ## Not yet run on the Mac (16 November 2026)
 
-Fotonest's storyboard was filmed end to end in a Linux container on 16
+Bildklar's storyboard was filmed end to end in a Linux container on 16
 November 2026 (both languages pass the validator, 23.6 s); the first Mac run,
 with real photos, is still to come — say so. What to look at
 then: that the film says `by screencast` and 50 or more frames a second (not

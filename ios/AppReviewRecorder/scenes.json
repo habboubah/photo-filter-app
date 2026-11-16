@@ -1,8 +1,8 @@
 {
- "about": "The App Review screen recording for Fotonest (Fotonest – Fotos aufräumen / Fotonest – Photo Cleanup), one step per line, in the order a new user meets the app: the scan, a trip turned into an album, near-identical photos and the best shot, a review that deletes two photos with iOS's own dialog, the settings. About 2 minutes. The paywall shows only while the unlock isn't owned: on the iPhone it was bought beforehand with the TestFlight account (README.md, Preparation), so the album is made straight away; in the rehearsal the paywall appears and Restore Purchases unlocks it. The iPhone UI test (RecorderUITests) plays this file on a real iPhone that has the demo photos and has given Fotonest Limited Access to only those; scripts/rehearse-app-review.mjs plays the same file against the web build to check every label first. Step keys: see README.md.",
+ "about": "The App Review screen recording for Bildklar (Bildklar KI: Foto Reiniger / Bildklar AI: Photo Cleaner), one step per line, in the order a new user meets the app: the scan, a trip turned into an album, near-identical photos and the best shot, a review that deletes two photos with iOS's own dialog, the settings. About 2 minutes. The paywall shows only while the unlock isn't owned: on the iPhone it was bought beforehand with the TestFlight account (README.md, Preparation), so the album is made straight away; in the rehearsal the paywall appears and Restore Purchases unlocks it. The iPhone UI test (RecorderUITests) plays this file on a real iPhone that has the demo photos and has given Bildklar Limited Access to only those; scripts/rehearse-app-review.mjs plays the same file against the web build to check every label first. Step keys: see README.md.",
  "app": {
-  "bundleId": "com.habboubah.fotonest",
-  "iconName": ["Fotonest"],
+  "bundleId": "com.habboubah.bildklar",
+  "iconName": ["Bildklar"],
   "minVersion": "0.1.0"
  },
  "preflight": {
@@ -35,7 +35,7 @@
  },
  "rehearsal": {
   "locale": "en-GB",
-  "localStorage": {"fotonest-demo-access": "full", "fotonest-demo-scanned": "1", "fotonest-dry-run": "0", "fotonest-demo-restorable": "1"}
+  "localStorage": {"bildklar-demo-access": "full", "bildklar-demo-scanned": "1", "bildklar-dry-run": "0", "bildklar-demo-restorable": "1"}
  },
  "scenes": [
   { "name": "Launch and the scan", "steps": [
@@ -53,7 +53,7 @@
     {"pause": 2},
     {"tap": "Create album", "role": "button"},
     {"pause": 1.5},
-    {"optional": [{"see": "Unlock Fotonest", "timeout": 3}, {"pause": 2}, {"tap": "Restore purchases"}, {"optional": [{"systemAlert": ["Sign In", "Anmelden", "OK"], "timeout": 4}, {"pause": 2}]}, {"pause": 3}]},
+    {"optional": [{"see": "Unlock Bildklar", "timeout": 3}, {"pause": 2}, {"tap": "Restore purchases"}, {"optional": [{"systemAlert": ["Sign In", "Anmelden", "OK"], "timeout": 4}, {"pause": 2}]}, {"pause": 3}]},
     {"tap": "Create album", "role": "button", "timeout": 10},
     {"pause": 2.5},
     {"see": "Album made on"},

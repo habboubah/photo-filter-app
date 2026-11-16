@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Fotonest looks at your photos on this iPhone to find trips, near-identical and blurry shots. Nothing leaves your device.</string>
+	<string>Bildklar looks at your photos on this iPhone to find trips, near-identical and blurry shots. Nothing leaves your device.</string>
 	<key>PHPhotoLibraryPreventAutomaticLimitedAccessAlert</key>
 	<true/>
 	<key>ITSAppUsesNonExemptEncryption</key>
@@ -13,7 +13,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>Fotonest</string>
+	<string>Bildklar</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>

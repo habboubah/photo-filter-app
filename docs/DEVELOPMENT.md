@@ -1,4 +1,4 @@
-# Working on Fotonest
+# Working on Bildklar
 
 What the README leaves out: where things live, the single checks, the native
 tests, the demo library, the city table and the icon. The rules the code
@@ -20,7 +20,7 @@ follows are in [CLAUDE.md](../CLAUDE.md); the concept in [PLAN.md](PLAN.md).
 | `src/index.css` | The design tokens ("Album") |
 | `ios/App/App/` | `PhotoLibraryPlugin.swift` (+ `MainViewController`), `ScanStore.swift` (SQLite), `PurchasesPlugin.swift` (StoreKit 2) |
 | `ios/PhotoFeatures/` | `FeatureMath.swift` as a Swift package with its tests (the app target compiles the same file) |
-| `android/app/src/main/java/com/habboubah/fotonest/` | `PhotoLibraryPlugin.kt`, `ScanStore.kt`, `FeatureMath.kt`, `PurchasesPlugin.kt`, `MainActivity.kt` |
+| `android/app/src/main/java/com/habboubah/bildklar/` | `PhotoLibraryPlugin.kt`, `ScanStore.kt`, `FeatureMath.kt`, `PurchasesPlugin.kt`, `MainActivity.kt` |
 | `fixtures/features/` | The shared test pictures and `expected.json` |
 | `ios/AppReviewRecorder/` | The UI test that records the App Review video, and its `scenes.json` |
 | `scripts/` | Release, screenshots, the checks, icons, the city table, the demo photos, the feature fixtures |
@@ -63,13 +63,13 @@ spec from the drawn pictures:
 npm run demo-photos      # draws the photos (Pillow), then computes their facts
 ```
 
-The demo's state lives in localStorage: `fotonest-demo-access`
+The demo's state lives in localStorage: `bildklar-demo-access`
 (`notDetermined` · `limited` · `denied` · `full`, also `?access=…` in the URL),
-`fotonest-demo-scanned`, `fotonest-demo-owned`, `fotonest-demo-trashed`,
-`fotonest-demo-restorable`, `fotonest-demo-scan-step` (ms per step of a first
-scan; the scan screenshot slows it down). `fotonest-dev-platform` = `android`
+`bildklar-demo-scanned`, `bildklar-demo-owned`, `bildklar-demo-trashed`,
+`bildklar-demo-restorable`, `bildklar-demo-scan-step` (ms per step of a first
+scan; the scan screenshot slows it down). `bildklar-dev-platform` = `android`
 gives a development or demo build Android's words. In dev the app is a "debug build": the dry run is
-on until `fotonest-dry-run` is `0`.
+on until `bildklar-dry-run` is `0`.
 
 ## The features
 

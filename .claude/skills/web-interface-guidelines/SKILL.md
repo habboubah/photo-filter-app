@@ -1,10 +1,10 @@
 ---
 name: web-interface-guidelines
-description: Review UI code against Vercel's Web Interface Guidelines (accessibility, focus, forms, touch, safe areas, animation, typography, i18n), pinned locally and adjusted to Fotonest's native-iOS rules. Use when asked to review UI code, check accessibility or touch behaviour, audit a component or screen, or before calling a UI change done.
+description: Review UI code against Vercel's Web Interface Guidelines (accessibility, focus, forms, touch, safe areas, animation, typography, i18n), pinned locally and adjusted to Bildklar's native-iOS rules. Use when asked to review UI code, check accessibility or touch behaviour, audit a component or screen, or before calling a UI change done.
 argument-hint: <file-or-pattern>
 ---
 
-# Web Interface Guidelines (pinned, Fotonest edition)
+# Web Interface Guidelines (pinned, Bildklar edition)
 
 The rules are in [reference/command.md](reference/command.md): Vercel's
 guidelines, copied unchanged at a pinned commit (see SOURCE.md). Never fetch
@@ -23,7 +23,7 @@ Precedence: **CLAUDE.md, then the overrides below, then `command.md`.**
 
 ## Overrides for this app
 
-Fotonest is a client-only React app inside an iOS or Android web view
+Bildklar is a client-only React app inside an iOS or Android web view
 (Capacitor), with no router, no server and native-iOS styling rules. Its
 photos come from the native plugin (`src/native/photoLibrary.ts`) as
 `convertFileSrc` URLs, never as base64. These rules from

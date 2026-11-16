@@ -1,6 +1,6 @@
 ---
 name: app-store-screenshots
-description: Regenerate the raw store screenshots of Fotonest (npm run screenshots → screenshots/<de|en>/, nine screens per language, each with its marks; --android for Google Play's words), or capture every screen for a UI review (npm run ui-review). Use when asked to update, refresh or regenerate store screenshots, to add, drop or reorder a screen in the set, to mark a part of a screen for a call-out, or to look at the app before and after a UI change. The composed, captioned upload set is the store-screenshot-studio skill.
+description: Regenerate the raw store screenshots of Bildklar (npm run screenshots → screenshots/<de|en>/, nine screens per language, each with its marks; --android for Google Play's words), or capture every screen for a UI review (npm run ui-review). Use when asked to update, refresh or regenerate store screenshots, to add, drop or reorder a screen in the set, to mark a part of a screen for a call-out, or to look at the app before and after a UI change. The composed, captioned upload set is the store-screenshot-studio skill.
 ---
 
 # Store screenshots (raw captures)
@@ -48,7 +48,7 @@ Run it on the Mac, so the system font is Apple's own.
 | 6 | `06-group` | a group of near-identical photos, the best one marked | *Fast gleiche* › the first group |
 | 7 | `07-blurry` | the blurry list, *Sicher* | the *Unscharfe* tile |
 | 8 | `08-review` | the review, half a swipe to the left (the *Löschen* stamp) | *Aufräumen* › *Durchgehen* |
-| 9 | `09-paywall` | the paywall, with the price — **for App Review's in-app purchase screenshot, not for the set** | Settings › *Fotonest freischalten*, not owned |
+| 9 | `09-paywall` | the paywall, with the price — **for App Review's in-app purchase screenshot, not for the set** | Settings › *Bildklar freischalten*, not owned |
 
 A full run empties the folders first, so a screen dropped from the list can't
 linger. A screen that can't be reached is reported by name (`✗ de/04-trip: …`),
@@ -94,7 +94,7 @@ a name and a selector, built from the app's own strings like the clicks are.
 access granted, the library scanned, the unlock bought, no dry run — each can
 be changed per screen (`prefs: { scanned: false }`, `{ owned: false }`,
 `{ access: 'limited' }`). The `--android` run also sets
-`fotonest-dev-platform` = `android` (honoured by development and demo builds
+`bildklar-dev-platform` = `android` (honoured by development and demo builds
 only), so the app uses Android's words.
 
 ## Adding, dropping or reordering a screen

@@ -17,7 +17,7 @@ what the line says, four times over, and the icon at the end:
 | end card | the icon and the name on a flat colour | 2–3 s |
 
 What it does not have: a voice, a hand, a phone frame, a second line of text,
-a list of features. This skill's video has the same build in Fotonest's
+a list of features. This skill's video has the same build in Bildklar's
 own look — the app's ink as the veil, Fraunces for the words, the icon's teal
 for the end card — so it sits next to the store screenshots as one set.
 

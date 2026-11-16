@@ -53,7 +53,7 @@ differently, which is why they are switched per target (`"ribbon"` in
 | App Store | Guideline 2.3.7: app names, subtitles, screenshots and previews may not include prices or terms. App Review counts "free" as a price reference and rejects the version until it is gone | `iphone-6.3` has `"ribbon": false`: no ribbon, no price points. `validate.py` warns if that changes |
 | Google Play | The preview-asset guidelines ask to avoid price and promotional words on the feature graphic and screenshots and name "Free" among the examples. Not following them does not take the listing down; it can change how the assets are shown and limits promotion and recommendation by Play | `play-phone` and the feature graphic have `"ribbon": false` too |
 
-Whatever the store, the words have to be true. Fotonest is a free download
+Whatever the store, the words have to be true. Bildklar is a free download
 with one in-app purchase (the unlock, `store/listing.md`), so "free" or "no
 subscription" on a screenshot would mislead: the ribbon is off everywhere and
 the copy files have no price points. The machinery stays for an app that is

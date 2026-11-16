@@ -1,4 +1,4 @@
-// The film: Fotonest's App Store preview, chapter by chapter. This file
+// The film: Bildklar's App Store preview, chapter by chapter. This file
 // and the copy next to it (copy.<lang>.json) are all that is about this app —
 // the scripts play any storyboard.
 //

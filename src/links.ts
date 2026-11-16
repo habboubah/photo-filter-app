@@ -9,15 +9,15 @@ import { Strings, fmt } from './translations';
 /**
  * The app's Apple ID on the App Store (App Store Connect → the app → App
  * Information → Apple ID, a number). Empty until it is filled in: the iPhone
- * app then shows no "Fotonest bewerten" row instead of one that leads nowhere.
+ * app then shows no "Bildklar bewerten" row instead of one that leads nowhere.
  */
 export const APP_STORE_ID: string = '';
 /** Opens the App Store's "write a review" page (works once the app is live). */
 export const REVIEW_URL = APP_STORE_ID ? `https://apps.apple.com/app/id${APP_STORE_ID}?action=write-review` : '';
 /** The app's page on Google Play: where Android users rate it. */
-export const PLAY_URL = 'https://play.google.com/store/apps/details?id=com.habboubah.fotonest';
-const PRIVACY_URL = 'https://habboubah.github.io/privacy-policy/fotonest/';
-const PRIVACY_URL_DE = 'https://habboubah.github.io/privacy-policy/fotonest/de/';
+export const PLAY_URL = 'https://play.google.com/store/apps/details?id=com.habboubah.bildklar';
+const PRIVACY_URL = 'https://habboubah.github.io/privacy-policy/bildklar/';
+const PRIVACY_URL_DE = 'https://habboubah.github.io/privacy-policy/bildklar/de/';
 /** The published privacy policy: German, and English for every other language. */
 export const privacyUrl = (language: string) => (language === 'de' ? PRIVACY_URL_DE : PRIVACY_URL);
 /** Where feedback goes: the support address the privacy policy gives. */

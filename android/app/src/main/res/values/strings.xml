@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Fotonest</string>
-    <string name="title_activity_main">Fotonest</string>
-    <string name="package_name" translatable="false">com.habboubah.fotonest</string>
-    <string name="custom_url_scheme" translatable="false">com.habboubah.fotonest</string>
+    <string name="app_name">Bildklar</string>
+    <string name="title_activity_main">Bildklar</string>
+    <string name="package_name" translatable="false">com.habboubah.bildklar</string>
+    <string name="custom_url_scheme" translatable="false">com.habboubah.bildklar</string>
 </resources>

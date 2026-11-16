@@ -54,7 +54,7 @@ Play's. Each run deletes and rewrites only the folders this script makes,
 including ones from older configs (`apple-6.9`, `apple-6.5`); files next to
 them (`play-icon-512.png`) are left alone.
 
-No set carries a ribbon or price words: Fotonest sells an unlock. See
+No set carries a ribbon or price words: Bildklar sells an unlock. See
 *Ribbon and points* in `SKILL.md`.
 
 ## Layout of the skill

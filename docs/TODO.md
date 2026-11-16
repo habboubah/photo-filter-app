@@ -5,12 +5,16 @@ In order. (State: 16 November 2026, after the first build by Claude.)
 
 ## 1. Before anything else
 
-- [ ] **Check the name.** App Store Connect → Apps → + → New App → type
-      *Fotonest – Fotos aufräumen*. Taken? Try *Fotonest: Fotos sortieren* or
-      another, then change `appName`/`storeName` in `src/translations.ts`,
-      `store/listing.md`, the privacy pages and `CFBundleDisplayName` (the
-      bundle id `com.habboubah.fotonest` can stay). Do the same in the Play
-      Console (*Create app*). If you want another name altogether, tell Claude.
+- [ ] **Reserve the name.** The app is now **Bildklar** (store name *Bildklar KI:
+      Foto Reiniger* / *Bildklar AI: Photo Cleaner*, bundle id
+      `com.habboubah.bildklar`, purchase `com.habboubah.bildklar.unlock`).
+      Register the new bundle id under Certificates, Identifiers & Profiles,
+      then App Store Connect → Apps → + → New App with that name, and *Create
+      app* in the Play Console. If you already registered
+      `com.habboubah.fotonest` or created a "Fotonest" app record, leave it
+      unused — it does no harm. Name taken after all? Tell Claude.
+- [ ] **Icon.** The icon still shows photos in a nest (`assets/icon.svg`) —
+      the old name's picture. Ask Claude for a "Bildklar" icon if you want one.
 - [ ] `npm install` in `~/repos/photo-filter-app` (the repository came without
       `node_modules`), then `npm run check` — it should pass as it did in the cloud.
 
@@ -49,7 +53,7 @@ tests pass — **but it has not run on a phone.**
       `ACCESS_MEDIA_LOCATION` may not have been granted — check *App info ›
       Permissions*.)
 - [ ] *Ordner erstellen* with the dry run off: Android's dialog, then the photos
-      in `Pictures/Fotonest/<trip>/` (Files app, Google Photos › Library). Does
+      in `Pictures/Bildklar/<trip>/` (Files app, Google Photos › Library). Does
       **Google Photos** back up that folder, or does it need *Back up device
       folders*? Write it down for the store text.
 - [ ] Deleting: Android's dialog → the photos in the Trash (Google Photos › Library › Trash).
@@ -59,14 +63,14 @@ tests pass — **but it has not run on a phone.**
 ## 4. The stores (milestone 5)
 
 - [ ] App Store Connect: create the app (APP_STORE_RELEASE.md step 4), the
-      in-app purchase `com.habboubah.fotonest.unlock` at 4,99 € (step 8g), a
+      in-app purchase `com.habboubah.bildklar.unlock` at 4,99 € (step 8g), a
       sandbox tester; sign in with it on the iPhone (Settings › App Store).
 - [ ] Play Console: create the app, the in-app product with the same id and
       price, your account as a licence tester (ANDROID_RELEASE.md).
 - [ ] Buy once in each (sandbox / licence tester), then *Käufe
       wiederherstellen* after reinstalling.
 - [ ] Publish the privacy pages: copy `store/privacy/` to
-      `../privacy-policy/fotonest/` and push (APP_STORE_RELEASE.md step 5).
+      `../privacy-policy/bildklar/` and push (APP_STORE_RELEASE.md step 5).
 - [ ] First uploads: `npm run release:first` (iOS); Android's first bundle by
       hand (`npm run release:android -- --no-upload`, then the Play Console).
       You will need an upload key first: `npm run android:key`.
@@ -85,16 +89,16 @@ tests pass — **but it has not run on a phone.**
       `.claude/skills/store-screenshot-studio/config/copy.<de|en>.json`.
 - [ ] `npm run app-preview` (needs `brew install ffmpeg`).
 - [ ] **App Review recording** (`ios/AppReviewRecorder/README.md`): put the
-      demo photos on the iPhone, give Fotonest **Limited Access to only
-      those** (Settings › Apps › Fotonest › Photos › Limited Access), install
+      demo photos on the iPhone, give Bildklar **Limited Access to only
+      those** (Settings › Apps › Bildklar › Photos › Limited Access), install
       the TestFlight build and buy the unlock once there (free in TestFlight),
       then `npm run rehearse:app-review`, `DRY_RUN=1 npm run record:app-review`,
       `npm run record:app-review`. After each run delete the album *Paris, …*
       and recover the two deleted photos from *Zuletzt gelöscht*.
 - [ ] Play: the **Photo and video permissions** declaration (text in
       `store/listing.md` 3.5); if Play asks for a video, record the same flow
-      on the Android phone: `adb shell screenrecord /sdcard/fotonest.mp4`
-      (3 minutes at most), then `adb pull /sdcard/fotonest.mp4`.
+      on the Android phone: `adb shell screenrecord /sdcard/bildklar.mp4`
+      (3 minutes at most), then `adb pull /sdcard/bildklar.mp4`.
 - [ ] Data safety: read section 3.4 of `store/listing.md` (the Play Billing
       Library's own logging) before answering.
 

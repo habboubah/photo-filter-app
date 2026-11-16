@@ -1,7 +1,7 @@
 {
   "locale": "de",
   "dir": "ltr",
-  "appName": "Fotonest – Fotos aufräumen",
+  "appName": "Bildklar KI: Foto Reiniger",
   "slides": {
     "home": {
       "headline": "Deine Fotos, endlich aufgeräumt",
@@ -42,7 +42,7 @@
     }
   },
   "featureGraphic": {
-    "headline": "Fotonest",
+    "headline": "Bildklar",
     "subline": "Reisen sortiert, Doppeltes und Unscharfes aufgeräumt – alles auf deinem Handy.",
     "points": [
       "Reisen sortiert",

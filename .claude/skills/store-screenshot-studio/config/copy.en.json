@@ -1,7 +1,7 @@
 {
   "locale": "en",
   "dir": "ltr",
-  "appName": "Fotonest – Photo Cleanup",
+  "appName": "Bildklar AI: Photo Cleaner",
   "slides": {
     "home": {
       "headline": "Your photos, sorted at last",
@@ -42,7 +42,7 @@
     }
   },
   "featureGraphic": {
-    "headline": "Fotonest",
+    "headline": "Bildklar",
     "subline": "Trips sorted, duplicates and blurry shots cleaned up – all on your phone.",
     "points": [
       "Trips sorted",
