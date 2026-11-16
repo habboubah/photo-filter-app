@@ -1,0 +1,15 @@
+# The model export and evaluation (ml/), not the app. CPU is enough.
+#   python3 -m venv ml/.venv && . ml/.venv/bin/activate
+#   pip install --index-url https://download.pytorch.org/whl/cpu torch==2.15.0
+#   pip install -r ml/requirements.txt
+transformers==5.23.0
+sentencepiece==0.2.3
+protobuf==7.36.2
+onnx==1.23.2
+onnxruntime==1.32.0
+onnxscript==0.7.2
+pillow==13.0.0
+numpy==2.5.5
+PyYAML==6.0.3
+huggingface_hub==2.4.0
+qrcode==8.2

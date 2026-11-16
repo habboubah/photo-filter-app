@@ -37,7 +37,10 @@
     "check:privacy": "node scripts/privacy-check.mjs",
     "check:perf": "node scripts/perf-check.mjs",
     "check:listing": "node scripts/listing-lengths.mjs",
-    "demo-photos": "python3 scripts/demo-photos.py && node --experimental-strip-types scripts/demo-facts.mjs"
+    "demo-photos": "python3 scripts/demo-photos.py && node --experimental-strip-types scripts/demo-facts.mjs",
+    "ai:export": "python3 ml/export.py",
+    "ai:eval": "python3 ml/eval.py",
+    "ai:demo": "cd ml && python3 demo_ai.py && cd .. && node --experimental-strip-types scripts/demo-facts.mjs"
   },
   "dependencies": {
     "@capacitor-community/keep-awake": "8.0.1",

@@ -3,6 +3,8 @@
 // features computed by the app's own spec (src/logic/features.ts) from the
 // grey copy — exactly what the native scan would report. Sizes are made up in
 // the range of real phone photos, so the clean-up card shows realistic numbers.
+// The AI's label scores come from ai.json (ml/demo_ai.py runs the real model
+// over the demo photos — the same numbers a phone would store).
 //   npm run demo-photos
 import fs from 'fs';
 import path from 'path';
@@ -13,6 +15,8 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const demo = path.join(root, 'src', 'native', 'demo');
 const grey = path.join(root, '.cache', 'demo-grey');
 const manifest = JSON.parse(fs.readFileSync(path.join(demo, 'manifest.json'), 'utf8'));
+const aiFile = path.join(demo, 'ai.json');
+const ai = fs.existsSync(aiFile) ? JSON.parse(fs.readFileSync(aiFile, 'utf8')).photos : {};
 
 let seed = 7;
 const rand = () => { seed = (seed * 1103515245 + 12345) % 2 ** 31; return seed / 2 ** 31; };
@@ -24,7 +28,10 @@ const facts = manifest.map(entry => {
   const h = Number(m[2]);
   const f = features(new Uint8Array(buf.subarray(m[0].length)), w, h);
   // A copy saved from a messenger: smaller and lighter than the camera's original.
-  const { copy, ...rest } = entry;
+  const { copy, note, ...rest } = entry;
+  const scores = ai[entry.id] ? { ai: ai[entry.id] } : {};
+  // A picture of a receipt or a letter: a phone photo, sized without the random source so the photos after it keep their numbers.
+  if (note) return { ...rest, w: 4032, h: 3024, bytes: 2_400_000, exact: true, ...f, ...scores };
   // A video: about 0.4 bytes per pixel and second (what the iPhone's estimate assumes too); a Live Photo carries about 3 MB of video.
   const r = rand();
   const photo = entry.video
@@ -36,7 +43,7 @@ const facts = manifest.map(entry => {
       : copy
         ? { ...rest, w: 1600, h: 1200, bytes: Math.round(250_000 + r * 200_000) }
         : { ...rest, w: 4032, h: 3024, bytes: Math.round(1_800_000 + r * 2_400_000) + (entry.live ? 3_000_000 : 0) };
-  return { ...photo, exact: true, ...f };
+  return { ...photo, exact: true, ...f, ...scores };
 });
 fs.writeFileSync(path.join(demo, 'facts.json'), JSON.stringify(facts) + '\n');
 console.log(`${facts.length} photos → src/native/demo/facts.json`);
