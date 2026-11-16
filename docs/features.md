@@ -25,9 +25,16 @@ Every feature, as the user sees it (German labels, English in brackets).
 
 ## Home
 - *Deine Fotos* [Your photos] with the number of photos and trips.
-- **The clean-up card**: the space that could be freed (one big number), how
-  many near-identical and blurry photos, *Aufräumen* [Clean up].
-- Two tiles: *Fast gleiche* [Near-identical] (groups) and *Unscharfe* [Blurry] (photos).
+- **The clean-up card**: the space that could be freed (one big number), the
+  free space on the device (*2,4 GB von 128 GB auf dem Gerät frei*), how many
+  duplicates, near-identical and blurry photos and old screenshots, what
+  Bildklar has freed so far (*Bisher freigegeben: 1,2 GB*), *Aufräumen* [Clean up].
+- Four tiles: *Duplikate* [Duplicates] and *Fast gleiche* [Near-identical]
+  (groups), *Unscharfe* [Blurry] and *Screenshots* (photos).
+- **An diesem Tag** [On this day]: when photos were taken on today's date in
+  earlier years, a card with one of them and the years; *Ansehen* [Look back]
+  reviews them (extra shots and blurry ones suggested for deleting).
+- **Monat für Monat** [Month by month]: how many months are gone through.
 - **Trips**: the newest four as cards (a mosaic of their photos, the name,
   photos and size, *Album erstellt* once made); *Alle Reisen* [All trips].
 
@@ -59,6 +66,28 @@ Every feature, as the user sees it (German labels, English in brackets).
 - **The best shot**: the sharpest, well exposed one; on the iPhone also the
   best face and open eyes. A favourite always wins.
 
+## Duplicates
+- The same picture again, however much later: a photo saved again from a
+  messenger, an imported copy. Same fingerprint (at most 2 of 64 bits apart),
+  same shape and the same light (brightness and contrast); flat pictures
+  (sky, a wall, a dark pocket shot) never count. A burst and its later copy
+  form one group.
+- Listed like the near-identical groups, with the copy to keep marked
+  *Original*: a favourite, else the one with the most pixels, else the
+  sharpest, else the oldest. A tap keeps another one; *Die anderen löschen*
+  and *Durchgehen* as for near-identical photos.
+
+## Screenshots
+- Every screenshot, newest first; *Älter als 30 Tage* [Older than 30 days]
+  (the ones the clean-up card counts) or *Alle* [All]. *Durchgehen* reviews
+  them, all suggested for deleting. Favourites and kept ones are left out.
+
+## Month by month
+- Every month of the library, newest first, with a photo, the number of photos
+  and the size; a month gone through to its end is marked *Durchgesehen* [Done].
+- A tap reviews the month: extra shots, blurry photos and old screenshots are
+  suggested for deleting, the rest for keeping.
+
 ## Blurry photos
 - Every photo's sharpness, as three levels: *Sehr wahrscheinlich*,
   *Wahrscheinlich*, *Vielleicht unscharf* [Very likely / Probably / Maybe
@@ -67,8 +96,11 @@ Every feature, as the user sees it (German labels, English in brackets).
   with a coloured dot each. *Durchgehen* reviews them.
 
 ## Clean-up
-- *Aufräumen* lists what the card counts (near-identical, blurry) with sizes,
-  and *Alle durchgehen* [Go through all].
+- *Aufräumen* lists what the card counts (duplicates, near-identical, blurry,
+  old screenshots) with sizes, *Alle durchgehen* [Go through all] and
+  **Schnell aufräumen** [Quick clean]: a switch per kind (all on), the
+  free space, then *35 Fotos löschen · 91 MB* → the system's dialog — or
+  *Durchgehen* [Review] for the same photos first. Needs the unlock.
 - Favourites are never suggested, nor a photo you kept in a review before.
 
 ## Review
@@ -90,7 +122,8 @@ Every feature, as the user sees it (German labels, English in brackets).
 
 ## Settings
 - **Fotos**: the access (all / selected / none), *Fotos auswählen*, *Zugriff
-  in den Einstellungen ändern*, *Neu durchsuchen*.
+  in den Einstellungen ändern*, *Neu durchsuchen*, the storage on the device
+  (free of total) and what Bildklar has freed so far (photos and size).
 - **Vollversion**: unlock or *Freigeschaltet*, restore.
 - **Darstellung**: language (Deutsch, English), appearance (system, light, dark).
 - **Nur in der Debug-Version**: *Probelauf* [Dry run] — on by default in debug
@@ -98,7 +131,8 @@ Every feature, as the user sees it (German labels, English in brackets).
 - **Über die App**: rate (once the App Store id is set), feedback by mail,
   privacy policy, licences (GeoNames, fonts, icons).
 - *Meine Entscheidungen zurücksetzen* [Reset my decisions] (with undo): trip
-  edits, best-shot picks, kept photos.
+  edits, best-shot picks, kept photos, the months marked as done (the
+  "freed so far" count stays).
 
 ## Everywhere
 - Dark mode, Larger Text (iPhone Dynamic Type; Android's font scale), VoiceOver
