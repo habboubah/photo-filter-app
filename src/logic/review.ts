@@ -8,7 +8,7 @@ import { blurLevel } from './blur';
  * the ones marked to Recently Deleted / the Trash.
  */
 export type Decision = 'keep' | 'delete';
-export type Reason = 'best' | 'similar' | 'blurry' | 'trip';
+export type Reason = 'best' | 'original' | 'similar' | 'duplicate' | 'blurry' | 'screenshot' | 'trip';
 
 export interface ReviewItem {
   id: string;
@@ -17,13 +17,20 @@ export interface ReviewItem {
   level?: Confidence;
 }
 
-/** A similar group: the best one (keep), then the others (delete), in time order. */
+const extraReason = (g: Group): Reason => (g.kind === 'duplicate' ? 'duplicate' : 'similar');
+
+/** A similar or duplicate group: the best one (keep), then the others (delete), in time order. */
 export function reviewGroup(group: Group, kept: Set<string>, byId: Map<string, Photo>): ReviewItem[] {
   return group.ids.map(id => ({
     id,
     suggest: id === group.best || kept.has(id) || byId.get(id)?.fav ? 'keep' : 'delete',
-    reason: id === group.best ? 'best' : 'similar',
+    reason: id === group.best ? (group.kind === 'duplicate' ? 'original' : 'best') : extraReason(group),
   }));
+}
+
+/** Screenshots: all suggested for deleting (the list holds no favourites and none the user kept). */
+export function reviewScreenshots(photos: Photo[]): ReviewItem[] {
+  return photos.map(p => ({ id: p.id, suggest: 'delete', reason: 'screenshot' }));
 }
 
 /** Blurry photos: all suggested for deleting. */
@@ -31,27 +38,35 @@ export function reviewBlurry(photos: Photo[]): ReviewItem[] {
   return photos.map(p => ({ id: p.id, suggest: 'delete', reason: 'blurry', level: blurLevel(p) ?? undefined }));
 }
 
-/** Everything the clean-up card counts: the extra shots of each group, then the blurry ones. */
-export function reviewCleanup(groups: Group[], blurry: Photo[], kept: Set<string>, byId: Map<string, Photo>): ReviewItem[] {
+/** Everything the clean-up card counts: the extra shots of each group, then the blurry ones, then the old screenshots. */
+export function reviewCleanup(groups: Group[], blurry: Photo[], kept: Set<string>, byId: Map<string, Photo>, shots: Photo[] = []): ReviewItem[] {
   const items: ReviewItem[] = [];
   for (const g of groups) {
     for (const id of g.ids) {
       if (id === g.best || kept.has(id) || byId.get(id)?.fav) continue;
-      items.push({ id, suggest: 'delete', reason: 'similar' });
+      items.push({ id, suggest: 'delete', reason: extraReason(g) });
     }
   }
-  return [...items, ...reviewBlurry(blurry)];
+  return [...items, ...reviewBlurry(blurry), ...reviewScreenshots(shots.filter(p => !kept.has(p.id) && !p.fav))];
 }
 
-/** A whole trip, in time order: extra shots and blurry photos suggested for deleting, the rest kept. */
-export function reviewTrip(ids: string[], groups: Group[], byId: Map<string, Photo>, kept: Set<string>): ReviewItem[] {
-  const extra = new Set<string>();
-  for (const g of groups) for (const id of g.ids) if (id !== g.best) extra.add(id);
+/**
+ * A run of photos in time order — a trip, a month, this day in earlier years:
+ * extra shots, blurry photos and (when `oldShot` says so) old screenshots
+ * suggested for deleting, the rest kept.
+ */
+export function reviewTrip(
+  ids: string[], groups: Group[], byId: Map<string, Photo>, kept: Set<string>, oldShot?: (p: Photo) => boolean,
+): ReviewItem[] {
+  const extra = new Map<string, Reason>();
+  for (const g of groups) for (const id of g.ids) if (id !== g.best) extra.set(id, extraReason(g));
   return ids.map(id => {
     const p = byId.get(id);
     const level = p ? blurLevel(p) : null;
     const protectedPhoto = kept.has(id) || p?.fav;
-    if (!protectedPhoto && extra.has(id)) return { id, suggest: 'delete', reason: 'similar' };
+    const why = extra.get(id);
+    if (!protectedPhoto && why) return { id, suggest: 'delete', reason: why };
+    if (!protectedPhoto && p?.shot && oldShot?.(p)) return { id, suggest: 'delete', reason: 'screenshot' };
     if (!protectedPhoto && (level === 'high' || level === 'medium')) return { id, suggest: 'delete', reason: 'blurry', level };
     return { id, suggest: 'keep', reason: 'trip' };
   });

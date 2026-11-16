@@ -204,6 +204,18 @@ export const SCREENS = [
   { name: '18-settings-end', run: async (page, w) => { await openSettings(page, w); await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight)); await pause(page, 300); } },
   { name: '19-dark', prefs: { theme: 'dark' } },
   { name: '20-dark-group', prefs: { theme: 'dark' }, run: openGroup },
+  { name: '21-duplicates', run: async (page, w) => { await page.click(`button:has-text("${w.t.duplicatesTile}")`); await pause(page, 600); } },
+  { name: '22-screenshots', run: async (page, w) => { await page.click(`button:has-text("${w.t.screenshotsTile}")`); await pause(page, 700); } },
+  {
+    name: '23-quick-clean', run: async (page, w) => {
+      await page.click(`button:has-text("${w.t.cleanupButton}")`);
+      await pause(page, 500);
+      await page.click(`button:has-text("${w.t.quickClean}")`);
+      await pause(page, 700);
+    },
+  },
+  { name: '24-months', run: async (page, w) => { await page.click(`button:has-text("${w.t.monthsCard}")`); await pause(page, 700); } },
+  { name: '25-home-end', run: async page => { await page.evaluate(() => window.scrollTo(0, 900)); await pause(page, 400); } },
 ];
 
 /**

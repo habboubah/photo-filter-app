@@ -23,9 +23,13 @@ const facts = manifest.map(entry => {
   const w = Number(m[1]);
   const h = Number(m[2]);
   const f = features(new Uint8Array(buf.subarray(m[0].length)), w, h);
+  // A copy saved from a messenger: smaller and lighter than the camera's original.
+  const { copy, ...rest } = entry;
   const photo = entry.shot
-    ? { ...entry, w: 1179, h: 2556, bytes: Math.round(600_000 + rand() * 900_000) }
-    : { ...entry, w: 4032, h: 3024, bytes: Math.round(1_800_000 + rand() * 2_400_000) };
+    ? { ...rest, w: 1179, h: 2556, bytes: Math.round(600_000 + rand() * 900_000) }
+    : copy
+      ? { ...rest, w: 1600, h: 1200, bytes: Math.round(250_000 + rand() * 200_000) }
+      : { ...rest, w: 4032, h: 3024, bytes: Math.round(1_800_000 + rand() * 2_400_000) };
   return { ...photo, exact: true, ...f };
 });
 fs.writeFileSync(path.join(demo, 'facts.json'), JSON.stringify(facts) + '\n');

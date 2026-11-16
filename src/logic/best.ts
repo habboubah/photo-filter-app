@@ -41,3 +41,20 @@ export function rankGroup(photos: Photo[]): Photo[] {
   if (fav) return [fav, ...ranked.filter(p => p !== fav)];
   return ranked;
 }
+
+/**
+ * The copy to keep of a duplicate group: a favourite, else the one with the
+ * most pixels (a messenger copy is smaller than the original), else the
+ * sharpest, else the oldest — the original came first.
+ */
+export function rankDuplicates(photos: Photo[]): Photo[] {
+  const ranked = [...photos].sort((a, b) => {
+    const px = b.w * b.h - a.w * a.h;
+    if (px !== 0) return px;
+    const sharp = (b.sharp ?? 0) - (a.sharp ?? 0);
+    if (Math.abs(sharp) > 1e-9) return sharp;
+    return a.t - b.t;
+  });
+  const fav = photos.find(p => p.fav);
+  return fav ? [fav, ...ranked.filter(p => p !== fav)] : ranked;
+}

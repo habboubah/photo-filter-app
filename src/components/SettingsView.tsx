@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { BadgeCheck, FileText, FlaskConical, Globe, Images, Mail, Moon, RefreshCw, RotateCcw, ShieldCheck, Star, Unlock } from 'lucide-react';
-import type { ThemeMode } from '../types';
+import { BadgeCheck, FileText, FlaskConical, Globe, HardDrive, Images, Mail, Moon, RefreshCw, RotateCcw, ShieldCheck, Sparkles, Star, Unlock } from 'lucide-react';
+import type { Storage, ThemeMode } from '../types';
 import type { Access } from '../native/photoLibrary';
-import { Language, Strings, languages, stringsFor } from '../translations';
+import { Language, Strings, bytes, fmt, languages, plural, stringsFor } from '../translations';
 import { Away, Group, IconTile, MenuRow, Next, Row, Screen } from '../ui/Screen';
 import { Confirm } from '../ui/Sheet';
 import { SwitchRow } from '../ui/Controls';
@@ -15,6 +15,8 @@ interface Props {
   owned: boolean;
   debug: boolean;
   dryRun: boolean;
+  storage: Storage | null;
+  freed: { count: number; bytes: number };
   onBack: () => void;
   onLanguage: (l: Language) => void;
   onTheme: (m: ThemeMode) => void;
@@ -51,6 +53,20 @@ export function SettingsView(p: Props) {
         {p.access === 'limited' && <Row label={t.addPhotos} leading={<IconTile icon={Images} hue="mint" />} trailing={<Next />} onClick={p.onAddPhotos} />}
         <Row label={t.manageAccess} leading={<IconTile icon={ShieldCheck} hue="stone" />} trailing={<Away />} onClick={p.onOpenSettings} />
         {(p.access === 'full' || p.access === 'limited') && <Row label={t.rescan} leading={<IconTile icon={RefreshCw} hue="lilac" />} onClick={p.onRescan} />}
+        {p.storage && (
+          <Row
+            label={t.storageRow}
+            sub={fmt(t.storageValue, { free: bytes(t, p.storage.free), total: bytes(t, p.storage.total) })}
+            leading={<IconTile icon={HardDrive} hue="stone" />}
+          />
+        )}
+        {p.freed.count > 0 && (
+          <Row
+            label={t.freedRow}
+            sub={fmt(t.cleanupRowSub, { photos: plural(t, 'photos', p.freed.count), size: bytes(t, p.freed.bytes) })}
+            leading={<IconTile icon={Sparkles} hue="mint" />}
+          />
+        )}
       </Group>
 
       <Group title={t.unlockSection}>

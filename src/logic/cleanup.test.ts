@@ -31,8 +31,9 @@ describe('similar groups', () => {
   });
 
   it('does not group the same scene shot an hour later, screenshots or unanalysed photos', () => {
+    // Close enough for a series, too far apart for a copy: an hour later it is another photo.
     const a = photo({ t: T, hash: base });
-    const later = photo({ t: T + 3600_000, hash: base });
+    const later = photo({ t: T + 3600_000, hash: nearHash(base, 6, r) });
     const shot = photo({ t: T + 1_000, hash: base, shot: true });
     const none = photo({ t: T + 2_000, hash: undefined });
     expect(findGroups(makeLibrary([a, later, shot, none]).photos)).toHaveLength(0);
@@ -133,7 +134,7 @@ describe('review', () => {
   const b = photo({ t: T + 1 });
   const c = photo({ t: T + 2, sharp: 5 });
   const byId = new Map([a, b, c].map(p => [p.id, p]));
-  const group = { key: 'g', ids: [a.id, b.id], best: a.id, suggested: a.id };
+  const group = { key: 'g', kind: 'similar' as const, ids: [a.id, b.id], best: a.id, suggested: a.id };
 
   it('suggests keeping the best and deleting the rest of a group', () => {
     expect(reviewGroup(group, new Set(), byId).map(i => i.suggest)).toEqual(['keep', 'delete']);

@@ -1,39 +1,62 @@
-import { Copy, Focus } from 'lucide-react';
+import { Copy, Focus, Layers, Smartphone } from 'lucide-react';
 import type { CleanupSummary } from '../types';
 import { Strings, bytes, fmt, plural } from '../translations';
 import { Dock, Group, IconTile, Next, Row, Screen } from '../ui/Screen';
 import { Button } from '../ui/Button';
 
-/** What the clean-up card counts, by kind, and the way into a review of all of it. */
-export function CleanupView({ t, summary, onBack, onSimilar, onBlurry, onReviewAll }: {
+/** What the clean-up card counts, by kind, and the ways on: a review of all of it, or the quick clean. */
+export function CleanupView({ t, summary, onBack, onDuplicates, onSimilar, onBlurry, onScreenshots, onReviewAll, onQuickClean }: {
   t: Strings;
   summary: CleanupSummary;
   onBack: () => void;
+  onDuplicates: () => void;
   onSimilar: () => void;
   onBlurry: () => void;
+  onScreenshots: () => void;
   onReviewAll: () => void;
+  onQuickClean: () => void;
 }) {
+  const sub = (count: number, size: number) => fmt(t.cleanupRowSub, { photos: plural(t, 'photos', count), size: bytes(t, size) });
   return (
     <Screen title={t.cleanupTitle} subtitle={bytes(t, summary.total.bytes)} onBack={onBack} backLabel={t.back} docked={summary.total.count > 0}>
       <p className="text-label text-fg-mute px-1 -mt-2 wrap-prose">{t.cleanupIntro}</p>
       <Group>
         <Row
+          label={t.cleanupDuplicates}
+          sub={sub(summary.duplicates.count, summary.duplicates.bytes)}
+          leading={<IconTile icon={Layers} hue="rose" />}
+          trailing={<Next value={summary.duplicates.groups} />}
+          onClick={onDuplicates}
+        />
+        <Row
           label={t.cleanupSimilar}
-          sub={fmt(t.cleanupRowSub, { photos: plural(t, 'photos', summary.similar.count), size: bytes(t, summary.similar.bytes) })}
+          sub={sub(summary.similar.count, summary.similar.bytes)}
           leading={<IconTile icon={Copy} hue="lilac" />}
           trailing={<Next value={summary.similar.groups} />}
           onClick={onSimilar}
         />
         <Row
           label={t.cleanupBlurry}
-          sub={fmt(t.cleanupRowSub, { photos: plural(t, 'photos', summary.blurry.count), size: bytes(t, summary.blurry.bytes) })}
+          sub={sub(summary.blurry.count, summary.blurry.bytes)}
           leading={<IconTile icon={Focus} hue="sand" />}
           trailing={<Next />}
           onClick={onBlurry}
         />
+        <Row
+          label={t.cleanupScreenshots}
+          sub={sub(summary.screenshots.count, summary.screenshots.bytes)}
+          leading={<IconTile icon={Smartphone} hue="sky" />}
+          trailing={<Next />}
+          onClick={onScreenshots}
+        />
       </Group>
       {summary.total.count > 0 && (
-        <Dock><Button full size="lg" onClick={onReviewAll}>{`${t.reviewAll} · ${plural(t, 'photos', summary.total.count)}`}</Button></Dock>
+        <Dock>
+          <div className="flex gap-2">
+            <Button size="lg" variant="secondary" onClick={onReviewAll}>{t.reviewAll}</Button>
+            <Button full size="lg" onClick={onQuickClean}>{t.quickClean}</Button>
+          </div>
+        </Dock>
       )}
     </Screen>
   );

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { App as CapacitorApp } from '@capacitor/app';
-import type { Album, Photo, ThemeMode } from './types';
+import type { Album, Photo, Storage, ThemeMode } from './types';
 import translations, { DEFAULT_LANGUAGE, isLanguage, Language } from './translations';
 import { Access, PhotoLibrary, ScanProgress, loadAllFacts } from './native/photoLibrary';
 import { PRODUCT_ID, Purchases } from './native/purchases';
@@ -100,10 +100,16 @@ export function useAppStore() {
   const addKept = (ids: string[]) => {
     if (ids.length) setState(s => ({ ...s, kept: [...new Set([...s.kept, ...ids])] }));
   };
-  /** Forget every decision but the purchase; returns the old state for undo. */
+  /** A month of "Month by month" gone through to the end. */
+  const markMonthDone = (key: string) => setState(s => (s.months.includes(key) ? s : { ...s, months: [...s.months, key] }));
+  /** Photos moved to Recently Deleted / the Trash: added to the "freed so far" count. */
+  const addFreed = (count: number, bytes: number) => {
+    if (count > 0) setState(s => ({ ...s, freed: { count: s.freed.count + count, bytes: s.freed.bytes + Math.max(0, bytes) } }));
+  };
+  /** Forget every decision but the purchase and the "freed so far" count; returns the old state for undo. */
   const resetDecisions = (): AppState => {
     const before = state;
-    setState(s => ({ ...emptyState(), owned: s.owned }));
+    setState(s => ({ ...emptyState(), owned: s.owned, freed: s.freed }));
     return before;
   };
   const restoreState = (s: AppState) => setState(s);
@@ -129,7 +135,16 @@ export function useAppStore() {
   const [photos, setPhotos] = useState<Photo[] | null>(null);
   const [scan, setScan] = useState<ScanView>({ running: false, phase: 'list', done: 0, total: 0, lastScanAt: 0 });
   const [faces, setFaces] = useState<Map<string, Partial<Photo>>>(() => new Map());
+  const [storage, setStorage] = useState<Storage | null>(null);
   const loading = useRef(false);
+
+  /** Free and total space on the phone; asked again after deleting and when the app comes back. */
+  const refreshStorage = useCallback(() => {
+    PhotoLibrary.getStorage()
+      .then(s => setStorage(s.total > 0 ? { free: s.free, total: s.total } : null))
+      .catch(() => setStorage(null));
+  }, []);
+  useEffect(() => { refreshStorage(); }, [refreshStorage]);
 
   const reload = useCallback(async () => {
     if (loading.current) return;
@@ -187,6 +202,7 @@ export function useAppStore() {
   useEffect(() => {
     const handle = CapacitorApp.addListener('appStateChange', async ({ isActive }) => {
       if (!isActive) return;
+      refreshStorage();
       const before = accessRef.current;
       const a = await refreshAccess();
       if (a !== 'full' && a !== 'limited') return;
@@ -196,7 +212,7 @@ export function useAppStore() {
       }
     });
     return () => { void handle.then(h => h.remove()).catch(() => {}); };
-  }, [refreshAccess, reload, startScan]);
+  }, [refreshAccess, reload, startScan, refreshStorage]);
 
   /** After the permission dialog or the limited picker. */
   const accessGranted = async (a: Access) => {
@@ -251,11 +267,12 @@ export function useAppStore() {
   return {
     language, setLanguage, themeMode, setThemeMode,
     debug, dryRun, setDryRun,
-    state, stateReady, storageError, updateTrips, recordAlbum, setBest, addKept, resetDecisions, restoreState,
+    state, stateReady, storageError, updateTrips, recordAlbum, setBest, addKept, markMonthDone, addFreed, resetDecisions, restoreState,
     owned: isOwned, setOwned,
     access, refreshAccess, accessGranted,
     photos, scan, startScan, reload, removePhotos,
     faces, scoreFaces,
+    storage, refreshStorage,
   };
 }
 
