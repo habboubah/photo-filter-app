@@ -1,6 +1,8 @@
 import Foundation
 import UIKit
 import Photos
+// presentLimitedLibraryPicker (addMorePhotos) is declared in PhotosUI, not Photos.
+import PhotosUI
 import Vision
 import CryptoKit
 import Capacitor

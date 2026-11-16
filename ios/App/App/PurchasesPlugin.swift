@@ -27,7 +27,10 @@ public class PurchasesPlugin: CAPPlugin, CAPBridgedPlugin {
                 guard case .verified(let transaction) = result else { continue }
                 await transaction.finish()
                 let owned = transaction.revocationDate == nil
-                await MainActor.run { self?.notifyListeners("ownedChanged", data: ["owned": owned]) }
+                // A constant, not the weak `self` var, goes into the main-actor closure
+                // (Swift 6: a captured var must not cross into concurrently-executing code).
+                guard let plugin = self else { return }
+                await MainActor.run { plugin.notifyListeners("ownedChanged", data: ["owned": owned]) }
             }
         }
     }
