@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <!-- The launcher name in this language; values/ holds the German one (the same: the name is a brand). -->
+    <string name="app_name">Fotonest</string>
+    <string name="title_activity_main">Fotonest</string>
+</resources>

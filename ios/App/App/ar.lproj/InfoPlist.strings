@@ -1,0 +1,3 @@
+/* The home-screen name and the permission text in this language; the store name is set in App Store Connect. */
+"CFBundleDisplayName" = "Fotonest";
+"NSPhotoLibraryUsageDescription" = "يتصفّح Fotonest صورك على هذا الـiPhone ليجد الرحلات والصور المتشابهة والضبابية. لا يغادر أي شيء جهازك.";

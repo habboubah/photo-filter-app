@@ -1,0 +1,57 @@
+{
+  "//": "Colours are lifted from src/index.css (the \"Tüte\" look, light theme) so the marketing set cannot drift from the app.",
+  "colors": {
+    "accent": "#C43D1F",
+    "peach": "#FBC2A3",
+    "bg": "#FFF1E6",
+    "surface": "#FFFFFF",
+    "fg": "#3B1E2B",
+    "fgMute": "#765762"
+  },
+  "//font": "The app's own typefaces, loaded from the app's bundled files (assets/fonts/fonts.css points at src/assets/fonts/): `display` sets the headline and the ribbon, `text` the subline and the points.",
+  "font": {
+    "display": "Baloo",
+    "text": "Nunito",
+    "css": "assets/fonts/fonts.css"
+  },
+  "//backgrounds": "Presets referenced by slide.background: one flat colour and what stands on it. fill = the canvas; ink = the headline; inkSoft = the subline; shade = the colour every shadow is mixed from (a darker tone of the fill, never grey); chip / chipInk / tick = a point's pill, its text and its tick; ribbon / ribbonInk = the corner ribbon. peach is the icon's own colour (--color-peach) with the app's ink on it, coral the app's button colour (--t-accent-fill) with white, plum the app's ink (--t-fg) as a canvas, for the screen shown at night. One preset for the whole set; plum only for the dark screen.",
+  "backgrounds": {
+    "peach": {
+      "fill": "#FBC2A3",
+      "ink": "#3B1E2B",
+      "inkSoft": "#5E3B47",
+      "shade": "#7A3A1E",
+      "chip": "#FFFFFF",
+      "chipInk": "#3B1E2B",
+      "tick": "#C43D1F",
+      "ribbon": "#C43D1F",
+      "ribbonInk": "#FFFFFF"
+    },
+    "coral": {
+      "fill": "#C43D1F",
+      "ink": "#FFFFFF",
+      "inkSoft": "#FFE3D1",
+      "shade": "#4A1005",
+      "chip": "#FFFFFF",
+      "chipInk": "#3B1E2B",
+      "tick": "#C43D1F",
+      "ribbon": "#FFF1E6",
+      "ribbonInk": "#3B1E2B"
+    },
+    "plum": {
+      "fill": "#3B1E2B",
+      "ink": "#FFEDE3",
+      "inkSoft": "#CBB0B7",
+      "shade": "#0B0407",
+      "chip": "#FFEDE3",
+      "chipInk": "#3B1E2B",
+      "tick": "#C43D1F",
+      "ribbon": "#FBC2A3",
+      "ribbonInk": "#3B1E2B"
+    }
+  },
+  "//device": "The frame is drawn in CSS, not composited from a PNG (assets/frames/README.md); its proportions are in templates/slide.css. bezel is its colour: the app's night page, a warm black rather than a grey one.",
+  "device": {
+    "bezel": "#1D1317"
+  }
+}

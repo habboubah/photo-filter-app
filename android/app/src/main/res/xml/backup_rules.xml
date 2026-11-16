@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 11: the scan cache is rebuilt from the photos and stays out of a backup; the decisions (files/state.json) may go in. -->
+<full-backup-content>
+    <exclude domain="database" path="fotonest-scan.db" />
+    <exclude domain="database" path="fotonest-scan.db-wal" />
+    <exclude domain="database" path="fotonest-scan.db-shm" />
+</full-backup-content>

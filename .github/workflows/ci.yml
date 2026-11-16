@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      # The privacy and performance checks drive the built app in Chromium.
+      - run: npx playwright install --with-deps chromium
+      # lint, the security check (no console.*, npm audit), tests, the build,
+      # the privacy check (no request leaves the app; every URL in the bundle
+      # is on the allowlist), the bundle budget and the contrast audit.
+      - run: npm run check
+
+  # The Android shell compiles — a debug APK, never signed or published here.
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - run: npm ci
+      - run: npx vite build
+      - run: npx cap sync android
+      - run: ./gradlew assembleDebug
+        working-directory: android

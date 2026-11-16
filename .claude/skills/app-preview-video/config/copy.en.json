@@ -1,0 +1,17 @@
+{
+  "locale": "en",
+  "dir": "ltr",
+  "captions": {
+    "intro": "Your shopping list, made simple",
+    "lists": "A list for every shop",
+    "add": "Added in seconds",
+    "shop": "Tick off as you shop"
+  },
+  "card": {
+    "name": "Shopping List – Nice & Easy",
+    "points": [
+      "No account",
+      "Data stays on your device"
+    ]
+  }
+}

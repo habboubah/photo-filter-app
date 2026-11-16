@@ -1,0 +1,406 @@
+/* One slide: a flat colour, a headline you can read in a search result, a phone
+   big enough to read, pieces of its screen lifted out of it, and stickers that
+   run across the seam into the next slide.
+
+   Units. Everything hangs on the canvas's height, so a slide is the same
+   composition on every target: --u is one hundredth of the App Store canvas's
+   width (9 : 19.5), written in vh. On that canvas 100u is the full width; on
+   Play's squatter 9 : 16 the same picture stands in the middle with more
+   margin at the sides, and the phone is cut at (nearly) the same place. The
+   phone's width (--dw) and anything given "in slide heights" are plain vh;
+   type is in --t (below). What is
+   inside the phone is in cqw (the phone is a size container), so a bigger or
+   a tilted phone is the same phone. Logical properties keep RTL working
+   without a mirrored sheet. */
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --u: 0.46vh;
+  /* Type has a unit of its own: the same as --u on the App Store canvas, and
+     never less than 0.9vw — on Play's wider canvas a headline uses some of
+     the extra width instead of shrinking with the height. */
+  --t: max(var(--u), 0.9vw);
+}
+
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+}
+
+body {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-text), system-ui, sans-serif;
+  background: var(--fill);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- copy ---------- */
+
+.copy {
+  position: relative;
+  z-index: 3;
+  flex: none;
+  padding: calc(13.5 * var(--u)) calc(6 * var(--u)) 0;
+  text-align: center;
+}
+[data-align="start"] .copy { text-align: start; padding-inline: calc(7 * var(--u)); }
+
+.headline {
+  font-family: var(--font-display), var(--font-text), system-ui, sans-serif;
+  font-size: calc(10.8 * var(--t) * var(--fit, 1));
+  line-height: 1.02;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  text-wrap: balance;
+}
+/* Arabic has no capitals to tighten and needs its line height. */
+:lang(ar) .headline { letter-spacing: 0; line-height: 1.25; }
+
+.subline {
+  margin-top: calc(2.6 * var(--t));
+  font-size: calc(4.3 * var(--t));
+  line-height: 1.25;
+  font-weight: 700;
+  color: var(--ink-soft);
+  text-wrap: balance;
+}
+
+/* ---------- points ----------
+   The short promises under the headline ("Ohne Konto", "Kein Abo"): one pill
+   each, with a tick. An empty list takes no room. */
+
+.points {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: calc(1.9 * var(--t));
+  margin-top: calc(4.4 * var(--t));
+}
+[data-align="start"] .points { justify-content: flex-start; }
+.points:empty { display: none; }
+
+.points li {
+  display: flex;
+  align-items: center;
+  gap: calc(1.5 * var(--t));
+  padding-block: calc(1.5 * var(--t));
+  padding-inline: calc(1.7 * var(--t)) calc(3.1 * var(--t));
+  border-radius: calc(99 * var(--t));
+  background: var(--chip);
+  box-shadow: 0 calc(0.9 * var(--t)) calc(2.2 * var(--t)) color-mix(in srgb, var(--shade) 30%, transparent);
+  font-size: calc(3.6 * var(--t));
+  line-height: 1.15;
+  font-weight: 800;
+  color: var(--chip-ink);
+  white-space: nowrap;
+}
+
+.points li::before {
+  content: "";
+  flex: none;
+  width: calc(4.4 * var(--t));
+  height: calc(4.4 * var(--t));
+  border-radius: 50%;
+  background: var(--tick) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='3.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5.5 12.5l4.2 4.2L18.5 7.8'/%3E%3C/svg%3E") center / 62% no-repeat;
+}
+
+/* ---------- stage ----------
+   The room the copy leaves. The phone is taller than it on purpose and runs
+   off the canvas: off the bottom when the copy is on top, off the top when the
+   copy is below. */
+
+.stage {
+  position: relative;
+  z-index: 2;
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  justify-content: center;
+}
+
+[data-layout="top"] .stage { align-items: flex-start; padding-top: calc(6.5 * var(--u)); }
+
+[data-layout="bottom"] { flex-direction: column-reverse; }
+[data-layout="bottom"] .stage { align-items: flex-end; padding-bottom: calc(7 * var(--u)); }
+[data-layout="bottom"] .copy { padding: 0 calc(6 * var(--u)) calc(13 * var(--u)); }
+
+/* ---------- device ---------- */
+
+.device {
+  flex: none;
+  width: calc(var(--dw, 39) * 1vh);
+  container-type: inline-size;
+  transform:
+    translate(calc(var(--nx, 0) * 100 * var(--u)), calc(var(--ny, 0) * 100vh))
+    rotate(calc(var(--tilt, 0) * 1deg));
+  transform-origin: 50% 45%;
+}
+/* RTL listings are swiped the other way, so a phone leans the other way. */
+[dir="rtl"] .device {
+  transform:
+    translate(calc(var(--nx, 0) * -100 * var(--u)), calc(var(--ny, 0) * 100vh))
+    rotate(calc(var(--tilt, 0) * -1deg));
+}
+
+/* The second phone stands behind the first, on the same baseline; --nx / --ny
+   and --tilt move it out from behind. */
+.device.second {
+  position: absolute;
+  z-index: -1;
+  left: 50%;
+  margin-left: calc(var(--dw, 39) * -0.5vh);
+}
+[data-layout="top"] .device.second    { top: calc(6.5 * var(--u)); }
+[data-layout="bottom"] .device.second { bottom: calc(7 * var(--u)); }
+/* …or in front of it (second.front), for a phone that overlaps the first. */
+.device.second[data-front] { z-index: 1; }
+
+/* The frame is drawn, not composited — see assets/frames/README.md. */
+.frame {
+  position: relative;
+  padding: 1.7cqw;
+  border-radius: 15.2cqw;
+  background: var(--bezel);
+  box-shadow:
+    0 3.2cqw 9cqw color-mix(in srgb, var(--shade) 46%, transparent),
+    0 0.8cqw 2.4cqw color-mix(in srgb, var(--shade) 30%, transparent);
+}
+
+.screen {
+  position: relative;
+  border-radius: 13.6cqw;
+  overflow: hidden;
+  background: var(--app-bg);
+}
+
+/* The captures start at the app's own header — there is no status-bar strip in
+   them — so the island gets its own band. Without it the island sits on top of
+   the screen title. The band is painted with the capture's own first pixel
+   row, stretched to the band's height (one source row = 100% of the band), so
+   whatever is at the top of the screen — the dimmed backdrop behind a sheet,
+   the plain page — carries on under the island as on a phone. */
+.statusbar {
+  position: relative;
+  height: 12.4cqw;
+  background-color: var(--app-bg);
+  background-image: var(--raw-url);
+  background-repeat: no-repeat;
+  background-position: center top;
+  background-size: 100% calc(var(--raw-rows) * 100%);
+}
+
+.shot {
+  /* Locked to the capture's own aspect ratio: a raw file swapped for a
+     differently shaped one gets letter-boxed, never stretched. */
+  aspect-ratio: var(--screen-aspect);
+  overflow: hidden;
+}
+
+.shot img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+}
+
+/* Dynamic Island / punch-hole. */
+.island {
+  position: absolute;
+  top: 3.2cqw;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bezel);
+}
+[data-device="iphone"] .island { width: 29cqw; height: 8.4cqw; border-radius: 8.4cqw; }
+[data-device="pixel"] .island  { width: 4.6cqw; height: 4.6cqw; border-radius: 50%; top: 3.6cqw; }
+[data-device="pixel"] .frame   { border-radius: 10.4cqw; }
+[data-device="pixel"] .screen  { border-radius: 8.8cqw; }
+[data-device="pixel"] .statusbar { height: 11.4cqw; }
+[data-device="pixel"] .lift    { top: calc(1.7cqw + 11.4cqw); }
+
+/* ---------- call-outs ----------
+   A layer exactly over the capture (.shot). Each call-out is a window onto
+   that same capture: it starts where its piece of the screen is, the same
+   size, and is scaled up about its own centre — so it reads as that piece
+   lifted off the glass, and may reach past the frame. The pixels are the
+   capture's, never redrawn (SKILL.md › Call-outs).
+
+   --x --y --w --h: the piece, in fractions of the capture.
+   --rad: its corner radius, in fractions of the capture's width (1 = a pill).
+   --dx --dy: a nudge, in fractions of the screen's width. */
+
+.lift {
+  --screen-w: 96.6cqw;
+  position: absolute;
+  left: 1.7cqw;
+  right: 1.7cqw;
+  top: calc(1.7cqw + 12.4cqw);
+  aspect-ratio: var(--screen-aspect);
+  pointer-events: none;
+}
+
+.callout {
+  position: absolute;
+  left: calc(var(--x) * 100%);
+  top: calc(var(--y) * 100%);
+  width: calc(var(--w) * 100%);
+  height: calc(var(--h) * 100%);
+  border-radius: calc(var(--rad) * var(--screen-w));
+  background-color: var(--app-bg);
+  background-image: var(--raw-url);
+  background-repeat: no-repeat;
+  /* The whole capture, at the size it has in the phone, shifted so that this
+     piece of it lands in this box. */
+  background-size: calc(100% / var(--w)) calc(100% / var(--h));
+  background-position:
+    calc(var(--x) / (1 - var(--w)) * 100%)
+    calc(var(--y) / (1 - var(--h)) * 100%);
+  transform:
+    translate(calc(var(--dx) * var(--screen-w)), calc(var(--dy) * var(--screen-w)))
+    rotate(calc(var(--rot) * 1deg))
+    scale(var(--s));
+  box-shadow:
+    0 2.4cqw 6cqw color-mix(in srgb, var(--shade) 42%, transparent),
+    0 0.5cqw 1.4cqw color-mix(in srgb, var(--shade) 26%, transparent);
+}
+[dir="rtl"] .callout {
+  transform:
+    translate(calc(var(--dx) * -1 * var(--screen-w)), calc(var(--dy) * var(--screen-w)))
+    rotate(calc(var(--rot) * -1deg))
+    scale(var(--s));
+}
+
+/* ---------- stickers ----------
+   Drawings from assets/stickers/. scripts/render.mjs hands each slide the
+   stickers anchored to it and to its two neighbours, already in this slide's
+   own coordinates (--x in slide widths, --y in slide heights, the centre of
+   the sticker; --size in u) — so one placed on a seam shows half on each
+   slide, and the listing reads as one strip when swiped. */
+
+.stickers {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.stickers.back  { z-index: 1; }
+.stickers.front { z-index: 4; }
+
+.sticker {
+  position: absolute;
+  left: calc(var(--x) * 100vw);
+  top: calc(var(--y) * 100vh);
+  width: calc(var(--size) * 100 * var(--u));
+  transform: translate(-50%, -50%) rotate(calc(var(--rot) * 1deg));
+  filter: drop-shadow(0 calc(1.1 * var(--u)) calc(1.5 * var(--u)) color-mix(in srgb, var(--shade) 34%, transparent));
+}
+
+/* ---------- ribbon ----------
+   A band across the leading top corner, like the sash on a box: "Kostenlos".
+   --rc is how far the band's centre sits in from the top and the leading edge
+   (it crosses each edge at twice that), --rt its thickness. The band overshoots
+   both edges and the box clips it, so it never widens the document. In RTL it
+   sits in the other corner and turns the other way. */
+
+.ribbon {
+  --rc: calc(12 * var(--u));
+  --rt: calc(7.6 * var(--u));
+  --rl: calc(var(--rc) * 4);
+  position: absolute;
+  z-index: 5;
+  top: 0;
+  inset-inline-start: 0;
+  width: var(--rl);
+  height: var(--rl);
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.ribbon span {
+  position: absolute;
+  top: calc(var(--rc) - var(--rt) / 2);
+  inset-inline-start: calc(var(--rc) - var(--rl) / 2);
+  width: var(--rl);
+  height: var(--rt);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: rotate(-45deg);
+  background: var(--ribbon-bg);
+  color: var(--ribbon-fg);
+  font-family: var(--font-display), var(--font-text), system-ui, sans-serif;
+  font-size: calc(4.2 * var(--u));
+  line-height: 1;
+  font-weight: 800;
+  white-space: nowrap;
+  box-shadow: 0 calc(0.5 * var(--u)) calc(1.6 * var(--u)) color-mix(in srgb, var(--shade) 40%, transparent);
+}
+[dir="rtl"] .ribbon span { transform: rotate(45deg); }
+
+/* With the ribbon in the corner the headline starts lower and keeps further
+   in from the sides, so no line of it reaches under the band. */
+[data-ribbon][data-layout="top"] .copy { padding-top: calc(22 * var(--u)); padding-inline: calc(12 * var(--u)); }
+
+/* ---------- feature graphic (1024x500, landscape) ----------
+   Copy at the start, the phone at the end, everything driven by the short
+   side: the portrait rules are made for a tall canvas, and on a 1024-wide one
+   they come out several times too big. */
+
+[data-layout="feature"] { flex-direction: row; align-items: stretch; }
+
+[data-layout="feature"] .copy {
+  flex: 1 1 0;
+  min-width: 0;
+  align-self: center;
+  padding: 0 2vh 0 11vh;
+  text-align: start;
+}
+[data-layout="feature"] .headline { font-size: calc(15.5vh * var(--fit, 1)); line-height: 1; }
+[data-layout="feature"] .subline  { font-size: 4.6vh; margin-top: 3vh; max-width: 110vh; }
+
+[data-layout="feature"] .stage {
+  flex: 0 0 37%;
+  align-items: flex-start;
+  padding: 0;
+}
+/* The phone leans in from the end and runs off the bottom edge. */
+[data-layout="feature"] .device {
+  width: calc(var(--dw, 52) * 1vh);
+  transform: translate(calc(var(--nx, 0) * 100vw), calc(var(--ny, 0.13) * 100vh)) rotate(calc(var(--tilt, 7) * 1deg));
+}
+[dir="rtl"][data-layout="feature"] .device {
+  transform: translate(calc(var(--nx, 0) * -100vw), calc(var(--ny, 0.13) * 100vh)) rotate(calc(var(--tilt, 7) * -1deg));
+}
+
+/* The points sit under the headline, at the start edge, sized like the rest. */
+[data-layout="feature"] .points { justify-content: flex-start; gap: 2vh; margin-top: 5vh; }
+[data-layout="feature"] .points li {
+  gap: 1.6vh;
+  padding-block: 1.7vh;
+  padding-inline: 2vh 3.6vh;
+  border-radius: 99vh;
+  font-size: 4.5vh;
+  box-shadow: 0 0.9vh 2.2vh color-mix(in srgb, var(--shade) 30%, transparent);
+}
+[data-layout="feature"] .points li::before { width: 5.4vh; height: 5.4vh; }
+
+/* Stickers (--size in canvas heights) and the ribbon. */
+[data-layout="feature"] .sticker {
+  width: calc(var(--size) * 100vh);
+  filter: drop-shadow(0 1.2vh 1.8vh color-mix(in srgb, var(--shade) 34%, transparent));
+}
+[data-layout="feature"] .ribbon { --rc: 17vh; --rt: 10.5vh; }
+[data-layout="feature"] .ribbon span {
+  font-size: 5.8vh;
+  box-shadow: 0 0.6vh 2vh color-mix(in srgb, var(--shade) 40%, transparent);
+}
+/* The copy is centred on the height, so a tall block (two rows of points)
+   climbs towards the corner: it starts further in instead. */
+[data-layout="feature"][data-ribbon] .copy { padding-inline-start: 19vh; }

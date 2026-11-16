@@ -1,0 +1,64 @@
+{
+  "locale": "de",
+  "dir": "ltr",
+  "appName": "Einkaufsliste – ganz einfach",
+  "ribbon": "Kostenlos",
+  "slides": {
+    "home": {
+      "headline": "Deine Einkaufsliste, ganz einfach",
+      "subline": "Zuhause schreiben, im Laden abhaken",
+      "points": [
+        {
+          "text": "Kein Abo",
+          "price": true
+        },
+        "Ohne Konto",
+        "Daten bleiben auf dem Gerät"
+      ]
+    },
+    "list": {
+      "headline": "Alles nach Regalen sortiert",
+      "subline": "So, wie du durch den Laden gehst"
+    },
+    "add": {
+      "headline": "Schnell hinzugefügt",
+      "subline": "„2 kg Kar…“ tippen, Vorschlag antippen, fertig"
+    },
+    "suggestions": {
+      "headline": "Hunderte Vorschläge mit Bild",
+      "subline": "Antippen genügt – so vergisst du nichts"
+    },
+    "shopping": {
+      "headline": "Im Laden einfach abhaken",
+      "subline": "Große Zeilen und dein Fortschritt im Blick"
+    },
+    "new-list": {
+      "headline": "Eine Liste für jeden Laden",
+      "subline": "Supermarkt, Drogerie, Baumarkt und mehr"
+    },
+    "item": {
+      "headline": "Menge, Notiz und Bild",
+      "subline": "Jeder Artikel so genau, wie du ihn brauchst"
+    },
+    "settings": {
+      "headline": "Deine Daten bleiben bei dir",
+      "subline": "Kein Konto, keine Cloud"
+    },
+    "dark": {
+      "headline": "Auch im Dunkelmodus",
+      "subline": "Hell, dunkel oder automatisch"
+    }
+  },
+  "featureGraphic": {
+    "headline": "Einkaufsliste – ganz einfach",
+    "subline": "Zuhause schreiben, im Laden abhaken. Ohne Konto, alles bleibt auf deinem Gerät.",
+    "points": [
+      {
+        "text": "Kein Abo",
+        "price": true
+      },
+      "Ohne Konto",
+      "Daten bleiben auf dem Gerät"
+    ]
+  }
+}

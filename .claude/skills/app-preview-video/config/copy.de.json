@@ -1,0 +1,17 @@
+{
+  "locale": "de",
+  "dir": "ltr",
+  "captions": {
+    "intro": "Deine Einkaufsliste, ganz einfach",
+    "lists": "Eine Liste für jeden Laden",
+    "add": "Schnell hinzugefügt",
+    "shop": "Im Laden einfach abhaken"
+  },
+  "card": {
+    "name": "Einkaufsliste – ganz einfach",
+    "points": [
+      "Ohne Konto",
+      "Daten bleiben auf dem Gerät"
+    ]
+  }
+}

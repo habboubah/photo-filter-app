@@ -1,0 +1,64 @@
+{
+  "locale": "en",
+  "dir": "ltr",
+  "appName": "Shopping List – Nice & Easy",
+  "ribbon": "Free",
+  "slides": {
+    "home": {
+      "headline": "Your shopping list, made simple",
+      "subline": "Write it at home, tick it off in the shop",
+      "points": [
+        {
+          "text": "No subscription",
+          "price": true
+        },
+        "No account",
+        "Data stays on your device"
+      ]
+    },
+    "list": {
+      "headline": "Sorted by aisle",
+      "subline": "The way you walk through the shop"
+    },
+    "add": {
+      "headline": "Added in seconds",
+      "subline": "Type “2 kg car…”, tap a suggestion, done"
+    },
+    "suggestions": {
+      "headline": "Hundreds of suggestions with pictures",
+      "subline": "One tap each – nothing gets forgotten"
+    },
+    "shopping": {
+      "headline": "Tick off as you shop",
+      "subline": "Big rows and your progress at a glance"
+    },
+    "new-list": {
+      "headline": "A list for every shop",
+      "subline": "Supermarket, drugstore, DIY and more"
+    },
+    "item": {
+      "headline": "Amount, note and picture",
+      "subline": "Every item as exact as you need it"
+    },
+    "settings": {
+      "headline": "Your data stays with you",
+      "subline": "No account, no cloud"
+    },
+    "dark": {
+      "headline": "Dark mode included",
+      "subline": "Light, dark or automatic"
+    }
+  },
+  "featureGraphic": {
+    "headline": "Shopping List – Nice & Easy",
+    "subline": "Write it at home, tick it off in the shop. No account, everything stays on your device.",
+    "points": [
+      {
+        "text": "No subscription",
+        "price": true
+      },
+      "No account",
+      "Data stays on your device"
+    ]
+  }
+}
