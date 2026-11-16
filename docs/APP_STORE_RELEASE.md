@@ -81,8 +81,10 @@ are git-ignored – they never get committed.
 
 ## 3. Open the project once in Xcode
 
-The first time, Xcode downloads the Swift packages and registers the bundle id
-`com.habboubah.fotonest` for your team.
+The first time, Xcode downloads the Swift packages. It registers the bundle id
+`com.habboubah.fotonest` for your team **only when you build for a real iPhone**
+(point 3 below) — a build for the Simulator registers nothing, and then App
+Store Connect has no bundle id to offer in step 4.
 
 ```bash
 npm run build:ios
@@ -92,8 +94,9 @@ In Xcode:
 1. Left sidebar: **App** (blue icon) → target **App** → tab **Signing & Capabilities**.
 2. ✅ *Automatically manage signing*, Team: **Ahmad Habboubah (HZVBBHBAJN)**
    (already set). There must be no red error.
-3. Optional but recommended: plug in your iPhone, pick it as the destination at
-   the top, press **▶** – Fotonest runs on your phone.
+3. **Plug in your iPhone, pick it as the destination at the top, press ▶** –
+   Fotonest runs on your phone and the bundle id is registered. (Without an
+   iPhone at hand: register it by hand, see *Bundle ID missing* below step 4.)
 4. Quit Xcode.
 
 ## 4. Create the app in App Store Connect
@@ -105,9 +108,24 @@ https://appstoreconnect.apple.com → **Apps** → **+** → **New App** [Neue A
 | Platforms | ✅ iOS |
 | Name | `Fotonest – Fotos aufräumen` (the English name: `store/listing.md`). Taken? See Troubleshooting. |
 | Primary language | German [Deutsch] |
-| Bundle ID | `com.habboubah.fotonest` (pick it from the menu; missing → redo step 3) |
+| Bundle ID | `com.habboubah.fotonest` (pick it from the menu; missing → see below) |
 | SKU | `fotonest-001` |
 | User access | Full access |
+
+<details>
+<summary>Bundle ID missing from the menu</summary>
+
+The menu lists only the App IDs registered in the developer account, and
+Xcode registers one only for a build on a real iPhone. Register it by hand:
+
+1. https://developer.apple.com/account/resources/identifiers/list (top right:
+   the team **Ahmad Habboubah**, the same as in App Store Connect).
+2. **+** next to *Identifiers* → **App IDs** → Continue → **App** → Continue.
+3. Description `Fotonest`, Bundle ID **Explicit** `com.habboubah.fotonest`.
+   Capabilities: none to tick (In-App Purchase is always on). Continue → **Register**.
+4. Close the *New App* dialog in App Store Connect, reload the page, open it
+   again: the bundle id is in the menu (sometimes after a few minutes).
+</details>
 
 → **Create**.
 
