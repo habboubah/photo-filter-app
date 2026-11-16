@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<!-- Fotonest's privacy manifest. No tracking, no data collected (App Privacy:
+     "Data Not Collected"). The one "required reason" API is the file timestamp
+     category: the thumbnail cache (PhotoLibraryPlugin.swift, pruneThumbs) reads the
+     modification date and size of its own files in the app's Caches folder to
+     drop the oldest when it passes its cap — reason C617.1 (files inside the
+     app container). Capacitor's own use is in Capacitor.framework's manifest. -->
+<dict>
+	<key>NSPrivacyTracking</key>
+	<false/>
+	<key>NSPrivacyTrackingDomains</key>
+	<array/>
+	<key>NSPrivacyCollectedDataTypes</key>
+	<array/>
+	<key>NSPrivacyAccessedAPITypes</key>
+	<array>
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryFileTimestamp</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>C617.1</string>
+			</array>
+		</dict>
+	</array>
+</dict>
+</plist>
