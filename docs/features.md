@@ -1,106 +1,106 @@
-# What Einkaufsliste – ganz einfach does
+# Fotonest – features
 
-Every feature, as the user sees it. Keep it true: a feature added, changed or
-removed changes this file (and the What's New text in `store/listing.md`).
+Every feature, as the user sees it (German labels, English in brackets).
 
-Einkaufsliste – ganz einfach (*Shopping List – Nice & Easy*, *قائمة مشتريات التسوق البسيطة*;
-code name Shoppinglist) is a simple, private shopping list for iPhone, Android and the browser.
-Write the list at home, tick it off in the shop. **No sign-up, no
-server** — everything stays on the device.
+## First start and photo access
+- **Permission screen**: what the app does in three lines, *Fotos freigeben*
+  [Allow access to photos] → the system's dialog. "Selected photos" works too.
+- **Selected photos only** (iPhone *Limit Access*, Android 14+ *Select photos*):
+  a card on home says so, with *Fotos auswählen* [Select photos] → the
+  system's picker; the app rescans afterwards.
+- **No access** (denied, or restricted by Screen Time): the screen explains it
+  and offers *Einstellungen öffnen* [Open Settings].
+
+## The scan
+- Looks at every photo once: when and where it was taken, how sharp, how
+  bright, and a fingerprint to spot near-identical shots. Progress on home
+  (*12.340 von 48.210 Fotos angesehen*); the first time takes a few minutes and
+  keeps the screen on.
+- **Resumable and incremental**: an interrupted scan continues; later scans
+  only look at new and changed photos (a quiet *wird aktualisiert …*), and drop
+  deleted ones. It runs at every start, when coming back to the app after a
+  while, and when photos change while the app is open.
+- *Neu durchsuchen* [Scan again] on home and in Settings.
+- iCloud-only originals are never downloaded.
 
 ## Home
+- *Deine Fotos* [Your photos] with the number of photos and trips.
+- **The clean-up card**: the space that could be freed (one big number), how
+  many near-identical and blurry photos, *Aufräumen* [Clean up].
+- Two tiles: *Fast gleiche* [Near-identical] (groups) and *Unscharfe* [Blurry] (photos).
+- **Trips**: the newest four as cards (a mosaic of their photos, the name,
+  photos and size, *Album erstellt* once made); *Alle Reisen* [All trips].
 
-- **The app's icon, name and version first**, small, over the title *Deine Listen*
-  and two counts across every list: what is still to buy ("Noch offen:
-  14") and what is already in the basket ("Im Korb: 3").
-- **A list per shop or purpose** — Supermarkt, Drogerie, Kleidung … each a
-  flat pastel tile in its own colour, with its own picture (emoji or your
-  own photo) on a white disc, what is left and a track that fills as things
-  go in the basket. The first list is a wide tile, the others sit in pairs.
-  The "⋯" on a tile (or a long press) shares the list, edits it, removes all
-  its items or deletes it — both removals can be undone.
-- *Neue Liste* is a round button at the bottom, in thumb reach; the settings
-  are a small round button in the top corner (rarely needed). Lists stay in
-  the order they were created.
+## Trips
+- Found by themselves: photos taken more than 50 km from home over at least
+  six hours; photos without a location taken in between join. Home is where
+  most photo-days were — and it follows a move, not a holiday.
+- Named **"City, Month Year"** from an offline city list (*Paris, Mai 2026*,
+  *Wien, Dezember 2025 – Januar 2026*), in German or English.
+- **A trip** shows all its photos (a grid that copes with thousands) and its size.
+- *⋯ › Umbenennen* [Rename] (the automatic name stays visible under it),
+  *In zwei Reisen teilen* [Split] at a day, *Mit einer anderen Reise
+  zusammenführen* [Join], *Ausblenden* [Hide] (with undo; hidden trips sit at
+  the end of *Alle Reisen*), and undoing a split or a join.
+- **Album erstellen** [Create album] (iPhone): a real album in Apple Photos with
+  the trip's name; the photos stay where they are. **Ordner erstellen** [Create
+  folder] (Android): the photos move into `Pictures/Fotonest/<trip>/` after
+  Android asks; nothing is copied. Needs the unlock.
+- *Durchgehen* [Go through]: a review of the whole trip (see Review).
 
-## A list
+## Near-identical photos
+- Photos taken within three minutes that look almost the same form a group.
+  The list shows each group's photos with the suggested best one starred and
+  how many could go.
+- **A group**: the best one large, the series under it. A tap on another photo
+  keeps that one instead (the app remembers). *Die anderen löschen* [Delete the
+  others] (with their size) goes straight to the system's dialog;
+  *Durchgehen* reviews them one by one.
+- **The best shot**: the sharpest, well exposed one; on the iPhone also the
+  best face and open eyes. A favourite always wins.
 
-- **13 list types with about 410 common items** (over 500 suggestions across the types) in German, English and Arabic,
-  each with a picture and the aisle it's shelved in (supermarket, fruit & veg,
-  meat & fish, bakery, drinks, drugstore, household, clothing, pharmacy, baby
-  & kids, DIY, electronics, other).
-- **The add field sits at the top**, under the title, and right under it **a
-  few suggestions** (six chips that wrap onto lines — nothing to swipe; what
-  *you* buy most first; one tap adds) and *Alle Vorschläge*. *Einkauf
-  starten* is pinned at the bottom, in thumb reach, with the bag beside it.
-- **Fast adding** — live search in every language (Arabic spelling variants and
-  regional words like بندورة included), and quick entry like `2 kg Äpfel`,
-  `٢ كيلو تفاح` or `Milch 3x`. Adding something already on the list raises its
-  quantity instead of duplicating it; "Banane" and "Bananen" count as the
-  same thing.
-- **"Alle Vorschläge"** — the whole catalogue of a list's type as a picture
-  grid, shelf by shelf, for "what did I forget?".
-- **Items** have a name, picture/photo, quantity + unit (Stk, kg, g, l, ml,
-  Pck) and a note. Each aisle is one card, each item a row of it with a pencil
-  (edit) and a bin (delete, undoable) at its end; press and hold edits and a
-  swipe deletes too. Ticking fills the item's circle green, and its picture
-  hops into the bag at the bottom.
-- The bag shows how many things are in it; a tap on it jumps to "Im Korb".
-- Sorted by aisle or newest first.
-- **"Im Korb"** at the end: everything ticked, as little round tiles with
-  their picture and name. A tap puts one back on the
-  list; press and hold edits (or deletes) it.
+## Blurry photos
+- Every photo's sharpness, as three levels: *Sehr wahrscheinlich*,
+  *Wahrscheinlich*, *Vielleicht unscharf* [Very likely / Probably / Maybe
+  blurry]. Photos with little to see (fog, a dark room) are judged more gently.
+- *Sicher* [Sure] shows the first two levels, *Alle* [All] all three, as a grid
+  with a coloured dot each. *Durchgehen* reviews them.
 
-## Shopping mode
+## Clean-up
+- *Aufräumen* lists what the card counts (near-identical, blurry) with sizes,
+  and *Alle durchgehen* [Go through all].
+- Favourites are never suggested, nor a photo you kept in a review before.
 
-- **The bag and "6 von 14"** on a card in the list's colour, with a track
-  that fills as things go in; the screen stays on; *Fertig* ends it.
-- **Als Nächstes**: the next item as a big card — picture, name, quantity —
-  with *In den Korb* in thumb reach and *Später* to put it off (it comes
-  back once everything else has had its turn).
-- Big rows under it, tap to tick off; ticked items drop into "Im Korb". A
-  small celebration when everything is in the basket.
+## Review
+- One photo at a time, large, with the suggestion (*Vorschlag: löschen —
+  fast gleich wie ein anderes Foto*). Swipe left to delete, right to keep — or
+  the two buttons, or the arrow keys. Undo at the top; *Beenden* [Finish] any time.
+- At the end: *Zum Löschen markiert: 4 Fotos (13 MB)* with thumbnails and
+  **4 Fotos löschen** [Delete 4 photos] → the system's dialog → Recently
+  Deleted (iPhone) / the Trash (Android). Nothing is deleted before that.
+  Needs the unlock.
+- Photos you kept against the suggestion are remembered and not suggested again.
 
-## Sharing
-
-The share button on a list (or "Liste teilen" in its menu) sends it as a link
-through WhatsApp, Messages, Mail …, with the list written out underneath. The
-link opens a small page that shows the list to anyone; "In der App öffnen" saves
-it as a copy in their app. No server: the list rides inside the link, after
-the `#`. It is a copy, not a synced list.
-
-The other way in needs nothing but the app: the receiver copies the message,
-taps "Neue Liste" › **"Geteilte Liste einfügen"** and pastes it (a button reads
-the clipboard; long-press › Einfügen works too). The app finds the list in the
-text wherever the messenger put the link, shows it, and "Liste speichern" keeps
-it. The message itself ends with a line saying how, for when the link does not
-open.
+## The unlock
+- Scanning, trips, groups, the blurry list and reviews are free. Making an
+  album/folder and deleting need **one one-time purchase** (4,99 €, no
+  subscription). The paywall appears when needed, and from Settings.
+- *Käufe wiederherstellen* [Restore purchases] on the paywall and in Settings.
+- Family Sharing (iPhone); the purchase follows the Google account (Android).
 
 ## Settings
-
-- **Darstellung**: language (Deutsch / English / العربية, right to left),
-  light / dark / automatic. The app's colour is emerald (no longer a choice).
-- **Listen**: full control over list types — add your own types, add / edit /
-  delete suggestions (name, picture, aisle), every type and suggestion with
-  its own delete button (undoable), forget things from your history.
-- **Datensicherung**: export everything as a JSON file (the share sheet on a
-  phone → Files / iCloud Drive / Google Drive / AirDrop) and import it again.
-  There is no cloud: back up now and then.
-- **Über die App**: rate the app (in the apps, once it is in the store), send
-  feedback by mail (with the app's and the system's version, nothing else),
-  the privacy policy.
-- **Zurücksetzen**: *App zurücksetzen* erases everything. (*Standard
-  wiederherstellen*, bringing back the built-in types and suggestions, is on
-  the *Listentypen* screen only.)
+- **Fotos**: the access (all / selected / none), *Fotos auswählen*, *Zugriff
+  in den Einstellungen ändern*, *Neu durchsuchen*.
+- **Vollversion**: unlock or *Freigeschaltet*, restore.
+- **Darstellung**: language (Deutsch, English), appearance (system, light, dark).
+- **Nur in der Debug-Version**: *Probelauf* [Dry run] — on by default in debug
+  builds: nothing in the photo library changes, the app says what it would have done.
+- **Über die App**: rate (once the App Store id is set), feedback by mail,
+  privacy policy, licences (GeoNames, fonts, icons).
+- *Meine Entscheidungen zurücksetzen* [Reset my decisions] (with undo): trip
+  edits, best-shot picks, kept photos.
 
 ## Everywhere
-
-- Its own look ("Tüte"): the colours of its icon — a peach page, white
-  cards, coral buttons — flat and soft, with round Baloo titles, by day and
-  at night. The bag from the icon is the basket: it sits at the bottom of a
-  list with the number of things in it, and what you tick hops into it.
-- Light and dark, Dynamic Type / large text, VoiceOver labels on every
-  control, reduced motion respected.
-- Works offline; the web build installs to the home screen.
-- The iPhone app, the Android app and the web app each keep their own data;
-  a backup file moves lists between them.
+- Dark mode, Larger Text (iPhone Dynamic Type; Android's font scale), VoiceOver
+  / TalkBack labels on every photo and button, reduced motion.
+- Android words it Android's way (folders, the Trash, Google Play).

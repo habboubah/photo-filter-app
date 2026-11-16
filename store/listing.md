@@ -1,33 +1,44 @@
-# Store listing — Einkaufsliste – ganz einfach
+# Store listing — Fotonest – Fotos aufräumen
 
-Everything to copy into **App Store Connect** and the **Google Play Console**, in
-German (primary), English and Arabic. Every text below fits the store's limit
-(counted on 14 November 2026). The descriptions match the app after the
-"Knete" redesign, which added the basket, the "next item" card in shopping mode
-and the two counts on home.
+Everything to copy into **App Store Connect** and the **Google Play Console**,
+in German (primary) and English. Every text below fits the store's limit
+(counted with `node scripts/listing-lengths.mjs` on 16 November 2026 — run it
+again after editing). Arabic: the app has no Arabic texts yet, so the listing
+has none either.
 
-The code name is **shoppinglist** (it was "Korb" until 14 November 2026). The
-old name stays only in the bundle ID / package `com.habboubah.korb`. The
-privacy and share pages live under `…/privacy-policy/shopping-list/` (renamed
-from `korb/` on 14 November 2026).
+The two stores get slightly different texts, because the app does slightly
+different things: on the iPhone a trip becomes an **album** and deleted photos
+go to **Zuletzt gelöscht**; on Android a trip becomes a **folder** (the photos
+are moved after Android asks) and deleted photos go to the **Papierkorb**.
+Open eyes count for the best photo on the iPhone only.
 
 ---
 
 ## 1. Shared facts (both stores)
 
-| Field | Deutsch | English | العربية |
-|---|---|---|---|
-| App name (30) | `Einkaufsliste – ganz einfach` | `Shopping List – Nice & Easy` | `قائمة مشتريات التسوق البسيطة` |
-| Home-screen / launcher name | Einkaufsliste | Shopping List | قائمة التسوق |
-| Category | Shopping (secondary on iOS: Productivity) | same | same |
-| Price | Free. No in-app purchases | same | same |
-| Privacy policy URL | https://habboubah.github.io/privacy-policy/shopping-list/de/ | https://habboubah.github.io/privacy-policy/shopping-list/ | https://habboubah.github.io/privacy-policy/shopping-list/ |
-| Support URL | https://habboubah.github.io/privacy-policy/shopping-list/de/ | https://habboubah.github.io/privacy-policy/shopping-list/ | https://habboubah.github.io/privacy-policy/shopping-list/ |
-| Contact email | ahmad.habboubah@gmail.com | same | same |
-| Copyright | `2026 Ahmad Habboubah` | same | same |
+| Field | Deutsch | English |
+|---|---|---|
+| App name (30) | `Fotonest – Fotos aufräumen` | `Fotonest – Photo Cleanup` |
+| Home-screen / launcher name | Fotonest | Fotonest |
+| Bundle ID / package | `com.habboubah.fotonest` | same |
+| Category | iOS: **Photo & Video** (secondary: Utilities) · Play: **Photography** | same |
+| Price | Free download, **one in-app purchase** (see below) | same |
+| In-app purchase | `com.habboubah.fotonest.unlock` — non-consumable / one-time product, **4,99 €** | same |
+| Privacy policy URL | https://habboubah.github.io/privacy-policy/fotonest/de/ | https://habboubah.github.io/privacy-policy/fotonest/ |
+| Support URL | https://habboubah.github.io/privacy-policy/fotonest/de/ | https://habboubah.github.io/privacy-policy/fotonest/ |
+| Contact email | ahmad.habboubah@gmail.com | same |
+| Copyright | `2026 Ahmad Habboubah` | same |
+| Minimum OS | iOS 16 · Android 11 | same |
 
-The home-screen name comes from the app itself (iOS `InfoPlist.strings`,
-Android `strings.xml`). You don't type it into either console.
+**What is free, what is paid.** Free: the scan, trips (rename, merge, split,
+hide), the near-identical groups, the blurry list, the clean-up card and the
+swipe review. The unlock is needed only to **create an album/folder** and to
+**delete**. One purchase, no subscription, restorable (paywall and settings).
+
+**Rules for every text and image:** no price and no "kostenlos/free" in the
+name, subtitle, keywords or screenshots (App Store guideline 2.3.7, Play's
+metadata policy — the store shows the price itself); no other app names; no
+claims the app can't keep ("deletes duplicates automatically", "no internet").
 
 ---
 
@@ -35,148 +46,101 @@ Android `strings.xml`). You don't type it into either console.
 
 ### 2.1 Name, subtitle, keywords
 
-| Field | Limit | Deutsch (primary) | English (U.K.) | العربية |
-|---|---|---|---|---|
-| Name | 30 | `Einkaufsliste – ganz einfach` | `Shopping List – Nice & Easy` | `قائمة مشتريات التسوق البسيطة` |
-| Subtitle | 30 | `Einkaufszettel zum Abhaken` | `Grocery list to tick off` | `قائمة مشتريات بلا تسجيل` |
+| Field | Limit | Deutsch (primary) | English (U.K. and U.S.) |
+|---|---|---|---|
+| Name | 30 | `Fotonest – Fotos aufräumen` | `Fotonest – Photo Cleanup` |
+| Subtitle | 30 | `Reisealben & Doppelte finden` | `Trip albums & duplicate finder` |
 
 **Keywords** (100 bytes, comma-separated, no spaces after commas):
 
-- **DE:** `einkaufen,liste,teilen,familie,offline,privat,haushalt,supermarkt,drogerie,lebensmittel,anmeldung`
-- **EN:** `groceries,grocery,checklist,share,family,offline,private,supermarket,pantry,basket,food,todo,no account`
-- **AR:** `بقالة,سوبرماركت,مقاضي,مشاركة,عائلة,طعام,تسوق`
+- **DE:** `unscharf,ähnlich,speicher,urlaub,reise,album,galerie,kinder,familie,aussortieren,bilder,privat`
+- **EN:** `blurry,similar,storage,space,vacation,holiday,travel,gallery,kids,family,organizer,pictures,private`
 
-Rules followed: no word repeated from the name or subtitle (Apple already
-combines those), no "kostenlos" / "free" / "best", no other app names
-(guideline 2.3.7). The Arabic field is short because Arabic letters take
-2 bytes each.
+Rules followed: no word repeated from the name or subtitle (Apple combines
+them already), no "kostenlos" / "free" / "best", no other app names.
 
 ### 2.2 Promotional text (170, can be changed any time without review)
 
 **DE:**
 ```
-Zuhause schreiben, im Laden abhaken. Für jeden Laden eine Liste mit Bildern, über 400 Artikel zum Antippen – ohne Konto, alles bleibt auf deinem Gerät.
+Hunderte Urlaubsfotos, zehnmal dasselbe Motiv, einige verwackelt? Fotonest sortiert deine Reisen in Alben und zeigt, was weg kann – alles auf deinem iPhone.
 ```
 
 **EN:**
 ```
-Write it at home, tick it off in the shop. A list for every shop with pictures and 400+ items to tap – no account, everything stays on your device.
-```
-
-**AR:**
-```
-اكتبها في البيت واشطبها في المتجر. قائمة لكل متجر مع صور وأكثر من 400 غرض بنقرة واحدة – بلا حساب، وكل شيء يبقى على جهازك.
+Hundreds of holiday photos, ten of the same shot, some of them blurry? Fotonest sorts your trips into albums and shows what can go – all on your iPhone.
 ```
 
 ### 2.3 Description (4000)
 
 **DE:**
 ```
-Einkaufsliste – ganz einfach: zuhause schreiben, im Laden abhaken. Kostenlos, ohne Abo und ohne Anmeldung – alles bleibt auf deinem Gerät.
+Kinderfotos, Urlaubsfotos, Serienbilder: Nach ein paar Jahren sind es zehntausende. Fotonest bringt Ordnung hinein – auf deinem iPhone, ohne Konto und ohne Cloud.
 
-FÜR JEDEN LADEN EINE LISTE
-Supermarkt, Drogerie, Kleidung, Baumarkt … Jede Einkaufsliste bekommt ihre eigene Farbe und ein Bild – ein Emoji oder dein eigenes Foto. Auf dem Startbildschirm siehst du sofort, was noch zu kaufen ist und was schon im Korb liegt.
+DEINE REISEN, VON SELBST GEFUNDEN
+Fotonest erkennt an Ort und Zeit deiner Fotos, wann du unterwegs warst, und gibt jeder Reise einen Namen wie „Paris, Mai 2026“. Mit einem Tipp wird daraus ein Album in deiner Fotos-App. Namen ändern, zwei Reisen zusammenlegen, eine teilen oder ausblenden – du hast das letzte Wort.
 
-SCHNELL HINZUFÜGEN
-Über 400 typische Artikel mit Bild, passend zur Liste: im Supermarkt Milch, Brot und Bananen, in der Drogerie Zahnpasta und Windeln. Was du oft kaufst, steht ganz vorne. Tippe einfach „2 kg Äpfel“ oder „Milch 3x“ – die App erkennt die Menge. Doppelte Einträge gibt es nicht: Steht etwas schon auf dem Einkaufszettel, wird die Menge erhöht.
+FAST GLEICHE FOTOS
+Zwanzig Mal dasselbe Lächeln? Fotonest fasst fast gleiche Aufnahmen zu Gruppen zusammen und schlägt das beste Foto vor: das schärfste, gut belichtet, mit offenen Augen. Du behältst es und löschst den Rest – oder wählst selbst.
 
-NACH REGALEN SORTIERT
-Obst und Gemüse, Milchprodukte, Vorrat: Die Liste ordnet sich so, wie du durch den Laden gehst.
+UNSCHARFE FOTOS
+Verwackelt oder unscharf: Fotonest zeigt solche Fotos in einer Liste, die eindeutigen zuerst.
 
-IM LADEN ABHAKEN
-Der Einkaufsmodus zeigt dir den nächsten Artikel als große Karte – „In den Korb“ oder „Später“. Der Korb füllt sich, während du einkaufst, und der Bildschirm bleibt an. Abgehakte Artikel landen im Korb; ein Tipp legt sie zurück auf die Liste.
+AUFRÄUMEN IN RUHE
+Auf einen Blick siehst du, wie viel Speicher fast gleiche und unscharfe Fotos belegen. Beim Durchgehen wischst du nach rechts zum Behalten und nach links zum Aussortieren – jeder Schritt lässt sich zurücknehmen.
 
-LISTEN TEILEN
-Schick eine Einkaufsliste als Link über WhatsApp, Nachrichten oder Mail. Wer sie bekommt, fügt sie einfach in der App ein und speichert sie als eigene Liste – ganz ohne Server.
-
-DEINE VORSCHLÄGE
-Eigene Listentypen anlegen, Vorschläge hinzufügen, umbenennen oder löschen. Und jederzeit zurück zum Standard.
-
-DEIN STIL
-Hell, dunkel oder automatisch, große Schrift und VoiceOver.
+SICHER
+• Fotonest löscht nie von selbst. Du bestätigst jedes Löschen, und das iPhone fragt noch einmal nach.
+• Gelöschte Fotos landen in „Zuletzt gelöscht“ und lassen sich dort 30 Tage lang wiederherstellen.
+• Deine Fotos werden nie verändert oder kopiert.
 
 PRIVAT
-Kein Konto, keine Cloud, kein Tracking, kein Internet nötig. Deine Listen bleiben auf deinem Gerät. Mit Backup-Export als Datei.
+• Alles passiert auf deinem iPhone: kein Konto, kein Server, keine Werbung, keine Analyse.
+• Fotonest sendet weder Fotos noch Daten irgendwohin. Die Ortsnamen stammen aus einer Liste, die in der App steckt.
+• Du kannst Fotonest auch nur ausgewählte Fotos zeigen.
 
-Auf Deutsch, Englisch und Arabisch.
+EINMAL FREISCHALTEN, KEIN ABO
+Durchsuchen und Ansehen gehört dir sofort: Reisen, Gruppen und unscharfe Fotos siehst du ohne Kauf. Zum Aufräumen – Alben anlegen und Fotos löschen – schaltest du Fotonest einmal frei. Kein Abo. Der Kauf gilt auf allen deinen Geräten mit demselben Apple-Account und lässt sich wiederherstellen.
+
+Gemacht von einem Vater mit viel zu vielen Kinderfotos. Auf Deutsch und Englisch.
 ```
 
 **EN:**
 ```
-Shopping List – Nice & Easy: write it at home, tick it off in the shop. Free, with no subscription and no sign-up – everything stays on your device.
+Photos of the kids, holidays, burst shots: after a few years there are tens of thousands. Fotonest brings order to them – on your iPhone, without an account and without a cloud.
 
-ONE LIST PER SHOP
-Supermarket, drugstore, clothes, DIY … Every shopping list gets its own colour and picture – an emoji or your own photo. The start screen shows at a glance what is still to buy and what is already in the basket.
+YOUR TRIPS, FOUND FOR YOU
+From where and when your photos were taken, Fotonest works out when you were away and names each trip, like "Paris, May 2026". One tap turns it into an album in your Photos app. Rename a trip, merge two, split one or hide it – you have the last word.
 
-FAST TO FILL
-Over 400 common items with pictures, matched to the list: milk, bread and bananas for the supermarket, toothpaste and nappies for the drugstore. What you buy most comes first. Just type "2 kg apples" or "milk 3x" – the app reads the quantity. No duplicates: if something is already on the list, its quantity goes up.
+NEAR-IDENTICAL PHOTOS
+The same smile twenty times? Fotonest groups near-identical shots and suggests the best one: the sharpest, well exposed, eyes open. Keep it and delete the rest – or pick your own.
 
-SORTED BY AISLE
-Fruit and veg, dairy, pantry: your grocery list arranges itself the way you walk through the shop.
+BLURRY PHOTOS
+Shaky or out of focus: Fotonest lists such photos, the clear cases first.
 
-TICK IT OFF IN THE SHOP
-Shopping mode shows the next item as a big card – "Into the basket" or "Later". The basket fills up as you shop, and the screen stays on. Ticked items drop into the basket; one tap puts them back on the list.
+CLEAN UP AT YOUR OWN PACE
+See at a glance how much space near-identical and blurry photos take up. Going through them, swipe right to keep and left to sort out – and undo any step.
 
-SHARE A LIST
-Send a list as a link through WhatsApp, Messages or mail. Whoever gets it pastes it into the app and saves it as their own list – with no server involved.
-
-YOUR SUGGESTIONS
-Create your own list types, add, rename or delete suggestions – and restore the defaults any time.
-
-YOUR STYLE
-Light, dark or automatic, large text and VoiceOver.
+SAFE
+• Fotonest never deletes anything by itself. You confirm every deletion, and your iPhone asks once more.
+• Deleted photos go to Recently Deleted, where you can recover them for 30 days.
+• Your photos are never changed or copied.
 
 PRIVATE
-No account, no cloud, no tracking, no internet needed. Your lists stay on your device, with backup export to a file.
+• Everything happens on your iPhone: no account, no server, no ads, no analytics.
+• Fotonest sends no photos and no data anywhere. Place names come from a list built into the app.
+• You can also let Fotonest see only the photos you choose.
 
-In German, English and Arabic.
-```
+UNLOCK ONCE, NO SUBSCRIPTION
+Browsing is yours straight away: you see trips, groups and blurry photos without buying anything. To clean up – create albums and delete photos – unlock Fotonest once. No subscription. The purchase works on all your devices with the same Apple Account and can be restored.
 
-**AR:**
-```
-قائمة مشتريات التسوق البسيطة: اكتبها في البيت واشطبها في المتجر. مجانية، بلا اشتراك ولا تسجيل – وكل شيء يبقى على جهازك.
-
-قائمة لكل متجر
-سوبرماركت، صيدلية ومستلزمات، ملابس، أدوات بناء… لكل قائمة مشتريات لونها وصورتها – رمز تعبيري أو صورة من عندك. وترى في الشاشة الرئيسية فوراً ما بقي للشراء وما صار في السلة.
-
-إضافة سريعة
-أكثر من 400 غرض شائع مع صورة، مناسبة لكل قائمة: حليب وخبز وموز للسوبرماركت، معجون أسنان وحفاضات للصيدلية. ما تشتريه كثيراً يظهر أولاً. اكتب «2 كيلو تفاح» أو «حليب 3x» وسيفهم التطبيق الكمية. لا تكرار: إن كان الغرض موجوداً تزداد كميته.
-
-مرتّبة حسب الأقسام
-خضار وفواكه، ألبان، مؤن: تترتب القائمة كما تمشي في المتجر.
-
-اشطبها في المتجر
-وضع التسوق يعرض الغرض التالي كبطاقة كبيرة – «إلى السلة» أو «لاحقاً». تمتلئ السلة وأنت تتسوق، وتبقى الشاشة مضاءة. الأغراض المشطوبة تنزل في السلة، ونقرة واحدة تعيدها إلى القائمة.
-
-مشاركة القوائم
-أرسل قائمة كرابط عبر واتساب أو الرسائل أو البريد. من يستلمها يلصقها في التطبيق ويحفظها قائمةً خاصة به – بلا أي خادم.
-
-اقتراحاتك
-أنشئ أنواع قوائم خاصة بك، وأضف الاقتراحات أو عدّلها أو احذفها، وعُد إلى الأصل متى شئت.
-
-مظهرك
-فاتح أو داكن أو تلقائي، وخط كبير وVoiceOver.
-
-خصوصية
-لا حساب، لا سحابة، لا تتبّع، ولا حاجة إلى الإنترنت. قوائمك تبقى على جهازك، مع تصدير نسخة احتياطية كملف.
-
-بالعربية والألمانية والإنجليزية، من اليمين إلى اليسار.
+Made by a father with far too many photos of his kids. In German and English.
 ```
 
 ### 2.4 What's New (4000)
 
-The first App Store version shows no What's New. Use these for the first
-update (1–3 short lines per release):
-
-- **DE:** `Neuer Look in den Farben des App-Symbols: Was du abhakst, hüpft in die Tüte. Dazu ein Korb für alles Abgehakte und im Einkaufsmodus immer der nächste Artikel groß im Blick.`
-- **EN:** `A new look in the colours of the app icon: what you tick hops into the bag. Plus a basket for everything you've ticked off, and shopping mode always shows the next item big and clear.`
-- **AR:** `مظهر جديد بألوان أيقونة التطبيق: ما تشطبه يقفز إلى الكيس. ومعه سلة لكل ما شطبته، ووضع التسوق يعرض الغرض التالي بوضوح.`
-
-If TestFlight testers knew the app as "Korb":
-
-- **DE:** `Neuer Name: Einkaufsliste – ganz einfach. Deine Listen bleiben, wie sie sind.`
-- **EN:** `A new name: Shopping List – Nice & Easy. Your lists stay exactly as they are.`
-- **AR:** `اسم جديد: قائمة مشتريات التسوق البسيطة. قوائمك تبقى كما هي.`
+Not shown for the first version. From version 2 on, `npm run release` reads
+`release-notes/<version>/<language>.txt` (or `release-notes/default/`).
 
 ### 2.5 App Review information
 
@@ -186,58 +150,67 @@ If TestFlight testers knew the app as "Korb":
 | Contact first / last name | Ahmad Habboubah |
 | Contact email | ahmad.habboubah@gmail.com |
 | Contact phone | *your phone number, with +49* |
-| Attachment | Not needed (add a screen recording only if review asks: `npm run record:app-review`, see `ios/AppReviewRecorder/README.md`) |
+| Attachment | Best **with** the screen recording (`npm run record:app-review`, see `ios/AppReviewRecorder/README.md`): it shows the purchase and the deletion on a device with photos |
 
 **Notes for the reviewer** (English, paste as is):
 ```
-Shopping List – Nice & Easy (German: "Einkaufsliste – ganz einfach") is a fully offline shopping list. There is no account, no server and no analytics; the app makes no network requests.
+Fotonest (German: "Fotonest – Fotos aufräumen") organizes the photo library on the device. There is no account, no server and no analytics; the app sends no data anywhere.
 
-How to try it:
-1. Open a list on the home screen (or tap "New list").
-2. Tap a suggestion or type e.g. "2 kg apples" in the field at the top.
-3. Tap "Start shopping" to open shopping mode and tick items off; ticked items move into the basket.
+Photo library access is the core of the app: it reads the dates, locations and small previews of the photos to find trips, near-identical photos and blurry photos. Limited Access works too (the app then shows only the selected photos and offers "Select photos"). Location data in the photos is used on the device only; place names come from a list built into the app.
 
-Camera / photo library: used only when the user chooses a photo for a list or an item. The photo is stored on the device only.
+How to try it (the device needs some photos; trips need photos with locations at least 50 km from where most photos were taken):
+1. Allow access. The scan runs on the home screen.
+2. Open a trip. "Create album" opens the paywall.
+3. Near-identical photos: open a group; the suggested best photo is marked. "Delete others" asks for confirmation, then iOS asks again.
+4. Blurry photos and the review (swipe right = keep, left = delete, undo button).
 
-Sharing: "Share list" puts the list into a message with a link and hands it to the system share sheet. The app itself sends nothing. The receiver copies the message and taps "New list" > "Paste shared list" to save it; the link also opens a static page (habboubah.github.io). Reading the clipboard happens only when the user taps "Paste from clipboard".
+In-app purchase: one non-consumable, com.habboubah.fotonest.unlock. Scanning and browsing are free; creating albums and deleting photos need the unlock. "Restore purchases" is on the paywall and in Settings.
 
-The app is in German, English and Arabic and follows the device language.
+Safety: the app never deletes on its own. Deleted photos go to Recently Deleted (PHAssetChangeRequest.deleteAssets with the system confirmation). Albums contain the photos, nothing is copied or changed.
+
+The attached video shows all of this on a device with sample photos.
+
+The app is in German and English and follows the device language.
 ```
 
 ### 2.6 App Privacy (the "nutrition label")
 
-- **Data collection:** choose **"No, we do not collect data from this app."**
-  Result: **Data Not Collected**.
+- **Data collection:** **"No, we do not collect data from this app."** →
+  **Data Not Collected.** The photos, their locations and every decision stay
+  on the iPhone; the purchase is handled by Apple (StoreKit), which doesn't
+  count as collection by the developer.
 - **Privacy policy URL:** see section 1.
 
 ### 2.7 Age rating
 
-Answer **None / No** to every question in the questionnaire (no violence, no
-mature content, no gambling, no user-generated content shown to others, no
-unrestricted web access, no in-app chat). Result: **4+**.
+Answer **None / No** to every question (no violence, no mature content, no
+gambling, no user-generated content shared with others, no unrestricted web
+access, no chat, no advertising). Not "Made for Kids". Result: **4+**.
 
 ### 2.8 Other App Store Connect fields
 
 | Field | Answer |
 |---|---|
-| Content rights ("contains third-party content?") | No |
-| Export compliance / encryption | Uses no encryption beyond Apple's own → "None of the algorithms mentioned above". Best: set `ITSAppUsesNonExemptEncryption` = `NO` in `Info.plist` so the question doesn't come up for each build |
+| Content rights ("contains third-party content?") | **Yes** — the place names come from GeoNames (CC BY 4.0, credited in *Einstellungen › Lizenzen*). Answer "Yes, and I have the rights" |
+| Export compliance / encryption | `ITSAppUsesNonExemptEncryption` = `NO` is already in `Info.plist` |
 | Advertising identifier (IDFA) | No |
-| Availability | All countries (or at least DE, AT, CH, GB, US and the Arabic-speaking countries) |
-| Pricing | Free (tier 0) |
+| Availability | All countries (the texts are German and English) |
+| Pricing | Free (the app); the in-app purchase at 4,99 € (step 8g of `docs/APP_STORE_RELEASE.md`) — pick Germany as base country and let Apple set the other prices |
 | Marketing URL | Optional — leave empty |
-| Version | 1.0 (or whatever `npm run release` sets) |
+| Devices | **iPhone only** (`TARGETED_DEVICE_FAMILY = 1`) — no iPad screenshots needed |
 
 ### 2.9 App Store graphics
 
 | Asset | Size | Note |
 |---|---|---|
-| App icon | 1024 × 1024 PNG, no transparency, no rounded corners | Comes from the Xcode asset catalogue |
-| iPhone screenshots | **6.9"**: 1320 × 2868 (or 1290 × 2796), 3–10 per language | One 6.9" set is enough; Apple scales it for smaller iPhones |
-| iPad screenshots | 13": 2064 × 2752 | **Only if iPad is enabled** in Xcode (Capacitor projects are universal by default). If you don't want to make iPad screenshots, set the target to iPhone only |
-| App preview video | 886 × 1920, 15–30 s, H.264 with a stereo audio track; up to 3 per language | Optional. `npm run app-preview` on the Mac → `screenshots/store/app-preview/app-preview-<de\|en>.mp4` (about 28 s; Arabic falls back to English). After the upload, set the poster frame to the time the run prints |
+| App icon | 1024 × 1024 PNG, no transparency | From the Xcode asset catalogue (`assets/icon.svg` → `npm run assets:generate`) |
+| iPhone screenshots | **6.9"**: 1320 × 2868 (or 1290 × 2796), 3–10 per language | `npm run screenshots && npm run store-screenshots` → `screenshots/store/` |
+| In-app purchase screenshot | any iPhone screenshot of the paywall | Only for review: `screenshots/<lang>/09-paywall.png` |
+| App preview video | 886 × 1920, 15–30 s | Optional. `npm run app-preview` on the Mac |
 
-Arabic can reuse the English screenshots if you don't make an Arabic set.
+**Before taking the store screenshots:** replace the drawn demo photos with
+real, licensed photos (`docs/TODO.md`, step 5). Drawn photos are fine for
+development, not for selling a photo app.
 
 ---
 
@@ -245,109 +218,75 @@ Arabic can reuse the English screenshots if you don't make an Arabic set.
 
 ### 3.1 Main store listing
 
-| Field | Limit | Deutsch (default) | English (United Kingdom) | العربية |
-|---|---|---|---|---|
-| App name | 30 | `Einkaufsliste – ganz einfach` | `Shopping List – Nice & Easy` | `قائمة مشتريات التسوق البسيطة` |
-| Short description | 80 | `Einkaufszettel zum Abhaken & Teilen – ohne Anmeldung, funktioniert offline.` | `Grocery list to tick off & share – no sign-up, works offline.` | `قائمة مشتريات تشطبها وتشاركها – بلا تسجيل، وتعمل دون إنترنت.` |
-
-Play has no keyword field: it searches the name, the short and the full
-description. The texts say *Einkaufsliste* / *Einkaufszettel* a few times in
-natural sentences; more would count as keyword stuffing. No "kostenlos",
-"free", "best" or "#1" in the name or short description.
+| Field | Limit | Deutsch | English |
+|---|---|---|---|
+| App name | 30 | `Fotonest – Fotos aufräumen` | `Fotonest – Photo Cleanup` |
+| Short description | 80 | `Reisen in Ordnern, fast gleiche und unscharfe Fotos aussortieren – privat.` | `Trips in folders, near-identical and blurry photos sorted out – privately.` |
 
 ### 3.2 Full description (4000)
 
 **DE:**
 ```
-Einkaufsliste – ganz einfach: zuhause schreiben, im Laden abhaken. Kostenlos, ohne Abo und ohne Anmeldung. Alles bleibt auf deinem Gerät.
+Kinderfotos, Urlaubsfotos, Serienbilder: Nach ein paar Jahren sind es zehntausende. Fotonest bringt Ordnung hinein – auf deinem Handy, ohne Konto und ohne Cloud.
 
-FÜR JEDEN LADEN EINE LISTE
-Supermarkt, Drogerie, Kleidung, Baumarkt … Jede Einkaufsliste bekommt ihre eigene Farbe und ein Bild – ein Emoji oder dein eigenes Foto. Auf dem Startbildschirm siehst du sofort, was noch zu kaufen ist und was schon im Korb liegt.
+DEINE REISEN, VON SELBST GEFUNDEN
+Fotonest erkennt an Ort und Zeit deiner Fotos, wann du unterwegs warst, und gibt jeder Reise einen Namen wie „Paris, Mai 2026“. Mit einem Tipp kommen ihre Fotos in einen eigenen Ordner (Bilder/Fotonest) – Android fragt vorher nach. Namen ändern, zwei Reisen zusammenlegen, eine teilen oder ausblenden – du hast das letzte Wort.
 
-SCHNELL HINZUFÜGEN
-Über 400 typische Artikel mit Bild, passend zur Liste: im Supermarkt Milch, Brot und Bananen, in der Drogerie Zahnpasta und Windeln. Was du oft kaufst, steht ganz vorne. Tippe einfach „2 kg Äpfel“ oder „Milch 3x“ – die App erkennt die Menge. Doppelte Einträge gibt es nicht: Steht etwas schon auf dem Einkaufszettel, wird die Menge erhöht.
+FAST GLEICHE FOTOS
+Zwanzig Mal dasselbe Lächeln? Fotonest fasst fast gleiche Aufnahmen zu Gruppen zusammen und schlägt das beste Foto vor: das schärfste und am besten belichtete. Du behältst es und löschst den Rest – oder wählst selbst.
 
-NACH REGALEN SORTIERT
-Obst und Gemüse, Milchprodukte, Vorrat: Die Liste ordnet sich so, wie du durch den Laden gehst.
+UNSCHARFE FOTOS
+Verwackelt oder unscharf: Fotonest zeigt solche Fotos in einer Liste, die eindeutigen zuerst.
 
-IM LADEN ABHAKEN
-Der Einkaufsmodus zeigt dir den nächsten Artikel als große Karte – „In den Korb“ oder „Später“. Der Korb füllt sich, während du einkaufst, und der Bildschirm bleibt an. Abgehakte Artikel landen im Korb; ein Tipp legt sie zurück auf die Liste.
+AUFRÄUMEN IN RUHE
+Auf einen Blick siehst du, wie viel Speicher fast gleiche und unscharfe Fotos belegen. Beim Durchgehen wischst du nach rechts zum Behalten und nach links zum Aussortieren – jeder Schritt lässt sich zurücknehmen.
 
-LISTEN TEILEN
-Schick eine Einkaufsliste als Link über WhatsApp, Nachrichten oder Mail. Wer sie bekommt, fügt sie einfach in der App ein und speichert sie als eigene Liste – ganz ohne Server.
-
-DEINE VORSCHLÄGE
-Eigene Listentypen anlegen, Vorschläge hinzufügen, umbenennen oder löschen. Und jederzeit zurück zum Standard.
-
-DEIN STIL
-Hell, dunkel oder automatisch, große Schrift.
+SICHER
+• Fotonest löscht und verschiebt nie von selbst. Du bestätigst jeden Schritt, und Android fragt noch einmal nach.
+• Gelöschte Fotos landen im Papierkorb und lassen sich dort 30 Tage lang wiederherstellen.
+• Deine Fotos werden nie verändert oder kopiert – beim Ordner anlegen nur verschoben.
 
 PRIVAT
-Kein Konto, keine Cloud, kein Tracking, keine Google-Dienste, kein Internet nötig. Deine Listen bleiben auf deinem Gerät. Mit Backup-Export als Datei.
+• Alles passiert auf deinem Handy: kein Konto, kein Server, keine Werbung, keine Analyse.
+• Fotonest sendet weder Fotos noch Daten irgendwohin. Die Ortsnamen stammen aus einer Liste, die in der App steckt.
+• Auf Android 14 und neuer kannst du Fotonest auch nur ausgewählte Fotos zeigen.
 
-Auf Deutsch, Englisch und Arabisch (von rechts nach links).
+EINMAL FREISCHALTEN, KEIN ABO
+Durchsuchen und Ansehen gehört dir sofort: Reisen, Gruppen und unscharfe Fotos siehst du ohne Kauf. Zum Aufräumen – Ordner anlegen und Fotos löschen – schaltest du Fotonest einmal frei. Kein Abo. Der Kauf läuft über Google Play, gilt auf allen deinen Geräten mit demselben Google-Konto und lässt sich wiederherstellen.
+
+Gemacht von einem Vater mit viel zu vielen Kinderfotos. Auf Deutsch und Englisch.
 ```
 
 **EN:**
 ```
-Shopping List – Nice & Easy: write it at home, tick it off in the shop. Free, with no subscription and no sign-up. Everything stays on your device.
+Photos of the kids, holidays, burst shots: after a few years there are tens of thousands. Fotonest brings order to them – on your phone, without an account and without a cloud.
 
-ONE LIST PER SHOP
-Supermarket, drugstore, clothes, DIY … Every shopping list gets its own colour and picture – an emoji or your own photo. The start screen shows at a glance what is still to buy and what is already in the basket.
+YOUR TRIPS, FOUND FOR YOU
+From where and when your photos were taken, Fotonest works out when you were away and names each trip, like "Paris, May 2026". One tap moves its photos into a folder of their own (Pictures/Fotonest) – Android asks first. Rename a trip, merge two, split one or hide it – you have the last word.
 
-FAST TO FILL
-Over 400 common items with pictures, matched to the list: milk, bread and bananas for the supermarket, toothpaste and nappies for the drugstore. What you buy most comes first. Just type "2 kg apples" or "milk 3x" – the app reads the quantity. No duplicates: if something is already on the list, its quantity goes up.
+NEAR-IDENTICAL PHOTOS
+The same smile twenty times? Fotonest groups near-identical shots and suggests the best one: the sharpest and best exposed. Keep it and delete the rest – or pick your own.
 
-SORTED BY AISLE
-Fruit and veg, dairy, pantry: your grocery list arranges itself the way you walk through the shop.
+BLURRY PHOTOS
+Shaky or out of focus: Fotonest lists such photos, the clear cases first.
 
-TICK IT OFF IN THE SHOP
-Shopping mode shows the next item as a big card – "Into the basket" or "Later". The basket fills up as you shop, and the screen stays on. Ticked items drop into the basket; one tap puts them back on the list.
+CLEAN UP AT YOUR OWN PACE
+See at a glance how much space near-identical and blurry photos take up. Going through them, swipe right to keep and left to sort out – and undo any step.
 
-SHARE A LIST
-Send a list as a link through WhatsApp, Messages or mail. Whoever gets it pastes it into the app and saves it as their own list – with no server involved.
-
-YOUR SUGGESTIONS
-Create your own list types, add, rename or delete suggestions – and restore the defaults any time.
-
-YOUR STYLE
-Light, dark or automatic, large text.
+SAFE
+• Fotonest never deletes or moves anything by itself. You confirm every step, and Android asks once more.
+• Deleted photos go to the trash, where you can recover them for 30 days.
+• Your photos are never changed or copied – creating a folder only moves them.
 
 PRIVATE
-No account, no cloud, no tracking, no Google services, no internet needed. Your lists stay on your device, with backup export to a file.
+• Everything happens on your phone: no account, no server, no ads, no analytics.
+• Fotonest sends no photos and no data anywhere. Place names come from a list built into the app.
+• On Android 14 and newer you can also let Fotonest see only the photos you choose.
 
-In German, English and Arabic (right to left).
-```
+UNLOCK ONCE, NO SUBSCRIPTION
+Browsing is yours straight away: you see trips, groups and blurry photos without buying anything. To clean up – create folders and delete photos – unlock Fotonest once. No subscription. The purchase goes through Google Play, works on all your devices with the same Google Account and can be restored.
 
-**AR:**
-```
-قائمة مشتريات التسوق البسيطة: اكتبها في البيت واشطبها في المتجر. مجانية، بلا اشتراك ولا تسجيل. كل شيء يبقى على جهازك.
-
-قائمة لكل متجر
-سوبرماركت، صيدلية ومستلزمات، ملابس، أدوات بناء… لكل قائمة مشتريات لونها وصورتها – رمز تعبيري أو صورة من عندك. وترى في الشاشة الرئيسية فوراً ما بقي للشراء وما صار في السلة.
-
-إضافة سريعة
-أكثر من 400 غرض شائع مع صورة، مناسبة لكل قائمة. ما تشتريه كثيراً يظهر أولاً. اكتب «2 كيلو تفاح» أو «حليب 3x» وسيفهم التطبيق الكمية. لا تكرار: إن كان الغرض موجوداً تزداد كميته.
-
-مرتّبة حسب الأقسام
-خضار وفواكه، ألبان، مؤن: تترتب قائمة التسوق كما تمشي في المتجر.
-
-اشطبها في المتجر
-وضع التسوق يعرض الغرض التالي كبطاقة كبيرة – «إلى السلة» أو «لاحقاً». تمتلئ السلة وأنت تتسوق، وتبقى الشاشة مضاءة. الأغراض المشطوبة تنزل في السلة، ونقرة واحدة تعيدها إلى القائمة.
-
-مشاركة القوائم
-أرسل قائمة كرابط عبر واتساب أو الرسائل أو البريد. من يستلمها يلصقها في التطبيق ويحفظها قائمةً خاصة به – بلا أي خادم.
-
-اقتراحاتك
-أنشئ أنواع قوائم خاصة بك، وأضف الاقتراحات أو عدّلها أو احذفها، وعُد إلى الأصل متى شئت.
-
-مظهرك
-فاتح أو داكن أو تلقائي، وخط كبير.
-
-خصوصية
-لا حساب، لا سحابة، لا تتبّع، لا خدمات Google، ولا حاجة إلى الإنترنت. قوائمك تبقى على جهازك، مع تصدير نسخة احتياطية كملف.
-
-بالعربية والألمانية والإنجليزية (من اليمين إلى اليسار).
+Made by a father with far too many photos of his kids. In German and English.
 ```
 
 ### 3.3 Store settings
@@ -355,82 +294,88 @@ In German, English and Arabic (right to left).
 | Field | Answer |
 |---|---|
 | App or game | App |
-| Category | **Shopping** |
-| Tags | Shopping list, Grocery (pick up to 5 from Google's list) |
+| Category | **Photography** |
+| Tags | Photo organizer, Gallery, Storage cleaner (up to 5 from Google's list) |
 | Contact email | ahmad.habboubah@gmail.com |
-| Website / phone | Optional — website: https://habboubah.github.io/privacy-policy/shopping-list/ |
-| Free or paid | **Free** (can never be changed to paid later) |
+| Website | https://habboubah.github.io/privacy-policy/fotonest/ |
+| Free or paid | **Free** (with an in-app product; "paid" can't be undone later) |
+| In-app product | *Monetize › Products › One-time products*: `com.habboubah.fotonest.unlock`, 4,99 €, name "Fotonest freischalten" / "Unlock Fotonest" |
 | Countries | All, or the same as the App Store |
 
 ### 3.4 Data safety form
 
-- **Does your app collect or share any of the required user data types?** → **No**
-- Nothing leaves the device: no server, no analytics, no Google
-  services. Photos added to a list or item stay on the phone. A shared list is
-  sent by the user, through the app they choose, inside a link. The app itself
-  sends nothing.
-- **Encrypted in transit?** → Not applicable (no data sent)
-- **Way to request data deletion?** → Not applicable (no account).
-  *Einstellungen › App zurücksetzen* erases everything on the device.
+- **Does your app collect or share any of the required user data types?** →
+  **No.** Fotonest reads the photos and their locations on the phone and
+  keeps everything there; nothing it reads is sent anywhere. The app only
+  asks Google Play whether the unlock is owned, and keeps that yes/no on the
+  phone.
+- **Encrypted in transit?** → Not applicable.
+- **Way to request data deletion?** → Not applicable (no account; uninstalling
+  removes everything the app stored, *Einstellungen › Daten zurücksetzen*
+  removes the decisions).
+
+**Caveat — read before answering.** Google's own guide to the form
+(developer.android.com › *Declare data use*) names "uses Google Play's Billing
+Library" as one example of how an app *may* touch financial data, without
+saying a declaration is required. The Billing Library also logs its own API
+usage to Google (`docs/ANDROID_RELEASE.md`, "The INTERNET permission"). The
+answer above follows from what Fotonest does (purchase data never leaves the
+phone through our code; the purchase itself happens in Google Play). If you
+prefer the cautious route, declare instead: **Financial info › Purchase
+history — collected, not shared, required, for App functionality, encrypted
+in transit**. Either way, keep the privacy page in step with your choice.
 
 ### 3.5 App content (Policy › App content)
 
 | Question | Answer |
 |---|---|
-| Privacy policy | https://habboubah.github.io/privacy-policy/shopping-list/ |
-| Ads | Answer for the version you submit: **No** while the app shows none, **Yes** from the release that adds them (Play then labels the listing "Contains ads") |
-| App access | **All functionality is available without special access** (no sign-in) |
-| Content rating | Questionnaire, category *"All other app types"* (utility). Answer **No** to violence, sexuality, language, drugs, gambling, user interaction / sharing with other users, location sharing, digital purchases → rated **Everyone / PEGI 3 / USK 0** |
-| Target audience | **18 and over** (13+ also fits). Not for children; "Could appeal to children?" → No |
-| News app | No |
-| Health apps | No |
-| Financial features | None |
-| Government app | No |
+| Privacy policy | https://habboubah.github.io/privacy-policy/fotonest/ |
+| Ads | **No** |
+| App access | **All functionality is available without special access** (no sign-in; the unlock is a normal purchase — add a note that licence testers can buy without paying) |
+| Content rating | Questionnaire, category *"All other app types"*. **No** to violence, sexuality, language, drugs, gambling, user interaction, location sharing (locations are read but never shared). **Digital purchases: Yes** → Everyone / PEGI 3 / USK 0, "In-app purchases" label |
+| Target audience | **18 and over** (parents). "Could appeal to children?" → No |
+| News app / Health / Financial features / Government | No / No / None / No |
 | Data safety | See 3.4 |
+| **Photo and video permissions** | See below |
+
+**Photo and video permissions declaration** (Play asks because the app holds
+`READ_MEDIA_IMAGES`; core use: "photo organizer / gallery"). Paste:
+
+```
+Fotonest organizes the photo library on the device: it scans all photos to find trips, near-identical and blurry photos, and moves trips into folders or unwanted photos to the trash. The photo picker can't do this.
+```
+
+Play may ask for a short video of the core flow: see `docs/TODO.md`, step 5.
+Also explained in the app's permission screen; with Android 14's *Select
+photos* the app works with the chosen photos only.
 
 ### 3.6 Release notes (500 per language)
 
-First release:
-
-- **de-DE:** `Die erste Version von „Einkaufsliste – ganz einfach“ für Android: eine Liste für jeden Laden, über 400 Artikel mit Bild, Einkaufsmodus mit Korb – ohne Konto.`
-- **en-GB:** `The first version of Shopping List – Nice & Easy for Android: a list for every shop, over 400 items with pictures, shopping mode with a basket – no account.`
-- **ar:** `أول إصدار من قائمة مشتريات التسوق البسيطة لأندرويد: قائمة لكل متجر، أكثر من 400 غرض مع صور، ووضع التسوق مع السلة – بلا حساب.`
-
-`npm run release` reads these from `release-notes/<version>/<language>.txt`
-(or `release-notes/default/`).
+`npm run release:android` reads `release-notes/<version>/<language>.txt`
+(first release: `release-notes/1.0.0/`, worded for both stores — `npm run release:first` takes the app from 0.1.0 to 1.0.0).
 
 ### 3.7 Google Play graphics
 
 | Asset | Size | Source |
 |---|---|---|
-| App icon | 512 × 512 PNG (32-bit, alpha allowed) | `public/icon-512.png` |
-| Feature graphic | 1024 × 500 JPG or PNG, no transparency | `screenshots/store/play-feature/<de|en>/feature-graphic.jpg` |
-| Phone screenshots | 2–8, 9:16, e.g. 1080 × 1920 (4+ at 1080 px or more to be eligible for featuring) | `screenshots/store/play-phone/<de|en>/` |
-| Tablet screenshots | Optional | — |
+| App icon | 512 × 512 PNG | `store/play-icon-512.png` |
+| Feature graphic | 1024 × 500 JPG or PNG, no transparency | `screenshots/store/play-feature/<de\|en>/feature-graphic.jpg` |
+| Phone screenshots | 2–8, 9:16, e.g. 1080 × 1920 | `screenshots/store/play-phone/<de\|en>/` — the Android words (Ordner, Papierkorb) come from the `--android` run of the screenshot script |
 
 ---
 
 ## 4. Before you submit
 
-- [ ] **Regenerate all screenshots in the Tüte look**:
-      `npm run screenshots && npm run store-screenshots` on the Mac (the
-      colours in `.claude/skills/store-screenshot-studio/config/theme.json`
-      are already the new ones).
-- [ ] **Publish the privacy pages and the share page** again in the
-      `privacy-policy` repo, so they show the new names and the
-      *On Android* section. Until the share page is live, a shared link opens a 404
-      (pasting the message into the app still works).
-- [x] **Names reserved in App Store Connect** (15 November 2026) for German,
-      English (U.S.) and Arabic, with the subtitles. The first names
-      (*Die einfache Einkaufsliste*, *The Simple Shopping List*) were taken.
-      Still to do: + English (U.K.) in App Store Connect, and the same names
-      in the Play Console when you create the app.
-- [ ] **Decide iPhone-only or iPad too** (section 2.9).
-- [ ] Set `ITSAppUsesNonExemptEncryption` = `NO` in `Info.plist`.
+- [ ] **Names checked** in App Store Connect and the Play Console (`docs/TODO.md` step 1).
+- [ ] Real, licensed demo photos in the screenshots and the preview video.
+- [ ] Privacy pages published at `…/privacy-policy/fotonest/` (de + en).
+- [ ] The in-app purchase created in both consoles with the same id and price;
+      on iOS it must be submitted **with** the first version (App Store
+      Connect › the version › *In-App Purchases* › +).
+- [ ] App Review attachment: the recording from `npm run record:app-review`.
+- [ ] Play: Photo and video permissions declaration and Data safety (3.4, 3.5).
+- [ ] **Google Play closed test:** a personal developer account created after
+      13 Nov 2023 needs a closed test with **at least 12 testers for 14 days in
+      a row** before production. Plan about 3 weeks.
 - [ ] After the app is live, fill in `APP_STORE_ID` in `src/links.ts`, so the
       "rate the app" row appears.
-- [ ] **Google Play closed test:** if your Play developer account is a personal
-      account created after 13 Nov 2023, each new app needs a closed test with
-      **at least 12 testers opted in for 14 days in a row** before you can
-      apply for production. Internal testing doesn't count. Check *Publishing
-      overview* in the Play Console for this app; plan about 3 weeks for it.
