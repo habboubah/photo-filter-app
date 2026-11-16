@@ -90,13 +90,19 @@ UNSCHARFE FOTOS
 Verwackelt oder unscharf: Bildklar zeigt solche Fotos in einer Liste, die eindeutigen zuerst.
 
 SCREENSHOTS
-Alte Bildschirmfotos auf einen Blick – die über 30 Tage alten zuerst, die neuen schaust du dir in Ruhe an.
+Alte Bildschirmfotos und -aufnahmen auf einen Blick – die über 30 Tage alten zuerst, die neuen schaust du dir in Ruhe an.
+
+GROSSE VIDEOS
+Die größten Fotos und Videos zuerst. Ein Video kannst du verkleinern: Neben dem Original entsteht eine kleinere Kopie, das Original löschst du danach selbst.
+
+LIVE PHOTOS
+Jedes Live Photo speichert ein kurzes Video mit. Mach daraus normale Fotos – Bild, Datum, Ort und Alben bleiben.
 
 AUFRÄUMEN IN RUHE
 Auf einen Blick siehst du, wie viel Speicher Duplikate, fast gleiche und unscharfe Fotos und alte Screenshots belegen – und wie viel Platz auf dem Gerät noch frei ist. Beim Durchgehen wischst du nach rechts zum Behalten und nach links zum Aussortieren – jeder Schritt lässt sich zurücknehmen. Oder du wählst beim schnellen Aufräumen, welche Arten weg dürfen, und bestätigst einmal.
 
 MONAT FÜR MONAT
-Geh deine ganze Mediathek Monat für Monat durch, Stück für Stück. Und „An diesem Tag“ zeigt dir, was du heute vor einem oder mehreren Jahren fotografiert hast.
+Geh deine ganze Mediathek Monat für Monat durch, Stück für Stück. Und „An diesem Tag“ zeigt dir, was du heute vor einem oder mehreren Jahren fotografiert hast. Auch als Widget auf dem Home-Bildschirm – und auf Wunsch erinnert dich Bildklar einmal pro Woche.
 
 SICHER
 • Bildklar löscht nie von selbst. Du bestätigst jedes Löschen, und das iPhone fragt noch einmal nach.
@@ -131,13 +137,19 @@ BLURRY PHOTOS
 Shaky or out of focus: Bildklar lists such photos, the clear cases first.
 
 SCREENSHOTS
-Old screenshots at a glance – the ones older than 30 days first; look at the new ones at your own pace.
+Old screenshots and screen recordings at a glance – the ones older than 30 days first; look at the new ones at your own pace.
+
+LARGE VIDEOS
+The biggest photos and videos first. Make a video smaller: a smaller copy is saved next to the original, and you delete the original yourself afterwards.
+
+LIVE PHOTOS
+Every Live Photo keeps a short video. Turn them into plain photos – picture, date, place and albums stay.
 
 CLEAN UP AT YOUR OWN PACE
 See at a glance how much space duplicates, near-identical and blurry photos and old screenshots take up – and how much space is left on the device. Going through them, swipe right to keep and left to sort out – and undo any step. Or use the quick clean: choose which kinds may go and confirm once.
 
 MONTH BY MONTH
-Go through your whole library a month at a time. And "On this day" shows what you photographed on this date in earlier years.
+Go through your whole library a month at a time. And "On this day" shows what you photographed on this date in earlier years. Also as a home-screen widget – and if you like, Bildklar reminds you once a week.
 
 SAFE
 • Bildklar never deletes anything by itself. You confirm every deletion, and your iPhone asks once more.
@@ -260,13 +272,16 @@ UNSCHARFE FOTOS
 Verwackelt oder unscharf: Bildklar zeigt solche Fotos in einer Liste, die eindeutigen zuerst.
 
 SCREENSHOTS
-Alte Bildschirmfotos auf einen Blick – die über 30 Tage alten zuerst, die neuen schaust du dir in Ruhe an.
+Alte Bildschirmfotos und -aufnahmen auf einen Blick – die über 30 Tage alten zuerst, die neuen schaust du dir in Ruhe an.
+
+GROSSE VIDEOS
+Die größten Fotos und Videos zuerst. Ein Video kannst du verkleinern: Neben dem Original entsteht eine kleinere Kopie, das Original löschst du danach selbst.
 
 AUFRÄUMEN IN RUHE
 Auf einen Blick siehst du, wie viel Speicher Duplikate, fast gleiche und unscharfe Fotos und alte Screenshots belegen – und wie viel Platz auf dem Gerät noch frei ist. Beim Durchgehen wischst du nach rechts zum Behalten und nach links zum Aussortieren – jeder Schritt lässt sich zurücknehmen. Oder du wählst beim schnellen Aufräumen, welche Arten weg dürfen, und bestätigst einmal.
 
 MONAT FÜR MONAT
-Geh deine ganze Mediathek Monat für Monat durch, Stück für Stück. Und „An diesem Tag“ zeigt dir, was du heute vor einem oder mehreren Jahren fotografiert hast.
+Geh deine ganze Mediathek Monat für Monat durch, Stück für Stück. Und „An diesem Tag“ zeigt dir, was du heute vor einem oder mehreren Jahren fotografiert hast. Auch als Widget auf dem Home-Bildschirm – und auf Wunsch erinnert dich Bildklar einmal pro Woche.
 
 SICHER
 • Bildklar löscht und verschiebt nie von selbst. Du bestätigst jeden Schritt, und Android fragt noch einmal nach.
@@ -301,13 +316,16 @@ BLURRY PHOTOS
 Shaky or out of focus: Bildklar lists such photos, the clear cases first.
 
 SCREENSHOTS
-Old screenshots at a glance – the ones older than 30 days first; look at the new ones at your own pace.
+Old screenshots and screen recordings at a glance – the ones older than 30 days first; look at the new ones at your own pace.
+
+LARGE VIDEOS
+The biggest photos and videos first. Make a video smaller: a smaller copy is saved next to the original, and you delete the original yourself afterwards.
 
 CLEAN UP AT YOUR OWN PACE
 See at a glance how much space duplicates, near-identical and blurry photos and old screenshots take up – and how much space is left on the device. Going through them, swipe right to keep and left to sort out – and undo any step. Or use the quick clean: choose which kinds may go and confirm once.
 
 MONTH BY MONTH
-Go through your whole library a month at a time. And "On this day" shows what you photographed on this date in earlier years.
+Go through your whole library a month at a time. And "On this day" shows what you photographed on this date in earlier years. Also as a home-screen widget – and if you like, Bildklar reminds you once a week.
 
 SAFE
 • Bildklar never deletes or moves anything by itself. You confirm every step, and Android asks once more.
@@ -375,10 +393,11 @@ in transit**. Either way, keep the privacy page in step with your choice.
 | **Photo and video permissions** | See below |
 
 **Photo and video permissions declaration** (Play asks because the app holds
-`READ_MEDIA_IMAGES`; core use: "photo organizer / gallery"). Paste:
+`READ_MEDIA_IMAGES` and `READ_MEDIA_VIDEO`; core use: "photo organizer /
+gallery" — answer it for both permissions). Paste:
 
 ```
-Bildklar organizes the photo library on the device: it scans all photos to find trips, near-identical and blurry photos, and moves trips into folders or unwanted photos to the trash. The photo picker can't do this.
+Bildklar organizes the photo and video library on the device: it scans all photos and videos to find trips, duplicates, near-identical and blurry photos, screenshots, screen recordings and large videos, moves trips into folders, makes videos smaller and moves unwanted items to the trash. The photo picker can't do this.
 ```
 
 Play may ask for a short video of the core flow: see `docs/TODO.md`, step 5.

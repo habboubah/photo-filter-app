@@ -12,8 +12,10 @@ Every feature, as the user sees it (German labels, English in brackets).
   and offers *Einstellungen öffnen* [Open Settings].
 
 ## The scan
-- Looks at every photo once: when and where it was taken, how sharp, how
-  bright, and a fingerprint to spot near-identical shots. Progress on home
+- Looks at every photo and video once: when and where it was taken, how sharp,
+  how bright, and a fingerprint to spot near-identical shots (a video's poster
+  frame). On the iPhone every frame of a burst is seen, not just the one Photos
+  shows; videos, screen recordings and Live Photos are marked as such. Progress on home
   (*12.340 von 48.210 Fotos angesehen*); the first time takes a few minutes and
   keeps the screen on.
 - **Resumable and incremental**: an interrupted scan continues; later scans
@@ -29,8 +31,11 @@ Every feature, as the user sees it (German labels, English in brackets).
   free space on the device (*2,4 GB von 128 GB auf dem Gerät frei*), how many
   duplicates, near-identical and blurry photos and old screenshots, what
   Bildklar has freed so far (*Bisher freigegeben: 1,2 GB*), *Aufräumen* [Clean up].
-- Four tiles: *Duplikate* [Duplicates] and *Fast gleiche* [Near-identical]
-  (groups), *Unscharfe* [Blurry] and *Screenshots* (photos).
+- Tiles: *Duplikate* [Duplicates] and *Fast gleiche* [Near-identical]
+  (groups), *Unscharfe* [Blurry], *Screenshots*, *Große Dateien* [Large files]
+  (count and size) and, on the iPhone when there are any, *Live Photos*.
+- *3 Tage in Folge aufgeräumt* [3 days in a row of cleaning up] on the card
+  once the streak is two days or more.
 - **An diesem Tag** [On this day]: when photos were taken on today's date in
   earlier years, a card with one of them and the years; *Ansehen* [Look back]
   reviews them (extra shots and blurry ones suggested for deleting).
@@ -77,8 +82,31 @@ Every feature, as the user sees it (German labels, English in brackets).
   sharpest, else the oldest. A tap keeps another one; *Die anderen löschen*
   and *Durchgehen* as for near-identical photos.
 
+## Large files and videos
+- Photos and videos of 10 MB or more, biggest first (at most 300); *Alle*,
+  *Videos*, *Fotos*. Each tile shows its size (≈ where the iPhone can only
+  estimate) and a video's length. Nothing is suggested for deleting;
+  *Durchgehen* reviews them with every suggestion on keep.
+- A tap opens the file: date, size, length, **Video verkleinern** [Make video
+  smaller] for videos of 30 MB or more, and *Video/Foto löschen*.
+- **Making a video smaller** (needs the unlock): a copy at about a third of the
+  bitrate (iPhone: HEVC at most 1080p; Android: HEVC where the phone can, 2–8
+  Mbit/s) is saved next to the original with its date and place, with progress
+  while it runs. Not saved when it would not be at least 20 % smaller. Then
+  *Original löschen?* → the system's dialog, or keep both.
+- **Duplicate videos**: the same length (± 0.5 s), shape and poster frame,
+  listed under *Duplikate*.
+- Videos are not part of trips, near-identical groups or the blurry list.
+
+## Live Photos (iPhone)
+- Every Live Photo, newest first, with the estimated saving (≈ 3 MB each).
+  **In Fotos umwandeln** [Make plain photos] (needs the unlock) → a
+  confirmation → each becomes a plain photo (the picture as edited, date,
+  place, favourite flag, albums) → the system's dialog moves the Live Photos to
+  Recently Deleted. Declined: both stay.
+
 ## Screenshots
-- Every screenshot, newest first; *Älter als 30 Tage* [Older than 30 days]
+- Every screenshot and screen recording, newest first; *Älter als 30 Tage* [Older than 30 days]
   (the ones the clean-up card counts) or *Alle* [All]. *Durchgehen* reviews
   them, all suggested for deleting. Favourites and kept ones are left out.
 
@@ -119,6 +147,15 @@ Every feature, as the user sees it (German labels, English in brackets).
   subscription). The paywall appears when needed, and from Settings.
 - *Käufe wiederherstellen* [Restore purchases] on the paywall and in Settings.
 - Family Sharing (iPhone); the purchase follows the Google account (Android).
+
+## Widget and reminder
+- **Widget** (iPhone home screen, small and medium; Android app widget): *An
+  diesem Tag* with a photo from an earlier year, else the space that could be
+  freed and the free space. The app updates it whenever that changes; a tap
+  opens the app.
+- **Wöchentliche Erinnerung** [Weekly reminder] in Settings (off by default):
+  the system asks once for notifications, then one notification every Sunday
+  at 18:00, scheduled on the phone — no server.
 
 ## Settings
 - **Fotos**: the access (all / selected / none), *Fotos auswählen*, *Zugriff

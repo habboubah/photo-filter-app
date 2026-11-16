@@ -76,6 +76,11 @@ are worked out on demand for a similar group and cached.
 | Duplicate | Hashes ≤ 2 bits apart at any time, same aspect ratio (±1 %), same light (brightness ±0.03, contrast ±8 %); hashes with < 12 or > 52 bits set (flat pictures) never link. Found through a 4 × 16-bit block index, not pair by pair. Same union–find as similar: a group with a link across more than 3 min is a duplicate group. Keep: favourite, most pixels, sharpest, oldest. | `logic/similar.ts`, `logic/best.ts` |
 | Screenshots | `shot` from the scan; the clean-up card counts those older than 30 days. | `logic/screenshots.ts` |
 | Quick clean | The clean-up card's photos by kind (duplicates, similar, blurry, old screenshots), each kind on or off, one system dialog. | `logic/smartClean.ts` |
+| Videos | Scanned with the photos (iPhone: PHAsset videos, estimated size 0.4 B per pixel and second; Android: MediaStore.Video, ids `<volume>:v<_ID>`, needs `READ_MEDIA_VIDEO`). Hash = poster frame. Out of trips, similar groups and the blurry list. Duplicates: length ± max(0.5 s, 1 %), same shape, hash ≤ 4 bits. Screen recordings (`rec`): iPhone file name `RPReplay…`, Android folder/name containing "screenrecord". | `logic/similar.ts`, `logic/large.ts` |
+| Large files | ≥ 10 MB, biggest first, at most 300; nothing suggested. Smaller video: ≥ 30 MB offered, kept only when ≥ 20 % smaller. | `logic/large.ts` |
+| Live Photos | iPhone `photoLive`; a plain copy (`PHAssetCreationRequest`, same date/place/favourite/albums), then the original through `trash`. | `logic/large.ts`, `PhotoLibraryPlugin.swift` |
+| Bursts | iPhone: every fetch includes all burst assets; the burst's pick (user or auto) ranks right after a favourite. | `logic/best.ts` |
+| Streak | Days with a clean-up (trash, conversion, smaller video, a month gone through); the run ending today or yesterday. | `logic/streak.ts` |
 | Months | Calendar months in local time, newest first; a month reviewed to its end is stored as done (`months`). "On this day": today's date in earlier years, no screenshots. | `logic/months.ts` |
 | Best | 0.55 sharpness + 0.20 exposure (+ 0.15 face + 0.10 eyes on the iPhone); a favourite always wins; the user's pick wins over all. | `logic/best.ts` |
 | Blurry | Sharpness < 12 high, < 30 medium, < 60 low; low contrast moves a photo down a level. First guesses — debug builds show each photo's score to tune them. | `logic/blur.ts` |
@@ -194,4 +199,5 @@ sofa).
 | 5 | Paywall + restore | built; needs the products in both consoles and sandbox / licence testers |
 | 6 | Polish: accessibility, Larger Text, dark mode, small phones, 50,000-photo performance | dark mode, Larger Text (rem scale), virtualised grids, the perf budget done; **a real 50,000-photo library is untested** |
 | 8 | Cleaner features from the competitor plan (`claude/feature-gap-plan.md` in the project): duplicates anywhere, screenshots, quick clean, storage on the device, "freed so far", month by month, on this day | built, unit-tested; `getStorage` (Swift, Kotlin) **not yet compiled** |
+| 9 | The rest of the competitor plan: videos (large files, duplicate videos, screen recordings, smaller videos), Live Photos to stills, bursts, streak, weekly reminder, home-screen widget | built, unit-tested, flows tried in the demo; **the native parts (Swift, Kotlin, the widget target) not compiled yet** |
 | 7 | Store assets + checklists + `npm run release:dry` | texts, privacy pages, recorder scenes done; real demo photos, the composed store screenshots and the preview video still to do (docs/TODO.md) |

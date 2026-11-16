@@ -85,15 +85,20 @@ deleting need one one-time purchase (`com.habboubah.bildklar.unlock`, 4,99 €).
   an async loader once per racing call, which split listeners across instances.
 
 ## Safety rules (never break these)
-- Never delete, move or change a photo automatically. Every write needs the
-  user's tap **and** the system's own dialog.
+- Never delete, move or change a photo automatically. Every delete or move
+  needs the user's tap **and** the system's own dialog.
+- A new asset (a plain photo made from a Live Photo, a smaller copy of a video)
+  needs the user's tap and a confirmation in the app; the original stays and
+  goes only through the system's delete dialog afterwards. The copy keeps the
+  original's date, place and favourite flag (and, for a still, its albums).
 - Deleted photos go to Recently Deleted (iPhone) / the Trash (Android) only —
   `deleteAssets` / `createTrashRequest`, never `createDeleteRequest`, never
   `MANAGE_MEDIA`.
 - **Dry run**: every native write takes `dryRun`. Debug builds start with it
   on (`store.ts`: `debug && dryRunPref !== false`); release builds never run dry.
 - On Android, files are moved (RELATIVE_PATH) only after `createWriteRequest`'s
-  dialog, and their contents never change. Nothing is copied.
+  dialog, and their contents never change. Nothing is copied — except a smaller
+  video, which is a new file of the app's own next to the original.
 - A favourite (system Photos / Gallery) is never suggested for deleting, and a
   photo the user kept in a review is never suggested again.
 
@@ -150,6 +155,14 @@ deleting need one one-time purchase (`com.habboubah.bildklar.unlock`, 4,99 €).
 - A new Swift file must be added to `App.xcodeproj` (file reference, group,
   Sources) — the four of ours are listed there; `FeatureMath.swift` is
   referenced from `ios/PhotoFeatures/`.
+- **The widget** is its own target, `BildklarWidget` (WidgetKit, iOS 16+,
+  `ios/App/BildklarWidget/`, bundle id `com.habboubah.bildklar.widget`), added
+  by `ios/scripts/add-widget.rb` and embedded in the app. App and widget share
+  the App Group `group.com.habboubah.bildklar` (both `.entitlements`): the app
+  writes `widget.json` and `widget.jpg` there (`PhotoLibrary.setWidget`), the
+  widget only reads them. `release.js` moves the widget's version with the app's.
+- Bursts: every fetch passes `includeAllBurstAssets` (the hidden frames of a
+  burst take space too).
 - Never ask PhotoKit for network access (`isNetworkAccessAllowed = false`).
 
 ## Native Android
@@ -158,8 +171,14 @@ deleting need one one-time purchase (`com.habboubah.bildklar.unlock`, 4,99 €).
   `ANDROID_BUILD`), the upload key from the environment, R8 on for release.
   **minSdk 30.** Kotlin 2.2 (`kotlinVersion` in `variables.gradle`).
 - Dependencies of our own: `androidx.exifinterface`, the **Play Billing
-  Library** (`billingVersion`, 9.1.0 — must stay on a version Play accepts).
+  Library** (`billingVersion`, 9.1.0 — must stay on a version Play accepts),
+  **Media3 Transformer** (`media3Version`: smaller videos, on the phone).
   No Google services, no Firebase, no ML Kit.
+- The home-screen widget: `BildklarWidget.kt` (AppWidgetProvider, layout
+  `widget_bildklar.xml`), fed by `PhotoLibrary.setWidget`.
+- `SCHEDULE_EXACT_ALARM` (brought by `@capacitor/local-notifications`) is
+  removed in the manifest: the weekly reminder may be a little late, and Play
+  keeps exact alarms for clocks and calendars.
 - Activity results (permissions, MediaStore's write/trash requests) use
   launchers registered in the plugin's `load()` via `bridge.registerForActivityResult`.
 - `npm run test:android` runs the feature tests on the JVM (CI too).
