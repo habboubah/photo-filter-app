@@ -116,15 +116,33 @@ https://appstoreconnect.apple.com → **Apps** → **+** → **New App** [Neue A
 <summary>Bundle ID missing from the menu</summary>
 
 The menu lists only the App IDs registered in the developer account, and
-Xcode registers one only for a build on a real iPhone. Register it by hand:
+Xcode registers one only for a build on a **real iPhone** — a build for the
+Simulator registers nothing (that's how it went missing on 16 November 2026).
+Two ways to get it there:
+
+**A – let Xcode do it:** plug in the iPhone, pick it as the destination at the
+top of Xcode (not a Simulator), press **▶**. Xcode registers the App ID, and
+Fotonest runs on the phone.
+
+**B – register it by hand** (no iPhone needed, about 2 minutes):
 
 1. https://developer.apple.com/account/resources/identifiers/list (top right:
    the team **Ahmad Habboubah**, the same as in App Store Connect).
 2. **+** next to *Identifiers* → **App IDs** → Continue → **App** → Continue.
-3. Description `Fotonest`, Bundle ID **Explicit** `com.habboubah.fotonest`.
-   Capabilities: none to tick (In-App Purchase is always on). Continue → **Register**.
-4. Close the *New App* dialog in App Store Connect, reload the page, open it
-   again: the bundle id is in the menu (sometimes after a few minutes).
+3. Description `Fotonest`, Bundle ID **Explicit** `com.habboubah.fotonest`
+   (exactly). Capabilities: none to tick — In-App Purchase is always on, and
+   photo access needs no capability. Continue → **Register**.
+
+Either way: close the *New App* dialog in App Store Connect, reload the page,
+open it again — the bundle id is in the menu (sometimes only after a few
+minutes). Still missing → the App ID was registered under another team:
+check the team at the top right of both sites.
+
+*"An App ID with Identifier 'com.habboubah.fotonest' is not available"* in
+step 3 means another developer owns it. Then the bundle id has to change
+everywhere (`capacitor.config.ts`, `PRODUCT_BUNDLE_IDENTIFIER` in the Xcode
+project, `applicationId` in `android/app/build.gradle`, the recorder's ids,
+the in-app purchase id) — ask Claude to do it in one go.
 </details>
 
 → **Create**.
@@ -345,6 +363,8 @@ the skill `.claude/skills/app-store-release` knows these steps.
 | `ASC_KEY_ID / ASC_ISSUER_ID not set` | Step 2 – `.env.release` is missing. |
 | `App Store Connect API key not found at …` | The `.p8` file isn't in `~/.appstoreconnect/private_keys/`. |
 | `No suitable application records were found` | Step 4 – the app doesn't exist in App Store Connect yet. |
+| *New App*: `com.habboubah.fotonest` isn't in the Bundle ID menu | The App ID isn't registered yet: Xcode only registers it for a build on a real iPhone, not the Simulator. Step 4 › *Bundle ID missing from the menu*. |
+| `An App ID with Identifier 'com.habboubah.fotonest' is not available` | Another developer owns that bundle id: it has to change everywhere (step 4 › *Bundle ID missing from the menu*, last paragraph). |
 | `No profiles for 'com.habboubah.fotonest' were found` / signing errors | Redo step 3; the API key needs the *App Manager* or *Admin* role. |
 | `The bundle version must be higher than the previously uploaded version` | The script starts from the highest build App Store Connect, the `v*` tags and the project know, so this shouldn't come back. If it does, run `npm run release:dry` to see the numbers and run the release again. |
 | `Missing package product 'CapApp-SPM'` or similar | Open the project once in Xcode (step 3), or `xcodebuild -resolvePackageDependencies -project ios/App/App.xcodeproj`. |
