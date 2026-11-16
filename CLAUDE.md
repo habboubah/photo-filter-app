@@ -3,11 +3,11 @@
 Steering file for AI assistants working in this repository: where the code
 lives, the rules it follows, and what to check before a change is done.
 
-Fotonest is built the same way as the shopping list (`../shopping-list`) and
+Bildklar is built the same way as the shopping list (`../shopping-list`) and
 Spartopf (`../budget-app`): the same architecture, settings, release and
 screenshot tooling and skills. When a convention is missing here, the shopping
 list's `CLAUDE.md` is the reference, then budget-app's `docs/CLAUDE.md` —
-**except for the look**, which is Fotonest's own ("Album", see *Styling*), and
+**except for the look**, which is Bildklar's own ("Album", see *Styling*), and
 the native code, which follows budget-app's plugin pattern. This file stays at
 the root; every other document lives in `docs/` (only `README.md` stays here):
 
@@ -23,19 +23,19 @@ the root; every other document lives in `docs/` (only `README.md` stays here):
 | `store/listing.md` | Every store listing text, App Store and Google Play, in one file |
 
 ## What this app is
-**Fotonest** (*Fotonest – Fotos aufräumen* / *Fotonest – Photo Cleanup*; code
-name **fotonest**, bundle id `com.habboubah.fotonest`): a photo organizer for
+**Bildklar** (*Bildklar KI: Foto Reiniger* / *Bildklar AI: Photo Cleaner*; code
+name **bildklar**, bundle id `com.habboubah.bildklar`): a photo organizer for
 parents on iPhone and Android. It scans the photo library on the device, turns
 trips into albums (iPhone) or folders (Android), finds near-identical and
 blurry photos and suggests what could go. Free to scan and look; albums and
-deleting need one one-time purchase (`com.habboubah.fotonest.unlock`, 4,99 €).
+deleting need one one-time purchase (`com.habboubah.bildklar.unlock`, 4,99 €).
 **No backend, no account, nothing leaves the device.**
 
 ## Stack
 - React 19 + TypeScript (strict), Vite 6, Tailwind CSS 4, `lucide-react`, `motion`.
 - Capacitor 8 wraps `dist/` into `ios/` and `android/`. Our own plugins:
   `PhotoLibrary` and `Purchases` (Swift in `ios/App/App/`, Kotlin in
-  `android/app/src/main/java/com/habboubah/fotonest/`, TypeScript in `src/native/`).
+  `android/app/src/main/java/com/habboubah/bildklar/`, TypeScript in `src/native/`).
 - npm only. **Dependencies are pinned to exact versions** (no `^`/`~`), the
   shopping list's versions unless a newer one is needed. `npm run check` runs
   `npm audit --omit=dev --audit-level=high`. Before adding one: prefer the
@@ -72,7 +72,7 @@ deleting need one one-time purchase (`com.habboubah.fotonest.unlock`, 4,99 €).
   and are saved by the native plugin as a file — not localStorage (iOS may
   clear it on a full phone). Add fields as optional; bump `SCHEMA_VERSION`
   and migrate in `normalizeState` when a shape changes. View preferences
-  (language, theme, dry run) stay `fotonest-*` localStorage keys.
+  (language, theme, dry run) stay `bildklar-*` localStorage keys.
 - **The features are a spec.** `src/logic/features.ts`, `FeatureMath.swift`
   (`ios/PhotoFeatures`, also compiled into the app) and `FeatureMath.kt` must
   give the same numbers for `fixtures/features/` (`expected.json`). Change all
@@ -110,7 +110,7 @@ deleting need one one-time purchase (`com.habboubah.fotonest.unlock`, 4,99 €).
   logical spacing (`ps-`/`pe-`/`start-`/`end-`), `rtl:rotate-180` on
   directional icons, numbers in `num`.
 
-## Styling — "Album" (Fotonest's own look, 16 November 2026)
+## Styling — "Album" (Bildklar's own look, 16 November 2026)
 - The photos bring the colour; the app stays quiet: warm paper page, white
   cards, slate ink, **one deep teal** for what you tap. Green (`keep`) is keep
   and the best shot, red (`neg`) is delete, amber (`warn`) is blurry.

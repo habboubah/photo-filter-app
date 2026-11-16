@@ -50,14 +50,14 @@ export function words(src, lang, platform) {
 /** The demo's state before the app starts: access granted, the library scanned, the unlock bought — each can be changed per screen. */
 export function prefs({ lang = 'de', theme = 'light', access = 'full', scanned = true, owned = true, scanStep = null } = {}) {
   return {
-    'fotonest-lang': lang,
-    'fotonest-theme': theme,
-    'fotonest-demo-access': access,
-    'fotonest-demo-scanned': scanned ? '1' : null,
-    'fotonest-demo-owned': owned ? '1' : null,
-    'fotonest-demo-scan-step': scanStep,
+    'bildklar-lang': lang,
+    'bildklar-theme': theme,
+    'bildklar-demo-access': access,
+    'bildklar-demo-scanned': scanned ? '1' : null,
+    'bildklar-demo-owned': owned ? '1' : null,
+    'bildklar-demo-scan-step': scanStep,
     // The production build is no debug build: no dry run, no debug badges.
-    'fotonest-dry-run': '0',
+    'bildklar-dry-run': '0',
   };
 }
 
@@ -266,7 +266,7 @@ export async function capture({ variants, screens, outDir, clean = true, onlyNam
         viewport: { width: size.width, height: size.height }, deviceScaleFactor: size.scale ?? 2,
         locale: LOCALE[v.lang] ?? v.lang, colorScheme: 'light', hasTouch: true, isMobile: true,
       });
-      if (v.platform === 'android') await ctx.addInitScript(() => localStorage.setItem('fotonest-dev-platform', 'android'));
+      if (v.platform === 'android') await ctx.addInitScript(() => localStorage.setItem('bildklar-dev-platform', 'android'));
       const page = await ctx.newPage();
       page.on('pageerror', e => console.error(`[${v.id}] page error:`, e.message));
 

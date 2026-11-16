@@ -11,10 +11,10 @@ def appVersionCode = appVersionParts[0] * 1000000 + appVersionParts[1] * 10000 +
 def releaseStore = System.getenv('ANDROID_KEYSTORE_PATH')
 
 android {
-    namespace = "com.habboubah.fotonest"
+    namespace = "com.habboubah.bildklar"
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "com.habboubah.fotonest"
+        applicationId "com.habboubah.bildklar"
         // 30 (Android 11): MediaStore's trash and write requests, so a deleted photo always lands
         // in the Trash and a moved one goes only after the system asked (docs/PLAN.md).
         minSdkVersion rootProject.ext.minSdkVersion

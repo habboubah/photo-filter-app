@@ -35,7 +35,7 @@ common = {
 }
 host.build_configurations.each do |c|
   c.build_settings.merge!(common).merge!(
-    'PRODUCT_BUNDLE_IDENTIFIER' => 'com.habboubah.fotonest.recorder',
+    'PRODUCT_BUNDLE_IDENTIFIER' => 'com.habboubah.bildklar.recorder',
     'PRODUCT_NAME' => 'RecorderHost',
     'INFOPLIST_KEY_CFBundleDisplayName' => 'Recorder',
     'INFOPLIST_KEY_UIApplicationSceneManifest_Generation' => 'YES',
@@ -45,7 +45,7 @@ host.build_configurations.each do |c|
 end
 tests.build_configurations.each do |c|
   c.build_settings.merge!(common).merge!(
-    'PRODUCT_BUNDLE_IDENTIFIER' => 'com.habboubah.fotonest.recorder.uitests',
+    'PRODUCT_BUNDLE_IDENTIFIER' => 'com.habboubah.bildklar.recorder.uitests',
     'PRODUCT_NAME' => 'RecorderUITests',
     'TEST_TARGET_NAME' => 'RecorderHost',
   )

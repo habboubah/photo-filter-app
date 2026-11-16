@@ -161,7 +161,7 @@ for locale in CFG["locales"]:
         entries.append(("featureGraphic", copy["featureGraphic"]))
     for slide_id, text in entries:
         head = text["headline"]
-        # A dash or "&" on its own is not a word ("Fotonest – Photo Cleanup" is 3).
+        # A dash or "&" on its own is not a word ("Bildklar AI: Photo Cleaner" is 3).
         words = sum(1 for w in head.split() if any(c.isalnum() for c in w))
         if words > MAX_HEADLINE_WORDS:
             errors.append(f"copy.{locale}.json[{slide_id}]: headline is {words} words, "

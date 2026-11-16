@@ -1,6 +1,6 @@
-# Publishing Fotonest on the App Store – step by step
+# Publishing Bildklar on the App Store – step by step
 
-Fotonest ships exactly like Spartopf (budget-app) and Fahrtwerk
+Bildklar ships exactly like Spartopf (budget-app) and Fahrtwerk
 (pizza-driver-log): **one command** builds the iOS app and uploads it straight
 to App Store Connect, where it lands in TestFlight. The parts Apple only allows in the browser – creating the app,
 texts, screenshots, "Submit for Review" – you do by hand once. This file walks
@@ -51,7 +51,7 @@ npm run lint && npm test      # must be green
 ## 2. Reuse the API key
 
 The App Store Connect API key belongs to your whole team, not to one app, so the
-key that uploads Fahrtwerk uploads Fotonest too.
+key that uploads Fahrtwerk uploads Bildklar too.
 
 ```bash
 cd ~/repos/photo-filter-app
@@ -82,7 +82,7 @@ are git-ignored – they never get committed.
 ## 3. Open the project once in Xcode
 
 The first time, Xcode downloads the Swift packages. It registers the bundle id
-`com.habboubah.fotonest` for your team **only when you build for a real iPhone**
+`com.habboubah.bildklar` for your team **only when you build for a real iPhone**
 (point 3 below) — a build for the Simulator registers nothing, and then App
 Store Connect has no bundle id to offer in step 4.
 
@@ -95,7 +95,7 @@ In Xcode:
 2. ✅ *Automatically manage signing*, Team: **Ahmad Habboubah (HZVBBHBAJN)**
    (already set). There must be no red error.
 3. **Plug in your iPhone, pick it as the destination at the top, press ▶** –
-   Fotonest runs on your phone and the bundle id is registered. (Without an
+   Bildklar runs on your phone and the bundle id is registered. (Without an
    iPhone at hand: register it by hand, see *Bundle ID missing* below step 4.)
 4. Quit Xcode.
 
@@ -106,10 +106,10 @@ https://appstoreconnect.apple.com → **Apps** → **+** → **New App** [Neue A
 | Field | Value |
 |---|---|
 | Platforms | ✅ iOS |
-| Name | `Fotonest – Fotos aufräumen` (the English name: `store/listing.md`). Taken? See Troubleshooting. |
+| Name | `Bildklar KI: Foto Reiniger` (the English name: `store/listing.md`). Taken? See Troubleshooting. |
 | Primary language | German [Deutsch] |
-| Bundle ID | `com.habboubah.fotonest` (pick it from the menu; missing → see below) |
-| SKU | `fotonest-001` |
+| Bundle ID | `com.habboubah.bildklar` (pick it from the menu; missing → see below) |
+| SKU | `bildklar-001` |
 | User access | Full access |
 
 <details>
@@ -122,14 +122,14 @@ Two ways to get it there:
 
 **A – let Xcode do it:** plug in the iPhone, pick it as the destination at the
 top of Xcode (not a Simulator), press **▶**. Xcode registers the App ID, and
-Fotonest runs on the phone.
+Bildklar runs on the phone.
 
 **B – register it by hand** (no iPhone needed, about 2 minutes):
 
 1. https://developer.apple.com/account/resources/identifiers/list (top right:
    the team **Ahmad Habboubah**, the same as in App Store Connect).
 2. **+** next to *Identifiers* → **App IDs** → Continue → **App** → Continue.
-3. Description `Fotonest`, Bundle ID **Explicit** `com.habboubah.fotonest`
+3. Description `Bildklar`, Bundle ID **Explicit** `com.habboubah.bildklar`
    (exactly). Capabilities: none to tick — In-App Purchase is always on, and
    photo access needs no capability. Continue → **Register**.
 
@@ -138,7 +138,7 @@ open it again — the bundle id is in the menu (sometimes only after a few
 minutes). Still missing → the App ID was registered under another team:
 check the team at the top right of both sites.
 
-*"An App ID with Identifier 'com.habboubah.fotonest' is not available"* in
+*"An App ID with Identifier 'com.habboubah.bildklar' is not available"* in
 step 3 means another developer owns it. Then the bundle id has to change
 everywhere (`capacitor.config.ts`, `PRODUCT_BUNDLE_IDENTIFIER` in the Xcode
 project, `applicationId` in `android/app/build.gradle`, the recorder's ids,
@@ -154,31 +154,31 @@ Apple requires a privacy policy URL. The pages (English + German) are ready in
 
 ```bash
 cd ~/repos/privacy-policy
-mkdir -p fotonest
-cp -R ../photo-filter-app/store/privacy/. fotonest/
+mkdir -p bildklar
+cp -R ../photo-filter-app/store/privacy/. bildklar/
 ```
 
 Add this line to `index.html`, under the Pizza Driver Log entry:
 
 ```html
-  <li><a href="fotonest/">Fotonest – Fotos aufräumen</a></li>
+  <li><a href="bildklar/">Bildklar KI: Foto Reiniger</a></li>
 ```
 
 and this to `README.md`:
 
 ```markdown
-- Fotonest – Fotos aufräumen / Fotonest – Photo Cleanup (code name fotonest)
-  - English: https://habboubah.github.io/privacy-policy/fotonest/
-  - Deutsch: https://habboubah.github.io/privacy-policy/fotonest/de/
+- Bildklar KI: Foto Reiniger / Bildklar AI: Photo Cleaner (code name bildklar)
+  - English: https://habboubah.github.io/privacy-policy/bildklar/
+  - Deutsch: https://habboubah.github.io/privacy-policy/bildklar/de/
 ```
 
 ```bash
-git add fotonest index.html README.md
-git commit -m "Add the privacy policy for Fotonest"
+git add bildklar index.html README.md
+git commit -m "Add the privacy policy for Bildklar"
 git push
 ```
 
-After a minute or two, check https://habboubah.github.io/privacy-policy/fotonest/de/
+After a minute or two, check https://habboubah.github.io/privacy-policy/bildklar/de/
 
 ## 6. Upload the first build
 
@@ -196,17 +196,17 @@ takes it to **1.0.0** for the first upload (`release.js --ios major`). The comma
 4. archives with `xcodebuild` and uploads to App Store Connect,
 5. commits "Prepare release v1.0.0 (build 2)" and tags `v1.0.0`.
 
-It ends with `Done: Fotonest v1.0.0 (build 2) uploaded to App Store Connect.`
+It ends with `Done: Bildklar v1.0.0 (build 2) uploaded to App Store Connect.`
 Apple then needs 5–30 minutes to process it (you get an email).
 
 An error? → see [Troubleshooting](#troubleshooting) below.
 
 ## 7. Test on your iPhone with TestFlight
 
-1. App Store Connect → **Fotonest** → **TestFlight** tab.
+1. App Store Connect → **Bildklar** → **TestFlight** tab.
 2. Under *Internal Testing* [Interne Tests] → **+** → group "Me" → add yourself.
 3. On the iPhone, install the **TestFlight** app, open it with the same Apple ID
-   → **Fotonest** → *Install*.
+   → **Bildklar** → *Install*.
 4. Try everything once: the permission dialog (try *Limit Access…* once,
    then *Allow Full Access*), the scan, a trip and its album, a similar group,
    the blurry list, a review that deletes (check Photos › Recently Deleted),
@@ -244,20 +244,20 @@ don't fit that slot. The headlines are in
 
 ### 8b. Version 1.0 (German)
 
-App Store Connect → Fotonest → left: **iOS App 1.0 – Prepare for Submission**
+App Store Connect → Bildklar → left: **iOS App 1.0 – Prepare for Submission**
 [Vorbereitung für Einreichung]:
 
 - [ ] **Screenshots** → *iPhone with Dynamic Island (medium display)* → drag in the 9 images from `screenshots/store/iphone-6.3/de/`.
 - [ ] **Promotional Text** [Werbetext], **Description** [Beschreibung],
       **Keywords** → from `store/listing.md` (DE).
-- [ ] **Support URL** → `https://habboubah.github.io/privacy-policy/fotonest/de/`
+- [ ] **Support URL** → `https://habboubah.github.io/privacy-policy/bildklar/de/`
 - [ ] **Copyright** → `2026 Ahmad Habboubah`
 - [ ] **Build** → *Add Build* → pick 1.0.0 (2) (visible after step 6 finished processing).
 - [ ] **App Review Information** [App-Prüfungsinformationen] → Sign-in required:
       **No**, your contact details, the note from `store/listing.md` (it explains
       the paywall, the dry run of debug builds and where deleted photos go), and
       the App Review screen recording (`npm run record:app-review`).
-- [ ] **In-App Purchases** [In-App-Käufe] → *+* → pick **Fotonest freischalten**
+- [ ] **In-App Purchases** [In-App-Käufe] → *+* → pick **Bildklar freischalten**
       (made in step 8g) — the first purchase must be submitted with the version.
 - [ ] **Version Release** → *Automatically release this version* (or manually).
 
@@ -271,13 +271,13 @@ fields with the English texts and the images from `screenshots/store/iphone-6.3/
 - [ ] **Subtitle** [Untertitel]: from `store/listing.md` (`Reisen als Alben, ohne Doppelte`)
 - [ ] **Category**: primary **Photo & Video**, secondary **Utilities**
 - [ ] **Age Rating** [Altersfreigabe] → *Edit* → "None" / "No" everywhere → **4+**
-- [ ] **Privacy Policy URL**: `https://habboubah.github.io/privacy-policy/fotonest/de/`
+- [ ] **Privacy Policy URL**: `https://habboubah.github.io/privacy-policy/bildklar/de/`
 
 ### 8e. App Privacy (left menu) [App-Datenschutz]
 
 *Get Started* → "Do you or your third-party partners collect data from this app?"
 → **No, we do not collect data from this app** → *Publish*.
-(True: Fotonest has no server, no analytics and no tracking; photos never
+(True: Bildklar has no server, no analytics and no tracking; photos never
 leave the device. The purchase goes through Apple's StoreKit, which Apple
 does not count as the app collecting data.)
 
@@ -293,12 +293,12 @@ Left menu → *Monetization* › **In-App Purchases** → *+*:
 | Field | Value |
 |---|---|
 | Type | **Non-Consumable** [Nicht-Verbrauchsartikel] |
-| Reference Name | `Fotonest Unlock` |
-| Product ID | `com.habboubah.fotonest.unlock` (must match `PRODUCT_ID` in `src/native/purchases.ts`) |
+| Reference Name | `Bildklar Unlock` |
+| Product ID | `com.habboubah.bildklar.unlock` (must match `PRODUCT_ID` in `src/native/purchases.ts`) |
 | Price | **4,99 €** (tier picker; the same as on Google Play) |
 | Family Sharing | on (one purchase for the family — parents share phones) |
-| Display name / description (DE) | `Fotonest freischalten` / `Alben für Reisen und Aufräumen – einmal zahlen, kein Abo.` |
-| Display name / description (EN) | `Unlock Fotonest` / `Albums for trips and clean-up – pay once, no subscription.` |
+| Display name / description (DE) | `Bildklar freischalten` / `Alben für Reisen und Aufräumen – einmal zahlen, kein Abo.` |
+| Display name / description (EN) | `Unlock Bildklar` / `Albums for trips and clean-up – pay once, no subscription.` |
 | Review screenshot | `screenshots/de/09-paywall.png` |
 
 Then *Users and Access* › **Sandbox** › *Test Accounts* → **+** → a sandbox
@@ -312,7 +312,7 @@ Back on **iOS App 1.0** → top right **Add for Review** [Zur Prüfung hinzufüg
 → **Submit to App Review** [An App-Prüfung senden].
 
 Apple usually reviews within 24–48 hours and emails you the status. At
-*Ready for Distribution* [Bereit zum Verkauf], Fotonest is on the App Store. 🎉
+*Ready for Distribution* [Bereit zum Verkauf], Bildklar is on the App Store. 🎉
 
 If Apple rejects it: read the message in the *Resolution Center*, fix the code,
 run `npm run release:ios -- --keep-version` (same version, new build), pick the
@@ -351,7 +351,7 @@ Then in App Store Connect:
 Only redo screenshots/texts when something visible changed
 (`npm run screenshots && npm run store-screenshots`).
 
-You can also just tell Claude in this project "upload Fotonest to the App Store" –
+You can also just tell Claude in this project "upload Bildklar to the App Store" –
 the skill `.claude/skills/app-store-release` knows these steps.
 
 ---
@@ -363,14 +363,14 @@ the skill `.claude/skills/app-store-release` knows these steps.
 | `ASC_KEY_ID / ASC_ISSUER_ID not set` | Step 2 – `.env.release` is missing. |
 | `App Store Connect API key not found at …` | The `.p8` file isn't in `~/.appstoreconnect/private_keys/`. |
 | `No suitable application records were found` | Step 4 – the app doesn't exist in App Store Connect yet. |
-| *New App*: `com.habboubah.fotonest` isn't in the Bundle ID menu | The App ID isn't registered yet: Xcode only registers it for a build on a real iPhone, not the Simulator. Step 4 › *Bundle ID missing from the menu*. |
-| `An App ID with Identifier 'com.habboubah.fotonest' is not available` | Another developer owns that bundle id: it has to change everywhere (step 4 › *Bundle ID missing from the menu*, last paragraph). |
-| `No profiles for 'com.habboubah.fotonest' were found` / signing errors | Redo step 3; the API key needs the *App Manager* or *Admin* role. |
+| *New App*: `com.habboubah.bildklar` isn't in the Bundle ID menu | The App ID isn't registered yet: Xcode only registers it for a build on a real iPhone, not the Simulator. Step 4 › *Bundle ID missing from the menu*. |
+| `An App ID with Identifier 'com.habboubah.bildklar' is not available` | Another developer owns that bundle id: it has to change everywhere (step 4 › *Bundle ID missing from the menu*, last paragraph). |
+| `No profiles for 'com.habboubah.bildklar' were found` / signing errors | Redo step 3; the API key needs the *App Manager* or *Admin* role. |
 | `The bundle version must be higher than the previously uploaded version` | The script starts from the highest build App Store Connect, the `v*` tags and the project know, so this shouldn't come back. If it does, run `npm run release:dry` to see the numbers and run the release again. |
 | `Missing package product 'CapApp-SPM'` or similar | Open the project once in Xcode (step 3), or `xcodebuild -resolvePackageDependencies -project ios/App/App.xcodeproj`. |
 | `xcode-select: error: tool 'xcodebuild' requires Xcode` | Install Xcode in `/Applications`, or `sudo xcode-select -s /Applications/Xcode.app`. |
 | `npm run screenshots`: *Executable doesn't exist* | `npx playwright install chromium` |
-| The name is taken | Nobody has checked "Fotonest" in App Store Connect yet: try it in step 4 first. Taken → pick another and change `appName`/`storeName` in `src/translations.ts`, `store/listing.md` and the privacy pages (the bundle id can stay). |
+| The name is taken | Nobody has checked "Bildklar" in App Store Connect yet: try it in step 4 first. Taken → pick another and change `appName`/`storeName` in `src/translations.ts`, `store/listing.md` and the privacy pages (the bundle id can stay). |
 
 ## Where things live
 

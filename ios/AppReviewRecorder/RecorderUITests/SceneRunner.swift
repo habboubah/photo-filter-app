@@ -72,7 +72,7 @@ struct SceneSpec { let name: String; let steps: [Step] }
 struct RecordingSpec {
     let bundleId: String
     /// The name under the app's icon: one, or one per iPhone language when the
-    /// app's name is localized (e.g. "Fotonest" in every language).
+    /// app's name is localized (e.g. "Bildklar" in every language).
     let iconNames: [String]
     /// For the log.
     var iconName: String { iconNames.joined(separator: " / ") }
@@ -1135,7 +1135,7 @@ final class SceneRunner {
         /// The app's name in the list, and the buttons in its row (same height on screen).
         func row() -> (title: XCUIElement, update: XCUIElement?, open: XCUIElement?)? {
             // TestFlight lists the App Store name, which starts with the icon's
-            // ("Fotonest – Fotos aufräumen", "Fotonest – Photo Cleanup").
+            // ("Bildklar KI: Foto Reiniger", "Bildklar AI: Photo Cleaner").
             let titles = testFlight.staticTexts.matching(NSCompoundPredicate(orPredicateWithSubpredicates:
                 names.map { NSPredicate(format: "label BEGINSWITH %@", $0) })).allElementsBoundByIndex
                 .filter { $0.exists && !$0.frame.isEmpty }

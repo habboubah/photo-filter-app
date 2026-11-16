@@ -20,13 +20,13 @@ const urls = import.meta.glob('./photos/*.jpg', { eager: true, query: '?url', im
 const urlOf = (id: string) => urls[`./photos/${id}.jpg`] ?? '';
 
 const K = {
-  access: 'fotonest-demo-access',
-  scanned: 'fotonest-demo-scanned',
-  trashed: 'fotonest-demo-trashed',
-  owned: 'fotonest-demo-owned',
-  state: 'fotonest-state',
+  access: 'bildklar-demo-access',
+  scanned: 'bildklar-demo-scanned',
+  trashed: 'bildklar-demo-trashed',
+  owned: 'bildklar-demo-owned',
+  state: 'bildklar-state',
   /** Milliseconds per step of a first scan (24 steps): screenshots slow it down to catch it. */
-  scanStep: 'fotonest-demo-scan-step',
+  scanStep: 'bildklar-demo-scan-step',
 };
 const get = (k: string) => { try { return localStorage.getItem(k); } catch { return null; } };
 const set = (k: string, v: string | null) => {

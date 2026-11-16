@@ -1,4 +1,4 @@
-// Every screen of Fotonest, to look at before and after a UI change: German by
+// Every screen of Bildklar, to look at before and after a UI change: German by
 // day and by night (iPhone Pro Max and iPhone SE), and English with Android's
 // wording on a small Android phone (360 × 800). Captures go to
 // screenshots/review/<variant>/.

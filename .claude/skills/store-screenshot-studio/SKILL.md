@@ -3,11 +3,11 @@ name: store-screenshot-studio
 description: Turn the raw app captures in screenshots/<locale>/ into polished, store-ready marketing screenshots — one bold colour, a big headline, a large phone, pieces of the screen lifted out of it (call-outs), stickers that run from slide to slide — plus the Google Play feature graphic. Use when asked to refresh, restyle, improve or regenerate marketing screenshots, store listing images, App Store or Play Store artwork, headlines, call-outs or stickers on screenshots, or the feature graphic.
 ---
 
-> From budget-app (Spartopf) by way of the shopping list, set up for Fotonest
+> From budget-app (Spartopf) by way of the shopping list, set up for Bildklar
 > on 16 November 2026: the store captures of `scripts/screenshots.mjs` per
 > language (01-scan … 09-paywall), the icon's teal, DE / EN copy, an App Store
 > target (8 slides) and a Google Play target (7 slides, from the Android
-> captures) with its feature graphic. No ribbon, no price words: Fotonest has an
+> captures) with its feature graphic. No ribbon, no price words: Bildklar has an
 > in-app purchase. **The demo photos are drawn** — swap in licensed photos
 > before making the set for the stores (`docs/TODO.md`, step 5).
 
@@ -203,7 +203,7 @@ headlines (weight 650, `templates/slide.css`), Figtree for points and sublines.
   app does and that everything stays on the device.
 - **The ribbon** (a band across the top corner) and **price points**
   (`{ "text": …, "price": true }`) are machinery from the free shopping list.
-  **Off for Fotonest** on every target and on the feature graphic: an app that
+  **Off for Bildklar** on every target and on the feature graphic: an app that
   sells an unlock may not say "free" on its screenshots (Apple rejects it,
   guideline 2.3.7; on Play it is misleading), and the paywall's price is not
   shown either — `09-paywall` is captured for App Review's in-app purchase

@@ -34,10 +34,10 @@ const ALLOWED_URLS = [
   [/^https:\/\/capacitorjs\.com\//, "a Capacitor console warning's text"],
   [/^https:\/\/tailwindcss\.com/, "Tailwind's banner comment in the CSS"],
   [/^https:\/\/apps\.apple\.com\/app\/id\d*/,
-    'Einstellungen › Fotonest bewerten (src/links.ts): handed to the App Store when tapped, never fetched'],
-  [/^https:\/\/play\.google\.com\/store\/apps\/details\?id=com\.habboubah\.fotonest$/,
-    'Einstellungen › Fotonest bewerten in the Android app (src/links.ts): handed to Google Play when tapped, never fetched'],
-  [/^https:\/\/habboubah\.github\.io\/privacy-policy\/fotonest\/(de\/)?$/,
+    'Einstellungen › Bildklar bewerten (src/links.ts): handed to the App Store when tapped, never fetched'],
+  [/^https:\/\/play\.google\.com\/store\/apps\/details\?id=com\.habboubah\.bildklar$/,
+    'Einstellungen › Bildklar bewerten in the Android app (src/links.ts): handed to Google Play when tapped, never fetched'],
+  [/^https:\/\/habboubah\.github\.io\/privacy-policy\/bildklar\/(de\/)?$/,
     'Einstellungen › Datenschutz (src/links.ts): opened in the browser when tapped, never fetched'],
 ];
 

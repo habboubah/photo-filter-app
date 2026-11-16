@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.habboubah.fotonest',
-  appName: 'Fotonest',
+  appId: 'com.habboubah.bildklar',
+  appName: 'Bildklar',
   webDir: 'dist',
   plugins: {
     // Android draws edge to edge; index.html says viewport-fit=cover, and

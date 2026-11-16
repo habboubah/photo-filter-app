@@ -19,9 +19,9 @@ export class DemoPurchases extends WebPlugin implements PurchasesPlugin {
   }
 
   async isOwned() { return { owned: this.owned() }; }
-  /** `fotonest-demo-restorable` = "1" stands for a purchase made earlier (the App Review rehearsal restores it). */
+  /** `bildklar-demo-restorable` = "1" stands for a purchase made earlier (the App Review rehearsal restores it). */
   async restore() {
-    try { if (localStorage.getItem('fotonest-demo-restorable') === '1') localStorage.setItem(demoOwnedKey, '1'); } catch { /* storage is unavailable */ }
+    try { if (localStorage.getItem('bildklar-demo-restorable') === '1') localStorage.setItem(demoOwnedKey, '1'); } catch { /* storage is unavailable */ }
     return { owned: this.owned() };
   }
 }

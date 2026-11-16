@@ -1,13 +1,13 @@
 ---
 name: app-review-recording
-description: Rehearse, run or change the automated App Review screen recording of Fotonest (an iPhone UI test that plays ios/AppReviewRecorder/scenes.json while iOS records the screen; npm run rehearse:app-review, npm run record:app-review). Use when asked for the screen recording or video for App Review, after a Guideline 2.1 "Information Needed" request, when a recording run stops on the iPhone, or when a screen, label or flow the recording passes through has changed.
+description: Rehearse, run or change the automated App Review screen recording of Bildklar (an iPhone UI test that plays ios/AppReviewRecorder/scenes.json while iOS records the screen; npm run rehearse:app-review, npm run record:app-review). Use when asked for the screen recording or video for App Review, after a Guideline 2.1 "Information Needed" request, when a recording run stops on the iPhone, or when a screen, label or flow the recording passes through has changed.
 ---
 
 # App Review recording
 
 App Review (Guideline 2.1, "Information Needed") asks for a screen recording
 "captured on a physical device", starting with launching the app and showing
-the typical flow. Fotonest is a React + Capacitor app in a WKWebView, so
+the typical flow. Bildklar is a React + Capacitor app in a WKWebView, so
 it uses the shopping list's recorder (originally Spartopf's,
 `../budget-app/ios/AppReviewRecorder`; copied on 16 November 2026): a scene file played by an iPhone UI test while iOS records
 the screen, and the same scene file rehearsed against the web build first.
@@ -24,9 +24,9 @@ the screen, and the same scene file rehearsed against the web build first.
 
 - **A real iPhone.** Apple asked for a physical device. Never present a
   Simulator or a browser recording as one.
-- **No real photos on film.** Fotonest shows the photo library, so the iPhone
+- **No real photos on film.** Bildklar shows the photo library, so the iPhone
   gives it **Limited Access to the demo photos only** (README, *Preparation*).
-  Every full run resets Fotonest's decisions first (Settings › Language ›
+  Every full run resets Bildklar's decisions first (Settings › Language ›
   English, Appearance › Like the system, *Reset my decisions* —
   `preflight.reset`, not in the video).
 - **The run changes the photo library for real**: scene 2 makes an album
@@ -37,7 +37,7 @@ the screen, and the same scene file rehearsed against the web build first.
   in-app purchase screenshot (`screenshots/en/09-paywall.png`). In the
   rehearsal the paywall appears and *Restore purchases* unlocks it.
 - **The submitted build.** The UI test drives the installed TestFlight app by
-  bundle id (`com.habboubah.fotonest`); it never installs a build. An iPhone
+  bundle id (`com.habboubah.bildklar`); it never installs a build. An iPhone
   build older than `app.minVersion` is updated through TestFlight by a
   separate test, before anything is reset or filmed.
 - **Where it runs.** Writing and rehearsing work anywhere; the iPhone run
@@ -111,10 +111,10 @@ about 2.5 s per action on the iPhone plus the pauses × `PACE` (0.65).
   are `systemAlert` steps with the button in English and German; keep the
   permission one inside `optional` (iOS asks once per install).
 - Paywall steps sit inside `optional`, starting with `{"see": "Unlock
-  Fotonest", "timeout": 3}`: on the iPhone the unlock is owned and they are
+  Bildklar", "timeout": 3}`: on the iPhone the unlock is owned and they are
   skipped; in the rehearsal they run.
 - Nothing may depend on the iPhone's language except `app.iconName`
-  (*Fotonest* in every language), `preflight` (labels in English and German)
+  (*Bildklar* in every language), `preflight` (labels in English and German)
   and `system`.
 
 ## Not yet tried on an iPhone (16 November 2026)

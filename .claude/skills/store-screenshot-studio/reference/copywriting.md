@@ -37,10 +37,10 @@ they may only half-read. Every rule below exists for that reader.
   "Reisen sortiert", "Alles auf deinem Gerät". At most five on a slide.
 - **Facts, not reassurance.** "Alles auf deinem Gerät" can be checked;
   "100 % sicher" cannot. The same rule 3 applies: the slide that carries the
-  promise shows the screen that says so (the scan: "Fotonest sieht sich deine
+  promise shows the screen that says so (the scan: "Bildklar sieht sich deine
   Fotos an", the settings' privacy row).
 - **No price words** ("kostenlos", "free", "kein Abo") anywhere in the set:
-  Fotonest sells an unlock, so they would mislead (`reference/store-specs.md`).
+  Bildklar sells an unlock, so they would mislead (`reference/store-specs.md`).
   The ribbon stays off.
 
 ## Good / bad

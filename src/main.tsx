@@ -24,7 +24,7 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { error: unknown 
 
   render() {
     if (!this.state.error) return this.props.children;
-    const saved = (() => { try { return localStorage.getItem('fotonest-lang'); } catch { return null; } })();
+    const saved = (() => { try { return localStorage.getItem('bildklar-lang'); } catch { return null; } })();
     const t = stringsFor(isLanguage(saved) ? saved : DEFAULT_LANGUAGE);
     return (
       <div className="min-h-screen bg-bg flex items-center justify-center p-6">

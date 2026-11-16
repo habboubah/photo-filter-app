@@ -1,4 +1,4 @@
-// Raw store screenshots of Fotonest, in German and English: nine screens per
+// Raw store screenshots of Bildklar, in German and English: nine screens per
 // language at 1290 × 2796 (430 × 932 pt @3x), as plain app screens, from the
 // demo library. Next to each, <screen>.marks.json says where its parts are
 // (the clean-up card, the best shot …), for the pieces the store set lifts

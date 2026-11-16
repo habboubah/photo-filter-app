@@ -60,5 +60,5 @@ export function folderName(title: string): string {
     .replace(/\s+/g, ' ')
     .replace(/^[.\s]+|[.\s]+$/g, '')
     .slice(0, 80)
-    .trim() || 'Fotonest';
+    .trim() || 'Bildklar';
 }

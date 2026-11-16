@@ -8,7 +8,7 @@ buildscript {
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:8.13.0'
-        // The app's own plugins are Kotlin (app/src/main/java/com/habboubah/fotonest).
+        // The app's own plugins are Kotlin (app/src/main/java/com/habboubah/bildklar).
         classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.20'
 
         // NOTE: Do not place your application dependencies here; they belong

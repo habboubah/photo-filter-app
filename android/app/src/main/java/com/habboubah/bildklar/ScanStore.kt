@@ -1,4 +1,4 @@
-package com.habboubah.fotonest
+package com.habboubah.bildklar
 
 import android.content.ContentValues
 import android.content.Context
@@ -16,7 +16,7 @@ import com.getcapacitor.JSObject
  * Only ever used from the plugin's one scan thread (and the bridge thread for
  * reads, which SQLite serialises).
  */
-class ScanStore(context: Context) : SQLiteOpenHelper(context, "fotonest-scan.db", null, 1) {
+class ScanStore(context: Context) : SQLiteOpenHelper(context, "bildklar-scan.db", null, 1) {
 
     override fun onCreate(db: SQLiteDatabase) {
         db.execSQL(

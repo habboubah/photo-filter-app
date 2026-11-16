@@ -1,4 +1,4 @@
-package com.habboubah.fotonest
+package com.habboubah.bildklar
 
 import android.os.Bundle
 import com.getcapacitor.BridgeActivity

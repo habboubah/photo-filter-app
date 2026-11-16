@@ -1,4 +1,4 @@
-# Fotonest – the plan
+# Bildklar – the plan
 
 A photo organizer for parents, for iPhone and Android: it turns a camera roll
 of tens of thousands of pictures into trips (one tap makes an album), finds
@@ -30,7 +30,7 @@ mapping with the API names as checked, the design, and the decisions.
 ```
 
 - **Native side** (`ios/App/App/PhotoLibraryPlugin.swift`, `ScanStore.swift`,
-  `PurchasesPlugin.swift`; `android/app/src/main/java/com/habboubah/fotonest/*.kt`):
+  `PurchasesPlugin.swift`; `android/app/src/main/java/com/habboubah/bildklar/*.kt`):
   registered like budget-app's plugin (`MainViewController.capacitorDidLoad`,
   `MainActivity.registerPlugin`), one TypeScript interface each in `src/native/`.
   Heavy work never on the main thread: a serial scan queue/thread, a small pool
@@ -81,8 +81,8 @@ are worked out on demand for a similar group and cached.
 ## Data model
 
 **Scan cache** — SQLite, one table on each phone (iPhone:
-`Library/Caches/fotonest/scan.sqlite`, rebuilt if iOS clears it; Android:
-`databases/fotonest-scan.db`, kept out of backups):
+`Library/Caches/bildklar/scan.sqlite`, rebuilt if iOS clears it; Android:
+`databases/bildklar-scan.db`, kept out of backups):
 
 | Column | |
 |---|---|
@@ -104,10 +104,10 @@ joins, hidden trips, albums made, best-shot picks, photos kept in a review, and
 the purchase hint. **Not in localStorage:** iOS may clear a web view's storage
 when the phone runs short of space — exactly this app's users. Not in SQLite
 either: it is one small document, so the native side writes it atomically as
-a file (`Application Support/fotonest/state.json`, `files/state.json`)
+a file (`Application Support/bildklar/state.json`, `files/state.json`)
 through `getState`/`setState`. On the web (the demo) it is localStorage.
 
-**View preferences** stay `fotonest-*` keys in localStorage (language, theme,
+**View preferences** stay `bildklar-*` keys in localStorage (language, theme,
 the dry run): losing them costs nothing.
 
 ## Platform mapping (APIs as checked, November 2026)
@@ -120,7 +120,7 @@ the dry run): losing them costs nothing.
 | Blur, exposure | the shared spec on a CGContext-drawn grey image | the same spec on `Bitmap.getPixels` |
 | Near-identical | the shared dHash | the shared dHash |
 | Eyes open | Vision: `VNDetectFaceCaptureQualityRequest`, `VNDetectFaceLandmarksRequest` (eye height / width) | none — **no ML Kit** (its terms: it "sends metrics about the performance and utilization of the APIs" to Google). Sharpness + exposure only |
-| "Album" | `PHAssetCollectionChangeRequest.creationRequestForAssetCollection(withTitle:)` + `addAssets` — a real album; also with limited access (iOS 15+) | a folder: `MediaStore.createWriteRequest` (system dialog), then `RELATIVE_PATH = Pictures/Fotonest/<trip>/` — the file is moved, never copied or changed |
+| "Album" | `PHAssetCollectionChangeRequest.creationRequestForAssetCollection(withTitle:)` + `addAssets` — a real album; also with limited access (iOS 15+) | a folder: `MediaStore.createWriteRequest` (system dialog), then `RELATIVE_PATH = Pictures/Bildklar/<trip>/` — the file is moved, never copied or changed |
 | Delete | `PHAssetChangeRequest.deleteAssets` → iOS's dialog → Recently Deleted | `MediaStore.createTrashRequest(…, true)` → Android's dialog → Trash; never `createDeleteRequest`. Hence minSdk 30 |
 | Changes while open | `PHPhotoLibraryChangeObserver` | `ContentObserver` on `Images.Media.EXTERNAL_CONTENT_URI` |
 | Purchase | StoreKit 2: `Product.products(for:)`, `purchase(confirmIn:)` (iOS 17+) / `purchase()`, `Transaction.updates`, `Transaction.currentEntitlements`, `AppStore.sync()` for Restore | Play Billing 9.1.0: `queryProductDetailsAsync` (INAPP), `launchBillingFlow`, `acknowledgePurchase`, `queryPurchasesAsync` for Restore, `enablePendingPurchases(enableOneTimeProducts)`, `enableAutoServiceReconnection` |
@@ -168,8 +168,8 @@ sofa).
 
 | Decision | Taken | Why |
 |---|---|---|
-| Name | **Fotonest** — *Fotonest – Fotos aufräumen* / *Fotonest – Photo Cleanup*; code name `fotonest`; bundle id `com.habboubah.fotonest` | Short, one word for parents ("nest" = family), distinctive enough to stand a chance of being free. **Not yet checked in App Store Connect** — do that before the first upload (docs/TODO.md). |
-| Price | **4,99 €**, one-time, product `com.habboubah.fotonest.unlock` on both stores | An impulse price for a tool you use a few times a year; "pay once, no subscription" is the pitch. Changeable in both consoles at any time, without an app update. |
+| Name | **Bildklar** — *Bildklar KI: Foto Reiniger* / *Bildklar AI: Photo Cleaner*; code name `bildklar`; bundle id `com.habboubah.bildklar` | Renamed from *Fotonest* on 16 November 2026: *Fotonest*, *FotoNest* and *PhotoNest* (incl. a "PhotoNest: AI Photo Cleaner") were already in both stores. *Bildklar* ("clear picture") was free in both stores' search (16 Nov 2026); "KI"/"AI" stands for the on-device Vision analysis of the best shot on the iPhone. **Not yet reserved in App Store Connect / Play Console** — do that first (docs/TODO.md). |
+| Price | **4,99 €**, one-time, product `com.habboubah.bildklar.unlock` on both stores | An impulse price for a tool you use a few times a year; "pay once, no subscription" is the pitch. Changeable in both consoles at any time, without an app update. |
 | Android albums | **Folders**, after the system's consent | The only "album" every gallery app shows. Copying would double the storage, in-app albums would be invisible elsewhere. |
 | minSdk | **30** (Android 11) | Trash and write requests exist from 30: a deleted photo always lands in the Trash. |
 | iOS minimum | **16** | Room for StoreKit 2 and Vision without fallbacks; covers iPhone 8 and newer. (The rescan compares modification dates, which works on any version.) |

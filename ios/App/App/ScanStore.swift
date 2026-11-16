@@ -8,14 +8,14 @@ import SQLite3
 /// rows keep `fv = 0`.
 ///
 /// One connection, used from the plugin's serial queue only. The database lives
-/// in Library/Caches/fotonest (a cache: iOS may clear it, the next scan rebuilds
+/// in Library/Caches/bildklar (a cache: iOS may clear it, the next scan rebuilds
 /// it) — the user's decisions are a file of their own (PhotoLibraryPlugin).
 final class ScanStore {
     private var db: OpaquePointer?
     private static let transient = unsafeBitCast(-1, to: sqlite3_destructor_type.self)
 
     init() throws {
-        let dir = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0].appendingPathComponent("fotonest", isDirectory: true)
+        let dir = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0].appendingPathComponent("bildklar", isDirectory: true)
         try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         let path = dir.appendingPathComponent("scan.sqlite").path
         guard sqlite3_open_v2(path, &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_FULLMUTEX, nil) == SQLITE_OK else {

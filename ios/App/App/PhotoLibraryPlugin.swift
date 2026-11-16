@@ -62,9 +62,9 @@ public class PhotoLibraryPlugin: CAPPlugin, CAPBridgedPlugin, PHPhotoLibraryChan
     ]
 
     /// The scan and every database access: one serial queue.
-    private let queue = DispatchQueue(label: "com.habboubah.fotonest.scan", qos: .utility)
+    private let queue = DispatchQueue(label: "com.habboubah.bildklar.scan", qos: .utility)
     /// Thumbnails, apart from the scan so a running scan never holds the screens up.
-    private let io = DispatchQueue(label: "com.habboubah.fotonest.io", qos: .userInitiated, attributes: .concurrent)
+    private let io = DispatchQueue(label: "com.habboubah.bildklar.io", qos: .userInitiated, attributes: .concurrent)
     private var store: ScanStore?
     private var running = false
     private var cancelled = false
@@ -374,7 +374,7 @@ public class PhotoLibraryPlugin: CAPPlugin, CAPBridgedPlugin, PHPhotoLibraryChan
     /* --------------------------------------------------------- thumbnails */
 
     private lazy var thumbDir: URL = {
-        let dir = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0].appendingPathComponent("fotonest/thumbs", isDirectory: true)
+        let dir = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0].appendingPathComponent("bildklar/thumbs", isDirectory: true)
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         return dir
     }()
@@ -438,7 +438,7 @@ public class PhotoLibraryPlugin: CAPPlugin, CAPBridgedPlugin, PHPhotoLibraryChan
     }
 
     @objc func createAlbum(_ call: CAPPluginCall) {
-        let title = String((call.getString("title") ?? "Fotonest").prefix(80))
+        let title = String((call.getString("title") ?? "Bildklar").prefix(80))
         let list = ids(call)
         let dryRun = call.getBool("dryRun") ?? false
         if dryRun || list.isEmpty {
@@ -496,7 +496,7 @@ public class PhotoLibraryPlugin: CAPPlugin, CAPBridgedPlugin, PHPhotoLibraryChan
     /* ------------------------------------------------------------- state */
 
     private lazy var stateURL: URL = {
-        let dir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0].appendingPathComponent("fotonest", isDirectory: true)
+        let dir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0].appendingPathComponent("bildklar", isDirectory: true)
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         return dir.appendingPathComponent("state.json")
     }()

@@ -1,4 +1,4 @@
-package com.habboubah.fotonest
+package com.habboubah.bildklar
 
 import android.Manifest
 import android.app.Activity
@@ -47,7 +47,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  *   their generation; new and changed photos analysed on a small thread pool,
  *   a batch at a time, newest first, with progress events. Never on the main thread.
  * - thumbnails: ContentResolver.loadThumbnail, written to the cache folder under a size cap.
- * - "albums": a folder Pictures/Fotonest/<title>/. The photos are moved there
+ * - "albums": a folder Pictures/Bildklar/<title>/. The photos are moved there
  *   (RELATIVE_PATH updated) only after MediaStore.createWriteRequest's system
  *   dialog; their contents never change and nothing is copied.
  * - deleting: MediaStore.createTrashRequest — the system's dialog, then the Trash.
@@ -109,7 +109,7 @@ class PhotoLibraryPlugin : Plugin() {
 
     /* ------------------------------------------------------------- access */
 
-    private fun prefs() = context.getSharedPreferences("fotonest", Context.MODE_PRIVATE)
+    private fun prefs() = context.getSharedPreferences("bildklar", Context.MODE_PRIVATE)
 
     private fun granted(permission: String) =
         ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED
@@ -392,14 +392,14 @@ class PhotoLibraryPlugin : Plugin() {
 
     @PluginMethod
     fun createAlbum(call: PluginCall) {
-        val title = (call.getString("title") ?: "").replace(Regex("[\\\\/:*?\"<>|\\p{Cntrl}]"), " ").trim().ifEmpty { "Fotonest" }.take(80)
+        val title = (call.getString("title") ?: "").replace(Regex("[\\\\/:*?\"<>|\\p{Cntrl}]"), " ").trim().ifEmpty { "Bildklar" }.take(80)
         val list = ids(call)
         val dryRun = call.getBoolean("dryRun", false) == true
         if (dryRun || list.isEmpty()) {
             call.resolve(JSObject().put("done", list.size).put("cancelled", false).put("dryRun", dryRun))
             return
         }
-        val target = "${android.os.Environment.DIRECTORY_PICTURES}/Fotonest/$title/"
+        val target = "${android.os.Environment.DIRECTORY_PICTURES}/Bildklar/$title/"
         withConsent(list.map(::contentUri), { MediaStore.createWriteRequest(context.contentResolver, it) }) { approved, cancelled ->
             if (cancelled) {
                 call.resolve(JSObject().put("done", 0).put("cancelled", true).put("dryRun", false))

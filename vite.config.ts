@@ -28,7 +28,7 @@ const CSP = [
 ].join('; ');
 
 const csp = {
-  name: 'fotonest-csp',
+  name: 'bildklar-csp',
   apply: 'build' as const,
   transformIndexHtml(html: string) {
     return {

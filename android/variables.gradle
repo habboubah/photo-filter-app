@@ -13,7 +13,7 @@ ext {
     androidxJunitVersion = '1.3.0'
     androidxEspressoCoreVersion = '3.7.0'
     cordovaAndroidVersion = '14.0.1'
-    // Fotonest's own native code (PhotoLibrary, Purchases) is Kotlin.
+    // Bildklar's own native code (PhotoLibrary, Purchases) is Kotlin.
     kotlinVersion = '2.2.20'
     billingVersion = '9.1.0'
     exifInterfaceVersion = '1.4.1'
