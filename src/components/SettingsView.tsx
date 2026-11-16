@@ -134,6 +134,7 @@ export function LicencesView({ t, onBack }: { t: Strings; onBack: () => void }) 
         <p>{t.licenceFonts}</p>
         <p>{t.licenceIcons}</p>
         <p>{t.licenceCode}</p>
+        <p>{t.licenceAi}</p>
       </div>
     </Screen>
   );

@@ -56,8 +56,11 @@ export function HomeView(p: Props) {
   const loaded = p.photoCount !== null;
   // A rescan that only looks at a few new photos stays quiet: the card is for a first scan or a long one.
   const bigScan = p.scan.running && (firstScan || (p.scan.phase === 'analyse' && p.scan.total - p.scan.done > 50));
+  // The AI's pass (docs/AI.md) runs after the scan and can take long: the app stays usable, the subtitle counts along.
+  const aiPass = p.scan.running && p.scan.phase === 'ai' && p.scan.total > 0;
+  const scanLine = aiPass ? fmt(t.scanAi, { done: num(t, p.scan.done), total: num(t, p.scan.total) }) : t.scanUpdating;
   const subtitle = loaded && !(p.photoCount === 0 && p.scan.running)
-    ? [plural(t, 'photos', p.photoCount!), visible.length ? plural(t, 'trips', visible.length) : null, p.scan.running && !bigScan ? t.scanUpdating : null]
+    ? [plural(t, 'photos', p.photoCount!), visible.length ? plural(t, 'trips', visible.length) : null, p.scan.running && !bigScan ? scanLine : null]
       .filter(Boolean).join(' · ')
     : t.loading;
 

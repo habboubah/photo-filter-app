@@ -48,6 +48,10 @@ export interface ScanView extends ScanProgress {
   lastScanAt: number;
 }
 
+/** During the AI's pass (16 photos per progress event), the facts are read again every this many photos. */
+const AI_RELOAD_EVERY = 480;
+const AI_BATCH = 16;
+
 /** A rescan when the app comes back after this long. */
 const RESCAN_AFTER_MS = 2 * 60_000;
 
@@ -193,7 +197,11 @@ export function useAppStore() {
   }, [refreshAccess, reload, startScan]);
 
   useEffect(() => {
-    const progress = PhotoLibrary.addListener('scanProgress', p => setScan(s => ({ ...s, ...p, running: true })));
+    const progress = PhotoLibrary.addListener('scanProgress', p => {
+      setScan(s => ({ ...s, ...p, running: true }));
+      // The AI's pass is long: its results show up every AI_RELOAD_EVERY photos, not only at the end.
+      if (p.phase === 'ai' && p.done > 0 && p.done % AI_RELOAD_EVERY < AI_BATCH) void reload();
+    });
     const done = PhotoLibrary.addListener('scanDone', st => {
       setScan(s => ({ ...s, running: false, lastScanAt: st.lastScanAt }));
       void reload();

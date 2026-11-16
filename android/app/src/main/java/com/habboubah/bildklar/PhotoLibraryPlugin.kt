@@ -61,6 +61,10 @@ import java.util.concurrent.atomic.AtomicBoolean
  * - the scan: MediaStore's rows diffed against the SQLite cache (ScanStore) by
  *   their generation; new and changed photos analysed on a small thread pool,
  *   a batch at a time, newest first, with progress events. Never on the main thread.
+ * - the on-device AI (docs/AI.md), a third phase of the scan: each analysed
+ *   photo through the shared image model (ImageEmbedder, ONNX Runtime),
+ *   sixteen at a time, newest first, paused while the phone runs hot.
+ *   Nothing leaves the phone.
  * - thumbnails: ContentResolver.loadThumbnail, written to the cache folder under a size cap.
  * - "albums": a folder Pictures/Bildklar/<title>/. The photos are moved there
  *   (RELATIVE_PATH updated) only after MediaStore.createWriteRequest's system
@@ -83,6 +87,9 @@ class PhotoLibraryPlugin : Plugin() {
     private val io = Executors.newFixedThreadPool(4)
     private val running = AtomicBoolean(false)
     private val cancelled = AtomicBoolean(false)
+    /** Made on the scan thread the first time it is needed; null when the model can't load (the AI's phase is then skipped). */
+    private var embedder: ImageEmbedder? = null
+    private var embedderTried = false
     private val main = Handler(Looper.getMainLooper())
 
     private lateinit var permissionLauncher: ActivityResultLauncher<Array<String>>
@@ -210,6 +217,7 @@ class PhotoLibraryPlugin : Plugin() {
         .put("running", running.get())
         .put("count", store.count())
         .put("pending", store.pendingCount())
+        .put("aiPending", store.aiPendingCount())
         .put("lastScanAt", store.meta(LAST_SCAN)?.toLongOrNull() ?: 0L)
 
     @PluginMethod
@@ -227,6 +235,7 @@ class PhotoLibraryPlugin : Plugin() {
             try {
                 listPhotos()
                 analyse()
+                analyseAI()
                 if (!cancelled.get()) store.setMeta(LAST_SCAN, System.currentTimeMillis().toString())
             } catch (_: Exception) {
                 // A photo vanished mid-scan, the volume went away: what was stored stays; the next scan goes on.
@@ -382,6 +391,47 @@ class PhotoLibraryPlugin : Plugin() {
             FeatureMath.features(FeatureMath.greyOf(px), w, h)
         } catch (_: Exception) { null }
         return ScanStore.Result(id, taken, lat, lon, features)
+    }
+
+    /**
+     * Phase 3: the on-device AI over each analysed photo it has not seen (docs/AI.md). Stops for now when the
+     * phone gets hot (thermal status severe or worse) — the next scan goes on where this one stopped.
+     */
+    private fun analyseAI() {
+        if (!embedderTried) {
+            embedderTried = true
+            embedder = try {
+                val installed = context.packageManager.getPackageInfo(context.packageName, 0).lastUpdateTime
+                ImageEmbedder.fromAssets(context, installed)
+            } catch (_: Throwable) { null }
+        }
+        val model = embedder ?: return
+        val total = store.aiPendingCount()
+        if (total == 0) return
+        val power = context.getSystemService(Context.POWER_SERVICE) as android.os.PowerManager
+        var done = 0
+        progress("ai", 0, total)
+        while (!cancelled.get()) {
+            if (power.currentThermalStatus >= android.os.PowerManager.THERMAL_STATUS_SEVERE) break
+            val ids = store.aiPending(AI_BATCH)
+            if (ids.isEmpty()) break
+            val results = ArrayList<Pair<String, IntArray?>>(ids.size)
+            for (id in ids) {
+                if (cancelled.get()) break
+                val scores = try {
+                    val bmp = context.contentResolver.loadThumbnail(contentUri(id), Size(FeatureMath.LONG_SIDE, FeatureMath.LONG_SIDE), null)
+                    val fitted = fit(bmp)
+                    try { model.scores(fitted) } finally {
+                        if (fitted !== bmp) fitted.recycle()
+                        bmp.recycle()
+                    }
+                } catch (_: Exception) { null }
+                results.add(Pair(id, scores))
+            }
+            store.storeAI(results)
+            done += results.size
+            progress("ai", minOf(done, total), total)
+        }
     }
 
     /** Scales a bitmap down to fit LONG_SIDE (the spec's grey image size), never up. */
@@ -713,6 +763,8 @@ class PhotoLibraryPlugin : Plugin() {
         private const val LAST_SCAN = "lastScanAt"
         /** Photos analysed per batch (and per progress event). */
         private const val BATCH = 48
+        /** Photos per AI batch (and per progress event): one picture at a time through the model, its threads do the rest. */
+        private const val AI_BATCH = 16
         /** The thumbnails' size cap in the cache folder. */
         private const val THUMB_CAP = 200L * 1024 * 1024
         /** URIs per MediaStore request: well inside a binder transaction's limit. */

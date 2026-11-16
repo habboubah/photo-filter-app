@@ -48,9 +48,30 @@ android {
         }
     }
     testOptions {
-        // The feature tests read the shared pictures in ../../fixtures/features (the repository root).
-        unitTests.all { it.systemProperty 'fixtures', file('../../fixtures/features').absolutePath }
+        // The feature tests read the shared pictures in ../../fixtures/features (the repository root);
+        // the AI test the golden fixtures in ../../fixtures/ai and the model in ../../ai-assets.
+        unitTests.all {
+            it.systemProperty 'fixtures', file('../../fixtures/features').absolutePath
+            it.systemProperty 'aiFixtures', file('../../fixtures/ai').absolutePath
+            it.systemProperty 'aiAssets', file('../../ai-assets').absolutePath
+        }
     }
+    // The on-device AI's model and label vectors (docs/AI.md): one copy in the repository (ai-assets/),
+    // copied into the APK's assets/ai/ at build time.
+    sourceSets {
+        main { assets.srcDir(layout.buildDirectory.dir('generated/ai-assets')) }
+    }
+}
+
+def copyAiAssets = tasks.register('copyAiAssets', Copy) {
+    from('../../ai-assets') { include 'image.onnx', 'vectors.bin', 'vectors.json', 'LICENSES.md' }
+    into(layout.buildDirectory.dir('generated/ai-assets/ai'))
+}
+preBuild.dependsOn(copyAiAssets)
+
+// The unit tests run ONNX Runtime on the build machine (the desktop library), not the Android one.
+configurations.matching { it.name.endsWith('UnitTestRuntimeClasspath') }.configureEach {
+    exclude group: 'com.microsoft.onnxruntime', module: 'onnxruntime-android'
 }
 
 kotlin {
@@ -75,8 +96,12 @@ dependencies {
     // Media3 Transformer: a smaller copy of a video, made on the phone (no network, no analytics).
     implementation "androidx.media3:media3-transformer:$media3Version"
     implementation "androidx.media3:media3-common:$media3Version"
+    // The on-device AI (docs/AI.md): ONNX Runtime runs the shared image model on the phone's CPU. A library
+    // inside the app — it sends nothing anywhere.
+    implementation "com.microsoft.onnxruntime:onnxruntime-android:$onnxruntimeVersion"
     implementation project(':capacitor-android')
     testImplementation "junit:junit:$junitVersion"
+    testImplementation "com.microsoft.onnxruntime:onnxruntime:$onnxruntimeVersion"
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
     implementation project(':capacitor-cordova-android-plugins')

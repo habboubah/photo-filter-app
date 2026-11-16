@@ -195,7 +195,7 @@ export default function App() {
 
   // A long scan keeps the screen on: iOS pauses an app whose screen went dark, and the scan with it.
   const scan = store.scan;
-  const longScan = scan.running && (!scan.lastScanAt || (scan.phase === 'analyse' && scan.total - scan.done > 50));
+  const longScan = scan.running && (!scan.lastScanAt || ((scan.phase === 'analyse' || scan.phase === 'ai') && scan.total - scan.done > 50));
   useEffect(() => {
     if (longScan) void KeepAwake.keepAwake().catch(() => {});
     else void KeepAwake.allowSleep().catch(() => {});

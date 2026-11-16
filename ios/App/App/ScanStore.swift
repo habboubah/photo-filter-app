@@ -5,7 +5,8 @@ import SQLite3
 /// (time, place, an estimated size, what kind it is, features, face scores). A rescan only analyses
 /// photos that are new or changed (their modification date moved on) and drops
 /// the ones that are gone. An interrupted scan simply continues: unanalysed
-/// rows keep `fv = 0`.
+/// rows keep `fv = 0`, rows the on-device AI has not seen yet `av = 0`
+/// (docs/AI.md) — a new model bumps the AI's version, not the features'.
 ///
 /// One connection, used from the plugin's serial queue only. The database lives
 /// in Library/Caches/bildklar (a cache: iOS may clear it, the next scan rebuilds
@@ -41,18 +42,20 @@ final class ScanStore {
               live INTEGER NOT NULL DEFAULT 0, burst TEXT, pick INTEGER NOT NULL DEFAULT 0,
               fv INTEGER NOT NULL DEFAULT 0,
               hash TEXT, sharp REAL, contrast REAL, expo REAL, clip REAL,
-              faces INTEGER, faceq REAL, eyes REAL
+              faces INTEGER, faceq REAL, eyes REAL,
+              av INTEGER NOT NULL DEFAULT 0, ai TEXT, aes REAL, util INTEGER
             )
             """)
         exec("CREATE INDEX IF NOT EXISTS asset_t ON asset(t, id)")
         exec("CREATE INDEX IF NOT EXISTS asset_fv ON asset(fv)")
+        exec("CREATE INDEX IF NOT EXISTS asset_av ON asset(av)")
         exec("CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT)")
     }
 
     deinit { sqlite3_close(db) }
 
-    /// 2: videos, screen recordings, Live Photos and bursts (November 2026).
-    private static let schema: Int64 = 2
+    /// 2: videos, screen recordings, Live Photos and bursts; 3: the on-device AI's columns (November 2026).
+    private static let schema: Int64 = 3
 
     private func userVersion() -> Int64 {
         guard let stmt = prepare("PRAGMA user_version") else { return 0 }
@@ -164,6 +167,51 @@ final class ScanStore {
     func count() -> Int { count("SELECT COUNT(*) FROM asset") }
     func pendingCount() -> Int { count("SELECT COUNT(*) FROM asset WHERE fv < \(FeatureMath.featureVersion)") }
 
+    /// The photos the AI still has to look at, newest first: analysed photos with a local copy (a hash), no videos, no screenshots.
+    private static let aiWanted = "av < ? AND fv > 0 AND hash IS NOT NULL AND video = 0 AND shot = 0"
+
+    func aiPending(limit: Int) -> [String] {
+        guard let stmt = prepare("SELECT id FROM asset WHERE \(Self.aiWanted) ORDER BY t DESC LIMIT ?") else { return [] }
+        defer { sqlite3_finalize(stmt) }
+        bind(stmt, 1, Int64(ImageEmbedder.aiVersion)); bind(stmt, 2, Int64(limit))
+        var out: [String] = []
+        while sqlite3_step(stmt) == SQLITE_ROW { out.append(String(cString: sqlite3_column_text(stmt, 0))) }
+        return out
+    }
+
+    func aiPendingCount() -> Int {
+        guard let stmt = prepare("SELECT COUNT(*) FROM asset WHERE \(Self.aiWanted)") else { return 0 }
+        defer { sqlite3_finalize(stmt) }
+        bind(stmt, 1, Int64(ImageEmbedder.aiVersion))
+        return sqlite3_step(stmt) == SQLITE_ROW ? Int(sqlite3_column_int64(stmt, 0)) : 0
+    }
+
+    struct AIResult {
+        let id: String
+        /// The labels' logits × 10 (nil: the picture could not be read).
+        let scores: [Int]?
+        /// Vision's aesthetics score and utility flag (iOS 18+).
+        let aes: Double?
+        let util: Bool?
+    }
+
+    /// The AI's pass over some photos; `av` moves on either way, so an unreadable photo isn't tried again and again.
+    func storeAI(_ results: [AIResult]) {
+        guard let stmt = prepare("UPDATE asset SET av = ?, ai = ?, aes = ?, util = ? WHERE id = ?") else { return }
+        defer { sqlite3_finalize(stmt) }
+        transaction {
+            for r in results {
+                sqlite3_reset(stmt)
+                bind(stmt, 1, Int64(ImageEmbedder.aiVersion))
+                if let s = r.scores { bind(stmt, 2, s.map(String.init).joined(separator: ",")) } else { sqlite3_bind_null(stmt, 2) }
+                bind(stmt, 3, r.aes)
+                if let u = r.util { bind(stmt, 4, Int64(u ? 1 : 0)) } else { sqlite3_bind_null(stmt, 4) }
+                bind(stmt, 5, r.id)
+                sqlite3_step(stmt)
+            }
+        }
+    }
+
     /// An analysis: the features, or none when no local copy of the picture exists (an iCloud-only original is never downloaded).
     func store(_ results: [(id: String, features: FeatureMath.Features?)]) {
         guard let stmt = prepare("UPDATE asset SET fv = ?, hash = ?, sharp = ?, contrast = ?, expo = ?, clip = ? WHERE id = ?") else { return }
@@ -217,7 +265,7 @@ final class ScanStore {
     func facts(offset: Int, limit: Int) -> [[String: Any]] {
         guard let stmt = prepare("""
             SELECT id, t, lat, lon, bytes, w, h, fav, shot, fv, hash, sharp, contrast, expo, clip, faces, faceq, eyes,
-                   video, dur, rec, live, burst, pick
+                   video, dur, rec, live, burst, pick, av, ai, aes, util
             FROM asset ORDER BY t, id LIMIT ? OFFSET ?
             """) else { return [] }
         defer { sqlite3_finalize(stmt) }
@@ -258,6 +306,13 @@ final class ScanStore {
             if sqlite3_column_int64(stmt, 21) == 1 { o["live"] = true }
             if sqlite3_column_type(stmt, 22) != SQLITE_NULL { o["burst"] = String(cString: sqlite3_column_text(stmt, 22)) }
             if sqlite3_column_int64(stmt, 23) == 1 { o["pick"] = true }
+            if sqlite3_column_int64(stmt, 24) == Int64(ImageEmbedder.aiVersion) {
+                if sqlite3_column_type(stmt, 25) != SQLITE_NULL {
+                    o["ai"] = String(cString: sqlite3_column_text(stmt, 25)).split(separator: ",").compactMap { Int($0) }
+                }
+                if sqlite3_column_type(stmt, 26) != SQLITE_NULL { o["aes"] = sqlite3_column_double(stmt, 26) }
+                if sqlite3_column_type(stmt, 27) != SQLITE_NULL { o["util"] = sqlite3_column_int64(stmt, 27) == 1 }
+            }
             rows.append(o)
         }
         return rows
