@@ -68,6 +68,15 @@ describe('best shot', () => {
     expect(rankGroup([photo({ sharp: 500 }), photo({ sharp: 450 })])[0].sharp).toBe(500);
   });
 
+  it("weighs Vision's aesthetics score when every photo has one (iOS 18+)", () => {
+    const plain = photo({ sharp: 500, aes: -0.4 });
+    const lovely = photo({ sharp: 460, aes: 0.6 });
+    expect(rankGroup([plain, lovely])[0].id).toBe(lovely.id);
+    // Scores that hardly differ, or a member without one, leave the ranking to sharpness.
+    expect(rankGroup([photo({ sharp: 500, aes: 0.30 }), photo({ sharp: 460, aes: 0.32 })])[0].sharp).toBe(500);
+    expect(rankGroup([photo({ sharp: 500 }), photo({ sharp: 460, aes: 0.9 })])[0].sharp).toBe(500);
+  });
+
   it('scores exposure from mid-grey', () => {
     expect(exposureScore(photo({ expo: 0.48, clip: 0 }))).toBeCloseTo(1);
     expect(exposureScore(photo({ expo: 0.02, clip: 0.4 }))).toBe(0);
