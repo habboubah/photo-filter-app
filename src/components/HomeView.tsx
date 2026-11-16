@@ -1,8 +1,9 @@
 import type React from 'react';
-import { Aperture, CalendarDays, ChevronRight, Copy, FileVideo, Focus, History, ImagePlus, Layers, MapPin, RefreshCw, Settings, Smartphone, Sparkles } from 'lucide-react';
+import { Aperture, CalendarDays, ChevronRight, Copy, FileVideo, Focus, History, ImagePlus, Layers, MapPin, ReceiptText, RefreshCw, Settings, Smartphone, Sparkles } from 'lucide-react';
 import type { CleanupSummary, Storage, Trip } from '../types';
 import type { Access } from '../native/photoLibrary';
 import type { ScanView } from '../store';
+import type { MemoryLabel } from '../logic/ai';
 import { Strings, bytes, fmt, num, plural } from '../translations';
 import { Empty, Screen } from '../ui/Screen';
 import { Button, IconButton } from '../ui/Button';
@@ -25,6 +26,9 @@ interface Props {
   screenshotCount: number;
   large: { count: number; bytes: number };
   liveCount: number;
+  /** The on-device AI (src/logic/ai.ts): utility photos, shown once the AI has seen any photo, and the categories. */
+  utility: { show: boolean; count: number; bytes: number };
+  categories: { label: MemoryLabel; count: number; cover: string }[];
   storage: Storage | null;
   freedBytes: number;
   streak: number;
@@ -41,6 +45,8 @@ interface Props {
   onMonths: () => void;
   onLarge: () => void;
   onLive: () => void;
+  onUtility: () => void;
+  onCategory: (label: MemoryLabel) => void;
   onOnThisDay: () => void;
   onTrips: () => void;
   onTrip: (key: string) => void;
@@ -102,7 +108,29 @@ export function HomeView(p: Props) {
           <Tile hue="sky" icon={Smartphone} label={t.screenshotsTile} value={plural(t, 'photos', p.screenshotCount)} onClick={p.onScreenshots} />
           <Tile hue="stone" icon={FileVideo} label={t.largeTile} value={p.large.count ? `${plural(t, 'files', p.large.count)} · ${bytes(t, p.large.bytes)}` : plural(t, 'files', 0)} onClick={p.onLarge} />
           {p.liveCount > 0 && <Tile hue="mint" icon={Aperture} label={t.liveTile} value={plural(t, 'photos', p.liveCount)} onClick={p.onLive} />}
+          {p.utility.show && (
+            <Tile hue="mint" icon={ReceiptText} label={t.utilityTile}
+              value={p.utility.count ? `${plural(t, 'photos', p.utility.count)} · ${bytes(t, p.utility.bytes)}` : plural(t, 'photos', 0)} onClick={p.onUtility} />
+          )}
         </div>
+      )}
+
+      {loaded && p.categories.length > 0 && (
+        <section aria-labelledby="categories-h">
+          <h2 id="categories-h" className="display text-title2 font-semibold text-fg px-1 pb-2">{t.categoriesTitle}</h2>
+          <div className="flex gap-[12px] overflow-x-auto -mx-[16px] px-[16px] pb-1">
+            {p.categories.map(c => (
+              <button
+                key={c.label} type="button" onClick={() => { tapLight(); p.onCategory(c.label); }}
+                className="shrink-0 w-[112px] rounded-md card p-[6px] text-start press focus-visible:ring-focus"
+              >
+                <span className="block w-full aspect-square rounded-[10px] overflow-hidden"><Thumb id={c.cover} className="!rounded-none" /></span>
+                <span className="block text-label font-bold text-fg mt-1.5 px-1 truncate">{t[`aiLabel_${c.label}`]}</span>
+                <span className="block text-caption text-fg-mute num px-1 pb-1">{num(t, c.count)}</span>
+              </button>
+            ))}
+          </div>
+        </section>
       )}
 
       {loaded && p.photoCount! > 0 && p.onThisDay.photos > 0 && (
@@ -215,6 +243,7 @@ function CleanupCard({ t, summary, storage, freedBytes, streak, onOpen }: {
     [t.cleanupSimilar, summary.similar.count, 'lilac'],
     [t.cleanupBlurry, summary.blurry.count, 'sand'],
     [t.cleanupScreenshots, summary.screenshots.count, 'sky'],
+    [t.cleanupUtility, summary.utility.count, 'mint'],
   ];
   return (
     <section className="rounded-lg card p-6" aria-labelledby="cleanup-h">

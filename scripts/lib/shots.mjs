@@ -232,6 +232,14 @@ export const SCREENS = [
       if (await tile.count()) { await tile.click(); await pause(page, 700); }
     },
   },
+  // The on-device AI (docs/AI.md): the utility photos and one category.
+  { name: '29-utility', run: async (page, w) => { await page.click(`button:has-text("${w.t.utilityTile}")`); await pause(page, 700); } },
+  {
+    name: '30-category', run: async (page, w) => {
+      await page.click(`section[aria-labelledby="categories-h"] button >> nth=0`);
+      await pause(page, 700);
+    },
+  },
 ];
 
 /**

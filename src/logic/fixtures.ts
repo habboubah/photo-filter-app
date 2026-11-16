@@ -114,5 +114,15 @@ export function fakeLibrary(n: number, seed = 1, end = Date.UTC(2026, 10, 1)): F
     }
   }
   photos.sort((a, b) => a.t - b.t);
+  // The on-device AI's scores (src/logic/ai.ts), from a random source of their own so the photos
+  // above stay as they were: about 4 % utility photos, the rest a family's usual categories.
+  const ai = prng(seed + 991);
+  for (const p of photos) {
+    if (p.shot) continue;
+    const z = Array.from({ length: 13 }, () => Math.round(-160 + ai() * 40));
+    if (ai() < 0.04) z[Math.floor(ai() * 8)] = Math.round(-45 + ai() * 40);
+    else z[8 + Math.floor(ai() * 5)] = Math.round(-110 + ai() * 30);
+    p.ai = z;
+  }
   return { photos, trips };
 }

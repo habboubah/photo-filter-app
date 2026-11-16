@@ -113,6 +113,8 @@ export interface CleanupSummary {
   blurry: { count: number; bytes: number };
   /** Screenshots older than OLD_SHOT_DAYS (src/logic/screenshots.ts). */
   screenshots: { count: number; bytes: number };
+  /** Utility photos the on-device AI found (src/logic/ai.ts), not already counted above. */
+  utility: { count: number; bytes: number };
   total: { count: number; bytes: number };
 }
 

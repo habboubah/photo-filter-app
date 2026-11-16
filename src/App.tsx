@@ -17,8 +17,9 @@ import { folderName } from './logic/naming';
 import { addMerge, addSplit, removeMerge, removeSplits, setIgnored, setName } from './logic/trips';
 import {
   Decision, ReviewItem, Session, decide, isDone, keptAgainstSuggestion, reviewBlurry, reviewCleanup, reviewGroup,
-  reviewLarge, reviewScreenshots, reviewTrip, startSession, undo,
+  reviewLarge, reviewScreenshots, reviewTrip, reviewUtility, startSession, undo,
 } from './logic/review';
+import { aiProgress, categories, findUtility, type MemoryLabel } from './logic/ai';
 import { findScreenshots, isOldShot, oldShots } from './logic/screenshots';
 import { findLarge, findLive } from './logic/large';
 import { buildMonths, onThisDay } from './logic/months';
@@ -42,6 +43,8 @@ import { QuickCleanView } from './components/QuickCleanView';
 import { MonthsView } from './components/MonthsView';
 import { LargeView } from './components/LargeView';
 import { LiveView } from './components/LiveView';
+import { UtilityView } from './components/UtilityView';
+import { CategoryView } from './components/CategoryView';
 import { Progress } from './ui/Controls';
 import { Sheet } from './ui/Sheet';
 import { ReviewView } from './components/ReviewView';
@@ -85,7 +88,14 @@ export default function App() {
   const now = useMemo(() => Date.now(), [photos]); // eslint-disable-line react-hooks/exhaustive-deps
   const shots = useMemo(() => findScreenshots(lib.photos, kept), [lib, kept]);
   const old = useMemo(() => oldShots(shots, now), [shots, now]);
-  const summary = useMemo(() => (photos ? summarize(lib, groups, blurry, kept, old) : null), [photos, lib, groups, blurry, kept, old]);
+  // The on-device AI (src/logic/ai.ts): utility photos, categories, how far its pass got.
+  const utility = useMemo(() => findUtility(lib.photos, kept), [lib, kept]);
+  const cats = useMemo(() => categories(lib.photos), [lib]);
+  const aiSeen = useMemo(() => aiProgress(lib.photos), [lib]);
+  const summary = useMemo(
+    () => (photos ? summarize(lib, groups, blurry, kept, old, utility) : null),
+    [photos, lib, groups, blurry, kept, old, utility],
+  );
   const parts = useMemo(() => cleanParts(groups, blurry, old, kept, lib.byId), [groups, blurry, old, kept, lib]);
   const months = useMemo(() => buildMonths(lib.photos), [lib]);
   const doneMonths = useMemo(() => new Set(state.months), [state.months]);
@@ -140,6 +150,8 @@ export default function App() {
   const [monthsShown, setMonthsShown] = useState(24);
   const [showLarge, setShowLarge] = useState(false);
   const [showLive, setShowLive] = useState(false);
+  const [showUtility, setShowUtility] = useState(false);
+  const [category, setCategory] = useState<MemoryLabel | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const [showLicences, setShowLicences] = useState(false);
   const [review, setReview] = useState<Review | null>(null);
@@ -168,8 +180,10 @@ export default function App() {
     ['screenshots', showScreenshots, () => setShowScreenshots(false)],
     ['quickClean', showQuickClean, () => setShowQuickClean(false)],
     ['large', showLarge, () => setShowLarge(false)],
+    ['utility', showUtility, () => setShowUtility(false)],
     ['live', showLive, () => setShowLive(false)],
     ['cleanup', showCleanup, () => setShowCleanup(false)],
+    ['category', !!category, () => setCategory(null)],
     ['months', showMonths, () => setShowMonths(false)],
     ['trips', showTrips, () => setShowTrips(false)],
     ['settings', showSettings, () => setShowSettings(false)],
@@ -478,6 +492,14 @@ export default function App() {
         />
       );
     }
+    if (showUtility) {
+      return (
+        <UtilityView
+          t={t} photos={utility} progress={aiSeen} onBack={() => setShowUtility(false)}
+          onReview={(list: Photo[]) => startReview(reviewUtility(list))}
+        />
+      );
+    }
     if (showLive) {
       return <LiveView t={t} photos={live} onBack={() => setShowLive(false)} onConvert={list => needUnlock(() => setLiveConfirm(list))} />;
     }
@@ -488,10 +510,15 @@ export default function App() {
           onDuplicates={() => setShowDuplicates(true)}
           onSimilar={() => setShowSimilar(true)} onBlurry={() => setShowBlurry(true)}
           onScreenshots={() => setShowScreenshots(true)}
-          onReviewAll={() => startReview(reviewCleanup(groups, cleanupBlurry(blurry, kept), kept, byId, old))}
+          onUtility={() => setShowUtility(true)}
+          onReviewAll={() => startReview(reviewCleanup(groups, cleanupBlurry(blurry, kept), kept, byId, old, utility))}
           onQuickClean={() => setShowQuickClean(true)}
         />
       );
+    }
+    if (category) {
+      const c = cats.find(x => x.label === category);
+      return <CategoryView t={t} label={category} photos={c?.photos ?? []} onBack={() => setCategory(null)} />;
     }
     if (showMonths) {
       return (
@@ -550,6 +577,8 @@ export default function App() {
         groupCount={similarGroups.length} duplicateCount={dupGroups.length}
         blurryCount={blurry.length} screenshotCount={shots.length}
         large={{ count: large.length, bytes: large.reduce((sum, p) => sum + p.bytes, 0) }} liveCount={isAndroid() ? 0 : live.length}
+        utility={{ show: aiSeen.seen > 0, count: utility.length, bytes: utility.reduce((sum, p) => sum + p.bytes, 0) }}
+        categories={cats.slice(0, 8).map(c => ({ label: c.label, count: c.photos.length, cover: c.photos[0].id }))}
         storage={store.storage} freedBytes={state.freed.bytes} streak={streak(state.days, now)}
         months={{ done: months.filter(m => doneMonths.has(m.key)).length, total: months.length }}
         onThisDay={{ photos: today.ids.length, years: today.years, cover: today.ids[0] }}
@@ -564,6 +593,8 @@ export default function App() {
         onMonths={() => setShowMonths(true)}
         onLarge={() => setShowLarge(true)}
         onLive={() => setShowLive(true)}
+        onUtility={() => setShowUtility(true)}
+        onCategory={setCategory}
         onOnThisDay={() => startReview(reviewTrip(today.ids, groups, byId, kept))}
         onTrips={() => setShowTrips(true)}
         onTrip={setTripKey}
@@ -639,7 +670,7 @@ export default function App() {
         </div>
       </Sheet>
 
-      <Toast toast={toast} onDone={hide} raised={['trip', 'group', 'blurry', 'screenshots', 'quickClean', 'large', 'live', 'cleanup', 'review'].includes(screen)} />
+      <Toast toast={toast} onDone={hide} raised={['trip', 'group', 'blurry', 'screenshots', 'utility', 'quickClean', 'large', 'live', 'cleanup', 'review'].includes(screen)} />
     </div>
   );
 }

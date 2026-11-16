@@ -97,6 +97,7 @@ function Card({ t, item, photo, debug, onDecide }: {
   const reasons: Record<ReviewItem['reason'], string> = {
     best: t.reasonBest, original: t.reasonOriginal, similar: t.reasonSimilar, duplicate: t.reasonDuplicate,
     blurry: levelText[item.level ?? 'medium'], screenshot: photo?.rec ? t.reasonRecording : t.reasonScreenshot,
+    utility: item.label ? fmt(t.reasonUtility, { label: t[`aiLabel_${item.label}`] }) : '',
     large: photo ? bytes(t, photo.bytes) : '', trip: '',
   };
   const reason = reasons[item.reason];
