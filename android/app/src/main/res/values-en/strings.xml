@@ -3,4 +3,6 @@
     <!-- The launcher name in this language; values/ holds the German one (the same: the name is a brand). -->
     <string name="app_name">Bildklar</string>
     <string name="title_activity_main">Bildklar</string>
+    <string name="widget_description">On this day – or how much space you could free</string>
+    <string name="widget_open">Open Bildklar once and something appears here.</string>
 </resources>

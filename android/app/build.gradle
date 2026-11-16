@@ -72,6 +72,9 @@ dependencies {
     implementation "androidx.exifinterface:exifinterface:$exifInterfaceVersion"
     // Google Play Billing: the one-time unlock. Talks to the Play Store app on the phone, not to a server of ours.
     implementation "com.android.billingclient:billing:$billingVersion"
+    // Media3 Transformer: a smaller copy of a video, made on the phone (no network, no analytics).
+    implementation "androidx.media3:media3-transformer:$media3Version"
+    implementation "androidx.media3:media3-common:$media3Version"
     implementation project(':capacitor-android')
     testImplementation "junit:junit:$junitVersion"
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"

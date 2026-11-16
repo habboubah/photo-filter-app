@@ -4,4 +4,7 @@
     <string name="title_activity_main">Bildklar</string>
     <string name="package_name" translatable="false">com.habboubah.bildklar</string>
     <string name="custom_url_scheme" translatable="false">com.habboubah.bildklar</string>
+    <!-- The home-screen widget (BildklarWidget): its line in the widget picker and before the app ran once. -->
+    <string name="widget_description">An diesem Tag – oder wie viel Platz frei werden kann</string>
+    <string name="widget_open">Öffne Bildklar einmal, dann erscheint hier etwas.</string>
 </resources>

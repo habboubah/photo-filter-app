@@ -4,6 +4,8 @@ import Photos
 // presentLimitedLibraryPicker (addMorePhotos) is declared in PhotosUI, not Photos.
 import PhotosUI
 import Vision
+import AVFoundation
+import WidgetKit
 import CryptoKit
 import Capacitor
 
@@ -60,10 +62,15 @@ public class PhotoLibraryPlugin: CAPPlugin, CAPBridgedPlugin, PHPhotoLibraryChan
         CAPPluginMethod(name: "clearCache", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "isDebug", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "getStorage", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "convertLive", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "compressVideo", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "setWidget", returnType: CAPPluginReturnPromise),
     ]
 
     /// The scan and every database access: one serial queue.
     private let queue = DispatchQueue(label: "com.habboubah.bildklar.scan", qos: .utility)
+    /// Live Photos turned into stills and videos made smaller: one at a time, apart from the scan.
+    private let work = DispatchQueue(label: "com.habboubah.bildklar.work", qos: .userInitiated)
     /// Thumbnails, apart from the scan so a running scan never holds the screens up.
     private let io = DispatchQueue(label: "com.habboubah.bildklar.io", qos: .userInitiated, attributes: .concurrent)
     private var store: ScanStore?
@@ -218,18 +225,40 @@ public class PhotoLibraryPlugin: CAPPlugin, CAPBridgedPlugin, PHPhotoLibraryChan
     }
 
     /// An estimate of the file's size from its pixels — PhotoKit has no public file size. Shown with "≈".
-    private func estimatedBytes(_ w: Int, _ h: Int, screenshot: Bool) -> Int64 {
-        Int64(Double(w * h) * (screenshot ? 0.5 : 0.2))
+    /// A Live Photo carries a short video as well (about 3 MB); a video about 0.4 bytes per pixel and second.
+    private func estimatedBytes(_ asset: PHAsset, screenshot: Bool) -> Int64 {
+        let pixels = Double(asset.pixelWidth * asset.pixelHeight)
+        if asset.mediaType == .video { return max(100_000, Int64(pixels * 0.4 * asset.duration)) }
+        let still = Int64(pixels * (screenshot ? 0.5 : 0.2))
+        return asset.mediaSubtypes.contains(.photoLive) ? still + 3_000_000 : still
     }
 
-    /// Phase 1: every image asset against the cache. New and changed ones are stored with fv = 0, gone ones dropped.
+    /// Every fetch sees each photo of a burst, not just the one Photos shows (the others still take space).
+    private func fetchOptions() -> PHFetchOptions {
+        let options = PHFetchOptions()
+        options.includeAllBurstAssets = true
+        return options
+    }
+
+    private func fetch(_ ids: [String]) -> PHFetchResult<PHAsset> {
+        PHAsset.fetchAssets(withLocalIdentifiers: ids, options: fetchOptions())
+    }
+
+    /// A screen recording: iOS has no public subtype for it, but names its file RPReplay….
+    private func isScreenRecording(_ asset: PHAsset) -> Bool {
+        PHAssetResource.assetResources(for: asset).contains { $0.originalFilename.hasPrefix("RPReplay") }
+    }
+
+    /// Phase 1: every photo (every burst member too) and every video against the cache. New and changed ones are stored with fv = 0, gone ones dropped.
     private func listPhotos(_ store: ScanStore) {
         let known = store.stamps()
-        let assets = PHAsset.fetchAssets(with: .image, options: nil)
-        let total = assets.count
+        let images = PHAsset.fetchAssets(with: .image, options: fetchOptions())
+        let videos = PHAsset.fetchAssets(with: .video, options: nil)
+        let total = images.count + videos.count
         var seen = Set<String>(minimumCapacity: total)
         var changed: [ScanStore.Meta] = []
-        assets.enumerateObjects { [weak self] asset, i, stop in
+        var n = 0
+        let visit: (PHAsset, UnsafeMutablePointer<ObjCBool>) -> Void = { [weak self] asset, stop in
             guard let self else { stop.pointee = true; return }
             if self.cancelled { stop.pointee = true; return }
             let id = asset.localIdentifier
@@ -244,16 +273,24 @@ public class PhotoLibraryPlugin: CAPPlugin, CAPBridgedPlugin, PHPhotoLibraryChan
                     lat = c.latitude
                     lon = c.longitude
                 }
+                let video = asset.mediaType == .video
                 let shot = asset.mediaSubtypes.contains(.photoScreenshot)
+                let picked = asset.burstSelectionTypes.contains(.userPick) || asset.burstSelectionTypes.contains(.autoPick)
                 changed.append(ScanStore.Meta(
                     id: id, t: Int64(taken.timeIntervalSince1970 * 1000), stamp: stamp, lat: lat, lon: lon,
-                    bytes: self.estimatedBytes(asset.pixelWidth, asset.pixelHeight, screenshot: shot),
-                    w: Int64(asset.pixelWidth), h: Int64(asset.pixelHeight), fav: asset.isFavorite, shot: shot
+                    bytes: self.estimatedBytes(asset, screenshot: shot),
+                    w: Int64(asset.pixelWidth), h: Int64(asset.pixelHeight), fav: asset.isFavorite, shot: shot,
+                    video: video, dur: video ? Int64(asset.duration * 1000) : 0, rec: video && self.isScreenRecording(asset),
+                    live: asset.mediaSubtypes.contains(.photoLive),
+                    burst: asset.burstIdentifier, pick: asset.burstIdentifier != nil && picked
                 ))
                 if changed.count >= 1000 { store.upsert(changed); changed.removeAll(keepingCapacity: true) }
             }
-            if i % 2000 == 0 { self.emit("scanProgress", ["phase": "list", "done": i, "total": total]) }
+            if n % 2000 == 0 { self.emit("scanProgress", ["phase": "list", "done": n, "total": total]) }
+            n += 1
         }
+        images.enumerateObjects { asset, _, stop in visit(asset, stop) }
+        if !cancelled { videos.enumerateObjects { asset, _, stop in visit(asset, stop) } }
         if cancelled { return }
         store.upsert(changed)
         store.delete(known.keys.filter { !seen.contains($0) })
@@ -269,7 +306,7 @@ public class PhotoLibraryPlugin: CAPPlugin, CAPBridgedPlugin, PHPhotoLibraryChan
         while !cancelled {
             let ids = store.pending(limit: Self.batch)
             if ids.isEmpty { break }
-            let fetched = PHAsset.fetchAssets(withLocalIdentifiers: ids, options: nil)
+            let fetched = fetch(ids)
             var byId: [String: PHAsset] = [:]
             fetched.enumerateObjects { a, _, _ in byId[a.localIdentifier] = a }
             let lock = NSLock()
@@ -341,7 +378,7 @@ public class PhotoLibraryPlugin: CAPPlugin, CAPBridgedPlugin, PHPhotoLibraryChan
             var rows = store.faces(ids)
             let missing = ids.filter { rows[$0] == nil }
             if !missing.isEmpty {
-                let fetched = PHAsset.fetchAssets(withLocalIdentifiers: missing, options: nil)
+                let fetched = self.fetch(missing)
                 var scored: [(id: String, faces: Int, faceQ: Double?, eyes: Double?)] = []
                 fetched.enumerateObjects { asset, _, _ in
                     autoreleasepool {
@@ -409,7 +446,7 @@ public class PhotoLibraryPlugin: CAPPlugin, CAPBridgedPlugin, PHPhotoLibraryChan
                 call.resolve(["path": file.path])
                 return
             }
-            guard let asset = PHAsset.fetchAssets(withLocalIdentifiers: [id], options: nil).firstObject else { call.reject("Photo not found"); return }
+            guard let asset = self.fetch([id]).firstObject else { call.reject("Photo not found"); return }
             let target = CGSize(width: size, height: size)
             // A local copy only; without one (iCloud-only), the small preview Photos keeps on the phone.
             guard let image = self.requestImage(asset, size: target) ?? self.requestImage(asset, size: target, fast: true) else {
@@ -463,7 +500,7 @@ public class PhotoLibraryPlugin: CAPPlugin, CAPBridgedPlugin, PHPhotoLibraryChan
             call.resolve(["done": list.count, "cancelled": false, "dryRun": dryRun])
             return
         }
-        let assets = PHAsset.fetchAssets(withLocalIdentifiers: list, options: nil)
+        let assets = fetch(list)
         let count = assets.count
         PHPhotoLibrary.shared().performChanges({
             // A new album that points at the photos: nothing is copied or changed.
@@ -487,7 +524,7 @@ public class PhotoLibraryPlugin: CAPPlugin, CAPBridgedPlugin, PHPhotoLibraryChan
             call.resolve(["trashed": list, "cancelled": false, "dryRun": dryRun])
             return
         }
-        let assets = PHAsset.fetchAssets(withLocalIdentifiers: list, options: nil)
+        let assets = fetch(list)
         var found: [String] = []
         assets.enumerateObjects { a, _, _ in found.append(a.localIdentifier) }
         // iOS asks in its own dialog; the photos go to Recently Deleted, from where the user can still get them back.
@@ -502,6 +539,170 @@ public class PhotoLibraryPlugin: CAPPlugin, CAPBridgedPlugin, PHPhotoLibraryChan
             } else {
                 call.reject(error?.localizedDescription ?? "Could not delete")
             }
+        }
+    }
+
+    /* -------------------------------------- Live Photos and smaller videos */
+
+    /// The picture of a photo as Photos shows it (edits included), from the phone only: nil for an iCloud-only original.
+    private func imageData(_ asset: PHAsset) -> Data? {
+        let opts = PHImageRequestOptions()
+        opts.isSynchronous = true
+        opts.isNetworkAccessAllowed = false
+        opts.version = .current
+        opts.deliveryMode = .highQualityFormat
+        var out: Data?
+        PHImageManager.default().requestImageDataAndOrientation(for: asset, options: opts) { data, _, _, _ in out = data }
+        return out
+    }
+
+    /// Each Live Photo becomes a plain photo: a new asset with its picture, date, place and favourite flag,
+    /// in the same albums. The Live Photos stay — the web layer asks to trash them (the system's dialog).
+    @objc func convertLive(_ call: CAPPluginCall) {
+        let list = ids(call)
+        let dryRun = call.getBool("dryRun") ?? false
+        work.async { [weak self] in
+            guard let self else { return }
+            var lives: [PHAsset] = []
+            self.fetch(list).enumerateObjects { a, _, _ in if a.mediaSubtypes.contains(.photoLive) { lives.append(a) } }
+            if dryRun {
+                let would = lives.map { ["from": $0.localIdentifier, "to": ""] }
+                call.resolve(["converted": would, "skipped": list.count - lives.count, "dryRun": true])
+                return
+            }
+            var converted: [[String: String]] = []
+            for asset in lives {
+                guard let data = self.imageData(asset) else { continue }
+                let albums = PHAssetCollection.fetchAssetCollectionsContaining(asset, with: .album, options: nil)
+                var created: String?
+                do {
+                    try PHPhotoLibrary.shared().performChangesAndWait {
+                        let request = PHAssetCreationRequest.forAsset()
+                        request.addResource(with: .photo, data: data, options: nil)
+                        request.creationDate = asset.creationDate
+                        request.location = asset.location
+                        request.isFavorite = asset.isFavorite
+                        guard let placeholder = request.placeholderForCreatedAsset else { return }
+                        created = placeholder.localIdentifier
+                        albums.enumerateObjects { album, _, _ in
+                            if album.canPerform(.addContent), let change = PHAssetCollectionChangeRequest(for: album) {
+                                change.addAssets([placeholder] as NSArray)
+                            }
+                        }
+                    }
+                } catch {
+                    continue
+                }
+                if let created { converted.append(["from": asset.localIdentifier, "to": created]) }
+            }
+            call.resolve(["converted": converted, "skipped": list.count - converted.count, "dryRun": false])
+        }
+    }
+
+    /// The video as Photos plays it (trims included), from the phone only.
+    private func avAsset(_ asset: PHAsset) -> AVAsset? {
+        let opts = PHVideoRequestOptions()
+        opts.isNetworkAccessAllowed = false
+        opts.version = .current
+        opts.deliveryMode = .highQualityFormat
+        let done = DispatchSemaphore(value: 0)
+        var out: AVAsset?
+        PHImageManager.default().requestAVAsset(forVideo: asset, options: opts) { av, _, _ in
+            out = av
+            done.signal()
+        }
+        done.wait()
+        return out
+    }
+
+    /// A smaller copy of a video (HEVC, at most 1080p) saved as a new asset with the same date, place and
+    /// favourite flag. Nothing is saved when the copy is not at least 20 % smaller, or in a dry run.
+    @objc func compressVideo(_ call: CAPPluginCall) {
+        guard let id = call.getString("id") else { call.reject("No id"); return }
+        let dryRun = call.getBool("dryRun") ?? false
+        work.async { [weak self] in
+            guard let self else { return }
+            guard let asset = self.fetch([id]).firstObject, asset.mediaType == .video else { call.reject("Video not found"); return }
+            guard let source = self.avAsset(asset) else { call.reject("No local copy of the video"); return }
+            var before = self.estimatedBytes(asset, screenshot: false)
+            if let url = (source as? AVURLAsset)?.url, let size = try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize {
+                before = Int64(size)
+            }
+            let presets = AVAssetExportSession.exportPresets(compatibleWith: source)
+            let preset = presets.contains(AVAssetExportPresetHEVC1920x1080) ? AVAssetExportPresetHEVC1920x1080 : AVAssetExportPreset1920x1080
+            guard let exporter = AVAssetExportSession(asset: source, presetName: preset) else { call.reject("Cannot make this video smaller"); return }
+            let out = FileManager.default.temporaryDirectory.appendingPathComponent("bildklar-\(UUID().uuidString).mov")
+            exporter.outputURL = out
+            exporter.outputFileType = .mov
+            exporter.shouldOptimizeForNetworkUse = true
+            exporter.metadata = source.metadata
+            let finished = DispatchSemaphore(value: 0)
+            exporter.exportAsynchronously { finished.signal() }
+            while finished.wait(timeout: .now() + 0.3) == .timedOut {
+                self.emit("compressProgress", ["id": id, "progress": Double(exporter.progress)])
+            }
+            defer { try? FileManager.default.removeItem(at: out) }
+            guard exporter.status == .completed else { call.reject("Could not make the video smaller"); return }
+            self.emit("compressProgress", ["id": id, "progress": 1.0])
+            let after = Int64((try? out.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0)
+            if dryRun || after <= 0 || Double(after) > Double(before) * 0.8 {
+                call.resolve(["created": NSNull(), "before": Double(before), "after": Double(after), "dryRun": dryRun])
+                return
+            }
+            var created: String?
+            do {
+                try PHPhotoLibrary.shared().performChangesAndWait {
+                    let request = PHAssetCreationRequest.forAsset()
+                    let options = PHAssetResourceCreationOptions()
+                    options.shouldMoveFile = false
+                    request.addResource(with: .video, fileURL: out, options: options)
+                    request.creationDate = asset.creationDate
+                    request.location = asset.location
+                    request.isFavorite = asset.isFavorite
+                    created = request.placeholderForCreatedAsset?.localIdentifier
+                }
+            } catch {
+                call.reject("Could not save the smaller video")
+                return
+            }
+            if let created {
+                call.resolve(["created": created, "before": Double(before), "after": Double(after), "dryRun": false])
+            } else {
+                call.reject("Could not save the smaller video")
+            }
+        }
+    }
+
+    /* ------------------------------------------------------------ widget */
+
+    /// The folder the app shares with its widget (both carry this App Group in their entitlements).
+    private static let appGroup = "group.com.habboubah.bildklar"
+
+    /// What the home-screen widget shows: a title and a line (already in the app's language) and,
+    /// for "On this day", one photo — written to the shared folder; then the widget is asked to redraw.
+    @objc func setWidget(_ call: CAPPluginCall) {
+        let title = call.getString("title") ?? "Bildklar"
+        let line = call.getString("line") ?? ""
+        let photoId = call.getString("photoId")
+        io.async { [weak self] in
+            guard let self, let dir = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: Self.appGroup) else {
+                call.resolve()
+                return
+            }
+            if let json = try? JSONSerialization.data(withJSONObject: ["title": title, "line": line]) {
+                try? json.write(to: dir.appendingPathComponent("widget.json"), options: .atomic)
+            }
+            let imageURL = dir.appendingPathComponent("widget.jpg")
+            let size = CGSize(width: 700, height: 700)
+            if let photoId, let asset = self.fetch([photoId]).firstObject,
+               let image = self.requestImage(asset, size: size) ?? self.requestImage(asset, size: size, fast: true),
+               let data = image.jpegData(compressionQuality: 0.8) {
+                try? data.write(to: imageURL, options: .atomic)
+            } else {
+                try? FileManager.default.removeItem(at: imageURL)
+            }
+            WidgetCenter.shared.reloadAllTimelines()
+            call.resolve()
         }
     }
 

@@ -23,6 +23,16 @@ export interface Photo {
   fav?: boolean;
   /** A screenshot: left out of trips, similar groups and the blurry list. */
   shot?: boolean;
+  /** A video (length `dur` in ms): left out of trips, similar groups and the blurry list; its hash is its poster frame's. */
+  video?: boolean;
+  dur?: number;
+  /** A screen recording (a video): listed with the screenshots. */
+  rec?: boolean;
+  /** iPhone: a Live Photo — a still with a short video, which can be turned into a plain photo. */
+  live?: boolean;
+  /** iPhone: the burst this photo belongs to, and whether it is the burst's pick (by the user or by Photos). */
+  burst?: string;
+  pick?: boolean;
   /** Perceptual hash: 64-bit dHash as 16 hex digits. */
   hash?: string;
   /** Variance of the Laplacian on the grey image (long side 512 px): low = blurry. */

@@ -4,7 +4,7 @@ import { blurLevel, sortBlurry } from './blur';
 import { CityIndex } from './geo';
 import { findHomes, Homes } from './home';
 import { tripDates, tripPlace } from './naming';
-import { findGroups, RawGroup } from './similar';
+import { findGroups, findVideoDuplicates, RawGroup } from './similar';
 import { AppState } from './state';
 import { applyEdits, detectTrips, RawTrip } from './trips';
 
@@ -34,7 +34,7 @@ export interface Detection {
 
 export function detect(lib: Library): Detection {
   const homes = findHomes(lib.photos);
-  return { homes, trips: detectTrips(lib.photos, homes), groups: findGroups(lib.photos) };
+  return { homes, trips: detectTrips(lib.photos, homes), groups: [...findGroups(lib.photos), ...findVideoDuplicates(lib.photos)] };
 }
 
 const sumBytes = (ids: string[], byId: Map<string, Photo>) => ids.reduce((s, id) => s + (byId.get(id)?.bytes ?? 0), 0);

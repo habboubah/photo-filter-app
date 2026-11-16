@@ -30,6 +30,19 @@
             </intent-filter>
         </activity>
 
+        <!-- The home-screen widget: "On this day" or the space that could be freed (written by the app). -->
+        <receiver
+            android:name=".BildklarWidget"
+            android:exported="false"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_bildklar_info" />
+        </receiver>
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
@@ -43,6 +56,7 @@
 
     <!-- The photos: Android 13+ asks for "Photos" (all, or only selected ones from Android 14); below 13 the older storage permission. -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
     <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
     <!-- Without it Android strips the GPS position from every photo, and trips can't be found. -->
@@ -53,4 +67,9 @@
          release build works without this permission is an open test on a real phone — see
          docs/ANDROID_RELEASE.md, "The INTERNET permission". Until then it stays. -->
     <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- The weekly reminder (@capacitor/local-notifications) needs no exact alarm: a reminder a few
+         minutes late is fine, and Google Play reserves exact alarms for clocks and calendars. The
+         plugin then schedules inexactly. -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" tools:node="remove" />
 </manifest>

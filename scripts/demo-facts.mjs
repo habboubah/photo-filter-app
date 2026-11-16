@@ -25,11 +25,17 @@ const facts = manifest.map(entry => {
   const f = features(new Uint8Array(buf.subarray(m[0].length)), w, h);
   // A copy saved from a messenger: smaller and lighter than the camera's original.
   const { copy, ...rest } = entry;
-  const photo = entry.shot
-    ? { ...rest, w: 1179, h: 2556, bytes: Math.round(600_000 + rand() * 900_000) }
-    : copy
-      ? { ...rest, w: 1600, h: 1200, bytes: Math.round(250_000 + rand() * 200_000) }
-      : { ...rest, w: 4032, h: 3024, bytes: Math.round(1_800_000 + rand() * 2_400_000) };
+  // A video: about 0.4 bytes per pixel and second (what the iPhone's estimate assumes too); a Live Photo carries about 3 MB of video.
+  const r = rand();
+  const photo = entry.video
+    ? (entry.rec
+      ? { ...rest, w: 1179, h: 2556, bytes: Math.round(entry.dur * 1179 * 2556 * 0.0004 * (0.9 + r * 0.2)) }
+      : { ...rest, w: 1920, h: 1080, bytes: Math.round(entry.dur * 1920 * 1080 * 0.0004 * (0.9 + r * 0.2)) })
+    : entry.shot
+      ? { ...rest, w: 1179, h: 2556, bytes: Math.round(600_000 + r * 900_000) }
+      : copy
+        ? { ...rest, w: 1600, h: 1200, bytes: Math.round(250_000 + r * 200_000) }
+        : { ...rest, w: 4032, h: 3024, bytes: Math.round(1_800_000 + r * 2_400_000) + (entry.live ? 3_000_000 : 0) };
   return { ...photo, exact: true, ...f };
 });
 fs.writeFileSync(path.join(demo, 'facts.json'), JSON.stringify(facts) + '\n');

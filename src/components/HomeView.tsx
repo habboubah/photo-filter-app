@@ -1,5 +1,5 @@
 import type React from 'react';
-import { CalendarDays, ChevronRight, Copy, Focus, History, ImagePlus, Layers, MapPin, RefreshCw, Settings, Smartphone, Sparkles } from 'lucide-react';
+import { Aperture, CalendarDays, ChevronRight, Copy, FileVideo, Focus, History, ImagePlus, Layers, MapPin, RefreshCw, Settings, Smartphone, Sparkles } from 'lucide-react';
 import type { CleanupSummary, Storage, Trip } from '../types';
 import type { Access } from '../native/photoLibrary';
 import type { ScanView } from '../store';
@@ -23,8 +23,11 @@ interface Props {
   duplicateCount: number;
   blurryCount: number;
   screenshotCount: number;
+  large: { count: number; bytes: number };
+  liveCount: number;
   storage: Storage | null;
   freedBytes: number;
+  streak: number;
   months: { done: number; total: number };
   onThisDay: { photos: number; years: number[]; cover?: string };
   onSettings: () => void;
@@ -36,6 +39,8 @@ interface Props {
   onDuplicates: () => void;
   onScreenshots: () => void;
   onMonths: () => void;
+  onLarge: () => void;
+  onLive: () => void;
   onOnThisDay: () => void;
   onTrips: () => void;
   onTrip: (key: string) => void;
@@ -83,7 +88,7 @@ export function HomeView(p: Props) {
       )}
 
       {loaded && p.photoCount! > 0 && p.summary && (
-        <CleanupCard t={t} summary={p.summary} storage={p.storage} freedBytes={p.freedBytes} onOpen={p.onCleanup} />
+        <CleanupCard t={t} summary={p.summary} storage={p.storage} freedBytes={p.freedBytes} streak={p.streak} onOpen={p.onCleanup} />
       )}
 
       {loaded && p.photoCount! > 0 && (
@@ -92,6 +97,8 @@ export function HomeView(p: Props) {
           <Tile hue="lilac" icon={Copy} label={t.similarTile} value={plural(t, 'groups', p.groupCount)} onClick={p.onSimilar} />
           <Tile hue="sand" icon={Focus} label={t.blurryTile} value={plural(t, 'photos', p.blurryCount)} onClick={p.onBlurry} />
           <Tile hue="sky" icon={Smartphone} label={t.screenshotsTile} value={plural(t, 'photos', p.screenshotCount)} onClick={p.onScreenshots} />
+          <Tile hue="stone" icon={FileVideo} label={t.largeTile} value={p.large.count ? `${plural(t, 'files', p.large.count)} · ${bytes(t, p.large.bytes)}` : plural(t, 'files', 0)} onClick={p.onLarge} />
+          {p.liveCount > 0 && <Tile hue="mint" icon={Aperture} label={t.liveTile} value={plural(t, 'photos', p.liveCount)} onClick={p.onLive} />}
         </div>
       )}
 
@@ -181,13 +188,14 @@ function ScanCard({ t, scan, first }: { t: Strings; scan: ScanView; first: boole
   );
 }
 
-function CleanupCard({ t, summary, storage, freedBytes, onOpen }: {
-  t: Strings; summary: CleanupSummary; storage: Storage | null; freedBytes: number; onOpen: () => void;
+function CleanupCard({ t, summary, storage, freedBytes, streak, onOpen }: {
+  t: Strings; summary: CleanupSummary; storage: Storage | null; freedBytes: number; streak: number; onOpen: () => void;
 }) {
   const facts = (
     <>
       {storage && <p className="text-caption text-fg-mute num mt-1">{fmt(t.storageFree, { free: bytes(t, storage.free), total: bytes(t, storage.total) })}</p>}
       {freedBytes > 0 && <p className="text-caption text-keep font-bold num mt-1">{fmt(t.freedSoFar, { size: bytes(t, freedBytes) })}</p>}
+      {streak >= 2 && <p className="text-caption text-accent font-bold num mt-1">{fmt(t.streakLine, { n: num(t, streak) })}</p>}
     </>
   );
   if (summary.total.count === 0) {

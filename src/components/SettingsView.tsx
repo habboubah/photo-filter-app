@@ -17,6 +17,8 @@ interface Props {
   dryRun: boolean;
   storage: Storage | null;
   freed: { count: number; bytes: number };
+  reminder: boolean;
+  onReminder: (on: boolean) => void;
   onBack: () => void;
   onLanguage: (l: Language) => void;
   onTheme: (m: ThemeMode) => void;
@@ -67,6 +69,10 @@ export function SettingsView(p: Props) {
             leading={<IconTile icon={Sparkles} hue="mint" />}
           />
         )}
+      </Group>
+
+      <Group title={t.reminderSection}>
+        <SwitchRow label={t.reminderRow} sub={t.reminderSub} checked={p.reminder} onChange={p.onReminder} />
       </Group>
 
       <Group title={t.unlockSection}>

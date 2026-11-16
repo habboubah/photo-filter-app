@@ -7,7 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1593FCF68BC8ED87C84581F0 /* BildklarWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 294EA607A99F039C35AD0B97 /* BildklarWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		2FAD9763203C412B000D30F8 /* config.xml in Resources */ = {isa = PBXBuildFile; fileRef = 2FAD9762203C412B000D30F8 /* config.xml */; };
+		32A2B84EFD7D3AD1DCAA2F0F /* BildklarWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = A69B8AA4B586349EC81032E6 /* BildklarWidget.swift */; };
 		4D22ABE92AF431CB00220026 /* CapApp-SPM in Frameworks */ = {isa = PBXBuildFile; productRef = 4D22ABE82AF431CB00220026 /* CapApp-SPM */; };
 		50379B232058CBB4000EE86E /* capacitor.config.json in Resources */ = {isa = PBXBuildFile; fileRef = 50379B222058CBB4000EE86E /* capacitor.config.json */; };
 		504EC3081FED79650016851F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 504EC3071FED79650016851F /* AppDelegate.swift */; };
@@ -15,7 +17,10 @@
 		504EC30F1FED79650016851F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 504EC30E1FED79650016851F /* Assets.xcassets */; };
 		504EC3121FED79650016851F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 504EC3101FED79650016851F /* LaunchScreen.storyboard */; };
 		50B271D11FEDC1A000F3C39B /* public in Resources */ = {isa = PBXBuildFile; fileRef = 50B271D01FEDC1A000F3C39B /* public */; };
+		5B30738B34A120D0EA69AB90 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6E01AFBB9BDBD07958E40CCA /* WidgetKit.framework */; };
 		A1B2C3D51FED7965001685AA /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D41FED7965001685AA /* SceneDelegate.swift */; };
+		C59E1D903806D281FB800916 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3616AE00A4B0828D3AAE9A1E /* SwiftUI.framework */; };
+		D01AF58292709D1E79D24219 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 3AB9B979CA2D3EC9DB064983 /* Localizable.strings */; };
 		F0E5A0011FED7965001685AA /* PhotoLibraryPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0E5A0021FED7965001685AA /* PhotoLibraryPlugin.swift */; };
 		F0E5A0031FED7965001685AA /* PurchasesPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0E5A0041FED7965001685AA /* PurchasesPlugin.swift */; };
 		F0E5A0051FED7965001685AA /* ScanStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0E5A0061FED7965001685AA /* ScanStore.swift */; };
@@ -24,8 +29,36 @@
 		F5918F7A3A49195B1057B3D3 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 89CE184925F3C8900550DAF5 /* InfoPlist.strings */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		C7C7F6F5AA61BFE76A423A32 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 504EC2FC1FED79650016851F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 31CE583D8D682CD63DB0EBF5;
+			remoteInfo = BildklarWidget;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		99F24CD8E6A0B3CA9F6AAC92 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				1593FCF68BC8ED87C84581F0 /* BildklarWidget.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		294EA607A99F039C35AD0B97 /* BildklarWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = BildklarWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		2FAD9762203C412B000D30F8 /* config.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = config.xml; sourceTree = "<group>"; };
+		3616AE00A4B0828D3AAE9A1E /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		48B35C86AAEC26944F0F2648 /* App.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = App.entitlements; sourceTree = "<group>"; };
+		49BA8DB948E7842C50574D21 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		50379B222058CBB4000EE86E /* capacitor.config.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = capacitor.config.json; sourceTree = "<group>"; };
 		504EC3041FED79650016851F /* App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = App.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		504EC3071FED79650016851F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -34,9 +67,14 @@
 		504EC3111FED79650016851F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		504EC3131FED79650016851F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		50B271D01FEDC1A000F3C39B /* public */ = {isa = PBXFileReference; lastKnownFileType = folder; path = public; sourceTree = "<group>"; };
+		631358432289F2BFAF2057B4 /* en */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		632F2E7902BD872524959D36 /* de */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
+		6E01AFBB9BDBD07958E40CCA /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		90D9B785CC89B6A276C1634C /* ar */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ar; path = ar.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		958DCC722DB07C7200EA8C5F /* debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = debug.xcconfig; path = ../debug.xcconfig; sourceTree = SOURCE_ROOT; };
 		A1B2C3D41FED7965001685AA /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
+		A69B8AA4B586349EC81032E6 /* BildklarWidget.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = BildklarWidget.swift; sourceTree = "<group>"; };
+		B7025EF7A78619F88F044A00 /* BildklarWidget.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = BildklarWidget.entitlements; sourceTree = "<group>"; };
 		D781084218C32FD9DD8BF089 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		F0E5A0021FED7965001685AA /* PhotoLibraryPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoLibraryPlugin.swift; sourceTree = "<group>"; };
 		F0E5A0041FED7965001685AA /* PurchasesPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesPlugin.swift; sourceTree = "<group>"; };
@@ -47,6 +85,15 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		11B83C8DC53B3F9850365A40 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5B30738B34A120D0EA69AB90 /* WidgetKit.framework in Frameworks */,
+				C59E1D903806D281FB800916 /* SwiftUI.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		504EC3011FED79650016851F /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -64,6 +111,8 @@
 				958DCC722DB07C7200EA8C5F /* debug.xcconfig */,
 				504EC3061FED79650016851F /* App */,
 				504EC3051FED79650016851F /* Products */,
+				A113E97001E7BE232C0C43EC /* BildklarWidget */,
+				EA74EBB6C6BA4EB791045630 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -71,6 +120,7 @@
 			isa = PBXGroup;
 			children = (
 				504EC3041FED79650016851F /* App.app */,
+				294EA607A99F039C35AD0B97 /* BildklarWidget.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -93,13 +143,52 @@
 				89CE184925F3C8900550DAF5 /* InfoPlist.strings */,
 				2FAD9762203C412B000D30F8 /* config.xml */,
 				50B271D01FEDC1A000F3C39B /* public */,
+				48B35C86AAEC26944F0F2648 /* App.entitlements */,
 			);
 			path = App;
+			sourceTree = "<group>";
+		};
+		A113E97001E7BE232C0C43EC /* BildklarWidget */ = {
+			isa = PBXGroup;
+			children = (
+				A69B8AA4B586349EC81032E6 /* BildklarWidget.swift */,
+				49BA8DB948E7842C50574D21 /* Info.plist */,
+				B7025EF7A78619F88F044A00 /* BildklarWidget.entitlements */,
+				3AB9B979CA2D3EC9DB064983 /* Localizable.strings */,
+			);
+			name = BildklarWidget;
+			path = BildklarWidget;
+			sourceTree = "<group>";
+		};
+		EA74EBB6C6BA4EB791045630 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				6E01AFBB9BDBD07958E40CCA /* WidgetKit.framework */,
+				3616AE00A4B0828D3AAE9A1E /* SwiftUI.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		31CE583D8D682CD63DB0EBF5 /* BildklarWidget */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 798092F2F4A8F6DAA8659957 /* Build configuration list for PBXNativeTarget "BildklarWidget" */;
+			buildPhases = (
+				5A328B00D52F07A1077DE607 /* Sources */,
+				11B83C8DC53B3F9850365A40 /* Frameworks */,
+				65B92D78369435E2FE6773E0 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = BildklarWidget;
+			productName = BildklarWidget;
+			productReference = 294EA607A99F039C35AD0B97 /* BildklarWidget.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		504EC3031FED79650016851F /* App */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 504EC3161FED79650016851F /* Build configuration list for PBXNativeTarget "App" */;
@@ -107,10 +196,12 @@
 				504EC3001FED79650016851F /* Sources */,
 				504EC3011FED79650016851F /* Frameworks */,
 				504EC3021FED79650016851F /* Resources */,
+				99F24CD8E6A0B3CA9F6AAC92 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				DDD3F234BAC9586A75D6B2B9 /* PBXTargetDependency */,
 			);
 			name = App;
 			packageProductDependencies = (
@@ -155,6 +246,7 @@
 			projectRoot = "";
 			targets = (
 				504EC3031FED79650016851F /* App */,
+				31CE583D8D682CD63DB0EBF5 /* BildklarWidget */,
 			);
 		};
 /* End PBXProject section */
@@ -175,6 +267,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		65B92D78369435E2FE6773E0 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D01AF58292709D1E79D24219 /* Localizable.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -191,9 +291,35 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		5A328B00D52F07A1077DE607 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				32A2B84EFD7D3AD1DCAA2F0F /* BildklarWidget.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		DDD3F234BAC9586A75D6B2B9 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = BildklarWidget;
+			target = 31CE583D8D682CD63DB0EBF5 /* BildklarWidget */;
+			targetProxy = C7C7F6F5AA61BFE76A423A32 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin PBXVariantGroup section */
+		3AB9B979CA2D3EC9DB064983 /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				632F2E7902BD872524959D36 /* de */,
+				631358432289F2BFAF2057B4 /* en */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
 		504EC30B1FED79650016851F /* Main.storyboard */ = {
 			isa = PBXVariantGroup;
 			children = (
@@ -223,6 +349,32 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		0648386F6A97741F3A2C421A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = "";
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_ENTITLEMENTS = BildklarWidget/BildklarWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 5;
+				INFOPLIST_FILE = BildklarWidget/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 2.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.habboubah.bildklar.widget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
 		504EC3141FED79650016851F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 958DCC722DB07C7200EA8C5F /* debug.xcconfig */;
@@ -351,6 +503,7 @@
 			baseConfigurationReference = 958DCC722DB07C7200EA8C5F /* debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 5;
@@ -375,6 +528,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 5;
@@ -394,6 +548,31 @@
 			};
 			name = Release;
 		};
+		B3034835470677EE648FFA43 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = "";
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_ENTITLEMENTS = BildklarWidget/BildklarWidget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 5;
+				INFOPLIST_FILE = BildklarWidget/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 2.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.habboubah.bildklar.widget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -411,6 +590,15 @@
 			buildConfigurations = (
 				504EC3171FED79650016851F /* Debug */,
 				504EC3181FED79650016851F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		798092F2F4A8F6DAA8659957 /* Build configuration list for PBXNativeTarget "BildklarWidget" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0648386F6A97741F3A2C421A /* Release */,
+				B3034835470677EE648FFA43 /* Debug */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

@@ -216,6 +216,22 @@ export const SCREENS = [
   },
   { name: '24-months', run: async (page, w) => { await page.click(`button:has-text("${w.t.monthsCard}")`); await pause(page, 700); } },
   { name: '25-home-end', run: async page => { await page.evaluate(() => window.scrollTo(0, 900)); await pause(page, 400); } },
+  { name: '26-large', run: async (page, w) => { await page.click(`button:has-text("${w.t.largeTile}")`); await pause(page, 700); } },
+  {
+    name: '27-large-video', run: async (page, w) => {
+      await page.click(`button:has-text("${w.t.largeTile}")`);
+      await pause(page, 600);
+      await page.click('main button >> nth=4');
+      await pause(page, 800);
+    },
+  },
+  // iPhone only: Android has no Live Photos (the tile is hidden there; home is captured instead).
+  {
+    name: '28-live', run: async (page, w) => {
+      const tile = page.locator(`button:has-text("${w.t.liveTile}")`);
+      if (await tile.count()) { await tile.click(); await pause(page, 700); }
+    },
+  },
 ];
 
 /**

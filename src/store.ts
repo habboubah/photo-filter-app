@@ -6,6 +6,8 @@ import { Access, PhotoLibrary, ScanProgress, loadAllFacts } from './native/photo
 import { PRODUCT_ID, Purchases } from './native/purchases';
 import { AppState, SCHEMA_VERSION, emptyState, normalizeState } from './logic/state';
 import type { TripEdits } from './logic/trips';
+import { addDay } from './logic/streak';
+import { LocalNotifications } from '@capacitor/local-notifications';
 
 /*
  * All state lives here (no store library): the photo facts, the scan, the
@@ -25,7 +27,11 @@ const K = {
   lang: 'bildklar-lang',
   theme: 'bildklar-theme',
   dryRun: 'bildklar-dry-run',
+  reminder: 'bildklar-reminder',
 } as const;
+
+/** The weekly reminder's id in the system (one notification, repeating). */
+const REMINDER_ID = 7001;
 
 const read = (key: string) => { try { return localStorage.getItem(key); } catch { return null; } };
 const write = (key: string, value: string) => { try { localStorage.setItem(key, value); return true; } catch { return false; } };
@@ -100,6 +106,11 @@ export function useAppStore() {
   const addKept = (ids: string[]) => {
     if (ids.length) setState(s => ({ ...s, kept: [...new Set([...s.kept, ...ids])] }));
   };
+  /** Today counts for the streak: something was cleaned up. */
+  const markDay = () => setState(s => {
+    const days = addDay(s.days, Date.now());
+    return days === s.days ? s : { ...s, days };
+  });
   /** A month of "Month by month" gone through to the end. */
   const markMonthDone = (key: string) => setState(s => (s.months.includes(key) ? s : { ...s, months: [...s.months, key] }));
   /** Photos moved to Recently Deleted / the Trash: added to the "freed so far" count. */
@@ -109,7 +120,7 @@ export function useAppStore() {
   /** Forget every decision but the purchase and the "freed so far" count; returns the old state for undo. */
   const resetDecisions = (): AppState => {
     const before = state;
-    setState(s => ({ ...emptyState(), owned: s.owned, freed: s.freed }));
+    setState(s => ({ ...emptyState(), owned: s.owned, freed: s.freed, days: s.days }));
     return before;
   };
   const restoreState = (s: AppState) => setState(s);
@@ -241,6 +252,34 @@ export function useAppStore() {
     } catch { /* Android, or the photo is gone: rank without faces */ }
   }, [faces]);
 
+  /* --------------------------------------------------- weekly reminder */
+
+  const [reminder, setReminderState] = useState(() => read(K.reminder) === '1');
+  /**
+   * On: asks for permission to notify (the system's dialog, once), then one
+   * local notification every Sunday at 18:00 — scheduled on the phone, no
+   * server. Off: it is cancelled. Answers whether it is on.
+   */
+  const setReminder = useCallback(async (on: boolean, title: string, body: string): Promise<boolean> => {
+    try {
+      await LocalNotifications.cancel({ notifications: [{ id: REMINDER_ID }] }).catch(() => {});
+      if (on) {
+        const perm = await LocalNotifications.requestPermissions();
+        if (perm.display !== 'granted') { setReminderState(false); write(K.reminder, '0'); return false; }
+        await LocalNotifications.schedule({
+          notifications: [{ id: REMINDER_ID, title, body, schedule: { on: { weekday: 1, hour: 18, minute: 0 }, allowWhileIdle: false } }],
+        });
+      }
+      setReminderState(on);
+      write(K.reminder, on ? '1' : '0');
+      return on;
+    } catch {
+      setReminderState(false);
+      write(K.reminder, '0');
+      return false;
+    }
+  }, []);
+
   /* --------------------------------------------------- view preferences */
 
   useEffect(() => {
@@ -267,7 +306,8 @@ export function useAppStore() {
   return {
     language, setLanguage, themeMode, setThemeMode,
     debug, dryRun, setDryRun,
-    state, stateReady, storageError, updateTrips, recordAlbum, setBest, addKept, markMonthDone, addFreed, resetDecisions, restoreState,
+    state, stateReady, storageError, updateTrips, recordAlbum, setBest, addKept, markMonthDone, addFreed, markDay, resetDecisions, restoreState,
+    reminder, setReminder,
     owned: isOwned, setOwned,
     access, refreshAccess, accessGranted,
     photos, scan, startScan, reload, removePhotos,

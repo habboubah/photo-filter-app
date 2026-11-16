@@ -178,7 +178,8 @@ if (doIos) {
 if (!/MARKETING_VERSION = /.test(pbxproj) || !/CURRENT_PROJECT_VERSION = /.test(pbxproj)) {
   throw new Error(`Could not find version settings in ${pbxprojPath}`);
 }
-const bundleId = pbxproj.match(/PRODUCT_BUNDLE_IDENTIFIER = "?([^";]+)"?;/)?.[1];
+// The app's id — not its widget's (com.habboubah.bildklar.widget), which sits in the same file.
+const bundleId = [...pbxproj.matchAll(/PRODUCT_BUNDLE_IDENTIFIER = "?([^";]+)"?;/g)].map(m => m[1]).find(id => !id.endsWith('.widget'));
 // The upload key, Java and the SDK, the Play service account — and what Play has.
 const android = doAndroid ? await prepareAndroid(args, { dryRun }) : null;
 
