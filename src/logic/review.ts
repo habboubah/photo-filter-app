@@ -1,4 +1,5 @@
 import type { Confidence, Group, Photo } from '../types';
+import { utilityLabel, type UtilityLabel } from './ai';
 import { blurLevel } from './blur';
 
 /*
@@ -8,13 +9,15 @@ import { blurLevel } from './blur';
  * the ones marked to Recently Deleted / the Trash.
  */
 export type Decision = 'keep' | 'delete';
-export type Reason = 'best' | 'original' | 'similar' | 'duplicate' | 'blurry' | 'screenshot' | 'large' | 'trip';
+export type Reason = 'best' | 'original' | 'similar' | 'duplicate' | 'blurry' | 'screenshot' | 'utility' | 'large' | 'trip';
 
 export interface ReviewItem {
   id: string;
   suggest: Decision;
   reason: Reason;
   level?: Confidence;
+  /** For `utility`: what the on-device AI took the photo for (src/logic/ai.ts). */
+  label?: UtilityLabel;
 }
 
 const extraReason = (g: Group): Reason => (g.kind === 'duplicate' ? 'duplicate' : 'similar');
@@ -38,13 +41,20 @@ export function reviewScreenshots(photos: Photo[]): ReviewItem[] {
   return photos.map(p => ({ id: p.id, suggest: 'delete', reason: 'screenshot' }));
 }
 
+/** Utility photos the on-device AI found (receipts, documents, …): all suggested for deleting, each with its label. */
+export function reviewUtility(photos: Photo[]): ReviewItem[] {
+  return photos.map(p => ({ id: p.id, suggest: 'delete', reason: 'utility', label: utilityLabel(p) ?? undefined }));
+}
+
 /** Blurry photos: all suggested for deleting. */
 export function reviewBlurry(photos: Photo[]): ReviewItem[] {
   return photos.map(p => ({ id: p.id, suggest: 'delete', reason: 'blurry', level: blurLevel(p) ?? undefined }));
 }
 
-/** Everything the clean-up card counts: the extra shots of each group, then the blurry ones, then the old screenshots. */
-export function reviewCleanup(groups: Group[], blurry: Photo[], kept: Set<string>, byId: Map<string, Photo>, shots: Photo[] = []): ReviewItem[] {
+/** Everything the clean-up card counts: the extra shots of each group, then the blurry ones, the old screenshots, then the utility photos — each photo once. */
+export function reviewCleanup(
+  groups: Group[], blurry: Photo[], kept: Set<string>, byId: Map<string, Photo>, shots: Photo[] = [], utility: Photo[] = [],
+): ReviewItem[] {
   const items: ReviewItem[] = [];
   for (const g of groups) {
     for (const id of g.ids) {
@@ -52,7 +62,11 @@ export function reviewCleanup(groups: Group[], blurry: Photo[], kept: Set<string
       items.push({ id, suggest: 'delete', reason: extraReason(g) });
     }
   }
-  return [...items, ...reviewBlurry(blurry), ...reviewScreenshots(shots.filter(p => !kept.has(p.id) && !p.fav))];
+  const seen = new Set<string>();
+  return [
+    ...items, ...reviewBlurry(blurry), ...reviewScreenshots(shots.filter(p => !kept.has(p.id) && !p.fav)),
+    ...reviewUtility(utility.filter(p => !kept.has(p.id) && !p.fav)),
+  ].filter(i => (seen.has(i.id) ? false : (seen.add(i.id), true)));
 }
 
 /**

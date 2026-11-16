@@ -18,6 +18,9 @@
 # The app's own native code (MainActivity, the PhotoLibrary and Purchases plugins: found by reflection).
 -keep class com.habboubah.bildklar.** { *; }
 
+# ONNX Runtime (the on-device AI): its Java classes are reached from native code.
+-keep class ai.onnxruntime.** { *; }
+
 # Methods the WebView calls from JavaScript.
 -keepclassmembers class * {
     @android.webkit.JavascriptInterface <methods>;

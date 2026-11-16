@@ -47,6 +47,16 @@ export interface Photo {
   faces?: number;
   faceQ?: number;
   eyes?: number;
+  /**
+   * The on-device AI (docs/AI.md): each label's score from the shared image
+   * model, as logit × 10 rounded, in src/logic/ai.ts LABELS order. Missing
+   * until the scan's AI pass reached the photo, and for videos and photos
+   * without a local copy.
+   */
+  ai?: number[];
+  /** iPhone with iOS 18+: Vision's aesthetics score (−1 … 1) and its "utility photo" flag. */
+  aes?: number;
+  util?: boolean;
 }
 
 /** How sure the app is that a photo is blurry. */
@@ -103,6 +113,8 @@ export interface CleanupSummary {
   blurry: { count: number; bytes: number };
   /** Screenshots older than OLD_SHOT_DAYS (src/logic/screenshots.ts). */
   screenshots: { count: number; bytes: number };
+  /** Utility photos the on-device AI found (src/logic/ai.ts), not already counted above. */
+  utility: { count: number; bytes: number };
   total: { count: number; bytes: number };
 }
 

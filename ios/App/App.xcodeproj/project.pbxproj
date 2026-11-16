@@ -10,6 +10,7 @@
 		1593FCF68BC8ED87C84581F0 /* BildklarWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 294EA607A99F039C35AD0B97 /* BildklarWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		2FAD9763203C412B000D30F8 /* config.xml in Resources */ = {isa = PBXBuildFile; fileRef = 2FAD9762203C412B000D30F8 /* config.xml */; };
 		32A2B84EFD7D3AD1DCAA2F0F /* BildklarWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = A69B8AA4B586349EC81032E6 /* BildklarWidget.swift */; };
+		44FC6CF638C0D1A0B993A601 /* ImageEmbedder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D62E18E950E26DEBE4ACBC9 /* ImageEmbedder.swift */; };
 		4D22ABE92AF431CB00220026 /* CapApp-SPM in Frameworks */ = {isa = PBXBuildFile; productRef = 4D22ABE82AF431CB00220026 /* CapApp-SPM */; };
 		50379B232058CBB4000EE86E /* capacitor.config.json in Resources */ = {isa = PBXBuildFile; fileRef = 50379B222058CBB4000EE86E /* capacitor.config.json */; };
 		504EC3081FED79650016851F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 504EC3071FED79650016851F /* AppDelegate.swift */; };
@@ -21,6 +22,8 @@
 		A1B2C3D51FED7965001685AA /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D41FED7965001685AA /* SceneDelegate.swift */; };
 		C59E1D903806D281FB800916 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3616AE00A4B0828D3AAE9A1E /* SwiftUI.framework */; };
 		D01AF58292709D1E79D24219 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 3AB9B979CA2D3EC9DB064983 /* Localizable.strings */; };
+		D08A9FFA597349BFDB47B9C1 /* ai-assets in Resources */ = {isa = PBXBuildFile; fileRef = 5205B5BE0B10B601E4DB5025 /* ai-assets */; };
+		D450AC7CFE775D7D55FF94F1 /* onnxruntime in Frameworks */ = {isa = PBXBuildFile; productRef = F46A34E4F33AF307610B452B /* onnxruntime */; };
 		F0E5A0011FED7965001685AA /* PhotoLibraryPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0E5A0021FED7965001685AA /* PhotoLibraryPlugin.swift */; };
 		F0E5A0031FED7965001685AA /* PurchasesPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0E5A0041FED7965001685AA /* PurchasesPlugin.swift */; };
 		F0E5A0051FED7965001685AA /* ScanStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0E5A0061FED7965001685AA /* ScanStore.swift */; };
@@ -67,6 +70,8 @@
 		504EC3111FED79650016851F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		504EC3131FED79650016851F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		50B271D01FEDC1A000F3C39B /* public */ = {isa = PBXFileReference; lastKnownFileType = folder; path = public; sourceTree = "<group>"; };
+		5205B5BE0B10B601E4DB5025 /* ai-assets */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder; name = "ai-assets"; path = "../../../ai-assets"; sourceTree = "<group>"; };
+		5D62E18E950E26DEBE4ACBC9 /* ImageEmbedder.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ImageEmbedder.swift; sourceTree = "<group>"; };
 		631358432289F2BFAF2057B4 /* en */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		632F2E7902BD872524959D36 /* de */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
 		6E01AFBB9BDBD07958E40CCA /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
@@ -99,6 +104,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				4D22ABE92AF431CB00220026 /* CapApp-SPM in Frameworks */,
+				D450AC7CFE775D7D55FF94F1 /* onnxruntime in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -144,6 +150,8 @@
 				2FAD9762203C412B000D30F8 /* config.xml */,
 				50B271D01FEDC1A000F3C39B /* public */,
 				48B35C86AAEC26944F0F2648 /* App.entitlements */,
+				5D62E18E950E26DEBE4ACBC9 /* ImageEmbedder.swift */,
+				5205B5BE0B10B601E4DB5025 /* ai-assets */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -206,6 +214,7 @@
 			name = App;
 			packageProductDependencies = (
 				4D22ABE82AF431CB00220026 /* CapApp-SPM */,
+				F46A34E4F33AF307610B452B /* onnxruntime */,
 			);
 			productName = App;
 			productReference = 504EC3041FED79650016851F /* App.app */;
@@ -240,6 +249,7 @@
 			mainGroup = 504EC2FB1FED79650016851F;
 			packageReferences = (
 				D4C12C0A2AAA248700AAC8A2 /* XCLocalSwiftPackageReference "CapApp-SPM" */,
+				3C8FDEC5CAE0C97D39712029 /* XCRemoteSwiftPackageReference "onnxruntime-swift-package-manager" */,
 			);
 			productRefGroup = 504EC3051FED79650016851F /* Products */;
 			projectDirPath = "";
@@ -264,6 +274,7 @@
 				504EC30D1FED79650016851F /* Main.storyboard in Resources */,
 				2FAD9763203C412B000D30F8 /* config.xml in Resources */,
 				F5918F7A3A49195B1057B3D3 /* InfoPlist.strings in Resources */,
+				D08A9FFA597349BFDB47B9C1 /* ai-assets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -288,6 +299,7 @@
 				F0E5A0031FED7965001685AA /* PurchasesPlugin.swift in Sources */,
 				F0E5A0051FED7965001685AA /* ScanStore.swift in Sources */,
 				F0E5A0071FED7965001685AA /* FeatureMath.swift in Sources */,
+				44FC6CF638C0D1A0B993A601 /* ImageEmbedder.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -612,11 +624,27 @@
 		};
 /* End XCLocalSwiftPackageReference section */
 
+/* Begin XCRemoteSwiftPackageReference section */
+		3C8FDEC5CAE0C97D39712029 /* XCRemoteSwiftPackageReference "onnxruntime-swift-package-manager" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/microsoft/onnxruntime-swift-package-manager";
+			requirement = {
+				kind = exactVersion;
+				version = 1.24.2;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
 /* Begin XCSwiftPackageProductDependency section */
 		4D22ABE82AF431CB00220026 /* CapApp-SPM */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = D4C12C0A2AAA248700AAC8A2 /* XCLocalSwiftPackageReference "CapApp-SPM" */;
 			productName = "CapApp-SPM";
+		};
+		F46A34E4F33AF307610B452B /* onnxruntime */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3C8FDEC5CAE0C97D39712029 /* XCRemoteSwiftPackageReference "onnxruntime-swift-package-manager" */;
+			productName = onnxruntime;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

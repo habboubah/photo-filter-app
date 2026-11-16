@@ -16,8 +16,8 @@ import type { Photo } from '../types';
 export type Access = 'notDetermined' | 'denied' | 'restricted' | 'limited' | 'full';
 
 export interface ScanProgress {
-  /** "list": reading what the library holds; "analyse": looking at each new or changed photo. */
-  phase: 'list' | 'analyse';
+  /** "list": reading what the library holds; "analyse": looking at each new or changed photo; "ai": the on-device AI's pass (docs/AI.md). */
+  phase: 'list' | 'analyse' | 'ai';
   done: number;
   total: number;
 }
@@ -28,6 +28,8 @@ export interface ScanState {
   count: number;
   /** Photos still waiting for their analysis. */
   pending: number;
+  /** Photos still waiting for the AI's pass. */
+  aiPending?: number;
   /** When the last scan finished, ms, or 0. */
   lastScanAt: number;
 }

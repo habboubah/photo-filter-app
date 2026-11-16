@@ -31,3 +31,9 @@ dist-native-perf/
 # SwiftPM's build folder of the feature tests (npm run test:ios).
 ios/PhotoFeatures/.build/
 ios/PhotoFeatures/.swiftpm/
+ml/build/
+ml/.venv/
+ml/testset/
+ml/__pycache__/
+ios/AIFeatures/.build/
+ios/AIFeatures/.swiftpm/

@@ -24,6 +24,10 @@ Every feature, as the user sees it (German labels, English in brackets).
   while, and when photos change while the app is open.
 - *Neu durchsuchen* [Scan again] on home and in Settings.
 - iCloud-only originals are never downloaded.
+- **The on-device AI** (docs/AI.md) looks at each photo after that: the
+  home subtitle counts along (*KI: 1.234 von 5.000 Fotos*), results show up
+  every 480 photos, the app stays usable. It pauses when the phone runs hot
+  and continues with the next scan. Nothing leaves the phone.
 
 ## Home
 - *Deine Fotos* [Your photos] with the number of photos and trips.
@@ -110,6 +114,19 @@ Every feature, as the user sees it (German labels, English in brackets).
   (the ones the clean-up card counts) or *Alle* [All]. *Durchgehen* reviews
   them, all suggested for deleting. Favourites and kept ones are left out.
 
+## Unimportant photos (on-device AI)
+- *Unwichtige Fotos* [Unimportant photos] on home: receipts, documents,
+  whiteboards and notes, photos of a screen, saved screenshots, memes, QR
+  codes and accidental shots, found by the AI on the phone (SigLIP 2, docs/AI.md).
+  Chips filter by kind (*Kassenzettel · 2*); *Durchgehen* reviews them, each
+  suggested for deleting with its reason (*KI: Kassenzettel*).
+- Never among them: favourites, screenshots (they have their own list),
+  videos, photos with a face (iPhone), photos kept in a review. The clean-up
+  card counts them once (*Unwichtige Fotos (KI)*), after duplicates,
+  near-identical and blurry photos.
+- *Auf deinen Fotos* [On your photos]: a row of categories (kids, people,
+  pets, food, landscapes) with a cover and a count; a tap shows the photos.
+
 ## Month by month
 - Every month of the library, newest first, with a photo, the number of photos
   and the size; a month gone through to its end is marked *Durchgesehen* [Done].
@@ -125,7 +142,7 @@ Every feature, as the user sees it (German labels, English in brackets).
 
 ## Clean-up
 - *Aufräumen* lists what the card counts (duplicates, near-identical, blurry,
-  old screenshots) with sizes, *Alle durchgehen* [Go through all] and
+  old screenshots, unimportant photos) with sizes, *Alle durchgehen* [Go through all] and
   **Schnell aufräumen** [Quick clean]: a switch per kind (all on), the
   free space, then *35 Fotos löschen · 91 MB* → the system's dialog — or
   *Durchgehen* [Review] for the same photos first. Needs the unlock.

@@ -28,6 +28,10 @@ class MainViewController: CAPBridgeViewController {
 ///   its modification date; new and changed photos analysed off the main
 ///   thread, a batch at a time, newest first, with progress events. Only local
 ///   pictures are looked at: an iCloud-only original is never downloaded.
+/// - the on-device AI (docs/AI.md), a third phase of the scan: each analysed
+///   photo through the shared image model (ImageEmbedder, ONNX Runtime) and,
+///   on iOS 18+, Vision's aesthetics score — sixteen at a time, newest first,
+///   paused while the phone runs hot. Nothing leaves the phone.
 /// - faces (on demand, for a similar group): Vision's face capture quality and
 ///   how open the eyes are, from the face landmarks.
 /// - thumbnails: PHImageManager, written to the cache folder under a size cap.
@@ -81,6 +85,11 @@ public class PhotoLibraryPlugin: CAPPlugin, CAPBridgedPlugin, PHPhotoLibraryChan
     private var thumbWrites = 0
 
     private static let batch = 48
+    /// Photos per AI batch (and per progress event): one picture at a time through the model, its threads do the rest.
+    private static let aiBatch = 16
+    /// Made on the scan queue the first time it is needed; nil when the model can't load (the AI's phase is then skipped).
+    private var embedder: ImageEmbedder?
+    private var embedderTried = false
     private static let thumbCap: Int64 = 200 * 1024 * 1024
     private static let lastScanKey = "lastScanAt"
 
@@ -187,6 +196,7 @@ public class PhotoLibraryPlugin: CAPPlugin, CAPBridgedPlugin, PHPhotoLibraryChan
             "running": running,
             "count": store?.count() ?? 0,
             "pending": store?.pendingCount() ?? 0,
+            "aiPending": store?.aiPendingCount() ?? 0,
             "lastScanAt": Int64(store?.meta(Self.lastScanKey) ?? "0") ?? 0,
         ]
     }
@@ -221,6 +231,7 @@ public class PhotoLibraryPlugin: CAPPlugin, CAPBridgedPlugin, PHPhotoLibraryChan
         }
         listPhotos(store)
         analyse(store)
+        analyseAI(store)
         if !cancelled { store.setMeta(Self.lastScanKey, String(Int64(Date().timeIntervalSince1970 * 1000))) }
     }
 
@@ -323,6 +334,56 @@ public class PhotoLibraryPlugin: CAPPlugin, CAPBridgedPlugin, PHPhotoLibraryChan
             done += ids.count
             emit("scanProgress", ["phase": "analyse", "done": min(done, total), "total": total])
         }
+    }
+
+    /// Phase 3: the on-device AI over each analysed photo it has not seen (docs/AI.md). Stops for now when the phone gets
+    /// hot (thermal state serious or worse) — the next scan goes on where this one stopped.
+    private func analyseAI(_ store: ScanStore) {
+        if !embedderTried {
+            embedderTried = true
+            embedder = try? ImageEmbedder()
+        }
+        guard let embedder else { return }
+        let total = store.aiPendingCount()
+        guard total > 0 else { return }
+        var done = 0
+        emit("scanProgress", ["phase": "ai", "done": 0, "total": total])
+        while !cancelled {
+            if ProcessInfo.processInfo.thermalState.rawValue >= ProcessInfo.ThermalState.serious.rawValue { break }
+            let ids = store.aiPending(limit: Self.aiBatch)
+            if ids.isEmpty { break }
+            var byId: [String: PHAsset] = [:]
+            fetch(ids).enumerateObjects { a, _, _ in byId[a.localIdentifier] = a }
+            var results: [ScanStore.AIResult] = []
+            for id in ids {
+                if cancelled { break }
+                autoreleasepool {
+                    guard let asset = byId[id] else {
+                        results.append(.init(id: id, scores: nil, aes: nil, util: nil))
+                        return
+                    }
+                    let fit = FeatureMath.fitSize(asset.pixelWidth, asset.pixelHeight)
+                    guard let image = requestImage(asset, size: CGSize(width: fit.w, height: fit.h)), let cg = image.cgImage else {
+                        results.append(.init(id: id, scores: nil, aes: nil, util: nil))
+                        return
+                    }
+                    let vision = aesthetics(cg, orientation: CGImagePropertyOrientation(image.imageOrientation))
+                    results.append(.init(id: id, scores: embedder.scores(cg), aes: vision?.aes, util: vision?.util))
+                }
+            }
+            store.storeAI(results)
+            done += results.count
+            emit("scanProgress", ["phase": "ai", "done": min(done, total), "total": total])
+        }
+    }
+
+    /// Vision's aesthetics score (−1 … 1) and "utility photo" flag — iOS 18+, not in the Simulator.
+    private func aesthetics(_ cg: CGImage, orientation: CGImagePropertyOrientation) -> (aes: Double, util: Bool)? {
+        guard #available(iOS 18.0, *) else { return nil }
+        let request = VNCalculateImageAestheticsScoresRequest()
+        let handler = VNImageRequestHandler(cgImage: cg, orientation: orientation, options: [:])
+        guard (try? handler.perform([request])) != nil, let o = request.results?.first as? VNImageAestheticsScoresObservation else { return nil }
+        return (Double(o.overallScore), o.isUtility)
     }
 
     private func requestImage(_ asset: PHAsset, size: CGSize, fast: Bool = false) -> UIImage? {

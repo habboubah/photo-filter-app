@@ -219,6 +219,79 @@ RECORDING = (datetime(2026, 3, 10, 20, 15), 64)
 LIVE = {'p051', 'p056', 'p057', 'p058', 'p059', 'p060', 'p061', 'p062', 'p067'}
 
 
+# Pictures taken to remember a piece of information, not a moment — what the
+# on-device AI files under "Unwichtige Fotos" (docs/AI.md): two receipts, a
+# letter, a whiteboard and a QR code, drawn with Pillow's own font.
+NOTES = [('receipt', datetime(2026, 3, 3, 18, 20)), ('letter', datetime(2026, 4, 14, 8, 5)),
+         ('board', datetime(2026, 9, 23, 10, 40)), ('code', datetime(2026, 10, 2, 19, 15)),
+         ('receipt', datetime(2026, 10, 18, 12, 30))]
+GOODS = 'Milch Brot Käse Äpfel Kaffee Nudeln Tomaten Butter Wasser Saft Eier Reis Tee Joghurt'.split()
+
+
+def table(rnd):
+    img = Image.new('RGB', (W, H), (150, 112, 82))
+    d = ImageDraw.Draw(img)
+    for _ in range(40):
+        y = rnd.randrange(H)
+        shade = tuple(max(0, min(255, c + rnd.randint(-18, 18))) for c in (150, 112, 82))
+        d.line([(0, y), (W, y + rnd.randint(-30, 30))], fill=shade, width=rnd.randint(2, 8))
+    return img.filter(ImageFilter.GaussianBlur(2))
+
+
+def note(rnd, kind):
+    from PIL import ImageFont
+    f = ImageFont.load_default(15)
+    fb = ImageFont.load_default(22)
+    if kind == 'board':
+        img = Image.new('RGB', (W, H), (90, 90, 95))
+        d = ImageDraw.Draw(img)
+        d.rectangle([60, 60, 964, 700], fill=(244, 245, 243), outline=(160, 160, 160), width=8)
+        for i, line in enumerate(['Elternabend 24.9.', '- Ausflug Zoo: 12 €', '- Laternenfest', '- Fotos bis Fr.']):
+            d.text((110, 110 + i * 80), line, font=ImageFont.load_default(44), fill=[(20, 40, 160), (170, 20, 20)][i % 2])
+        return img
+    if kind == 'code':
+        sheet = Image.new('RGBA', (440, 520), (250, 250, 250, 255))
+        d = ImageDraw.Draw(sheet)
+        cell = 12
+        for y in range(29):
+            for x in range(29):
+                corner = (x < 7 and y < 7) or (x > 21 and y < 7) or (x < 7 and y > 21)
+                on = (x in (0, 6) or y in (0, 6) or (2 <= x % 22 <= 4 and 2 <= y % 22 <= 4)) if corner else rnd.random() < 0.5
+                if corner and x > 21:
+                    on = (x in (22, 28) or y in (0, 6) or (24 <= x <= 26 and 2 <= y <= 4))
+                if corner and y > 21:
+                    on = (x in (0, 6) or y in (22, 28) or (2 <= x <= 4 and 24 <= y <= 26))
+                if on:
+                    d.rectangle([46 + x * cell, 40 + y * cell, 46 + (x + 1) * cell - 1, 40 + (y + 1) * cell - 1], fill=(15, 15, 15))
+        d.text((220, 440), 'WLAN', font=fb, fill=(20, 20, 20), anchor='mm')
+    elif kind == 'letter':
+        sheet = Image.new('RGBA', (520, 720), (252, 252, 250, 255))
+        d = ImageDraw.Draw(sheet)
+        d.text((40, 40), 'Elternbrief', font=ImageFont.load_default(28), fill=(15, 15, 15))
+        y = 100
+        while y < 660:
+            d.text((40, y), ' '.join(rnd.choice(GOODS).lower() for _ in range(rnd.randint(6, 9))), font=f, fill=(40, 40, 40))
+            y += 22 if rnd.random() > 0.12 else 40
+    else:
+        sheet = Image.new('RGBA', (300, 640), (250, 249, 244, 255))
+        d = ImageDraw.Draw(sheet)
+        d.text((150, 20), 'MARKT', font=fb, fill=(20, 20, 20), anchor='mt')
+        y, total = 70, 0.0
+        while y < 520:
+            price = rnd.randint(49, 1299) / 100
+            total += price
+            d.text((16, y), rnd.choice(GOODS).upper(), font=f, fill=(30, 30, 30))
+            d.text((284, y), f'{price:.2f}', font=f, fill=(30, 30, 30), anchor='ra')
+            y += 24
+        d.line([(16, y), (284, y)], fill=(40, 40, 40), width=2)
+        d.text((16, y + 12), 'SUMME EUR', font=fb, fill=(10, 10, 10))
+        d.text((284, y + 12), f'{total:.2f}', font=fb, fill=(10, 10, 10), anchor='ra')
+    img = table(rnd)
+    sheet = sheet.rotate(rnd.uniform(-10, 10), expand=True, fillcolor=(0, 0, 0, 0), resample=Image.BICUBIC)
+    img.paste(sheet, ((W - sheet.width) // 2, (H - sheet.height) // 2), sheet)
+    return img
+
+
 def poster(img):
     # The middle 16:9 band of a drawn 4:3 picture.
     top = (H - W * 9 // 16) // 2
@@ -237,6 +310,9 @@ def extras(save):
         save(poster(img), when, None, {'video': True, 'dur': seconds * 1000})
     when, seconds = RECORDING
     save(screenshot(rnd, 40), when, None, {'video': True, 'rec': True, 'dur': seconds * 1000})
+    notes = random.Random(815)
+    for kind, when in NOTES:
+        save(note(notes, kind), when, None, {'note': True})
 
 
 SCENES = {'paris': paris, 'garda': garda, 'amsterdam': amsterdam, 'vienna': vienna}

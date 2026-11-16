@@ -1,11 +1,11 @@
-import { Copy, Focus, Layers, Smartphone } from 'lucide-react';
+import { Copy, Focus, Layers, ReceiptText, Smartphone } from 'lucide-react';
 import type { CleanupSummary } from '../types';
 import { Strings, bytes, fmt, plural } from '../translations';
 import { Dock, Group, IconTile, Next, Row, Screen } from '../ui/Screen';
 import { Button } from '../ui/Button';
 
 /** What the clean-up card counts, by kind, and the ways on: a review of all of it, or the quick clean. */
-export function CleanupView({ t, summary, onBack, onDuplicates, onSimilar, onBlurry, onScreenshots, onReviewAll, onQuickClean }: {
+export function CleanupView({ t, summary, onBack, onDuplicates, onSimilar, onBlurry, onScreenshots, onUtility, onReviewAll, onQuickClean }: {
   t: Strings;
   summary: CleanupSummary;
   onBack: () => void;
@@ -13,6 +13,7 @@ export function CleanupView({ t, summary, onBack, onDuplicates, onSimilar, onBlu
   onSimilar: () => void;
   onBlurry: () => void;
   onScreenshots: () => void;
+  onUtility: () => void;
   onReviewAll: () => void;
   onQuickClean: () => void;
 }) {
@@ -49,6 +50,15 @@ export function CleanupView({ t, summary, onBack, onDuplicates, onSimilar, onBlu
           trailing={<Next />}
           onClick={onScreenshots}
         />
+        {summary.utility.count > 0 && (
+          <Row
+            label={t.cleanupUtility}
+            sub={sub(summary.utility.count, summary.utility.bytes)}
+            leading={<IconTile icon={ReceiptText} hue="mint" />}
+            trailing={<Next />}
+            onClick={onUtility}
+          />
+        )}
       </Group>
       {summary.total.count > 0 && (
         <Dock>

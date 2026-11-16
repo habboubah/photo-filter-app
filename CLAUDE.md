@@ -47,6 +47,13 @@ further deleting need one one-time purchase (`com.habboubah.bildklar.unlock`, 4,
   Kotlin must contain no network calls. Production builds carry a CSP
   (`vite.config.ts`). No `console.*` in app source (`check:security`).
   No analytics, crash reporting, Firebase or ML Kit — ever (docs/PLAN.md, *Privacy*).
+- **On-device AI** (docs/AI.md): SigLIP 2's image encoder (`ai-assets/image.onnx`,
+  Apache 2.0) in **ONNX Runtime 1.24.2** on both phones — the same version in
+  `ios/scripts/add-ai.rb` / `ios/AIFeatures/Package.swift` and
+  `onnxruntimeVersion` (`android/variables.gradle`). Never ML Kit, Gemini Nano,
+  MediaPipe Tasks, LiteRT from Play services or a cloud model
+  (`npm run check:ai` fails on them). The model and the label vectors live once,
+  in `ai-assets/`; `ml/` rebuilds and measures them.
 
 ## Architecture rules
 - **No router.** `App.tsx` holds one state per pushed screen. The `pushed`
@@ -78,6 +85,12 @@ further deleting need one one-time purchase (`com.habboubah.bildklar.unlock`, 4,
   give the same numbers for `fixtures/features/` (`expected.json`). Change all
   three together, bump `FEATURE_VERSION` in all three, then
   `node --experimental-strip-types scripts/feature-vectors.mjs`.
+- **The AI is a spec too.** `src/logic/ai.ts` (`LABELS`, `AI_VERSION`, the
+  thresholds), `ml/labels.yaml`, `ai-assets/vectors.json`, `ImageEmbedder.swift`
+  and `ImageEmbedder.kt` agree (`check:ai`); the native embedders must match
+  `fixtures/ai/expected.json` (`npm run test:ios:ai`, `npm run test:android`).
+  A new model or label set: `ml/export.py`, `ml/fixtures.py`, `ml/demo_ai.py`,
+  bump `AI_VERSION` everywhere. Native code stores scores; decisions are TypeScript.
 - **The demo library** (`src/native/demo/`) is the plugins in a browser. It
   must never reach a native build: native builds use `vite build --mode native`
   (`__DEMO__` false); `scripts/perf-check.mjs` fails if a demo photo is in that bundle.
@@ -153,8 +166,9 @@ further deleting need one one-time purchase (`com.habboubah.bildklar.unlock`, 4,
   `PHPhotoLibraryPreventAutomaticLimitedAccessAlert` (the app offers its own
   "Fotos auswählen").
 - A new Swift file must be added to `App.xcodeproj` (file reference, group,
-  Sources) — the four of ours are listed there; `FeatureMath.swift` is
-  referenced from `ios/PhotoFeatures/`.
+  Sources) — ours are listed there; `FeatureMath.swift` is referenced from
+  `ios/PhotoFeatures/`. `ios/scripts/add-ai.rb` adds `ImageEmbedder.swift`,
+  the `ai-assets` folder (a bundle resource) and the ONNX Runtime package.
 - **The widget** is its own target, `BildklarWidget` (WidgetKit, iOS 16+,
   `ios/App/BildklarWidget/`, bundle id `com.habboubah.bildklar.widget`), added
   by `ios/scripts/add-widget.rb` and embedded in the app. App and widget share
@@ -172,7 +186,9 @@ further deleting need one one-time purchase (`com.habboubah.bildklar.unlock`, 4,
   **minSdk 30.** Kotlin 2.2 (`kotlinVersion` in `variables.gradle`).
 - Dependencies of our own: `androidx.exifinterface`, the **Play Billing
   Library** (`billingVersion`, 9.1.0 — must stay on a version Play accepts),
-  **Media3 Transformer** (`media3Version`: smaller videos, on the phone).
+  **Media3 Transformer** (`media3Version`: smaller videos, on the phone),
+  **ONNX Runtime** (`onnxruntimeVersion`: the on-device AI; `ai-assets/` is
+  copied into `assets/ai/` at build time, the unit tests use its desktop build).
   No Google services, no Firebase, no ML Kit.
 - The home-screen widget: `BildklarWidget.kt` (AppWidgetProvider, layout
   `widget_bildklar.xml`), fed by `PhotoLibrary.setWidget`.
@@ -199,6 +215,8 @@ further deleting need one one-time purchase (`com.habboubah.bildklar.unlock`, 4,
 | **All the gates** (before a release, in CI) | `npm run check` |
 | Privacy / performance / contrast / security / store texts alone | `npm run check:privacy` / `check:perf` / `audit:contrast` / `check:security` / `check:listing` |
 | Native feature tests | `npm run test:ios` (swift test) / `npm run test:android` (gradlew) |
+| The AI: iPhone embedder test (Mac) / guardrails | `npm run test:ios:ai` / `npm run check:ai` |
+| The AI: model export / measurement / demo scores (venv: `ml/requirements.txt`) | `npm run ai:export` / `npm run ai:eval` / `npm run ai:demo` |
 | Build + open Xcode / Android Studio / a debug APK | `npm run build:ios` / `npm run build:android` / `npm run android:debug` |
 | Icons and splash from `assets/icon.svg` | `node scripts/icon-assets.mjs && npm run assets:generate` |
 | The city table (GeoNames) | `npm run cities` |

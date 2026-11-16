@@ -11,7 +11,9 @@ import com.getcapacitor.JSObject
  * The scan cache: one row per photo or video with what the app knows about it
  * (time, place, size, what kind it is, features). A rescan only analyses photos that are new or changed
  * (their MediaStore generation moved on) and drops the ones that are gone. An
- * interrupted scan simply continues: unanalysed rows keep `fv = 0`.
+ * interrupted scan simply continues: unanalysed rows keep `fv = 0`, rows the
+ * on-device AI has not seen yet `av = 0` (docs/AI.md) — a new model bumps the
+ * AI's version, not the features'.
  *
  * Only ever used from the plugin's one scan thread (and the bridge thread for
  * reads, which SQLite serialises).
@@ -19,8 +21,10 @@ import com.getcapacitor.JSObject
 class ScanStore(context: Context) : SQLiteOpenHelper(context, "bildklar-scan.db", null, SCHEMA) {
 
     companion object {
-        /** 2: videos and screen recordings (November 2026). */
-        const val SCHEMA = 2
+        /** 2: videos and screen recordings; 3: the on-device AI's columns (November 2026). */
+        const val SCHEMA = 3
+        /** The photos the AI still has to look at: analysed, readable (a hash), no videos, no screenshots. */
+        private const val AI_WANTED = "av < ? AND fv > 0 AND hash IS NOT NULL AND video = 0 AND shot = 0"
     }
 
     override fun onCreate(db: SQLiteDatabase) {
@@ -35,11 +39,13 @@ class ScanStore(context: Context) : SQLiteOpenHelper(context, "bildklar-scan.db"
                 fav INTEGER NOT NULL DEFAULT 0, shot INTEGER NOT NULL DEFAULT 0,
                 video INTEGER NOT NULL DEFAULT 0, dur INTEGER NOT NULL DEFAULT 0, rec INTEGER NOT NULL DEFAULT 0,
                 fv INTEGER NOT NULL DEFAULT 0,
-                hash TEXT, sharp REAL, contrast REAL, expo REAL, clip REAL
+                hash TEXT, sharp REAL, contrast REAL, expo REAL, clip REAL,
+                av INTEGER NOT NULL DEFAULT 0, ai TEXT
             )"""
         )
         db.execSQL("CREATE INDEX asset_t ON asset(t, id)")
         db.execSQL("CREATE INDEX asset_fv ON asset(fv)")
+        db.execSQL("CREATE INDEX asset_av ON asset(av)")
         db.execSQL("CREATE TABLE meta (key TEXT PRIMARY KEY, value TEXT)")
     }
 
@@ -116,6 +122,38 @@ class ScanStore(context: Context) : SQLiteOpenHelper(context, "bildklar-scan.db"
 
     private fun count(sql: String): Int = readableDatabase.rawQuery(sql, null).use { c -> if (c.moveToFirst()) c.getInt(0) else 0 }
 
+    /** The photos the AI still has to look at, newest first. */
+    fun aiPending(limit: Int): List<String> {
+        val out = ArrayList<String>()
+        readableDatabase.rawQuery(
+            "SELECT id FROM asset WHERE $AI_WANTED ORDER BY t DESC LIMIT ?",
+            arrayOf(ImageEmbedder.AI_VERSION.toString(), limit.toString())
+        ).use { c -> while (c.moveToNext()) out.add(c.getString(0)) }
+        return out
+    }
+
+    fun aiPendingCount(): Int =
+        readableDatabase.rawQuery("SELECT COUNT(*) FROM asset WHERE $AI_WANTED", arrayOf(ImageEmbedder.AI_VERSION.toString()))
+            .use { c -> if (c.moveToFirst()) c.getInt(0) else 0 }
+
+    /** The AI's pass over some photos: the labels' logits × 10 (null: unreadable). `av` moves on either way. */
+    fun storeAI(results: List<Pair<String, IntArray?>>) {
+        val db = writableDatabase
+        db.beginTransaction()
+        try {
+            val v = ContentValues()
+            for ((id, scores) in results) {
+                v.clear()
+                v.put("av", ImageEmbedder.AI_VERSION)
+                if (scores != null) v.put("ai", scores.joinToString(",")) else v.putNull("ai")
+                db.update("asset", v, "id = ?", arrayOf(id))
+            }
+            db.setTransactionSuccessful()
+        } finally {
+            db.endTransaction()
+        }
+    }
+
     data class Result(
         val id: String, val t: Long?, val lat: Double?, val lon: Double?,
         val features: FeatureMath.Features?,
@@ -148,7 +186,7 @@ class ScanStore(context: Context) : SQLiteOpenHelper(context, "bildklar-scan.db"
     fun facts(offset: Int, limit: Int): JSArray {
         val rows = JSArray()
         readableDatabase.rawQuery(
-            "SELECT id, t, lat, lon, bytes, w, h, fav, shot, fv, hash, sharp, contrast, expo, clip, video, dur, rec FROM asset ORDER BY t, id LIMIT ? OFFSET ?",
+            "SELECT id, t, lat, lon, bytes, w, h, fav, shot, fv, hash, sharp, contrast, expo, clip, video, dur, rec, av, ai FROM asset ORDER BY t, id LIMIT ? OFFSET ?",
             arrayOf(limit.toString(), offset.toString())
         ).use { c ->
             while (c.moveToNext()) {
@@ -167,6 +205,11 @@ class ScanStore(context: Context) : SQLiteOpenHelper(context, "bildklar-scan.db"
                 }
                 if (c.getInt(15) == 1) { o.put("video", true); o.put("dur", c.getLong(16)) }
                 if (c.getInt(17) == 1) o.put("rec", true)
+                if (c.getInt(18) == ImageEmbedder.AI_VERSION && !c.isNull(19)) {
+                    val ai = JSArray()
+                    for (part in c.getString(19).split(',')) part.toIntOrNull()?.let { ai.put(it) }
+                    o.put("ai", ai)
+                }
                 rows.put(o)
             }
         }

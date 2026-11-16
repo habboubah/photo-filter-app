@@ -19,4 +19,6 @@ ext {
     exifInterfaceVersion = '1.4.1'
     // Making videos smaller on the phone (Transformer: decode, re-encode as HEVC at a lower bitrate, mux).
     media3Version = '1.11.1'
+    // The on-device AI's runtime (docs/AI.md): the same version as the iPhone's Swift package (ios/scripts/add-ai.rb).
+    onnxruntimeVersion = '1.24.2'
 }

@@ -83,11 +83,15 @@ export function findBlurry(lib: Library, groups: Group[], levels: Confidence[] =
 
 /**
  * What could go: each similar or duplicate group's extra shots, the blurry
- * photos the app is fairly sure about (high and medium) and the old
- * screenshots (`shots`, already filtered: src/logic/screenshots.ts) — never a
- * favourite and never a photo the user already chose to keep.
+ * photos the app is fairly sure about (high and medium), the old screenshots
+ * (`shots`, already filtered: src/logic/screenshots.ts) and the utility
+ * photos the on-device AI found (`utility`: src/logic/ai.ts) — each photo
+ * counted once, never a favourite and never a photo the user already chose to keep.
  */
-export function summarize(lib: Library, groups: Group[], blurry: Photo[], kept: Set<string>, shots: Photo[] = []): CleanupSummary {
+export function summarize(
+  lib: Library, groups: Group[], blurry: Photo[], kept: Set<string>, shots: Photo[] = [], utility: Photo[] = [],
+): CleanupSummary {
+  const counted = new Set<string>();
   const tally = { similar: { count: 0, bytes: 0, groups: 0 }, duplicate: { count: 0, bytes: 0, groups: 0 } };
   for (const g of groups) {
     const into = tally[g.kind];
@@ -96,6 +100,7 @@ export function summarize(lib: Library, groups: Group[], blurry: Photo[], kept: 
       const p = lib.byId.get(id);
       if (!p || id === g.best || p.fav || kept.has(id)) continue;
       into.count++; into.bytes += p.bytes; any = true;
+      counted.add(id);
     }
     if (any) into.groups++;
   }
@@ -104,19 +109,26 @@ export function summarize(lib: Library, groups: Group[], blurry: Photo[], kept: 
     const level = blurLevel(p);
     if (kept.has(p.id) || (level !== 'high' && level !== 'medium')) continue;
     bc++; bb += p.bytes;
+    counted.add(p.id);
   }
   let sc = 0; let sb = 0;
   for (const p of shots) {
     if (kept.has(p.id) || p.fav) continue;
     sc++; sb += p.bytes;
   }
-  const count = tally.similar.count + tally.duplicate.count + bc + sc;
-  const bytes = tally.similar.bytes + tally.duplicate.bytes + bb + sb;
+  let uc = 0; let ub = 0;
+  for (const p of utility) {
+    if (kept.has(p.id) || p.fav || counted.has(p.id)) continue;
+    uc++; ub += p.bytes;
+  }
+  const count = tally.similar.count + tally.duplicate.count + bc + sc + uc;
+  const bytes = tally.similar.bytes + tally.duplicate.bytes + bb + sb + ub;
   return {
     similar: tally.similar,
     duplicates: tally.duplicate,
     blurry: { count: bc, bytes: bb },
     screenshots: { count: sc, bytes: sb },
+    utility: { count: uc, bytes: ub },
     total: { count, bytes },
   };
 }
