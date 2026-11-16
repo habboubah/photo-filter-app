@@ -1,0 +1,29 @@
+// Raw store screenshots of Fotonest, in German and English: nine screens per
+// language at 1290 × 2796 (430 × 932 pt @3x), as plain app screens, from the
+// demo library. Next to each, <screen>.marks.json says where its parts are
+// (the clean-up card, the best shot …), for the pieces the store set lifts
+// out of the phone. `npm run store-screenshots` then frames and captions them
+// at the sizes the stores ask for — upload those, not these.
+//
+// Usage:  npm run screenshots
+//         npm run screenshots -- --only 02-home,06-group
+// Once per machine:  npx playwright install chromium
+// Output: screenshots/<de|en>/01-scan.png, 01-scan.marks.json …
+//
+// The demo photos are drawn (scripts/demo-photos.py); for the real store set,
+// swap in licensed photos first (docs/TODO.md). Run it on the Mac, so the
+// system font is Apple's own. The screens and how each is reached:
+// scripts/lib/shots.mjs.
+import path from 'path';
+import { SCREENS, capture, onlyArg, root } from './lib/shots.mjs';
+
+const outDir = path.join(root, 'screenshots');
+const failed = await capture({
+  variants: [{ id: 'de', lang: 'de' }, { id: 'en', lang: 'en' }],
+  screens: SCREENS.filter(s => s.store),
+  outDir,
+  onlyNames: onlyArg(),
+  marks: true,
+});
+console.log(`\n${failed.length ? 'Done, with gaps' : 'Done'} → screenshots/<de|en>/  (1290 × 2796). Next: npm run store-screenshots`);
+if (failed.length) process.exit(1);
