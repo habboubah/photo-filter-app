@@ -45,7 +45,8 @@ import { LiveView } from './components/LiveView';
 import { Progress } from './ui/Controls';
 import { Sheet } from './ui/Sheet';
 import { ReviewView } from './components/ReviewView';
-import { PaywallSheet } from './components/PaywallSheet';
+import { PaywallSheet, type FreeInfo } from './components/PaywallSheet';
+import { freeDelete, freeLeft } from './logic/allowance';
 import { LicencesView, SettingsView } from './components/SettingsView';
 
 /** `onDone`: what happens once the review was gone through to its end (a month marked as done). */
@@ -208,15 +209,20 @@ export default function App() {
   /* ------------------------------------------------------------- unlock */
 
   const [paywall, setPaywall] = useState(false);
+  /** Set when the paywall opened for a delete larger than the free deletions left. */
+  const [paywallFree, setPaywallFree] = useState<FreeInfo | null>(null);
   const afterUnlock = useRef<(() => void) | null>(null);
   const needUnlock = (then: () => void) => {
     if (store.owned) { then(); return; }
     afterUnlock.current = then;
+    setPaywallFree(null);
     setPaywall(true);
   };
+  const closePaywall = () => { setPaywall(false); setPaywallFree(null); afterUnlock.current = null; };
   const unlocked = () => {
     store.setOwned(true);
     setPaywall(false);
+    setPaywallFree(null);
     const then = afterUnlock.current;
     afterUnlock.current = null;
     // The store may still hold the old `owned` for a frame: the action runs unlocked by itself.
@@ -233,7 +239,7 @@ export default function App() {
   /* ------------------------------------------------- deleting and albums */
 
   /** Moves photos to Recently Deleted / the Trash, through the system's own dialog. True when done. */
-  const trash = async (ids: string[], keepIds: string[] = []): Promise<boolean> => {
+  const trash = async (ids: string[], keepIds: string[] = [], free = false): Promise<boolean> => {
     try {
       const r = await PhotoLibrary.trash({ ids, dryRun: store.dryRun });
       if (r.cancelled) { show(t.deleteCancelled); return false; }
@@ -241,19 +247,38 @@ export default function App() {
       if (r.dryRun) { show(fmt(t.dryRunDelete, { photos: plural(t, 'photos', ids.length) })); return true; }
       store.addFreed(r.trashed.length, r.trashed.reduce((sum, id) => sum + (lib.byId.get(id)?.bytes ?? 0), 0));
       store.markDay();
+      if (free) store.countFree(r.trashed.length);
       store.removePhotos(r.trashed);
       forgetThumbs(r.trashed);
       store.refreshStorage();
       notifySuccess();
-      show(plural(t, 'deleted', r.trashed.length));
+      const left = free ? freeLeft(state.freeUsed + r.trashed.length) : -1;
+      show(left < 0 ? plural(t, 'deleted', r.trashed.length)
+        : `${plural(t, 'deleted', r.trashed.length)} · ${left > 0 ? plural(t, 'freeLeft', left) : t.freeUsedUp}`);
       return true;
     } catch {
       show(t.deleteFailed);
       return false;
     }
   };
-  const deletePhotos = (ids: string[], keepIds: string[] = [], after?: () => void) =>
-    needUnlock(() => { void trash(ids, keepIds).then(ok => { if (ok) after?.(); }); });
+  /**
+   * Deleting without the unlock: the first FREE_DELETES photos go through as
+   * usual. A selection larger than what is left opens the paywall, which also
+   * offers to delete just the photos still free (the first ones selected).
+   */
+  const deletePhotos = (ids: string[], keepIds: string[] = [], after?: () => void) => {
+    const run = (list: string[], free: boolean, done?: () => void) =>
+      void trash(list, keepIds, free).then(ok => { if (ok) done?.(); });
+    if (store.owned) { run(ids, false, after); return; }
+    const { all, left } = freeDelete(state.freeUsed, ids.length);
+    if (all) { run(ids, true, after); return; }
+    afterUnlock.current = () => run(ids, false, after);
+    setPaywallFree({
+      left, wanted: ids.length,
+      deleteLeft: left > 0 ? () => { closePaywall(); window.setTimeout(() => run(ids.slice(0, left), true), 250); } : undefined,
+    });
+    setPaywall(true);
+  };
 
   const [albumFor, setAlbumFor] = useState<Trip | null>(null);
   const makeAlbum = async (x: Trip) => {
@@ -481,7 +506,7 @@ export default function App() {
     if (showSettings) {
       return (
         <SettingsView
-          t={t} language={language} themeMode={store.themeMode} access={access} owned={store.owned}
+          t={t} language={language} themeMode={store.themeMode} access={access} owned={store.owned} freeLeft={freeLeft(state.freeUsed)}
           debug={store.debug} dryRun={store.dryRun} storage={store.storage} freed={state.freed}
           reminder={store.reminder}
           onReminder={on => { void store.setReminder(on, t.reminderTitle, t.reminderBody).then(ok => { if (on && !ok) show(t.reminderDenied); }); }}
@@ -574,7 +599,7 @@ export default function App() {
         </div>
       )}
 
-      <PaywallSheet t={t} open={paywall} onClose={() => { setPaywall(false); afterUnlock.current = null; }} onOwned={unlocked} toast={label => show(label)} />
+      <PaywallSheet t={t} open={paywall} free={store.owned ? undefined : paywallFree ?? { left: freeLeft(state.freeUsed) }} onClose={closePaywall} onOwned={unlocked} toast={label => show(label)} />
 
       <Confirm
         open={!!albumFor}

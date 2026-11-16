@@ -143,8 +143,17 @@ Every feature, as the user sees it (German labels, English in brackets).
 
 ## The unlock
 - Scanning, trips, groups, the blurry list and reviews are free. Making an
-  album/folder and deleting need **one one-time purchase** (4,99 €, no
-  subscription). The paywall appears when needed, and from Settings.
+  album/folder, smaller videos, Live Photo conversion and deleting need
+  **one one-time purchase** (4,99 €, no subscription). The paywall appears
+  when needed, and from Settings.
+- **50 deletes without buying** (`FREE_DELETES` in `src/logic/allowance.ts`):
+  a lifetime count, not per day, kept with the decisions (a reset keeps it, a
+  reinstall starts over). The toast after a delete shows what is left
+  (*Noch 47 Fotos ohne Kauf löschbar*), so does the unlock row in Settings. A
+  selection larger than what is left opens the paywall, which says so (*Du
+  hast 3 Fotos ausgewählt – ohne Kauf gehen noch 2.*) and also offers
+  *2 Fotos löschen* for the first ones selected. Albums, compression and Live
+  Photo conversion get no free tries.
 - *Käufe wiederherstellen* [Restore purchases] on the paywall and in Settings.
 - Family Sharing (iPhone); the purchase follows the Google account (Android).
 

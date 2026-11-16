@@ -106,6 +106,10 @@ export function useAppStore() {
   const addKept = (ids: string[]) => {
     if (ids.length) setState(s => ({ ...s, kept: [...new Set([...s.kept, ...ids])] }));
   };
+  /** Photos deleted without the unlock: counted against the free ones. */
+  const countFree = (n: number) => {
+    if (n > 0) setState(s => ({ ...s, freeUsed: s.freeUsed + n }));
+  };
   /** Today counts for the streak: something was cleaned up. */
   const markDay = () => setState(s => {
     const days = addDay(s.days, Date.now());
@@ -120,7 +124,7 @@ export function useAppStore() {
   /** Forget every decision but the purchase and the "freed so far" count; returns the old state for undo. */
   const resetDecisions = (): AppState => {
     const before = state;
-    setState(s => ({ ...emptyState(), owned: s.owned, freed: s.freed, days: s.days }));
+    setState(s => ({ ...emptyState(), owned: s.owned, freed: s.freed, days: s.days, freeUsed: s.freeUsed }));
     return before;
   };
   const restoreState = (s: AppState) => setState(s);
@@ -306,7 +310,7 @@ export function useAppStore() {
   return {
     language, setLanguage, themeMode, setThemeMode,
     debug, dryRun, setDryRun,
-    state, stateReady, storageError, updateTrips, recordAlbum, setBest, addKept, markMonthDone, addFreed, markDay, resetDecisions, restoreState,
+    state, stateReady, storageError, updateTrips, recordAlbum, setBest, addKept, markMonthDone, addFreed, markDay, countFree, resetDecisions, restoreState,
     reminder, setReminder,
     owned: isOwned, setOwned,
     access, refreshAccess, accessGranted,

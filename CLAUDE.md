@@ -27,8 +27,8 @@ the root; every other document lives in `docs/` (only `README.md` stays here):
 name **bildklar**, bundle id `com.habboubah.bildklar`): a photo organizer for
 parents on iPhone and Android. It scans the photo library on the device, turns
 trips into albums (iPhone) or folders (Android), finds near-identical and
-blurry photos and suggests what could go. Free to scan and look; albums and
-deleting need one one-time purchase (`com.habboubah.bildklar.unlock`, 4,99 €).
+blurry photos and suggests what could go. Free to scan and look, and the first 50 deletes; albums and
+further deleting need one one-time purchase (`com.habboubah.bildklar.unlock`, 4,99 €).
 **No backend, no account, nothing leaves the device.**
 
 ## Stack

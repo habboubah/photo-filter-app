@@ -256,7 +256,11 @@ const de = {
 
   // Paywall
   paywallTitle: 'Bildklar freischalten',
-  paywallBody: 'Durchsuchen und Ansehen ist kostenlos. Zum Aufräumen schaltest du Bildklar einmal frei:',
+  paywallBody: 'Durchsuchen und Ansehen ist kostenlos, und die ersten 50 Fotos löschst du ohne Kauf. Für alles Weitere schaltest du Bildklar einmal frei:',
+  freeLeft_one: 'Noch 1 Foto ohne Kauf löschbar',
+  freeLeft_other: 'Noch {n} Fotos ohne Kauf löschbar',
+  freeUsedUp: 'Die 50 Löschungen ohne Kauf sind verbraucht.',
+  freeTooMany: 'Du hast {photos} ausgewählt – ohne Kauf gehen noch {left}.',
   paywallAlbums: 'Ein Album für jede Reise – mit einem Tipp',
   paywallDelete: 'Duplikate, fast gleiche und unscharfe Fotos und alte Screenshots löschen',
   paywallSave: 'Videos verkleinern und Live Photos in normale Fotos umwandeln',
@@ -566,7 +570,11 @@ const en: Strings = {
   sharpnessDebug: 'Sharpness {s} · contrast {c}',
 
   paywallTitle: 'Unlock Bildklar',
-  paywallBody: 'Scanning and looking is free. To clean up, unlock Bildklar once:',
+  paywallBody: 'Scanning and looking is free, and your first 50 photos can be deleted without buying. For everything else, unlock Bildklar once:',
+  freeLeft_one: '1 more photo can be deleted without buying',
+  freeLeft_other: '{n} more photos can be deleted without buying',
+  freeUsedUp: 'The 50 deletes without buying are used up.',
+  freeTooMany: 'You selected {photos} – {left} more go without buying.',
   paywallAlbums: 'An album for every trip – with one tap',
   paywallDelete: 'Delete duplicates, near-identical and blurry photos and old screenshots',
   paywallSave: 'Make videos smaller and turn Live Photos into plain photos',

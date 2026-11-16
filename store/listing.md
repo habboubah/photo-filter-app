@@ -33,7 +33,7 @@ Open eyes count for the best photo on the iPhone only.
 **What is free, what is paid.** Free: the scan, trips (rename, merge, split,
 hide), the near-identical groups, the blurry list, the clean-up card and the
 swipe review. The unlock is needed only to **create an album/folder** and to
-**delete**. One purchase, no subscription, restorable (paywall and settings).
+**delete** beyond the first 50 photos. One purchase, no subscription, restorable (paywall and settings).
 
 **Rules for every text and image:** no price and no "kostenlos/free" in the
 name, subtitle, keywords or screenshots (App Store guideline 2.3.7, Play's
@@ -115,7 +115,7 @@ PRIVAT
 • Du kannst Bildklar auch nur ausgewählte Fotos zeigen.
 
 EINMAL FREISCHALTEN, KEIN ABO
-Durchsuchen und Ansehen gehört dir sofort: Reisen, Duplikate, Gruppen, unscharfe Fotos und Screenshots siehst du ohne Kauf. Zum Aufräumen – Alben anlegen und Fotos löschen – schaltest du Bildklar einmal frei. Kein Abo. Der Kauf gilt auf allen deinen Geräten mit demselben Apple-Account und lässt sich wiederherstellen.
+Durchsuchen und Ansehen gehört dir sofort: Reisen, Duplikate, Gruppen, unscharfe Fotos und Screenshots siehst du ohne Kauf. Die ersten 50 Fotos löschst du ohne Kauf. Für mehr – und für Alben – schaltest du Bildklar einmal frei. Kein Abo. Der Kauf gilt auf allen deinen Geräten mit demselben Apple-Account und lässt sich wiederherstellen.
 
 Gemacht von einem Vater mit viel zu vielen Kinderfotos. Auf Deutsch und Englisch.
 ```
@@ -162,7 +162,7 @@ PRIVATE
 • You can also let Bildklar see only the photos you choose.
 
 UNLOCK ONCE, NO SUBSCRIPTION
-Browsing is yours straight away: you see trips, duplicates, groups, blurry photos and screenshots without buying anything. To clean up – create albums and delete photos – unlock Bildklar once. No subscription. The purchase works on all your devices with the same Apple Account and can be restored.
+Browsing is yours straight away: you see trips, duplicates, groups, blurry photos and screenshots without buying anything. Your first 50 photos can be deleted without buying. For more – and for albums – unlock Bildklar once. No subscription. The purchase works on all your devices with the same Apple Account and can be restored.
 
 Made by a father with far too many photos of his kids. In German and English.
 ```
@@ -194,7 +194,7 @@ How to try it (the device needs some photos; trips need photos with locations at
 3. Near-identical photos: open a group; the suggested best photo is marked. "Delete others" asks for confirmation, then iOS asks again.
 4. Blurry photos and the review (swipe right = keep, left = delete, undo button).
 
-In-app purchase: one non-consumable, com.habboubah.bildklar.unlock. Scanning and browsing are free; creating albums and deleting photos need the unlock. "Restore purchases" is on the paywall and in Settings.
+In-app purchase: one non-consumable, com.habboubah.bildklar.unlock. Scanning and browsing are free, and so are the first 50 deleted photos; creating albums and deleting more need the unlock. "Restore purchases" is on the paywall and in Settings.
 
 Safety: the app never deletes on its own. Deleted photos go to Recently Deleted (PHAssetChangeRequest.deleteAssets with the system confirmation). Albums contain the photos, nothing is copied or changed.
 
@@ -294,7 +294,7 @@ PRIVAT
 • Auf Android 14 und neuer kannst du Bildklar auch nur ausgewählte Fotos zeigen.
 
 EINMAL FREISCHALTEN, KEIN ABO
-Durchsuchen und Ansehen gehört dir sofort: Reisen, Duplikate, Gruppen, unscharfe Fotos und Screenshots siehst du ohne Kauf. Zum Aufräumen – Ordner anlegen und Fotos löschen – schaltest du Bildklar einmal frei. Kein Abo. Der Kauf läuft über Google Play, gilt auf allen deinen Geräten mit demselben Google-Konto und lässt sich wiederherstellen.
+Durchsuchen und Ansehen gehört dir sofort: Reisen, Duplikate, Gruppen, unscharfe Fotos und Screenshots siehst du ohne Kauf. Die ersten 50 Fotos löschst du ohne Kauf. Für mehr – und für Ordner – schaltest du Bildklar einmal frei. Kein Abo. Der Kauf läuft über Google Play, gilt auf allen deinen Geräten mit demselben Google-Konto und lässt sich wiederherstellen.
 
 Gemacht von einem Vater mit viel zu vielen Kinderfotos. Auf Deutsch und Englisch.
 ```
@@ -338,7 +338,7 @@ PRIVATE
 • On Android 14 and newer you can also let Bildklar see only the photos you choose.
 
 UNLOCK ONCE, NO SUBSCRIPTION
-Browsing is yours straight away: you see trips, duplicates, groups, blurry photos and screenshots without buying anything. To clean up – create folders and delete photos – unlock Bildklar once. No subscription. The purchase goes through Google Play, works on all your devices with the same Google Account and can be restored.
+Browsing is yours straight away: you see trips, duplicates, groups, blurry photos and screenshots without buying anything. Your first 50 photos can be deleted without buying. For more – and for folders – unlock Bildklar once. No subscription. The purchase goes through Google Play, works on all your devices with the same Google Account and can be restored.
 
 Made by a father with far too many photos of his kids. In German and English.
 ```
