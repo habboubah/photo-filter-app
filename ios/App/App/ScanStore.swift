@@ -1,8 +1,8 @@
 import Foundation
 import SQLite3
 
-/// The scan cache: one row per photo with what the app knows about it (time,
-/// place, an estimated size, features, face scores). A rescan only analyses
+/// The scan cache: one row per photo or video with what the app knows about it
+/// (time, place, an estimated size, what kind it is, features, face scores). A rescan only analyses
 /// photos that are new or changed (their modification date moved on) and drops
 /// the ones that are gone. An interrupted scan simply continues: unanalysed
 /// rows keep `fv = 0`.
@@ -22,6 +22,12 @@ final class ScanStore {
             throw NSError(domain: "ScanStore", code: 1, userInfo: [NSLocalizedDescriptionKey: "Cannot open the scan cache"])
         }
         exec("PRAGMA journal_mode = WAL")
+        // A cache: when its shape changes it is simply built again (the next scan fills it).
+        if userVersion() < Self.schema {
+            exec("DROP TABLE IF EXISTS asset")
+            exec("DROP TABLE IF EXISTS meta")
+            exec("PRAGMA user_version = \(Self.schema)")
+        }
         exec("""
             CREATE TABLE IF NOT EXISTS asset (
               id TEXT PRIMARY KEY,
@@ -31,6 +37,8 @@ final class ScanStore {
               bytes INTEGER NOT NULL DEFAULT 0,
               w INTEGER NOT NULL DEFAULT 0, h INTEGER NOT NULL DEFAULT 0,
               fav INTEGER NOT NULL DEFAULT 0, shot INTEGER NOT NULL DEFAULT 0,
+              video INTEGER NOT NULL DEFAULT 0, dur INTEGER NOT NULL DEFAULT 0, rec INTEGER NOT NULL DEFAULT 0,
+              live INTEGER NOT NULL DEFAULT 0, burst TEXT, pick INTEGER NOT NULL DEFAULT 0,
               fv INTEGER NOT NULL DEFAULT 0,
               hash TEXT, sharp REAL, contrast REAL, expo REAL, clip REAL,
               faces INTEGER, faceq REAL, eyes REAL
@@ -42,6 +50,15 @@ final class ScanStore {
     }
 
     deinit { sqlite3_close(db) }
+
+    /// 2: videos, screen recordings, Live Photos and bursts (November 2026).
+    private static let schema: Int64 = 2
+
+    private func userVersion() -> Int64 {
+        guard let stmt = prepare("PRAGMA user_version") else { return 0 }
+        defer { sqlite3_finalize(stmt) }
+        return sqlite3_step(stmt) == SQLITE_ROW ? sqlite3_column_int64(stmt, 0) : 0
+    }
 
     @discardableResult
     private func exec(_ sql: String) -> Bool { sqlite3_exec(db, sql, nil, nil, nil) == SQLITE_OK }
@@ -85,12 +102,20 @@ final class ScanStore {
         let h: Int64
         let fav: Bool
         let shot: Bool
+        /// A video, its length in ms, and whether it is a screen recording.
+        let video: Bool
+        let dur: Int64
+        let rec: Bool
+        /// A Live Photo (a still with a short video); a member of a burst, and whether it is the burst's pick.
+        let live: Bool
+        let burst: String?
+        let pick: Bool
     }
 
     /// New or changed photos: their metadata, and `fv = 0` so they are analysed (again).
     func upsert(_ rows: [Meta]) {
         guard !rows.isEmpty, let stmt = prepare(
-            "INSERT OR REPLACE INTO asset (id, t, stamp, lat, lon, bytes, w, h, fav, shot, fv) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)"
+            "INSERT OR REPLACE INTO asset (id, t, stamp, lat, lon, bytes, w, h, fav, shot, video, dur, rec, live, burst, pick, fv) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)"
         ) else { return }
         defer { sqlite3_finalize(stmt) }
         transaction {
@@ -100,6 +125,10 @@ final class ScanStore {
                 bind(stmt, 4, r.lat); bind(stmt, 5, r.lon)
                 bind(stmt, 6, r.bytes); bind(stmt, 7, r.w); bind(stmt, 8, r.h)
                 bind(stmt, 9, Int64(r.fav ? 1 : 0)); bind(stmt, 10, Int64(r.shot ? 1 : 0))
+                bind(stmt, 11, Int64(r.video ? 1 : 0)); bind(stmt, 12, r.dur); bind(stmt, 13, Int64(r.rec ? 1 : 0))
+                bind(stmt, 14, Int64(r.live ? 1 : 0))
+                if let b = r.burst { bind(stmt, 15, b) } else { sqlite3_bind_null(stmt, 15) }
+                bind(stmt, 16, Int64(r.pick ? 1 : 0))
                 sqlite3_step(stmt)
             }
         }
@@ -187,7 +216,8 @@ final class ScanStore {
     /// A page of facts for the web layer (src/types.ts Photo), oldest first.
     func facts(offset: Int, limit: Int) -> [[String: Any]] {
         guard let stmt = prepare("""
-            SELECT id, t, lat, lon, bytes, w, h, fav, shot, fv, hash, sharp, contrast, expo, clip, faces, faceq, eyes
+            SELECT id, t, lat, lon, bytes, w, h, fav, shot, fv, hash, sharp, contrast, expo, clip, faces, faceq, eyes,
+                   video, dur, rec, live, burst, pick
             FROM asset ORDER BY t, id LIMIT ? OFFSET ?
             """) else { return [] }
         defer { sqlite3_finalize(stmt) }
@@ -220,6 +250,14 @@ final class ScanStore {
                 if sqlite3_column_type(stmt, 16) != SQLITE_NULL { o["faceQ"] = sqlite3_column_double(stmt, 16) }
                 if sqlite3_column_type(stmt, 17) != SQLITE_NULL { o["eyes"] = sqlite3_column_double(stmt, 17) }
             }
+            if sqlite3_column_int64(stmt, 18) == 1 {
+                o["video"] = true
+                o["dur"] = sqlite3_column_int64(stmt, 19)
+            }
+            if sqlite3_column_int64(stmt, 20) == 1 { o["rec"] = true }
+            if sqlite3_column_int64(stmt, 21) == 1 { o["live"] = true }
+            if sqlite3_column_type(stmt, 22) != SQLITE_NULL { o["burst"] = String(cString: sqlite3_column_text(stmt, 22)) }
+            if sqlite3_column_int64(stmt, 23) == 1 { o["pick"] = true }
             rows.append(o)
         }
         return rows

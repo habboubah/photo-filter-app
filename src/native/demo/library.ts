@@ -4,11 +4,12 @@ import type { Access, PhotoLibraryPlugin, ScanState } from '../photoLibrary';
 import facts from './facts.json';
 
 /*
- * The demo library: the PhotoLibrary plugin in a browser. 88 drawn photos
+ * The demo library: the PhotoLibrary plugin in a browser. 93 drawn photos and videos
  * (scripts/demo-photos.py) with the facts the native scan would report
  * (scripts/demo-facts.mjs) — a home near Hanau and trips to Amsterdam,
- * Vienna, Paris and Lake Garda, with bursts, blurry shots, screenshots and
- * three copies "saved again from a messenger" (the duplicates). It drives
+ * Vienna, Paris and Lake Garda, with bursts, blurry shots, screenshots, three
+ * copies "saved again from a messenger" (the duplicates), four videos (one
+ * saved twice), a screen recording and Live Photos in Paris. It drives
  * `npm run dev`, the privacy check, the screenshots, the preview video and
  * the App Review rehearsal; native builds never contain it (vite.config.ts).
  *
@@ -18,12 +19,15 @@ import facts from './facts.json';
  */
 
 const urls = import.meta.glob('./photos/*.jpg', { eager: true, query: '?url', import: 'default' }) as Record<string, string>;
-const urlOf = (id: string) => urls[`./photos/${id}.jpg`] ?? '';
+/** A copy the demo made (a still from a Live Photo, a smaller video) shows its original's picture. */
+const urlOf = (id: string) => urls[`./photos/${id.split('-')[0]}.jpg`] ?? '';
 
 const K = {
   access: 'bildklar-demo-access',
   scanned: 'bildklar-demo-scanned',
   trashed: 'bildklar-demo-trashed',
+  /** Photos the demo made: stills from Live Photos, smaller videos. */
+  made: 'bildklar-demo-made',
   owned: 'bildklar-demo-owned',
   state: 'bildklar-state',
   /** Milliseconds per step of a first scan (24 steps): screenshots slow it down to catch it. */
@@ -47,7 +51,7 @@ export class DemoLibrary extends WebPlugin implements PhotoLibraryPlugin {
     const forced = new URLSearchParams(location.search).get('access');
     if (forced && (ACCESS as readonly string[]).includes(forced)) {
       set(K.access, forced);
-      if (forced === 'notDetermined') { set(K.scanned, null); set(K.trashed, null); }
+      if (forced === 'notDetermined') { set(K.scanned, null); set(K.trashed, null); set(K.made, null); }
     }
   }
 
@@ -59,7 +63,15 @@ export class DemoLibrary extends WebPlugin implements PhotoLibraryPlugin {
   private photos(): Photo[] {
     const gone = new Set<string>(JSON.parse(get(K.trashed) ?? '[]'));
     const limited = this.access() === 'limited';
-    return (facts as Photo[]).filter(p => !gone.has(p.id) && (!limited || p.t >= LIMITED_FROM));
+    const made: Photo[] = JSON.parse(get(K.made) ?? '[]');
+    return [...(facts as Photo[]), ...made]
+      .filter(p => !gone.has(p.id) && (!limited || p.t >= LIMITED_FROM))
+      .sort((a, b) => a.t - b.t || (a.id < b.id ? -1 : 1));
+  }
+
+  private remember(p: Photo) {
+    const made: Photo[] = JSON.parse(get(K.made) ?? '[]');
+    set(K.made, JSON.stringify([...made.filter(x => x.id !== p.id), p]));
   }
 
   async getAccess() { return { access: this.access() }; }
@@ -128,12 +140,47 @@ export class DemoLibrary extends WebPlugin implements PhotoLibraryPlugin {
     return { trashed: ids, cancelled: false, dryRun };
   }
 
+  async convertLive({ ids, dryRun }: { ids: string[]; dryRun: boolean }) {
+    await wait(500);
+    const all = new Map(this.photos().map(p => [p.id, p]));
+    const converted: { from: string; to: string }[] = [];
+    for (const id of ids) {
+      const p = all.get(id);
+      if (!p?.live) continue;
+      const to = `${id}-still`;
+      if (!dryRun) this.remember({ ...p, id: to, live: false, bytes: Math.max(500_000, p.bytes - 3_000_000) });
+      converted.push({ from: id, to });
+    }
+    return { converted, skipped: ids.length - converted.length, dryRun };
+  }
+
+  async compressVideo({ id, dryRun }: { id: string; dryRun: boolean }) {
+    const p = this.photos().find(x => x.id === id);
+    if (!p?.video) throw new Error('No video');
+    for (let i = 1; i <= 8; i++) {
+      await wait(150);
+      this.notifyListeners('compressProgress', { id, progress: i / 8 });
+    }
+    // A video the demo already made smaller would gain nothing.
+    if (id.endsWith('-small')) return { created: null, before: p.bytes, after: p.bytes, dryRun };
+    const after = Math.round(p.bytes * 0.35);
+    const created = `${id}-small`;
+    if (!dryRun) this.remember({ ...p, id: created, bytes: after, t: p.t + 1 });
+    return { created: dryRun ? null : created, before: p.bytes, after, dryRun };
+  }
+
+  /** No home screen in a browser: the widget's content is only kept, for a look in the dev tools. */
+  async setWidget(options: { title: string; line: string; photoId?: string }) {
+    set('bildklar-demo-widget', JSON.stringify(options));
+  }
+
   async getState() { return { json: get(K.state) }; }
   async setState({ json }: { json: string }) { set(K.state, json); }
 
   async clearCache() {
     set(K.scanned, null);
     set(K.trashed, null);
+    set(K.made, null);
   }
 
   /** A 128 GB phone that is nearly full; what the demo "deleted" comes back as free space. */

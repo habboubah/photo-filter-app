@@ -8,15 +8,20 @@ import com.getcapacitor.JSArray
 import com.getcapacitor.JSObject
 
 /**
- * The scan cache: one row per photo with what the app knows about it (time,
- * place, size, features). A rescan only analyses photos that are new or changed
+ * The scan cache: one row per photo or video with what the app knows about it
+ * (time, place, size, what kind it is, features). A rescan only analyses photos that are new or changed
  * (their MediaStore generation moved on) and drops the ones that are gone. An
  * interrupted scan simply continues: unanalysed rows keep `fv = 0`.
  *
  * Only ever used from the plugin's one scan thread (and the bridge thread for
  * reads, which SQLite serialises).
  */
-class ScanStore(context: Context) : SQLiteOpenHelper(context, "bildklar-scan.db", null, 1) {
+class ScanStore(context: Context) : SQLiteOpenHelper(context, "bildklar-scan.db", null, SCHEMA) {
+
+    companion object {
+        /** 2: videos and screen recordings (November 2026). */
+        const val SCHEMA = 2
+    }
 
     override fun onCreate(db: SQLiteDatabase) {
         db.execSQL(
@@ -28,6 +33,7 @@ class ScanStore(context: Context) : SQLiteOpenHelper(context, "bildklar-scan.db"
                 bytes INTEGER NOT NULL DEFAULT 0,
                 w INTEGER NOT NULL DEFAULT 0, h INTEGER NOT NULL DEFAULT 0,
                 fav INTEGER NOT NULL DEFAULT 0, shot INTEGER NOT NULL DEFAULT 0,
+                video INTEGER NOT NULL DEFAULT 0, dur INTEGER NOT NULL DEFAULT 0, rec INTEGER NOT NULL DEFAULT 0,
                 fv INTEGER NOT NULL DEFAULT 0,
                 hash TEXT, sharp REAL, contrast REAL, expo REAL, clip REAL
             )"""
@@ -57,7 +63,11 @@ class ScanStore(context: Context) : SQLiteOpenHelper(context, "bildklar-scan.db"
         return out
     }
 
-    data class Meta(val id: String, val t: Long, val stamp: Long, val bytes: Long, val w: Int, val h: Int, val fav: Boolean, val shot: Boolean)
+    data class Meta(
+        val id: String, val t: Long, val stamp: Long, val bytes: Long, val w: Int, val h: Int, val fav: Boolean, val shot: Boolean,
+        /** A video, its length in ms, and whether it is a screen recording. */
+        val video: Boolean = false, val dur: Long = 0, val rec: Boolean = false,
+    )
 
     /** New or changed photos: their metadata, and `fv = 0` so they are analysed (again). */
     fun upsert(rows: List<Meta>) {
@@ -69,6 +79,7 @@ class ScanStore(context: Context) : SQLiteOpenHelper(context, "bildklar-scan.db"
                 v.clear()
                 v.put("id", r.id); v.put("t", r.t); v.put("stamp", r.stamp); v.put("bytes", r.bytes)
                 v.put("w", r.w); v.put("h", r.h); v.put("fav", if (r.fav) 1 else 0); v.put("shot", if (r.shot) 1 else 0)
+                v.put("video", if (r.video) 1 else 0); v.put("dur", r.dur); v.put("rec", if (r.rec) 1 else 0)
                 v.put("fv", 0)
                 db.insertWithOnConflict("asset", null, v, SQLiteDatabase.CONFLICT_REPLACE)
             }
@@ -137,7 +148,7 @@ class ScanStore(context: Context) : SQLiteOpenHelper(context, "bildklar-scan.db"
     fun facts(offset: Int, limit: Int): JSArray {
         val rows = JSArray()
         readableDatabase.rawQuery(
-            "SELECT id, t, lat, lon, bytes, w, h, fav, shot, fv, hash, sharp, contrast, expo, clip FROM asset ORDER BY t, id LIMIT ? OFFSET ?",
+            "SELECT id, t, lat, lon, bytes, w, h, fav, shot, fv, hash, sharp, contrast, expo, clip, video, dur, rec FROM asset ORDER BY t, id LIMIT ? OFFSET ?",
             arrayOf(limit.toString(), offset.toString())
         ).use { c ->
             while (c.moveToNext()) {
@@ -154,6 +165,8 @@ class ScanStore(context: Context) : SQLiteOpenHelper(context, "bildklar-scan.db"
                     o.put("hash", c.getString(10)); o.put("sharp", c.getDouble(11)); o.put("contrast", c.getDouble(12))
                     o.put("expo", c.getDouble(13)); o.put("clip", c.getDouble(14))
                 }
+                if (c.getInt(15) == 1) { o.put("video", true); o.put("dur", c.getLong(16)) }
+                if (c.getInt(17) == 1) o.put("rec", true)
                 rows.put(o)
             }
         }

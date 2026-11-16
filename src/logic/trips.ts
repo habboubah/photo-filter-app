@@ -65,7 +65,7 @@ export function detectTrips(photos: Photo[], homes: Homes): RawTrip[] {
     last = -1;
   };
   for (const p of photos) {
-    if (p.lat === undefined || p.lon === undefined || p.shot) continue;
+    if (p.lat === undefined || p.lon === undefined || p.shot || p.video) continue;
     const home = homeAt(homes, p.t);
     if (!home) continue;
     const away = distanceKm(p as Point, home) > AWAY_KM;
@@ -81,7 +81,7 @@ export function detectTrips(photos: Photo[], homes: Homes): RawTrip[] {
     const ids: string[] = [];
     for (let i = lowerBound(photos, start); i < photos.length && photos[i].t <= end; i++) {
       const p = photos[i];
-      if (p.shot) continue;
+      if (p.shot || p.video) continue;
       // A located photo in the window is away from home by construction (one at home ends the run).
       ids.push(p.id);
     }

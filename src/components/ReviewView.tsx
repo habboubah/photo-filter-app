@@ -1,9 +1,10 @@
 import { useEffect } from 'react';
 import { animate, motion, useMotionValue, useReducedMotion, useTransform } from 'motion/react';
-import { Check, Trash2, Undo2, X } from 'lucide-react';
+import { Check, Play, Trash2, Undo2, X } from 'lucide-react';
 import type { Confidence, Photo } from '../types';
 import { Strings, bytes, fmt, num, plural } from '../translations';
 import { Decision, ReviewItem, Session, toDelete } from '../logic/review';
+import { duration } from '../logic/large';
 import { Button, IconButton } from '../ui/Button';
 import { Thumb } from '../ui/Photo';
 import { LARGE, thumbUrl } from '../thumbs';
@@ -95,7 +96,8 @@ function Card({ t, item, photo, debug, onDecide }: {
   const levelText: Record<Confidence, string> = { high: t.levelHigh, medium: t.levelMedium, low: t.levelLow };
   const reasons: Record<ReviewItem['reason'], string> = {
     best: t.reasonBest, original: t.reasonOriginal, similar: t.reasonSimilar, duplicate: t.reasonDuplicate,
-    blurry: levelText[item.level ?? 'medium'], screenshot: t.reasonScreenshot, trip: '',
+    blurry: levelText[item.level ?? 'medium'], screenshot: photo?.rec ? t.reasonRecording : t.reasonScreenshot,
+    large: photo ? bytes(t, photo.bytes) : '', trip: '',
   };
   const reason = reasons[item.reason];
   const when = photo ? new Date(photo.t).toLocaleString(t.locale, { dateStyle: 'medium', timeStyle: 'short' }) : '';
@@ -137,6 +139,11 @@ function Card({ t, item, photo, debug, onDecide }: {
           {t.keep}
         </motion.span>
         <span className="absolute bottom-3 start-3 px-2.5 py-1 rounded-full bg-veil text-on-color text-caption font-bold">{when}</span>
+        {photo?.video && (
+          <span className="absolute top-3 start-1/2 -translate-x-1/2 inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-veil text-on-color text-caption font-bold num">
+            <Play className="w-3.5 h-3.5" fill="currentColor" strokeWidth={0} aria-hidden="true" />{t.videoBadge} · {duration(photo.dur ?? 0)}
+          </span>
+        )}
         {debug && photo && (
           <span className="absolute bottom-3 end-3 px-2 py-1 rounded-full bg-veil text-on-color text-micro font-bold num">
             {fmt(t.sharpnessDebug, { s: photo.sharp ?? '–', c: photo.contrast ?? '–' })}

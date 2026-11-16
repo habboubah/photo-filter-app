@@ -57,6 +57,35 @@ The Swift code was written and its feature part tested (`swift test`), but
 - [ ] *Monat für Monat*: go through one month to the end — it is marked
       *Durchgesehen*.
 
+### New since the rest of the plan (16 November 2026, late)
+
+Everything below is native code that has **not been compiled** (the cloud has
+no Xcode and no Android SDK). Expect compile errors; send them to Claude.
+
+- [ ] `npm install` (new: `@capacitor/local-notifications`), then `npx cap sync`.
+- [ ] **Widget, iPhone:** Xcode › the project now has a second target,
+      *BildklarWidget* (added by `ios/scripts/add-widget.rb`). Under Signing &
+      Capabilities, check both targets show your team and the App Group
+      `group.com.habboubah.bildklar` (Xcode registers it with automatic
+      signing; if it complains, add the App Group in the developer portal for
+      `com.habboubah.bildklar` and `com.habboubah.bildklar.widget`). Then add
+      the widget to the home screen.
+- [ ] **Videos:** after the first scan, *Große Dateien* shows your biggest
+      videos; screen recordings appear under *Screenshots*. Try *Video
+      verkleinern* on a 1–2 minute video with the dry run **off**: a smaller
+      copy appears next to it in Photos / Gallery, then the app asks whether
+      the original may go.
+- [ ] **Live Photos** (iPhone): convert two, check the stills in Photos (date,
+      place, album), then the Live Photos in *Zuletzt gelöscht*.
+- [ ] **Bursts** (iPhone): a burst's hidden frames now show up in *Fast
+      gleiche*; the frame you picked in Photos is kept.
+- [ ] **Reminder:** Settings › Wöchentliche Erinnerung on → the system asks →
+      a notification on Sunday at 18:00.
+- [ ] **Android:** `npm run android:debug` — new: Media3 (smaller videos), the
+      app widget, `READ_MEDIA_VIDEO` (the permission dialog now says *Photos
+      and videos*). In the Play Console, answer the Photo and video permissions
+      declaration for **both** permissions (text in `store/listing.md` 3.5).
+
 ## 3. Android — the first run
 
 The Kotlin compiles, a debug APK and an R8 release build come out, the feature
@@ -130,9 +159,8 @@ tests pass — **but it has not run on a phone.**
 ## Known gaps (to decide later)
 
 - Arabic: the structure is there (RTL rules, the translation layout), the texts are not.
-- Videos (largest videos, duplicate videos, screen recordings) and the Android
-  AI categories wait for your decisions in the plan (`claude/feature-gap-plan.md`
-  in the project). Live Photo to still, video compression, widgets and
-  reminders are next: native code that has to be built and tried on the phones.
+- On-device AI categories: planned in `claude/ai-plan.md` (project), not built.
+- Videos are not part of trips or trip albums yet (Android's folders for videos
+  differ from photos'); Android's motion photos are not converted.
 - Shared iCloud libraries, who is in a photo: not planned.
 - The rating row appears once `APP_STORE_ID` is set in `src/links.ts`.

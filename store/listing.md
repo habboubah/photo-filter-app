@@ -33,7 +33,7 @@ Open eyes count for the best photo on the iPhone only.
 **What is free, what is paid.** Free: the scan, trips (rename, merge, split,
 hide), the near-identical groups, the blurry list, the clean-up card and the
 swipe review. The unlock is needed only to **create an album/folder** and to
-**delete**. One purchase, no subscription, restorable (paywall and settings).
+**delete** beyond the first 50 photos. One purchase, no subscription, restorable (paywall and settings).
 
 **Rules for every text and image:** no price and no "kostenlos/free" in the
 name, subtitle, keywords or screenshots (App Store guideline 2.3.7, Play's
@@ -90,13 +90,19 @@ UNSCHARFE FOTOS
 Verwackelt oder unscharf: Bildklar zeigt solche Fotos in einer Liste, die eindeutigen zuerst.
 
 SCREENSHOTS
-Alte Bildschirmfotos auf einen Blick – die über 30 Tage alten zuerst, die neuen schaust du dir in Ruhe an.
+Alte Bildschirmfotos und -aufnahmen auf einen Blick – die über 30 Tage alten zuerst, die neuen schaust du dir in Ruhe an.
+
+GROSSE VIDEOS
+Die größten Fotos und Videos zuerst. Ein Video kannst du verkleinern: Neben dem Original entsteht eine kleinere Kopie, das Original löschst du danach selbst.
+
+LIVE PHOTOS
+Jedes Live Photo speichert ein kurzes Video mit. Mach daraus normale Fotos – Bild, Datum, Ort und Alben bleiben.
 
 AUFRÄUMEN IN RUHE
 Auf einen Blick siehst du, wie viel Speicher Duplikate, fast gleiche und unscharfe Fotos und alte Screenshots belegen – und wie viel Platz auf dem Gerät noch frei ist. Beim Durchgehen wischst du nach rechts zum Behalten und nach links zum Aussortieren – jeder Schritt lässt sich zurücknehmen. Oder du wählst beim schnellen Aufräumen, welche Arten weg dürfen, und bestätigst einmal.
 
 MONAT FÜR MONAT
-Geh deine ganze Mediathek Monat für Monat durch, Stück für Stück. Und „An diesem Tag“ zeigt dir, was du heute vor einem oder mehreren Jahren fotografiert hast.
+Geh deine ganze Mediathek Monat für Monat durch, Stück für Stück. Und „An diesem Tag“ zeigt dir, was du heute vor einem oder mehreren Jahren fotografiert hast. Auch als Widget auf dem Home-Bildschirm – und auf Wunsch erinnert dich Bildklar einmal pro Woche.
 
 SICHER
 • Bildklar löscht nie von selbst. Du bestätigst jedes Löschen, und das iPhone fragt noch einmal nach.
@@ -109,7 +115,7 @@ PRIVAT
 • Du kannst Bildklar auch nur ausgewählte Fotos zeigen.
 
 EINMAL FREISCHALTEN, KEIN ABO
-Durchsuchen und Ansehen gehört dir sofort: Reisen, Duplikate, Gruppen, unscharfe Fotos und Screenshots siehst du ohne Kauf. Zum Aufräumen – Alben anlegen und Fotos löschen – schaltest du Bildklar einmal frei. Kein Abo. Der Kauf gilt auf allen deinen Geräten mit demselben Apple-Account und lässt sich wiederherstellen.
+Durchsuchen und Ansehen gehört dir sofort: Reisen, Duplikate, Gruppen, unscharfe Fotos und Screenshots siehst du ohne Kauf. Die ersten 50 Fotos löschst du ohne Kauf. Für mehr – und für Alben – schaltest du Bildklar einmal frei. Kein Abo. Der Kauf gilt auf allen deinen Geräten mit demselben Apple-Account und lässt sich wiederherstellen.
 
 Gemacht von einem Vater mit viel zu vielen Kinderfotos. Auf Deutsch und Englisch.
 ```
@@ -131,13 +137,19 @@ BLURRY PHOTOS
 Shaky or out of focus: Bildklar lists such photos, the clear cases first.
 
 SCREENSHOTS
-Old screenshots at a glance – the ones older than 30 days first; look at the new ones at your own pace.
+Old screenshots and screen recordings at a glance – the ones older than 30 days first; look at the new ones at your own pace.
+
+LARGE VIDEOS
+The biggest photos and videos first. Make a video smaller: a smaller copy is saved next to the original, and you delete the original yourself afterwards.
+
+LIVE PHOTOS
+Every Live Photo keeps a short video. Turn them into plain photos – picture, date, place and albums stay.
 
 CLEAN UP AT YOUR OWN PACE
 See at a glance how much space duplicates, near-identical and blurry photos and old screenshots take up – and how much space is left on the device. Going through them, swipe right to keep and left to sort out – and undo any step. Or use the quick clean: choose which kinds may go and confirm once.
 
 MONTH BY MONTH
-Go through your whole library a month at a time. And "On this day" shows what you photographed on this date in earlier years.
+Go through your whole library a month at a time. And "On this day" shows what you photographed on this date in earlier years. Also as a home-screen widget – and if you like, Bildklar reminds you once a week.
 
 SAFE
 • Bildklar never deletes anything by itself. You confirm every deletion, and your iPhone asks once more.
@@ -150,7 +162,7 @@ PRIVATE
 • You can also let Bildklar see only the photos you choose.
 
 UNLOCK ONCE, NO SUBSCRIPTION
-Browsing is yours straight away: you see trips, duplicates, groups, blurry photos and screenshots without buying anything. To clean up – create albums and delete photos – unlock Bildklar once. No subscription. The purchase works on all your devices with the same Apple Account and can be restored.
+Browsing is yours straight away: you see trips, duplicates, groups, blurry photos and screenshots without buying anything. Your first 50 photos can be deleted without buying. For more – and for albums – unlock Bildklar once. No subscription. The purchase works on all your devices with the same Apple Account and can be restored.
 
 Made by a father with far too many photos of his kids. In German and English.
 ```
@@ -182,7 +194,7 @@ How to try it (the device needs some photos; trips need photos with locations at
 3. Near-identical photos: open a group; the suggested best photo is marked. "Delete others" asks for confirmation, then iOS asks again.
 4. Blurry photos and the review (swipe right = keep, left = delete, undo button).
 
-In-app purchase: one non-consumable, com.habboubah.bildklar.unlock. Scanning and browsing are free; creating albums and deleting photos need the unlock. "Restore purchases" is on the paywall and in Settings.
+In-app purchase: one non-consumable, com.habboubah.bildklar.unlock. Scanning and browsing are free, and so are the first 50 deleted photos; creating albums and deleting more need the unlock. "Restore purchases" is on the paywall and in Settings.
 
 Safety: the app never deletes on its own. Deleted photos go to Recently Deleted (PHAssetChangeRequest.deleteAssets with the system confirmation). Albums contain the photos, nothing is copied or changed.
 
@@ -260,13 +272,16 @@ UNSCHARFE FOTOS
 Verwackelt oder unscharf: Bildklar zeigt solche Fotos in einer Liste, die eindeutigen zuerst.
 
 SCREENSHOTS
-Alte Bildschirmfotos auf einen Blick – die über 30 Tage alten zuerst, die neuen schaust du dir in Ruhe an.
+Alte Bildschirmfotos und -aufnahmen auf einen Blick – die über 30 Tage alten zuerst, die neuen schaust du dir in Ruhe an.
+
+GROSSE VIDEOS
+Die größten Fotos und Videos zuerst. Ein Video kannst du verkleinern: Neben dem Original entsteht eine kleinere Kopie, das Original löschst du danach selbst.
 
 AUFRÄUMEN IN RUHE
 Auf einen Blick siehst du, wie viel Speicher Duplikate, fast gleiche und unscharfe Fotos und alte Screenshots belegen – und wie viel Platz auf dem Gerät noch frei ist. Beim Durchgehen wischst du nach rechts zum Behalten und nach links zum Aussortieren – jeder Schritt lässt sich zurücknehmen. Oder du wählst beim schnellen Aufräumen, welche Arten weg dürfen, und bestätigst einmal.
 
 MONAT FÜR MONAT
-Geh deine ganze Mediathek Monat für Monat durch, Stück für Stück. Und „An diesem Tag“ zeigt dir, was du heute vor einem oder mehreren Jahren fotografiert hast.
+Geh deine ganze Mediathek Monat für Monat durch, Stück für Stück. Und „An diesem Tag“ zeigt dir, was du heute vor einem oder mehreren Jahren fotografiert hast. Auch als Widget auf dem Home-Bildschirm – und auf Wunsch erinnert dich Bildklar einmal pro Woche.
 
 SICHER
 • Bildklar löscht und verschiebt nie von selbst. Du bestätigst jeden Schritt, und Android fragt noch einmal nach.
@@ -279,7 +294,7 @@ PRIVAT
 • Auf Android 14 und neuer kannst du Bildklar auch nur ausgewählte Fotos zeigen.
 
 EINMAL FREISCHALTEN, KEIN ABO
-Durchsuchen und Ansehen gehört dir sofort: Reisen, Duplikate, Gruppen, unscharfe Fotos und Screenshots siehst du ohne Kauf. Zum Aufräumen – Ordner anlegen und Fotos löschen – schaltest du Bildklar einmal frei. Kein Abo. Der Kauf läuft über Google Play, gilt auf allen deinen Geräten mit demselben Google-Konto und lässt sich wiederherstellen.
+Durchsuchen und Ansehen gehört dir sofort: Reisen, Duplikate, Gruppen, unscharfe Fotos und Screenshots siehst du ohne Kauf. Die ersten 50 Fotos löschst du ohne Kauf. Für mehr – und für Ordner – schaltest du Bildklar einmal frei. Kein Abo. Der Kauf läuft über Google Play, gilt auf allen deinen Geräten mit demselben Google-Konto und lässt sich wiederherstellen.
 
 Gemacht von einem Vater mit viel zu vielen Kinderfotos. Auf Deutsch und Englisch.
 ```
@@ -301,13 +316,16 @@ BLURRY PHOTOS
 Shaky or out of focus: Bildklar lists such photos, the clear cases first.
 
 SCREENSHOTS
-Old screenshots at a glance – the ones older than 30 days first; look at the new ones at your own pace.
+Old screenshots and screen recordings at a glance – the ones older than 30 days first; look at the new ones at your own pace.
+
+LARGE VIDEOS
+The biggest photos and videos first. Make a video smaller: a smaller copy is saved next to the original, and you delete the original yourself afterwards.
 
 CLEAN UP AT YOUR OWN PACE
 See at a glance how much space duplicates, near-identical and blurry photos and old screenshots take up – and how much space is left on the device. Going through them, swipe right to keep and left to sort out – and undo any step. Or use the quick clean: choose which kinds may go and confirm once.
 
 MONTH BY MONTH
-Go through your whole library a month at a time. And "On this day" shows what you photographed on this date in earlier years.
+Go through your whole library a month at a time. And "On this day" shows what you photographed on this date in earlier years. Also as a home-screen widget – and if you like, Bildklar reminds you once a week.
 
 SAFE
 • Bildklar never deletes or moves anything by itself. You confirm every step, and Android asks once more.
@@ -320,7 +338,7 @@ PRIVATE
 • On Android 14 and newer you can also let Bildklar see only the photos you choose.
 
 UNLOCK ONCE, NO SUBSCRIPTION
-Browsing is yours straight away: you see trips, duplicates, groups, blurry photos and screenshots without buying anything. To clean up – create folders and delete photos – unlock Bildklar once. No subscription. The purchase goes through Google Play, works on all your devices with the same Google Account and can be restored.
+Browsing is yours straight away: you see trips, duplicates, groups, blurry photos and screenshots without buying anything. Your first 50 photos can be deleted without buying. For more – and for folders – unlock Bildklar once. No subscription. The purchase goes through Google Play, works on all your devices with the same Google Account and can be restored.
 
 Made by a father with far too many photos of his kids. In German and English.
 ```
@@ -375,10 +393,11 @@ in transit**. Either way, keep the privacy page in step with your choice.
 | **Photo and video permissions** | See below |
 
 **Photo and video permissions declaration** (Play asks because the app holds
-`READ_MEDIA_IMAGES`; core use: "photo organizer / gallery"). Paste:
+`READ_MEDIA_IMAGES` and `READ_MEDIA_VIDEO`; core use: "photo organizer /
+gallery" — answer it for both permissions). Paste:
 
 ```
-Bildklar organizes the photo library on the device: it scans all photos to find trips, near-identical and blurry photos, and moves trips into folders or unwanted photos to the trash. The photo picker can't do this.
+Bildklar organizes the photo and video library on the device: it scans all photos and videos to find trips, duplicates, near-identical and blurry photos, screenshots, screen recordings and large videos, moves trips into folders, makes videos smaller and moves unwanted items to the trash. The photo picker can't do this.
 ```
 
 Play may ask for a short video of the core flow: see `docs/TODO.md`, step 5.

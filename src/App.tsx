@@ -5,7 +5,7 @@ import { StatusBar, Style } from '@capacitor/status-bar';
 import { KeepAwake } from '@capacitor-community/keep-awake';
 import { AlertTriangle, FlaskConical } from 'lucide-react';
 import { useAppStore } from './store';
-import { fmt, plural, stringsFor } from './translations';
+import { bytes, fmt, plural, stringsFor } from './translations';
 import type { Photo, Trip } from './types';
 import { PhotoLibrary } from './native/photoLibrary';
 import { PRODUCT_ID, Purchases } from './native/purchases';
@@ -17,11 +17,13 @@ import { folderName } from './logic/naming';
 import { addMerge, addSplit, removeMerge, removeSplits, setIgnored, setName } from './logic/trips';
 import {
   Decision, ReviewItem, Session, decide, isDone, keptAgainstSuggestion, reviewBlurry, reviewCleanup, reviewGroup,
-  reviewScreenshots, reviewTrip, startSession, undo,
+  reviewLarge, reviewScreenshots, reviewTrip, startSession, undo,
 } from './logic/review';
 import { findScreenshots, isOldShot, oldShots } from './logic/screenshots';
+import { findLarge, findLive } from './logic/large';
 import { buildMonths, onThisDay } from './logic/months';
 import { cleanParts } from './logic/smartClean';
+import { streak } from './logic/streak';
 import { feedbackMail, openExternal, privacyUrl, rateUrl, systemFromAgent } from './links';
 import { devNative, isAndroid, isIos } from './platform';
 import { Toast, useToast } from './ui/Toast';
@@ -38,8 +40,13 @@ import { BlurryView } from './components/BlurryView';
 import { ScreenshotsView } from './components/ScreenshotsView';
 import { QuickCleanView } from './components/QuickCleanView';
 import { MonthsView } from './components/MonthsView';
+import { LargeView } from './components/LargeView';
+import { LiveView } from './components/LiveView';
+import { Progress } from './ui/Controls';
+import { Sheet } from './ui/Sheet';
 import { ReviewView } from './components/ReviewView';
-import { PaywallSheet } from './components/PaywallSheet';
+import { PaywallSheet, type FreeInfo } from './components/PaywallSheet';
+import { freeDelete, freeLeft } from './logic/allowance';
 import { LicencesView, SettingsView } from './components/SettingsView';
 
 /** `onDone`: what happens once the review was gone through to its end (a month marked as done). */
@@ -83,7 +90,38 @@ export default function App() {
   const months = useMemo(() => buildMonths(lib.photos), [lib]);
   const doneMonths = useMemo(() => new Set(state.months), [state.months]);
   const today = useMemo(() => onThisDay(lib.photos, now), [lib, now]);
+  const large = useMemo(() => findLarge(lib.photos), [lib]);
+  const live = useMemo(() => findLive(lib.photos), [lib]);
   const hasLocations = useMemo(() => lib.photos.some(p => p.lat !== undefined), [lib]);
+
+  /* ------------------------------------------------------------- widget */
+
+  // The home-screen widget shows "On this day" (with its first photo) or the space that could be freed;
+  // sent again only when what it shows changes.
+  const widgetSent = useRef('');
+  useEffect(() => {
+    if (!photos || !summary) return;
+    const storage = store.storage;
+    const data = today.ids.length
+      ? {
+        title: t.onThisDay,
+        line: fmt(t.onThisDayBody, { photos: plural(t, 'photos', today.ids.length), years: today.years.map(y => String(y)).join(', ') }),
+        photoId: today.ids[0],
+      }
+      : {
+        title: summary.total.count ? t.cleanupCard : t.cleanupNone,
+        line: [summary.total.count ? bytes(t, summary.total.bytes) : null,
+          storage ? fmt(t.storageValue, { free: bytes(t, storage.free), total: bytes(t, storage.total) }) : null].filter(Boolean).join(' · '),
+      };
+    const key = JSON.stringify(data);
+    if (key === widgetSent.current) return;
+    const timer = window.setTimeout(() => {
+      widgetSent.current = key;
+      void PhotoLibrary.setWidget(data).catch(() => {});
+    }, 1500);
+    return () => window.clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [photos, summary, today, store.storage, language]);
 
   /* ---------------------------------------------------------- navigation */
 
@@ -100,6 +138,8 @@ export default function App() {
   const [showQuickClean, setShowQuickClean] = useState(false);
   const [showMonths, setShowMonths] = useState(false);
   const [monthsShown, setMonthsShown] = useState(24);
+  const [showLarge, setShowLarge] = useState(false);
+  const [showLive, setShowLive] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showLicences, setShowLicences] = useState(false);
   const [review, setReview] = useState<Review | null>(null);
@@ -127,6 +167,8 @@ export default function App() {
     ['blurry', showBlurry, () => setShowBlurry(false)],
     ['screenshots', showScreenshots, () => setShowScreenshots(false)],
     ['quickClean', showQuickClean, () => setShowQuickClean(false)],
+    ['large', showLarge, () => setShowLarge(false)],
+    ['live', showLive, () => setShowLive(false)],
     ['cleanup', showCleanup, () => setShowCleanup(false)],
     ['months', showMonths, () => setShowMonths(false)],
     ['trips', showTrips, () => setShowTrips(false)],
@@ -167,15 +209,20 @@ export default function App() {
   /* ------------------------------------------------------------- unlock */
 
   const [paywall, setPaywall] = useState(false);
+  /** Set when the paywall opened for a delete larger than the free deletions left. */
+  const [paywallFree, setPaywallFree] = useState<FreeInfo | null>(null);
   const afterUnlock = useRef<(() => void) | null>(null);
   const needUnlock = (then: () => void) => {
     if (store.owned) { then(); return; }
     afterUnlock.current = then;
+    setPaywallFree(null);
     setPaywall(true);
   };
+  const closePaywall = () => { setPaywall(false); setPaywallFree(null); afterUnlock.current = null; };
   const unlocked = () => {
     store.setOwned(true);
     setPaywall(false);
+    setPaywallFree(null);
     const then = afterUnlock.current;
     afterUnlock.current = null;
     // The store may still hold the old `owned` for a frame: the action runs unlocked by itself.
@@ -192,26 +239,46 @@ export default function App() {
   /* ------------------------------------------------- deleting and albums */
 
   /** Moves photos to Recently Deleted / the Trash, through the system's own dialog. True when done. */
-  const trash = async (ids: string[], keepIds: string[] = []): Promise<boolean> => {
+  const trash = async (ids: string[], keepIds: string[] = [], free = false): Promise<boolean> => {
     try {
       const r = await PhotoLibrary.trash({ ids, dryRun: store.dryRun });
       if (r.cancelled) { show(t.deleteCancelled); return false; }
       store.addKept(keepIds);
       if (r.dryRun) { show(fmt(t.dryRunDelete, { photos: plural(t, 'photos', ids.length) })); return true; }
       store.addFreed(r.trashed.length, r.trashed.reduce((sum, id) => sum + (lib.byId.get(id)?.bytes ?? 0), 0));
+      store.markDay();
+      if (free) store.countFree(r.trashed.length);
       store.removePhotos(r.trashed);
       forgetThumbs(r.trashed);
       store.refreshStorage();
       notifySuccess();
-      show(plural(t, 'deleted', r.trashed.length));
+      const left = free ? freeLeft(state.freeUsed + r.trashed.length) : -1;
+      show(left < 0 ? plural(t, 'deleted', r.trashed.length)
+        : `${plural(t, 'deleted', r.trashed.length)} · ${left > 0 ? plural(t, 'freeLeft', left) : t.freeUsedUp}`);
       return true;
     } catch {
       show(t.deleteFailed);
       return false;
     }
   };
-  const deletePhotos = (ids: string[], keepIds: string[] = [], after?: () => void) =>
-    needUnlock(() => { void trash(ids, keepIds).then(ok => { if (ok) after?.(); }); });
+  /**
+   * Deleting without the unlock: the first FREE_DELETES photos go through as
+   * usual. A selection larger than what is left opens the paywall, which also
+   * offers to delete just the photos still free (the first ones selected).
+   */
+  const deletePhotos = (ids: string[], keepIds: string[] = [], after?: () => void) => {
+    const run = (list: string[], free: boolean, done?: () => void) =>
+      void trash(list, keepIds, free).then(ok => { if (ok) done?.(); });
+    if (store.owned) { run(ids, false, after); return; }
+    const { all, left } = freeDelete(state.freeUsed, ids.length);
+    if (all) { run(ids, true, after); return; }
+    afterUnlock.current = () => run(ids, false, after);
+    setPaywallFree({
+      left, wanted: ids.length,
+      deleteLeft: left > 0 ? () => { closePaywall(); window.setTimeout(() => run(ids.slice(0, left), true), 250); } : undefined,
+    });
+    setPaywall(true);
+  };
 
   const [albumFor, setAlbumFor] = useState<Trip | null>(null);
   const makeAlbum = async (x: Trip) => {
@@ -232,6 +299,48 @@ export default function App() {
     }
   };
 
+  /* ----------------------------------------------- videos and Live Photos */
+
+  // Making a video smaller: progress while it runs, then the question whether the original may go.
+  const [compressing, setCompressing] = useState<{ id: string; progress: number } | null>(null);
+  const [afterCompress, setAfterCompress] = useState<{ id: string; before: number; after: number } | null>(null);
+  useEffect(() => {
+    const handle = PhotoLibrary.addListener('compressProgress', e => setCompressing(c => (c && c.id === e.id ? { ...c, progress: e.progress } : c)));
+    return () => { void handle.then(h => h.remove()).catch(() => {}); };
+  }, []);
+  const compress = async (p: Photo) => {
+    setCompressing({ id: p.id, progress: 0 });
+    try {
+      const r = await PhotoLibrary.compressVideo({ id: p.id, dryRun: store.dryRun });
+      if (r.dryRun) { show(fmt(t.dryRunCompress, { before: bytes(t, r.before), after: bytes(t, r.after) })); return; }
+      if (!r.created) { show(t.compressNoGain); return; }
+      store.startScan();
+      store.markDay();
+      setAfterCompress({ id: p.id, before: r.before, after: r.after });
+    } catch {
+      show(t.compressFailed);
+    } finally {
+      setCompressing(null);
+    }
+  };
+
+  const [liveConfirm, setLiveConfirm] = useState<Photo[] | null>(null);
+  const convertLive = async (list: Photo[]) => {
+    setLiveConfirm(null);
+    try {
+      const r = await PhotoLibrary.convertLive({ ids: list.map(p => p.id), dryRun: store.dryRun });
+      if (r.dryRun) { show(fmt(t.dryRunLive, { photos: plural(t, 'photos', r.converted.length) })); return; }
+      if (!r.converted.length) { show(t.liveFailed); return; }
+      store.startScan();
+      store.markDay();
+      const ok = await trash(r.converted.map(c => c.from));
+      if (!ok) show(t.liveKeptBoth);
+      else setShowLive(false);
+    } catch {
+      show(t.liveFailed);
+    }
+  };
+
   /* -------------------------------------------------------------- review */
 
   const startReview = (items: ReviewItem[], onDone?: () => void) => {
@@ -240,7 +349,7 @@ export default function App() {
   const isOld = (p: Photo) => isOldShot(p, now);
   const openMonth = (key: string) => {
     const m = months.find(x => x.key === key);
-    if (m) startReview(reviewTrip(m.ids, groups, lib.byId, kept, isOld), () => store.markMonthDone(key));
+    if (m) startReview(reviewTrip(m.ids, groups, lib.byId, kept, isOld), () => { store.markMonthDone(key); store.markDay(); });
   };
   const onDecide = (d: Decision) => setReview(r => (r ? { ...r, session: decide(r.session, d) } : r));
   const onUndo = () => setReview(r => (r ? { ...r, session: undo(r.session), finished: false } : r));
@@ -358,6 +467,20 @@ export default function App() {
         />
       );
     }
+    if (showLarge) {
+      return (
+        <LargeView
+          t={t} photos={large} canCompress
+          onBack={() => setShowLarge(false)}
+          onReview={(list: Photo[]) => startReview(reviewLarge(list))}
+          onCompress={p => needUnlock(() => { void compress(p); })}
+          onDelete={p => deletePhotos([p.id])}
+        />
+      );
+    }
+    if (showLive) {
+      return <LiveView t={t} photos={live} onBack={() => setShowLive(false)} onConvert={list => needUnlock(() => setLiveConfirm(list))} />;
+    }
     if (showCleanup && summary) {
       return (
         <CleanupView
@@ -383,8 +506,10 @@ export default function App() {
     if (showSettings) {
       return (
         <SettingsView
-          t={t} language={language} themeMode={store.themeMode} access={access} owned={store.owned}
+          t={t} language={language} themeMode={store.themeMode} access={access} owned={store.owned} freeLeft={freeLeft(state.freeUsed)}
           debug={store.debug} dryRun={store.dryRun} storage={store.storage} freed={state.freed}
+          reminder={store.reminder}
+          onReminder={on => { void store.setReminder(on, t.reminderTitle, t.reminderBody).then(ok => { if (on && !ok) show(t.reminderDenied); }); }}
           onBack={() => setShowSettings(false)}
           onLanguage={store.setLanguage} onTheme={store.setThemeMode}
           onAddPhotos={addPhotos}
@@ -424,7 +549,8 @@ export default function App() {
         trips={trips} hasLocations={hasLocations} summary={summary}
         groupCount={similarGroups.length} duplicateCount={dupGroups.length}
         blurryCount={blurry.length} screenshotCount={shots.length}
-        storage={store.storage} freedBytes={state.freed.bytes}
+        large={{ count: large.length, bytes: large.reduce((sum, p) => sum + p.bytes, 0) }} liveCount={isAndroid() ? 0 : live.length}
+        storage={store.storage} freedBytes={state.freed.bytes} streak={streak(state.days, now)}
         months={{ done: months.filter(m => doneMonths.has(m.key)).length, total: months.length }}
         onThisDay={{ photos: today.ids.length, years: today.years, cover: today.ids[0] }}
         onSettings={() => setShowSettings(true)}
@@ -436,6 +562,8 @@ export default function App() {
         onDuplicates={() => setShowDuplicates(true)}
         onScreenshots={() => setShowScreenshots(true)}
         onMonths={() => setShowMonths(true)}
+        onLarge={() => setShowLarge(true)}
+        onLive={() => setShowLive(true)}
         onOnThisDay={() => startReview(reviewTrip(today.ids, groups, byId, kept))}
         onTrips={() => setShowTrips(true)}
         onTrip={setTripKey}
@@ -471,7 +599,7 @@ export default function App() {
         </div>
       )}
 
-      <PaywallSheet t={t} open={paywall} onClose={() => { setPaywall(false); afterUnlock.current = null; }} onOwned={unlocked} toast={label => show(label)} />
+      <PaywallSheet t={t} open={paywall} free={store.owned ? undefined : paywallFree ?? { left: freeLeft(state.freeUsed) }} onClose={closePaywall} onOwned={unlocked} toast={label => show(label)} />
 
       <Confirm
         open={!!albumFor}
@@ -483,7 +611,35 @@ export default function App() {
         onCancel={() => setAlbumFor(null)}
       />
 
-      <Toast toast={toast} onDone={hide} raised={['trip', 'group', 'blurry', 'screenshots', 'quickClean', 'cleanup', 'review'].includes(screen)} />
+      <Confirm
+        open={!!liveConfirm}
+        title={t.liveConfirmTitle}
+        body={liveConfirm ? fmt(t.liveConfirmBody, { photos: plural(t, 'photos', liveConfirm.length) }) : ''}
+        confirmLabel={t.liveConfirm}
+        cancelLabel={t.cancel}
+        onConfirm={() => { if (liveConfirm) void convertLive(liveConfirm); }}
+        onCancel={() => setLiveConfirm(null)}
+      />
+
+      <Confirm
+        open={!!afterCompress}
+        title={t.compressDeleteTitle}
+        body={afterCompress ? fmt(t.compressDeleteBody, { before: bytes(t, afterCompress.before), after: bytes(t, afterCompress.after) }) : ''}
+        confirmLabel={t.deleteVideo}
+        cancelLabel={t.compressKeep}
+        danger
+        onConfirm={() => { const a = afterCompress; setAfterCompress(null); if (a) void trash([a.id]); }}
+        onCancel={() => { setAfterCompress(null); show(t.compressKept); }}
+      />
+
+      <Sheet open={!!compressing} title={t.compressing} closeLabel={t.close} onClose={() => {}}>
+        <div className="space-y-3 pb-2">
+          <p className="text-label text-fg-mute">{t.compressing}</p>
+          <Progress value={compressing?.progress ?? null} label={t.compressing} />
+        </div>
+      </Sheet>
+
+      <Toast toast={toast} onDone={hide} raised={['trip', 'group', 'blurry', 'screenshots', 'quickClean', 'large', 'live', 'cleanup', 'review'].includes(screen)} />
     </div>
   );
 }

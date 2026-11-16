@@ -209,6 +209,20 @@ def screenshot(rnd, v):
 # the duplicates), and more screenshots, old and new.
 COPIES = [('p040', datetime(2025, 9, 20, 20, 14)), ('p021', datetime(2026, 4, 2, 21, 5)), ('p060', datetime(2026, 6, 21, 19, 40))]
 SHOTS = [datetime(2026, 2, 12, 9, 30), datetime(2026, 4, 27, 18, 12), datetime(2026, 11, 9, 12, 5)]
+# Videos: a poster frame each (16:9) and a length in seconds — the demo's
+# "large files"; the birthday video is saved twice (a duplicate video), and
+# one screen recording joins the screenshots.
+VIDEOS = [('home', 'cake', datetime(2026, 6, 14, 17, 30), 210), ('home', 'cake', datetime(2026, 6, 20, 21, 2), 210),
+          ('garda', None, datetime(2026, 7, 29, 16, 10), 95), ('paris', None, datetime(2026, 5, 23, 18, 40), 42)]
+RECORDING = (datetime(2026, 3, 10, 20, 15), 64)
+# Live Photos (the iPhone's stills with a short video): the Paris trip's single shots.
+LIVE = {'p051', 'p056', 'p057', 'p058', 'p059', 'p060', 'p061', 'p062', 'p067'}
+
+
+def poster(img):
+    # The middle 16:9 band of a drawn 4:3 picture.
+    top = (H - W * 9 // 16) // 2
+    return img.crop((0, top, W, top + W * 9 // 16))
 
 
 def extras(save):
@@ -218,6 +232,11 @@ def extras(save):
         save(img, when, None, {'copy': True}, quality=55)
     for i, when in enumerate(SHOTS):
         save(screenshot(rnd, 30 + i), when, None, {'shot': True})
+    for place, kind, when, seconds in VIDEOS:
+        img = home(random.Random(99), 0, kind) if place == 'home' else SCENES[place](random.Random(98), 2)
+        save(poster(img), when, None, {'video': True, 'dur': seconds * 1000})
+    when, seconds = RECORDING
+    save(screenshot(rnd, 40), when, None, {'video': True, 'rec': True, 'dur': seconds * 1000})
 
 
 SCENES = {'paris': paris, 'garda': garda, 'amsterdam': amsterdam, 'vienna': vienna}
@@ -314,6 +333,9 @@ def main():
     trip('paris', datetime(2026, 5, 22, 0), 4, 3, [4, 3], 1)
     trip('garda', datetime(2026, 7, 28, 0), 4, 3, [3, 2], 2)
     extras(save)
+    for entry in manifest:
+        if entry['id'] in LIVE:
+            entry['live'] = True
 
     with open(os.path.join(ROOT, 'src', 'native', 'demo', 'manifest.json'), 'w') as f:
         json.dump(sorted(manifest, key=lambda e: e['t']), f, indent=1)

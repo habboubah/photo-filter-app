@@ -26,6 +26,16 @@ import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.exifinterface.media.ExifInterface
+import androidx.media3.common.MediaItem
+import androidx.media3.common.MimeTypes
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.transformer.Composition
+import androidx.media3.transformer.DefaultEncoderFactory
+import androidx.media3.transformer.ExportException
+import androidx.media3.transformer.ExportResult
+import androidx.media3.transformer.ProgressHolder
+import androidx.media3.transformer.Transformer
+import androidx.media3.transformer.VideoEncoderSettings
 import com.getcapacitor.JSArray
 import com.getcapacitor.JSObject
 import com.getcapacitor.Plugin
@@ -44,7 +54,8 @@ import java.util.concurrent.atomic.AtomicBoolean
  * Android's side of src/native/photoLibrary.ts — the counterpart of
  * PhotoLibraryPlugin.swift:
  *
- * - access: READ_MEDIA_IMAGES (Android 13+), READ_MEDIA_VISUAL_USER_SELECTED for
+ * - access: READ_MEDIA_IMAGES and READ_MEDIA_VIDEO (Android 13+, one "Photos and
+ *   videos" permission for the user), READ_MEDIA_VISUAL_USER_SELECTED for
  *   "selected photos" (14+), the older storage permission below 13, and
  *   ACCESS_MEDIA_LOCATION — without it Android strips the GPS position.
  * - the scan: MediaStore's rows diffed against the SQLite cache (ScanStore) by
@@ -103,6 +114,7 @@ class PhotoLibraryPlugin : Plugin() {
         }
         observer = changes
         context.contentResolver.registerContentObserver(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, true, changes)
+        context.contentResolver.registerContentObserver(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, true, changes)
     }
 
     override fun handleOnDestroy() {
@@ -119,8 +131,8 @@ class PhotoLibraryPlugin : Plugin() {
         ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED
 
     private fun photoPermissions(): Array<String> = when {
-        Build.VERSION.SDK_INT >= 34 -> arrayOf(Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED, Manifest.permission.ACCESS_MEDIA_LOCATION)
-        Build.VERSION.SDK_INT >= 33 -> arrayOf(Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.ACCESS_MEDIA_LOCATION)
+        Build.VERSION.SDK_INT >= 34 -> arrayOf(Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO, Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED, Manifest.permission.ACCESS_MEDIA_LOCATION)
+        Build.VERSION.SDK_INT >= 33 -> arrayOf(Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO, Manifest.permission.ACCESS_MEDIA_LOCATION)
         else -> arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.ACCESS_MEDIA_LOCATION)
     }
 
@@ -272,13 +284,60 @@ class PhotoLibraryPlugin : Plugin() {
             }
             progress("list", total, total)
         }
+        if (cancelled.get()) return
+        listVideos(known, seen, changed)
+        if (cancelled.get()) return
         store.upsert(changed)
         store.delete(known.keys.filter { it !in seen })
     }
 
+    /**
+     * The videos, the same way. Their ids are "<volume>:v<_ID>" so the right
+     * collection is asked again later. Without READ_MEDIA_VIDEO MediaStore
+     * simply answers with no rows.
+     */
+    private fun listVideos(known: Map<String, Long>, seen: HashSet<String>, changed: ArrayList<ScanStore.Meta>) {
+        val projection = arrayOf(
+            MediaStore.Video.Media._ID, MediaStore.MediaColumns.VOLUME_NAME,
+            MediaStore.Video.Media.DATE_TAKEN, MediaStore.MediaColumns.DATE_MODIFIED, MediaStore.MediaColumns.GENERATION_MODIFIED,
+            MediaStore.MediaColumns.SIZE, MediaStore.MediaColumns.WIDTH, MediaStore.MediaColumns.HEIGHT, MediaStore.MediaColumns.ORIENTATION,
+            MediaStore.MediaColumns.IS_FAVORITE, MediaStore.MediaColumns.RELATIVE_PATH, MediaStore.MediaColumns.DURATION,
+            MediaStore.MediaColumns.DISPLAY_NAME,
+        )
+        val uri = MediaStore.Video.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
+        try {
+            context.contentResolver.query(uri, projection, null, null, "${MediaStore.Video.Media._ID} ASC")?.use { c ->
+                while (c.moveToNext()) {
+                    if (cancelled.get()) return
+                    val volume = c.getString(1) ?: MediaStore.VOLUME_EXTERNAL_PRIMARY
+                    val id = "$volume:v${c.getLong(0)}"
+                    seen.add(id)
+                    val stamp = c.getLong(4)
+                    if (known[id] == stamp) continue
+                    val taken = c.getLong(2).takeIf { it > 0 } ?: (c.getLong(3) * 1000)
+                    val rotated = c.getInt(8) % 180 != 0
+                    val w = c.getInt(6)
+                    val h = c.getInt(7)
+                    val where = ((c.getString(10) ?: "") + "/" + (c.getString(12) ?: "")).lowercase(Locale.ROOT).replace(" ", "").replace("_", "")
+                    // Screen recordings: each maker names the folder its own way (Screen recordings, ScreenRecorder, Screenrecords …).
+                    val rec = where.contains("screenrecord")
+                    changed.add(ScanStore.Meta(id, taken, stamp, c.getLong(5), if (rotated) h else w, if (rotated) w else h,
+                        c.getInt(9) == 1, false, video = true, dur = c.getLong(11), rec = rec))
+                    if (changed.size >= 1000) { store.upsert(changed); changed.clear() }
+                }
+            }
+        } catch (_: SecurityException) {
+            // No access to videos: photos only.
+        }
+    }
+
+    private fun isVideo(id: String) = id.getOrNull(id.lastIndexOf(':') + 1) == 'v'
+
     private fun contentUri(id: String): Uri {
         val colon = id.lastIndexOf(':')
-        return MediaStore.Images.Media.getContentUri(id.substring(0, colon), id.substring(colon + 1).toLong())
+        val volume = id.substring(0, colon)
+        return if (isVideo(id)) MediaStore.Video.Media.getContentUri(volume, id.substring(colon + 2).toLong())
+        else MediaStore.Images.Media.getContentUri(volume, id.substring(colon + 1).toLong())
     }
 
     /** Phase 2: each photo still to analyse — EXIF place and time, then the features of its 512-px grey copy. */
@@ -302,7 +361,7 @@ class PhotoLibraryPlugin : Plugin() {
         var lat: Double? = null
         var lon: Double? = null
         var taken: Long? = null
-        try {
+        if (!isVideo(id)) try {
             val source = if (hasLocation) MediaStore.setRequireOriginal(uri) else uri
             context.contentResolver.openInputStream(source)?.use { input ->
                 val exif = ExifInterface(input)
@@ -459,6 +518,158 @@ class PhotoLibraryPlugin : Plugin() {
             val trashed = approved.mapNotNull { byUri[it] }
             if (trashed.isNotEmpty()) scanThread.execute { store.delete(trashed) }
             call.resolve(JSObject().put("trashed", JSArray(trashed)).put("cancelled", cancelled).put("dryRun", false))
+        }
+    }
+
+    /* -------------------------------------- Live Photos and smaller videos */
+
+    /** Live Photos are the iPhone's; Android's motion photos are not touched. */
+    @PluginMethod
+    fun convertLive(call: PluginCall) {
+        call.reject("Live Photos exist on the iPhone only")
+    }
+
+    private data class VideoInfo(val size: Long, val dur: Long, val path: String?, val name: String?, val taken: Long)
+
+    private fun videoInfo(uri: Uri): VideoInfo? = context.contentResolver.query(
+        uri,
+        arrayOf(MediaStore.MediaColumns.SIZE, MediaStore.MediaColumns.DURATION, MediaStore.MediaColumns.RELATIVE_PATH,
+            MediaStore.MediaColumns.DISPLAY_NAME, MediaStore.Video.Media.DATE_TAKEN),
+        null, null, null,
+    )?.use { c -> if (c.moveToFirst()) VideoInfo(c.getLong(0), c.getLong(1), c.getString(2), c.getString(3), c.getLong(4)) else null }
+
+    /**
+     * A smaller copy of a video: re-encoded (HEVC where the phone has an
+     * encoder, else what it falls back to) at about a third of its bitrate,
+     * between 2 and 8 Mbit/s, saved next to it with the same date. Nothing is
+     * saved when that would not be at least 20 % smaller, or in a dry run.
+     * The original stays; the web layer asks to trash it (the system's dialog).
+     */
+    @androidx.annotation.OptIn(markerClass = [UnstableApi::class])
+    @PluginMethod
+    fun compressVideo(call: PluginCall) {
+        val id = call.getString("id") ?: return call.reject("No id")
+        if (!isVideo(id)) return call.reject("Not a video")
+        val dryRun = call.getBoolean("dryRun", false) == true
+        val source = contentUri(id)
+        io.execute {
+            val info = try { videoInfo(source) } catch (_: Exception) { null }
+            if (info == null || info.size <= 0 || info.dur <= 0) { call.reject("Video not found"); return@execute }
+            val bitrate = info.size * 8_000 / info.dur
+            val target = (bitrate / 3).coerceIn(2_000_000L, 8_000_000L)
+            val expected = target * info.dur / 8_000
+            if (dryRun || expected > info.size * 8 / 10) {
+                call.resolve(JSObject().put("created", org.json.JSONObject.NULL).put("before", info.size).put("after", expected).put("dryRun", dryRun))
+                return@execute
+            }
+            val out = File(context.cacheDir, "compress-${System.currentTimeMillis()}.mp4")
+            main.post { startTransformer(call, id, source, out, info, target.toInt()) }
+        }
+    }
+
+    @androidx.annotation.OptIn(markerClass = [UnstableApi::class])
+    private fun startTransformer(call: PluginCall, id: String, source: Uri, out: File, info: VideoInfo, bitrate: Int) {
+        val holder = ProgressHolder()
+        var transformer: Transformer? = null
+        val poll = object : Runnable {
+            override fun run() {
+                val t = transformer ?: return
+                if (t.getProgress(holder) == Transformer.PROGRESS_STATE_AVAILABLE) {
+                    notifyListeners("compressProgress", JSObject().put("id", id).put("progress", holder.progress / 100.0))
+                }
+                main.postDelayed(this, 300)
+            }
+        }
+        val encoders = DefaultEncoderFactory.Builder(context)
+            .setRequestedVideoEncoderSettings(VideoEncoderSettings.Builder().setBitrate(bitrate).build())
+            .setEnableFallback(true)
+            .build()
+        val built = Transformer.Builder(context)
+            .setVideoMimeType(MimeTypes.VIDEO_H265)
+            .setEncoderFactory(encoders)
+            .addListener(object : Transformer.Listener {
+                override fun onCompleted(composition: Composition, exportResult: ExportResult) {
+                    main.removeCallbacks(poll)
+                    io.execute { saveCompressed(call, out, info) }
+                }
+
+                override fun onError(composition: Composition, exportResult: ExportResult, exportException: ExportException) {
+                    main.removeCallbacks(poll)
+                    out.delete()
+                    call.reject("Could not make the video smaller", exportException)
+                }
+            })
+            .build()
+        transformer = built
+        try {
+            built.start(MediaItem.fromUri(source), out.absolutePath)
+            main.postDelayed(poll, 300)
+        } catch (e: Exception) {
+            out.delete()
+            call.reject("Could not make the video smaller", e)
+        }
+    }
+
+    /** The finished copy into MediaStore, next to the original (its folder, its date); pending until written. */
+    private fun saveCompressed(call: PluginCall, out: File, info: VideoInfo) {
+        try {
+            val after = out.length()
+            if (after <= 0 || after > info.size * 8 / 10) {
+                call.resolve(JSObject().put("created", org.json.JSONObject.NULL).put("before", info.size).put("after", after).put("dryRun", false))
+                return
+            }
+            val base = (info.name ?: "video").substringBeforeLast('.')
+            val values = ContentValues().apply {
+                put(MediaStore.MediaColumns.DISPLAY_NAME, "$base-klein.mp4")
+                put(MediaStore.MediaColumns.MIME_TYPE, "video/mp4")
+                put(MediaStore.MediaColumns.RELATIVE_PATH, info.path?.takeIf { it.isNotBlank() } ?: "${android.os.Environment.DIRECTORY_MOVIES}/")
+                if (info.taken > 0) put(MediaStore.Video.Media.DATE_TAKEN, info.taken)
+                put(MediaStore.MediaColumns.IS_PENDING, 1)
+            }
+            val resolver = context.contentResolver
+            val uri = resolver.insert(MediaStore.Video.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY), values)
+                ?: throw IllegalStateException("No place for the video")
+            resolver.openOutputStream(uri)?.use { stream -> out.inputStream().use { it.copyTo(stream) } }
+                ?: throw IllegalStateException("Cannot write the video")
+            values.clear()
+            values.put(MediaStore.MediaColumns.IS_PENDING, 0)
+            resolver.update(uri, values, null, null)
+            val created = "${MediaStore.VOLUME_EXTERNAL_PRIMARY}:v${ContentUris.parseId(uri)}"
+            call.resolve(JSObject().put("created", created).put("before", info.size).put("after", after).put("dryRun", false))
+        } catch (e: Exception) {
+            call.reject("Could not save the smaller video", e)
+        } finally {
+            out.delete()
+        }
+    }
+
+    /* ------------------------------------------------------------ widget */
+
+    /** What the home-screen widget shows: a title, a line (in the app's language) and, for "On this day", a photo. */
+    @PluginMethod
+    fun setWidget(call: PluginCall) {
+        val title = call.getString("title") ?: "Bildklar"
+        val line = call.getString("line") ?: ""
+        val photoId = call.getString("photoId")
+        io.execute {
+            context.getSharedPreferences(BildklarWidget.PREFS, Context.MODE_PRIVATE).edit()
+                .putString("title", title).putString("line", line).apply()
+            val image = File(context.filesDir, BildklarWidget.IMAGE)
+            try {
+                if (photoId != null && photoId.contains(':')) {
+                    val bmp = context.contentResolver.loadThumbnail(contentUri(photoId), Size(600, 600), null)
+                    val tmp = File(context.filesDir, BildklarWidget.IMAGE + ".tmp")
+                    tmp.outputStream().use { bmp.compress(Bitmap.CompressFormat.JPEG, 80, it) }
+                    bmp.recycle()
+                    tmp.renameTo(image)
+                } else {
+                    image.delete()
+                }
+            } catch (_: Exception) {
+                image.delete()
+            }
+            BildklarWidget.refresh(context)
+            call.resolve()
         }
     }
 

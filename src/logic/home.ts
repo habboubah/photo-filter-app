@@ -67,7 +67,7 @@ function centre(photos: Photo[], key: string): Point {
 }
 
 export function findHomes(photos: Photo[]): Homes {
-  const located = photos.filter(p => p.lat !== undefined && p.lon !== undefined && !p.shot);
+  const located = photos.filter(p => p.lat !== undefined && p.lon !== undefined && !p.shot && !p.video);
   const top = topPlace(located);
   if (!top) return { home: null, byYear: new Map() };
   const home = centre(located, top.key);

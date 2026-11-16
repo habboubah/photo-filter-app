@@ -8,7 +8,7 @@ import { blurLevel } from './blur';
  * the ones marked to Recently Deleted / the Trash.
  */
 export type Decision = 'keep' | 'delete';
-export type Reason = 'best' | 'original' | 'similar' | 'duplicate' | 'blurry' | 'screenshot' | 'trip';
+export type Reason = 'best' | 'original' | 'similar' | 'duplicate' | 'blurry' | 'screenshot' | 'large' | 'trip';
 
 export interface ReviewItem {
   id: string;
@@ -26,6 +26,11 @@ export function reviewGroup(group: Group, kept: Set<string>, byId: Map<string, P
     suggest: id === group.best || kept.has(id) || byId.get(id)?.fav ? 'keep' : 'delete',
     reason: id === group.best ? (group.kind === 'duplicate' ? 'original' : 'best') : extraReason(group),
   }));
+}
+
+/** The largest files: nothing suggested — a big file is often a precious one; the reason shows its size. */
+export function reviewLarge(photos: Photo[]): ReviewItem[] {
+  return photos.map(p => ({ id: p.id, suggest: 'keep', reason: 'large' }));
 }
 
 /** Screenshots: all suggested for deleting (the list holds no favourites and none the user kept). */

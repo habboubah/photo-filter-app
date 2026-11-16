@@ -17,4 +17,6 @@ ext {
     kotlinVersion = '2.2.20'
     billingVersion = '9.1.0'
     exifInterfaceVersion = '1.4.1'
+    // Making videos smaller on the phone (Transformer: decode, re-encode as HEVC at a lower bitrate, mux).
+    media3Version = '1.11.1'
 }

@@ -27,6 +27,10 @@ export interface AppState {
   months: string[];
   /** What the app has moved to Recently Deleted / the Trash so far (not in a dry run). */
   freed: { count: number; bytes: number };
+  /** Days ("2026-11-16") with a clean-up, for the streak (src/logic/streak.ts). */
+  days: string[];
+  /** Photos deleted without the unlock (src/logic/allowance.ts). */
+  freeUsed: number;
 }
 
 export const emptyState = (): AppState => ({
@@ -37,6 +41,8 @@ export const emptyState = (): AppState => ({
   owned: false,
   months: [],
   freed: { count: 0, bytes: 0 },
+  days: [],
+  freeUsed: 0,
 });
 
 const isObj = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
@@ -81,5 +87,7 @@ export function normalizeState(raw: unknown): AppState {
     if (typeof count === 'number' && Number.isFinite(count) && count > 0) s.freed.count = Math.round(count);
     if (typeof bytes === 'number' && Number.isFinite(bytes) && bytes > 0) s.freed.bytes = Math.round(bytes);
   }
+  if (typeof raw.freeUsed === 'number' && Number.isFinite(raw.freeUsed) && raw.freeUsed > 0) s.freeUsed = Math.round(raw.freeUsed);
+  s.days = [...new Set(strings(raw.days).filter(k => /^\d{4}-\d{2}-\d{2}$/.test(k)))].sort().slice(-60);
   return s;
 }

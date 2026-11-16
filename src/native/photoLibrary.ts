@@ -74,11 +74,33 @@ export interface PhotoLibraryPlugin {
    * internal storage. Answers total 0 when it cannot tell.
    */
   getStorage(): Promise<{ free: number; total: number }>;
+  /**
+   * iPhone: each Live Photo becomes a plain photo — a new asset with the same
+   * picture (as edited), date, place and favourite flag, added to the same
+   * albums. The Live Photos themselves stay until the app asks to move them to
+   * Recently Deleted (`trash`, the system's dialog). iCloud-only originals are
+   * skipped (never downloaded). Android has no Live Photos: it rejects.
+   */
+  convertLive(options: { ids: string[]; dryRun: boolean }): Promise<{ converted: { from: string; to: string }[]; skipped: number; dryRun: boolean }>;
+  /**
+   * A smaller copy of a video (HEVC, at most 1080p) saved next to it with the
+   * same date and place; progress as `compressProgress` events. When the copy
+   * would not be at least 20 % smaller nothing is saved (`created` null). The
+   * original stays until the app asks to trash it.
+   */
+  compressVideo(options: { id: string; dryRun: boolean }): Promise<{ created: string | null; before: number; after: number; dryRun: boolean }>;
+  /**
+   * What the home-screen widget shows (iPhone: WidgetKit, through the App
+   * Group folder; Android: the app widget): a title and a line in the app's
+   * language, and a photo for "On this day". The widget redraws at once.
+   */
+  setWidget(options: { title: string; line: string; photoId?: string }): Promise<void>;
   /** True in a debug build: the dry run is on by default there. */
   isDebug(): Promise<{ debug: boolean }>;
 
   addListener(event: 'scanProgress', fn: (p: ScanProgress) => void): Promise<PluginListenerHandle>;
   addListener(event: 'scanDone', fn: (s: ScanState) => void): Promise<PluginListenerHandle>;
+  addListener(event: 'compressProgress', fn: (p: { id: string; progress: number }) => void): Promise<PluginListenerHandle>;
   /** The library changed while the app was open (a photo taken, one deleted elsewhere). */
   addListener(event: 'libraryChanged', fn: () => void): Promise<PluginListenerHandle>;
 }

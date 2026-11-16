@@ -13,10 +13,14 @@ interface Props {
   themeMode: ThemeMode;
   access: Access | null;
   owned: boolean;
+  /** Deletes left without the unlock. */
+  freeLeft: number;
   debug: boolean;
   dryRun: boolean;
   storage: Storage | null;
   freed: { count: number; bytes: number };
+  reminder: boolean;
+  onReminder: (on: boolean) => void;
   onBack: () => void;
   onLanguage: (l: Language) => void;
   onTheme: (m: ThemeMode) => void;
@@ -69,10 +73,14 @@ export function SettingsView(p: Props) {
         )}
       </Group>
 
+      <Group title={t.reminderSection}>
+        <SwitchRow label={t.reminderRow} sub={t.reminderSub} checked={p.reminder} onChange={p.onReminder} />
+      </Group>
+
       <Group title={t.unlockSection}>
         {p.owned
           ? <Row label={t.unlocked} leading={<IconTile icon={BadgeCheck} hue="mint" />} />
-          : <Row label={t.unlockRow} leading={<IconTile icon={Unlock} hue="mint" />} trailing={<Next />} onClick={p.onUnlock} />}
+          : <Row label={t.unlockRow} sub={p.freeLeft > 0 ? plural(t, 'freeLeft', p.freeLeft) : t.freeUsedUp} leading={<IconTile icon={Unlock} hue="mint" />} trailing={<Next />} onClick={p.onUnlock} />}
         <Row label={t.restore} leading={<IconTile icon={RotateCcw} hue="stone" />} onClick={p.onRestore} />
       </Group>
 

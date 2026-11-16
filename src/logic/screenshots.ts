@@ -2,7 +2,9 @@ import type { Photo } from '../types';
 
 /*
  * Screenshots (iPhone: PHAssetMediaSubtype.photoScreenshot; Android: a file in
- * a Screenshots folder — the native scan sets `shot`). They are left out of
+ * a Screenshots folder — the native scan sets `shot`) and screen recordings
+ * (iPhone: a video file named RPReplay…; Android: a video in a screen
+ * recordings folder — `rec`). They are left out of
  * trips, similar groups and the blurry list; here they are a list of their
  * own. The clean-up card counts the ones older than OLD_SHOT_DAYS: a fresh
  * screenshot is usually still needed (a ticket, a code, a route), an old one
@@ -13,9 +15,12 @@ const DAY = 24 * 3600_000;
 
 export const isOldShot = (p: Photo, now: number) => now - p.t > OLD_SHOT_DAYS * DAY;
 
-/** Every screenshot that could go, newest first. */
+/** A screenshot or a screen recording. */
+export const isCapture = (p: Photo) => !!(p.shot || p.rec);
+
+/** Every screenshot and screen recording that could go, newest first. */
 export function findScreenshots(photos: Photo[], kept: Set<string>): Photo[] {
-  return photos.filter(p => p.shot && !p.fav && !kept.has(p.id)).sort((a, b) => b.t - a.t);
+  return photos.filter(p => isCapture(p) && !p.fav && !kept.has(p.id)).sort((a, b) => b.t - a.t);
 }
 
 /** The ones the clean-up card counts. */

@@ -18,7 +18,7 @@ export const LOW = 60;
 export const LOW_CONTRAST = 18;
 
 export function blurLevel(p: Photo): Confidence | null {
-  if (p.sharp === undefined || p.shot) return null;
+  if (p.sharp === undefined || p.shot || p.video) return null;
   let level = p.sharp < HIGH ? 2 : p.sharp < MEDIUM ? 1 : p.sharp < LOW ? 0 : -1;
   if ((p.contrast ?? 99) < LOW_CONTRAST) level -= 1;
   return level >= 2 ? 'high' : level === 1 ? 'medium' : level === 0 ? 'low' : null;

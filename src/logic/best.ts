@@ -39,6 +39,9 @@ export function rankGroup(photos: Photo[]): Photo[] {
     return px !== 0 ? px : b.t - a.t;
   });
   if (fav) return [fav, ...ranked.filter(p => p !== fav)];
+  // A burst's pick (made by the user, or suggested by Photos) comes next to a favourite.
+  const pick = ranked.find(p => p.pick);
+  if (pick) return [pick, ...ranked.filter(p => p !== pick)];
   return ranked;
 }
 

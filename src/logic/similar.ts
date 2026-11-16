@@ -42,6 +42,45 @@ const MIN_BITS = 12;
 
 export interface RawGroup { key: string; ids: string[]; kind: GroupKind }
 
+/*
+ * Duplicate videos: the same length (within VIDEO_DUR_MS or 1 %), the same
+ * shape and poster frames at most VIDEO_DISTANCE bits apart. Videos are few
+ * next to photos, so they are compared within runs of similar length.
+ */
+export const VIDEO_DUR_MS = 500;
+export const VIDEO_DISTANCE = 4;
+
+export function findVideoDuplicates(photos: Photo[]): RawGroup[] {
+  const list = photos.filter(p => p.video && p.hash && (p.dur ?? 0) > 0).sort((a, b) => a.dur! - b.dur! || a.t - b.t);
+  const parts = list.map(p => hashParts(p.hash!));
+  const parent = list.map((_, i) => i);
+  const find = (i: number): number => {
+    while (parent[i] !== i) { parent[i] = parent[parent[i]]; i = parent[i]; }
+    return i;
+  };
+  for (let i = 0; i < list.length; i++) {
+    const slack = Math.max(VIDEO_DUR_MS, list[i].dur! * 0.01);
+    for (let j = i + 1; j < list.length && list[j].dur! - list[i].dur! <= slack; j++) {
+      if (hamming(parts[i], parts[j]) > VIDEO_DISTANCE || !sameShape(list[i], list[j])) continue;
+      const a = find(i);
+      const b = find(j);
+      if (a !== b) parent[Math.max(a, b)] = Math.min(a, b);
+    }
+  }
+  const groups = new Map<number, Photo[]>();
+  for (let i = 0; i < list.length; i++) {
+    const r = find(i);
+    const g = groups.get(r);
+    if (g) g.push(list[i]); else groups.set(r, [list[i]]);
+  }
+  return [...groups.values()]
+    .filter(members => members.length > 1)
+    .map(members => {
+      const ids = members.sort((a, b) => a.t - b.t).map(p => p.id);
+      return { key: `v:${ids[0]}`, ids, kind: 'duplicate' as const };
+    });
+}
+
 const popcount = (x: number) => {
   x -= (x >>> 1) & 0x55555555;
   x = (x & 0x33333333) + ((x >>> 2) & 0x33333333);
@@ -66,7 +105,7 @@ const sameLight = (a: Photo, b: Photo) => {
 
 /** `photos` must be sorted by time. */
 export function findGroups(photos: Photo[], windowMs = WINDOW_MS, maxDistance = MAX_DISTANCE): RawGroup[] {
-  const list = photos.filter(p => p.hash && !p.shot);
+  const list = photos.filter(p => p.hash && !p.shot && !p.video);
   const parts = list.map(p => hashParts(p.hash!));
   const parent = list.map((_, i) => i);
   /** Per root: whether the group holds a link across more than the time window. */
