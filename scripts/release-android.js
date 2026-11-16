@@ -31,7 +31,7 @@
 //                               A service account belongs to the developer
 //                               account, not to one app: the one that ships
 //                               pizza-driver-log works here once it has been
-//                               given Einkaufsliste – ganz einfach in the Play Console.
+//                               given Fotonest in the Play Console.
 //
 // Release notes: release-notes/<version>/<language>.txt, else
 // release-notes/default/ — only the languages the store listing has are sent.
@@ -48,7 +48,7 @@ import { fileURLToPath } from 'url';
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const androidDir = path.join(rootDir, 'android');
 const aab = path.join(androidDir, 'app/build/outputs/bundle/release/app-release.aab');
-const PACKAGE = 'com.habboubah.korb';
+const PACKAGE = 'com.habboubah.fotonest';
 
 // Load .env.release (KEY=VALUE lines) without overriding the shell.
 const envFile = path.join(rootDir, '.env.release');
@@ -77,8 +77,8 @@ if (!process.env.ANDROID_HOME && !fs.existsSync(path.join(androidDir, 'local.pro
 
 // ---- Once: the upload key ----
 function makeKey() {
-  const keystore = process.env.ANDROID_KEYSTORE_PATH || path.join(os.homedir(), '.android-keys', 'korb-upload.jks');
-  const alias = process.env.ANDROID_KEY_ALIAS || 'korb';
+  const keystore = process.env.ANDROID_KEYSTORE_PATH || path.join(os.homedir(), '.android-keys', 'fotonest-upload.jks');
+  const alias = process.env.ANDROID_KEY_ALIAS || 'fotonest';
   if (fs.existsSync(keystore)) stop(`There is already a keystore at ${keystore} — nothing made.`, 'Losing an upload key means asking Google to reset it, so this never overwrites one.');
   const keytool = process.env.JAVA_HOME ? path.join(process.env.JAVA_HOME, 'bin', 'keytool') : 'keytool';
   if (!process.env.JAVA_HOME && !onPath('keytool')) stop('keytool was not found. Install Android Studio (it brings a JDK), or set JAVA_HOME.');
@@ -344,7 +344,7 @@ export async function prepareAndroid(args, { dryRun }) {
       `  ${error.message}`,
       '',
       `Check in the Play Console that the app ${PACKAGE} exists with a first release uploaded by hand, and that`,
-      `${account.client_email} is listed under Users and permissions with "Release apps to testing tracks" for Einkaufsliste – ganz einfach.`,
+      `${account.client_email} is listed under Users and permissions with "Release apps to testing tracks" for Fotonest.`,
       'To only build the bundle: npm run release:android -- --no-upload',
     );
   }
@@ -374,8 +374,8 @@ export async function keystorePassword() {
     const opens = password => {
       const tried = spawnSync(
         keytool,
-        ['-list', '-keystore', process.env.ANDROID_KEYSTORE_PATH, '-alias', process.env.ANDROID_KEY_ALIAS, '-storepass:env', 'SHOPPINGLIST_STOREPASS'],
-        { stdio: 'ignore', env: { ...process.env, SHOPPINGLIST_STOREPASS: password } },
+        ['-list', '-keystore', process.env.ANDROID_KEYSTORE_PATH, '-alias', process.env.ANDROID_KEY_ALIAS, '-storepass:env', 'FOTONEST_STOREPASS'],
+        { stdio: 'ignore', env: { ...process.env, FOTONEST_STOREPASS: password } },
       );
       return tried.error ? true : tried.status === 0; // no keytool to ask: the signing step will tell
     };
@@ -440,11 +440,11 @@ export async function shipAndroid(ctx, forVersion, buildNumber) {
 
   const withNotes = sent.notes.length ? `, release notes in ${sent.notes.join(', ')}` : '';
   if (sent.status === 'draft') {
-    console.log(`\nGoogle Play: Einkaufsliste – ganz einfach ${version} (version code ${sent.versionCode}) is uploaded to the ${track} track as a draft${withNotes}.`);
+    console.log(`\nGoogle Play: Fotonest ${version} (version code ${sent.versionCode}) is uploaded to the ${track} track as a draft${withNotes}.`);
     console.log('Google Play only takes drafts from the API while the app has never been published:');
     console.log('open the Play Console, go to the track and roll the release out. Once the app is live, this command does that too.');
   } else {
-    console.log(`\nGoogle Play: Einkaufsliste – ganz einfach ${version} (version code ${sent.versionCode}) is released on the ${track} track${withNotes}.`);
+    console.log(`\nGoogle Play: Fotonest ${version} (version code ${sent.versionCode}) is released on the ${track} track${withNotes}.`);
   }
   return { uploaded: true, ...sent };
 }
