@@ -51,12 +51,13 @@ differently, which is why they are switched per target (`"ribbon"` in
 | Store | Rule | What this project does |
 |---|---|---|
 | App Store | Guideline 2.3.7: app names, subtitles, screenshots and previews may not include prices or terms. App Review counts "free" as a price reference and rejects the version until it is gone | `iphone-6.3` has `"ribbon": false`: no ribbon, no price points. `validate.py` warns if that changes |
-| Google Play | The preview-asset guidelines ask to avoid price and promotional words on the feature graphic and screenshots and name "Free" among the examples. Not following them does not take the listing down; it can change how the assets are shown and limits promotion and recommendation by Play | `play-phone` has `"ribbon": "first"` (the ribbon on the first slide only) and the feature graphic `"ribbon": true`. A choice: the listing says "free" loudly, and is picked for Play's own promotion surfaces less readily |
+| Google Play | The preview-asset guidelines ask to avoid price and promotional words on the feature graphic and screenshots and name "Free" among the examples. Not following them does not take the listing down; it can change how the assets are shown and limits promotion and recommendation by Play | `play-phone` and the feature graphic have `"ribbon": false` too |
 
-Whatever the store, the words have to be true. Today the app is free, has
-no in-app products and no subscription (`store/listing.md`, Google Play section). The day
-anything in the app costs money, the ribbon goes to `false` and
-the price points come out of the copy files.
+Whatever the store, the words have to be true. Fotonest is a free download
+with one in-app purchase (the unlock, `store/listing.md`), so "free" or "no
+subscription" on a screenshot would mislead: the ribbon is off everywhere and
+the copy files have no price points. The machinery stays for an app that is
+free outright.
 
 Sources: App Store Review Guidelines 2.3.7 and App Review's rejection text for
 it; Play Console Help → *Add preview assets to showcase your app* (both read

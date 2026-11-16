@@ -2,16 +2,16 @@
   "locale": "de",
   "dir": "ltr",
   "captions": {
-    "intro": "Deine Einkaufsliste, ganz einfach",
-    "lists": "Eine Liste für jeden Laden",
-    "add": "Schnell hinzugefügt",
-    "shop": "Im Laden einfach abhaken"
+    "intro": "Deine Fotos, endlich aufgeräumt",
+    "trips": "Ein Album pro Reise",
+    "best": "Eins behalten, den Rest löschen",
+    "review": "Wischen: behalten oder weg"
   },
   "card": {
-    "name": "Einkaufsliste – ganz einfach",
+    "name": "Fotonest",
     "points": [
-      "Ohne Konto",
-      "Daten bleiben auf dem Gerät"
+      "Alles auf deinem Gerät",
+      "Löscht nie von selbst"
     ]
   }
 }

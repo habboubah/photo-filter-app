@@ -1,23 +1,24 @@
 ---
 name: app-preview-video
-description: Make, change or re-export the App Store app preview video of Shoppinglist (npm run app-preview) — the running app is filmed from a storyboard, then captions, a light on a part of the screen, touch dots and an end card with the icon are laid over it, and an 886 × 1920 MP4 per language comes out, checked against App Store Connect's specification. Use when asked for an app preview, a preview / promo / marketing video or trailer, "a video of the app" for the App Store or Google Play listing, a video like another app's listing has, to change the video's captions, chapters, length, music or poster frame, or after a screen or flow the video passes through has changed. Not the App Review screen recording on a real iPhone (app-review-recording) and not the store screenshots (store-screenshot-studio).
+description: Make, change or re-export the App Store app preview video of Fotonest (npm run app-preview) — the running app is filmed from a storyboard, then captions, a light on a part of the screen, touch dots and an end card with the icon are laid over it, and an 886 × 1920 MP4 per language comes out, checked against App Store Connect's specification. Use when asked for an app preview, a preview / promo / marketing video or trailer, "a video of the app" for the App Store or Google Play listing, a video like another app's listing has, to change the video's captions, chapters, length, music or poster frame, or after a screen or flow the video passes through has changed. Not the App Review screen recording on a real iPhone (app-review-recording) and not the store screenshots (store-screenshot-studio).
 ---
 
 # App preview video
 
 The app preview is the short video that plays, muted, in front of the
-screenshots on the App Store listing and in search results. Shoppinglist's is
-built the way Bring!'s is (Ahmad pointed at it on 15 November 2026): a line
-of text on the dimmed screen, then the app doing what the line says — four
-times — and the icon at the end. About 28 seconds, German and English, in the
-app's own colours and type, so it sits next to the store screenshots as one
-set.
+screenshots on the App Store listing and in search results. Fotonest's is
+built like the shopping list's (after Bring!'s, which Ahmad pointed at): a
+line of text on the dimmed screen, then the app doing what the line says —
+four times — and the icon at the end. About 24 seconds, German and English,
+in the app's own colours and type, so it sits next to the store screenshots
+as one set. It runs on the **demo library** (drawn photos until licensed ones
+replace them, `docs/TODO.md` step 5): the upload waits for the real photos.
 
 It is made in three steps, by one command:
 
 | Step | Script | What it does | Writes |
 |---|---|---|---|
-| film | `scripts/film.mjs` | Builds the app, fills it by using it, plays the storyboard's chapters with real taps while Chromium hands over every frame it draws | `build/app-preview/<lang>/`: the frames and `footage.json` (when each was drawn, where the taps landed, where the lit parts are) |
+| film | `scripts/film.mjs` | Builds the app (with the demo library), plays the storyboard's chapters with real taps while Chromium hands over every frame it draws | `build/app-preview/<lang>/`: the frames and `footage.json` (when each was drawn, where the taps landed, where the lit parts are) |
 | compose | `scripts/compose.mjs` | Lays the chapters on one timeline, draws every frame on a stage (`templates/stage.*`) — footage, veil and caption, light, touch dots, status bar, end card — and encodes it with ffmpeg | `screenshots/store/app-preview/app-preview-<lang>.mp4`, `poster-<lang>.png`; `plan.json` and a still every half second in `build/` |
 | validate | `scripts/validate.mjs` | Asks ffprobe what is really in the file and compares it with Apple's specification | a table; the run fails when a file would be refused at upload |
 
@@ -27,7 +28,7 @@ a video without playing it.
 
 | File | What it is |
 |---|---|
-| `config/storyboard.mjs` | The film: the video's size, what is on the lists at the start, the chapters (caption, how long it stands, what is tapped). The one file about this app's flow |
+| `config/storyboard.mjs` | The film: the video's size, the demo's state at the start, the chapters (caption, how long it stands, what is tapped). The one file about this app's flow |
 | `config/copy.<lang>.json` | The words: one caption per chapter, the name and the points on the end card |
 | `config/theme.json` | The dress: veil, caption type, light, touch dot, end card — the app's colours |
 | `scripts/`, `templates/`, `assets/fonts.css` | The machine. Knows nothing about this app |
@@ -81,7 +82,7 @@ npm run app-preview -- --compose    # keep the footage, make the video again
 
 `--compose` is the quick one (about a minute a language): use it after
 changing a caption, a `hold`, the theme or the end card. Anything that changes
-what happens on screen — a step, a pause, the starting lists, the app itself —
+what happens on screen — a step, a pause, the demo photos, the app itself —
 needs the film again.
 
 Out, in `screenshots/store/app-preview/` (gitignored, like all of
@@ -137,33 +138,36 @@ report a video that did not pass.
 ## The storyboard
 
 `config/storyboard.mjs` exports the video's settings (`video`), the languages
-(`locales`), what is on the lists when the film starts (`START`, by the
-catalogue's German names — few things, so what the film adds lands where the
-eye is), the parts a chapter can point at (`marks`) and the chapters:
+(`locales`), the demo's state when the film starts (`prefs` and `prepare`:
+scanned, unlocked, no dry run — the screenshots' `prefs()`), the parts a
+chapter can point at (`marks`) and the chapters:
 
 ```js
 {
-  id: 'add',
-  caption: 'add',          // copy.<lang>.json › captions.add
-  hold: 1.6,               // seconds the caption stands on the frozen screen
-  run: async (a, w) => {   // what is filmed after it
-    await a.tap(chip(w, 'Äpfel'));
-    await a.pause(0.5);
-    await a.type('add-field', w.typed);
-    await a.spotlight(['add-bar', 'matches'], 1.0);
-    await a.tap(match(w, 'Karotten'));
+  id: 'trips',
+  caption: 'trips',        // copy.<lang>.json › captions.trips
+  hold: 2.0,               // seconds the caption stands on the frozen screen
+  run: async a => {        // what is filmed after it
+    await a.scrollTo('paris');
+    await a.tap('paris');
+    await a.tap('create-album');
+    await a.tap('confirm-album');
+    await a.pause(1.3);    // the toast
   },
 },
 ```
+
+The four chapters: *intro* (the clean-up card lit), *trips* (Paris → *Album
+erstellen* → the confirmation → the toast), *best* (a group, the best photo
+lit), *review* (delete, keep, delete — the poster frame is the review's
+first card), then the end card.
 
 - A chapter starts where the last one ended. One that has to be somewhere
   else gets a `setup: async (a, w) => { … }` — it runs off camera, and the
   video dissolves to where it leaves the app.
 - `{ id: 'end', card: true, seconds: 2.5 }` is the end card.
 - `w` is the language being filmed: `w.t` the app's strings, `w.f` its
-  `fmt`, `w.name('Karotten')` an item's name, `w.lists.supermarket` a list's
-  name, `w.typed` what the add field gets typed (`scripts/lib/shots.mjs` ›
-  `words`). **Every label a tap needs is built from these**, never written
+  `fmt`, `w.p` its `plural` (`scripts/lib/shots.mjs` › `words`). **Every label a tap needs is built from these**, never written
   out — one storyboard films every language, and a renamed button stops the
   run instead of filming the wrong thing.
 
@@ -184,31 +188,23 @@ selector or a Playwright locator:
 | `a.page` | The Playwright page, for what no verb covers |
 
 **Marks** are names for parts of a screen. All the store screenshots' marks
-work (`add-bar`, `matches`, `types`, `aisle-1`, `start`, `progress`, `next`,
-`list-supermarket`, `new-list` … — the table in the `app-store-screenshots`
-skill), plus `add-field` and `bag`. A part the film needs and no mark names:
+work (`cleanup`, `trip-1`, `tiles`, `album`, `best`, `card` … — the table in
+the `app-store-screenshots` skill), plus the film's own: `paris`,
+`create-album`, `confirm-album`, `similar`, `first-group`, `cleanup-button`,
+`review-all`, `keep`, `delete`, `back`. A part the film needs and no mark names:
 add it to `marks` in the storyboard, built from `w` like the others.
-
-Handles that have proved stable here:
-
-| What | How |
-|---|---|
-| a suggestion chip | `chip(w, 'Äpfel')` — only the first six show (`SUGGESTION_LIMIT`), and only things not on the list |
-| a row of the results while typing | `match(w, 'Karotten')` |
-| ticking an item on the list | `tick(w, 'Brot')` |
-| shopping mode's button | `intoBasket(w)` — one tap per open item; recount after changing `START` or what a chapter adds |
-| a sheet's close button | `[role="dialog"] button${aria(w.t.cancel)}` (or `w.t.done`) |
 
 Things this app does that a chapter has to allow for:
 
-- After typing into the add field, `a.blur()` before the next chapter — the
-  field keeps the focus, and its ring would stay lit through everything else.
-- A ticked item goes back into the suggestions, so the chips move after a
-  tick: tap chips before ticking, not after.
-- A toast with *Rückgängig* stays five seconds — a delete would carry it into
-  the next chapter.
-- The last item into the basket turns shopping mode into *Alles im Korb!*;
-  give it a second (the burst runs 1.3 s).
+- The trip's bottom bar (*Durchgehen*, *Album erstellen*) is outside `main`:
+  select its buttons by text, not under `main`.
+- After *Album erstellen* the confirmation is an `alertdialog` with a button of
+  the same name (`confirm-album`); the toast stays a few seconds — the next
+  chapter's `setup` dissolves away from it.
+- Home keeps its scroll position: a `setup` that comes back to home scrolls to
+  the top (`a.page.evaluate(() => window.scrollTo(0, 0))`) before tapping a tile.
+- The review's card can be swiped, but the film taps the round buttons
+  (`delete`, `keep`): a tap reads better in a muted video than a drag.
 
 ## The words
 
@@ -231,7 +227,7 @@ Things this app does that a chapter has to allow for:
 `config/theme.json`, every value explained in the file: the veil (the app's
 ink over the screen, which goes soft under it), the caption's size range, the
 light, the touch dot, the status bar's ink by theme, the end card (the icon's
-peach). The type is the app's own, loaded from `src/assets/fonts/`. Change
+teal). Captions and the name are Fraunces at 650 (`templates/stage.css`). The type is the app's own, loaded from `src/assets/fonts/`. Change
 the dress for the whole video, never for one chapter — and after changing a
 colour, look at a caption over the brightest screen of the film.
 
@@ -290,10 +286,11 @@ for the Mac.
   Spartopf (`../budget-app`) gets a preview, it gets this skill with its own
   `config/`; change the machine in step in both, never for one app's film.
 
-## Not yet run on the Mac (15 November 2026)
+## Not yet run on the Mac (16 November 2026)
 
-Built and run end to end in a Linux container (both languages pass the
-validator); the first Mac run is still to come — say so. What to look at
+Fotonest's storyboard was filmed end to end in a Linux container on 16
+November 2026 (both languages pass the validator, 23.6 s); the first Mac run,
+with real photos, is still to come — say so. What to look at
 then: that the film says `by screencast` and 50 or more frames a second (not
 the screenshot fallback), Apple's emoji and San Francisco in the status bar, the
 contact sheets, and one video played on the iPhone it will be seen on. When

@@ -26,6 +26,7 @@ try {
       ...slide,
       background: fg.background,
       device: fg.device || slide.device,
+      ...(fg.rawDir && { rawDir: fg.rawDir }),
       phone: fg.phone || {},
       second: null,
       callouts: [],

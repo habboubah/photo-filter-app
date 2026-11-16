@@ -1,30 +1,22 @@
 /* The marketing set is set in the app's own typefaces, straight from the
    app's bundled files (src/assets/fonts/, SIL OFL 1.1 — the licence is next to
-   them): Baloo 2 for headlines (Baloo Bhaijaan 2 for Arabic), Nunito for the
-   small text. Nothing is copied here, so the set cannot drift from the app.
-   The unicode ranges are the app's (src/index.css). scripts/render.mjs stops
-   the run when one of these files does not load. */
+   them): Fraunces for headlines, Figtree for the small text. Nothing is copied
+   here, so the set cannot drift from the app. The unicode ranges are the
+   app's (src/index.css). scripts/render.mjs stops the run when one of these
+   files does not load. Arabic has no face yet (the app has no Arabic texts). */
 @font-face {
-  font-family: "Baloo";
+  font-family: "Fraunces";
   font-style: normal;
-  font-weight: 400 800;
+  font-weight: 300 900;
   font-display: block;
-  src: url("../../../../../src/assets/fonts/baloo-2-latin-wght-normal.woff2") format("woff2");
+  src: url("../../../../../src/assets/fonts/fraunces-latin-wght-normal.woff2") format("woff2");
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 @font-face {
-  font-family: "Baloo";
+  font-family: "Figtree";
   font-style: normal;
-  font-weight: 400 800;
+  font-weight: 300 900;
   font-display: block;
-  src: url("../../../../../src/assets/fonts/baloo-bhaijaan-2-arabic-wght-normal.woff2") format("woff2");
-  unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC;
-}
-@font-face {
-  font-family: "Nunito";
-  font-style: normal;
-  font-weight: 200 1000;
-  font-display: block;
-  src: url("../../../../../src/assets/fonts/nunito-latin-wght-normal.woff2") format("woff2");
+  src: url("../../../../../src/assets/fonts/figtree-latin-wght-normal.woff2") format("woff2");
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }

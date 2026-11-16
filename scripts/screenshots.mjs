@@ -7,6 +7,7 @@
 //
 // Usage:  npm run screenshots
 //         npm run screenshots -- --only 02-home,06-group
+//         npm run screenshots -- --android   (Android's words: Ordner, Papierkorb → screenshots/<de|en>-android/, for Google Play)
 // Once per machine:  npx playwright install chromium
 // Output: screenshots/<de|en>/01-scan.png, 01-scan.marks.json …
 //
@@ -18,12 +19,15 @@ import path from 'path';
 import { SCREENS, capture, onlyArg, root } from './lib/shots.mjs';
 
 const outDir = path.join(root, 'screenshots');
+const android = process.argv.includes('--android');
 const failed = await capture({
-  variants: [{ id: 'de', lang: 'de' }, { id: 'en', lang: 'en' }],
+  variants: android
+    ? [{ id: 'de-android', lang: 'de', platform: 'android' }, { id: 'en-android', lang: 'en', platform: 'android' }]
+    : [{ id: 'de', lang: 'de' }, { id: 'en', lang: 'en' }],
   screens: SCREENS.filter(s => s.store),
   outDir,
   onlyNames: onlyArg(),
   marks: true,
 });
-console.log(`\n${failed.length ? 'Done, with gaps' : 'Done'} → screenshots/<de|en>/  (1290 × 2796). Next: npm run store-screenshots`);
+console.log(`\n${failed.length ? 'Done, with gaps' : 'Done'} → screenshots/<de|en>${android ? '-android' : ''}/  (1290 × 2796). Next: npm run store-screenshots`);
 if (failed.length) process.exit(1);

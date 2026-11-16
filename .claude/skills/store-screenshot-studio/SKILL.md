@@ -3,11 +3,13 @@ name: store-screenshot-studio
 description: Turn the raw app captures in screenshots/<locale>/ into polished, store-ready marketing screenshots — one bold colour, a big headline, a large phone, pieces of the screen lifted out of it (call-outs), stickers that run from slide to slide — plus the Google Play feature graphic. Use when asked to refresh, restyle, improve or regenerate marketing screenshots, store listing images, App Store or Play Store artwork, headlines, call-outs or stickers on screenshots, or the feature graphic.
 ---
 
-> From budget-app (Spartopf), set up for Shoppinglist and, since 15 November
-> 2026, composed the way the strong listings in its category are (Ahmad pointed
-> at Bring!'s): the nine captures of `scripts/screenshots.mjs` per language, the
-> icon's peach, DE / EN copy, an App Store target and a Google Play target with
-> its feature graphic.
+> From budget-app (Spartopf) by way of the shopping list, set up for Fotonest
+> on 16 November 2026: the store captures of `scripts/screenshots.mjs` per
+> language (01-scan … 09-paywall), the icon's teal, DE / EN copy, an App Store
+> target (8 slides) and a Google Play target (7 slides, from the Android
+> captures) with its feature graphic. No ribbon, no price words: Fotonest has an
+> in-app purchase. **The demo photos are drawn** — swap in licensed photos
+> before making the set for the stores (`docs/TODO.md`, step 5).
 
 
 # Store screenshot studio
@@ -30,7 +32,7 @@ the numbers — read it before changing a composition):
 
 1. **One flat colour** for the whole set, the icon's own, so the row of slides
    reads as one brand block next to the icon.
-2. **A headline you can read in a search result**: Baloo, as big as the slide
+2. **A headline you can read in a search result**: Fraunces, as big as the slide
    allows, two or three short lines. No subline by default.
 3. **A phone big enough to read**, running off the canvas. The copy is on top
    on one slide and below on the next (`layout`: `top` / `bottom`).
@@ -44,9 +46,14 @@ the numbers — read it before changing a composition):
 ## Run it
 
 ```bash
-npm run screenshots          # only when the app's screens changed: captures + marks
-npm run store-screenshots    # export → feature graphic → contact sheets → validate
+npm run screenshots                  # only when the app's screens changed: captures + marks
+npm run screenshots -- --android     # the same with Android's words (Ordner, Papierkorb), for Google Play
+npm run store-screenshots            # export → feature graphic → contact sheets → validate
 ```
+
+The `play-phone` target and the feature graphic read the Android captures
+(`"rawDir": "screenshots/{locale}-android"` in the config): same file names,
+same marks, Android's words. Make both before a Play set.
 
 The run fails loudly if any exported file misses its store spec, a call-out
 names a mark its capture does not have, or a font or picture did not load.
@@ -72,11 +79,11 @@ agreed text to `config/copy.<locale>.json`.
 ### 3. Render one slide — approval gate
 
 ```bash
-node .claude/skills/store-screenshot-studio/scripts/render.mjs --slide list --locale de --out /tmp/proof.png --scale 1
+node .claude/skills/store-screenshot-studio/scripts/render.mjs --slide trips --locale de --out /tmp/proof.png --scale 1
 ```
 
 Add `--target play-phone` to see the slide as that target exports it (Android
-frame, ribbon, price points, Play's canvas). `--scale 1` renders at a third of
+frame, the Android captures, Play's canvas). `--scale 1` renders at a third of
 export size, which is fast and enough to judge. **Show the user the image and
 wait for approval.** Iterate on `templates/slide.css` and `config/theme.json`
 here, not later.
@@ -123,14 +130,15 @@ and rerun — never hand over files that did not pass.
 A slide may place its phone: `"phone": { "width": 39, "tilt": 4, "nudge": [0.1, 0] }`
 — width in percent of the canvas height (39 fills the App Store canvas with a
 small margin), tilt in degrees, nudge in canvas widths / heights. `"second"`
-puts another capture behind it as a second phone (the opening slide: the list
-in front, home behind). Keep both for a reason: a tilted phone on every slide
+puts another capture behind it as a second phone (the opening slide: home in
+front, a trip behind). `"width": 30` shows the whole phone (the album slide,
+whose button is in the bottom bar). Keep both for a reason: a tilted phone on every slide
 is noise.
 
 ## Call-outs
 
 ```json
-"callouts": [ { "mark": "add-bar", "scale": 1.18 } ]
+"callouts": [ { "mark": "best", "scale": 1.12, "tilt": -4 } ]
 ```
 
 A call-out lifts one piece of the slide's own capture out of the phone: it
@@ -142,7 +150,7 @@ each capture, so a call-out is right in every language and still right after
 the screen has changed. Listing them:
 
 ```bash
-cat screenshots/de/02-list.marks.json
+cat screenshots/de/02-home.marks.json
 ```
 
 - **One per slide**, the piece the headline is about; two small ones (tiles)
@@ -151,7 +159,7 @@ cat screenshots/de/02-list.marks.json
   `validate.py` warns when a piece is blown up past the capture's own pixels.
 - `tilt` (degrees) and `shift` (in screen widths) only for small pieces — a
   full-width card stays straight.
-- `anchor: "top"` keeps what is above the piece readable (an aisle's name above
+- `anchor: "top"` keeps what is above the piece readable (a heading above
   its card); then check what its other edge now covers. Text half under an
   edge is the one thing that makes a call-out look like a mistake: cover the
   line whole (`shift`, `scale`) or not at all.
@@ -165,51 +173,42 @@ cat screenshots/de/02-list.marks.json
 ## Stickers
 
 ```json
-{ "art": "lemon", "slide": "home", "x": 1.0, "y": 0.67, "size": 0.34, "rotate": -8 }
+{ "art": "pin", "slide": "home", "x": 1.0, "y": 0.68, "size": 0.22, "rotate": 10 }
 ```
 
-Twelve drawings in `assets/stickers/` (lemon, tomato, carrot, avocado, cheese,
-broccoli, pear, orange, milk, bread, cherry, leaf): original, flat, with a
-paper edge, so they stand on any background. A sticker is anchored to a slide;
+Four drawings in `assets/stickers/` (snapshot-hills, snapshot-sea, pin, star):
+original, flat, with a paper edge, so they stand on any background. A sticker is anchored to a slide;
 `x: 1.0` is the seam to the next one. Rules of thumb: one per seam; alternate
 high and low; keep `y` roughly between 0.3 and 0.7 (clear of the copy on both
 layouts); never on a call-out or on the control a slide is about; never two of
-the same in a row. Food only where the screen is about food — this is a
-shopping list, so everywhere. To add one, draw it in the same manner (see the
+the same in a row. Photos, places and the best shot — what the app is about.
+To add one, draw it in the same manner (see the
 comment in any of the files) — no emoji (the platforms' are not ours to ship),
 no downloaded clip-art.
 
 ## Colour and type
 
-`config/theme.json`. Three backgrounds: **peach** (the icon's colour, the
-app's ink on it — the set's colour), **coral** (the app's button colour with
-white type, louder) and **plum** (the app's ink as a canvas — only for the
-screen shown at night). Change the set's colour by changing every slide's
-`background`; do not mix peach and coral. Type is the app's own, loaded from
-the app's files (`assets/fonts/fonts.css` → `src/assets/fonts/`): Baloo for
-headlines, Nunito for points and sublines.
+`config/theme.json`. Three backgrounds: **teal** (the icon's colour, white
+type on it — the set's colour), **paper** (the app's page, a shade darker, with
+the app's ink — quieter) and **night** (the app's dark page — only for a screen
+shown in dark mode). Change the set's colour by changing every slide's
+`background`; do not mix teal and paper. Type is the app's own, loaded from
+the app's files (`assets/fonts/fonts.css` → `src/assets/fonts/`): Fraunces for
+headlines (weight 650, `templates/slide.css`), Figtree for points and sublines.
 
 ## Ribbon and points
 
-Two things say what the app costs and promises, beside the headline:
-
-- **The ribbon** — the band across the top corner with the copy file's `ribbon`
-  word (*Kostenlos* / *Free*). Switched on per target and on the feature graphic
-  in `config/screenshots.config.json`: `"ribbon": true` (every slide), `"first"`
-  (the first slide only) or `false`. Its colours come with the background
-  (`ribbon` / `ribbonInk` in `theme.json`).
 - **Points** — the pills with a tick under a slide's headline, from `points` in
-  the copy file (a slide's, or the feature graphic's). A point is a string, or
-  `{ "text": "Kein Abo", "price": true }` for one that speaks about the price.
-  Price points appear only on targets that have the ribbon on.
-
-**Google Play only.** Apple reads "free" on a screenshot as a price reference
-and rejects the version for it, so the `iphone-6.3` target has the ribbon off
-and shows only the plain points. `validate.py` warns when an App Store target
-turns it on. On Play it is allowed, at the cost of being picked for Play's
-promotion surfaces less readily. And every one of these words has to be true:
-they come off the day anything in the app costs money. The rules, with their sources, are
-in `reference/store-specs.md` › *The ribbon and the price words*.
+  the copy file (a slide's, or the feature graphic's). Plain strings: what the
+  app does and that everything stays on the device.
+- **The ribbon** (a band across the top corner) and **price points**
+  (`{ "text": …, "price": true }`) are machinery from the free shopping list.
+  **Off for Fotonest** on every target and on the feature graphic: an app that
+  sells an unlock may not say "free" on its screenshots (Apple rejects it,
+  guideline 2.3.7; on Play it is misleading), and the paywall's price is not
+  shown either — `09-paywall` is captured for App Review's in-app purchase
+  screenshot, not for the set. The rules, with their sources, are in
+  `reference/store-specs.md` › *The ribbon and the price words*.
 
 ## Adding things
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Records the App Review screen recording on the iPhone connected to this Mac.
 #
-# Runs the UI test in ios/AppReviewRecorder: it drives the shopping list app
+# Runs the UI test in ios/AppReviewRecorder: it drives the Fotonest app
 # installed on the iPhone (the TestFlight build), starts the iOS screen recording from
 # Control Center, plays ios/AppReviewRecorder/scenes.json and stops the
 # recording. The video is then in the iPhone's Photos.

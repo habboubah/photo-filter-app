@@ -10,9 +10,10 @@ Google Play feature graphic and a contact sheet per store.
 - `npm install` (Playwright is already a devDependency of this repo)
 - Chromium, once per machine: `npx playwright install chromium --only-shell`
 - Python 3 for the validator — **standard library only**, nothing to install
-- Raw captures present, with their marks: `npm run screenshots` (it writes
-  `<capture>.marks.json` next to each capture — where the add field, an aisle's
-  card, a tile … is — and the call-outs are found by those names)
+- Raw captures present, with their marks: `npm run screenshots` and, for the
+  Play set, `npm run screenshots -- --android` (each writes
+  `<capture>.marks.json` next to each capture — where the clean-up card, a trip,
+  the best shot … is — and the call-outs are found by those names)
 
 No other dependencies. See "Dependencies" below for why.
 
@@ -28,8 +29,8 @@ file misses a store spec.
 Individual steps, for iterating:
 
 ```bash
-node .claude/skills/store-screenshot-studio/scripts/render.mjs --slide list --locale de --out /tmp/proof.png --scale 1
-node .claude/skills/store-screenshot-studio/scripts/render.mjs --slide list --locale en --target play-phone --out /tmp/proof-play.png
+node .claude/skills/store-screenshot-studio/scripts/render.mjs --slide trips --locale de --out /tmp/proof.png --scale 1
+node .claude/skills/store-screenshot-studio/scripts/render.mjs --slide trips --locale en --target play-phone --out /tmp/proof-play.png
 node .claude/skills/store-screenshot-studio/scripts/export.mjs
 node .claude/skills/store-screenshot-studio/scripts/feature_graphic.mjs
 node .claude/skills/store-screenshot-studio/scripts/preview.mjs
@@ -40,9 +41,9 @@ python3 .claude/skills/store-screenshot-studio/scripts/validate.py
 
 ```
 screenshots/store/
-  iphone-6.3/{de,en}/01-home.png … 09-dark.png         1206×2622 PNG
-  play-phone/{de,en}/01-home.jpg … 08-dark.jpg         1080×1920 JPEG, with the ribbon
-  play-feature/{de,en}/feature-graphic.jpg             1024×500 JPEG, with the ribbon
+  iphone-6.3/{de,en}/01-home.png … 08-private.png      1206×2622 PNG
+  play-phone/{de,en}/01-home.jpg … 07-private.jpg      1080×1920 JPEG, from the Android captures
+  play-feature/{de,en}/feature-graphic.jpg             1024×500 JPEG
   contact-sheet.png                                    the iPhone set
   contact-sheet-play-phone.png                         the Play set and the feature graphics
 ```
@@ -53,9 +54,8 @@ Play's. Each run deletes and rewrites only the folders this script makes,
 including ones from older configs (`apple-6.9`, `apple-6.5`); files next to
 them (`play-icon-512.png`) are left alone.
 
-The Play set carries the *Kostenlos* / *Free* ribbon and the price points
-("Kein Abo"); the App Store set does not, because Apple rejects price words on
-screenshots. See *Ribbon and points* in `SKILL.md`.
+No set carries a ribbon or price words: Fotonest sells an unlock. See
+*Ribbon and points* in `SKILL.md`.
 
 ## Layout of the skill
 
@@ -66,8 +66,8 @@ screenshots. See *Ribbon and points* in `SKILL.md`.
 | `config/theme.json` | Colours (lifted from `src/index.css`), fonts, backgrounds, the frame's colour |
 | `config/copy.<locale>.json` | Headlines, sublines and points per language, plus `dir` for RTL |
 | `templates/slide.html` + `slide.css` | The one template; layout switches on a data attribute |
-| `assets/fonts/fonts.css` | The app's own fonts, loaded from `src/assets/fonts/` (Baloo 2, Nunito; SIL OFL 1.1, licence next to them) |
-| `assets/stickers/` | Twelve original drawings (SVG) for the seams between slides |
+| `assets/fonts/fonts.css` | The app's own fonts, loaded from `src/assets/fonts/` (Fraunces, Figtree; SIL OFL 1.1, licence next to them) |
+| `assets/stickers/` | Four original drawings (SVG) for the seams between slides |
 | `assets/frames/README.md` | Why the device frame is CSS, not a PNG |
 | `scripts/render.mjs` | One slide; also the shared renderer |
 | `scripts/export.mjs` | Every slide × locale × target |
@@ -83,13 +83,13 @@ store screen) and `npm run screenshots` measures them.
 
 1. Add to `slides` in `config/screenshots.config.json`:
    ```json
-   { "id": "basket", "raw": "10-basket.png", "layout": "bottom", "device": "iphone", "background": "peach",
-     "callouts": [ { "mark": "basket", "scale": 1.14 } ] }
+   { "id": "dark", "raw": "19-dark.png", "layout": "bottom", "device": "iphone", "background": "night",
+     "callouts": [ { "mark": "cleanup", "scale": 1.14 } ] }
    ```
-2. Name the mark on that screen in `scripts/lib/shots.mjs`
-   (`marks: w => ({ basket: '#in-basket' })`) and capture it:
-   `npm run screenshots -- --only 10-basket`.
-3. Add `"basket": { "headline": "…", "subline": "…" }` to **every**
+2. Make the screen a store screen and name the mark in `scripts/lib/shots.mjs`
+   (`store: true`, `marks: () => ({ cleanup: 'section[aria-labelledby="cleanup-h"]' })`)
+   and capture it: `npm run screenshots -- --only 19-dark` (and `--android`).
+3. Add `"dark": { "headline": "…", "subline": "…" }` to **every**
    `config/copy.<locale>.json`.
 4. Move the stickers on its seams (`stickers`), rerun, look at both contact
    sheets. Array order is store order and sets the filename index.
@@ -109,8 +109,8 @@ mirrored sheet to maintain.
 RTL was verified by rendering a throwaway Arabic locale, not just asserted. To
 repeat it: copy `copy.en.json` to `copy.ar.json`, set `"dir": "rtl"`, translate one
 slide, copy `screenshots/de/` to `screenshots/ar/`, add `ar` to `locales` and run
-`render.mjs --locale ar`. Arabic headlines are set in Baloo Bhaijaan 2 (bundled);
-the points fall through to the system's Arabic font, as in the app.
+`render.mjs --locale ar`. Fraunces and Figtree have no Arabic: bundle an Arabic
+face in `assets/fonts/fonts.css` (and the app) before an Arabic set.
 
 ## Dependencies
 

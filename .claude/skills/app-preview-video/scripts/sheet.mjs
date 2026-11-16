@@ -36,18 +36,18 @@ export async function sheet({ langs } = {}) {
         </figure>`;
       }).join('\n');
       const html = `<!doctype html><meta charset="utf-8"><style>
-        body { margin: 0; padding: 28px; background: #FFF1E6; color: #3B1E2B; font: 600 15px/1.3 system-ui, sans-serif; width: max-content; }
+        body { margin: 0; padding: 28px; background: #F7F3EC; color: #1D2427; font: 600 15px/1.3 system-ui, sans-serif; width: max-content; }
         h1 { font-size: 19px; margin: 0 0 18px; }
         h1 span { font-weight: 500; opacity: .7; }
         .grid { display: grid; grid-template-columns: repeat(12, 190px); gap: 18px 12px; }
         figure { margin: 0; }
         img { display: block; width: 190px; border-radius: 10px; box-shadow: 0 1px 4px rgb(59 30 43 / .25); }
-        figure.first img { outline: 3px solid #C43D1F; }
+        figure.first img { outline: 3px solid #B42318; }
         figure.poster img { outline: 3px solid #1F7A4D; }
         figcaption { margin-top: 6px; font-size: 13px; font-weight: 500; }
         b { font-variant-numeric: tabular-nums; }
       </style>
-      <h1>${esc(lang)} · ${plan.width} × ${plan.height} · ${plan.seconds.toFixed(1)} s <span>— a still every half second; a chapter's first has the coral edge, the poster frame the green one</span></h1>
+      <h1>${esc(lang)} · ${plan.width} × ${plan.height} · ${plan.seconds.toFixed(1)} s <span>— a still every half second; a chapter's first has the red edge, the poster frame the green one</span></h1>
       <div class="grid">${cells}</div>`;
       const file = path.join(dir, 'contact-sheet.html');
       fs.writeFileSync(file, html);

@@ -18,10 +18,11 @@ export function devNative(): boolean {
 }
 
 /**
- * Development only: localStorage `fotonest-dev-platform` = "android" gives the
- * browser Android's wording. Nothing native runs there; production builds drop it.
+ * Development and demo builds only: localStorage `fotonest-dev-platform` =
+ * "android" gives the browser Android's wording (for `npm run screenshots --
+ * --android`). Nothing native runs there; the app builds (`--mode native`) drop it.
  */
 function devPlatform(): string | null {
-  if (!import.meta.env.DEV) return null;
+  if (!import.meta.env.DEV && !__DEMO__) return null;
   try { return localStorage.getItem('fotonest-dev-platform'); } catch { return null; }
 }

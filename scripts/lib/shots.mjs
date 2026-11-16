@@ -35,25 +35,27 @@ export async function loadSource() {
   const vite = await createServer({ root, logLevel: 'silent', appType: 'custom', server: { middlewareMode: true, hmr: false, ws: false } });
   try {
     const tr = await vite.ssrLoadModule('/src/translations.ts');
-    return { strings: tr.default, fmt: tr.fmt, plural: tr.plural };
+    return { strings: tr.default, android: tr.androidStrings, fmt: tr.fmt, plural: tr.plural };
   } finally {
     await vite.close();
   }
 }
 
-/** Everything a screen's `run` needs for one language. */
-export function words(src, lang) {
-  return { lang, t: src.strings[lang], f: (s, vars) => src.fmt(s, vars), p: (base, n) => src.plural(src.strings[lang], base, n) };
+/** Everything a screen's `run` needs for one language (and, for Android captures, Android's words). */
+export function words(src, lang, platform) {
+  const t = platform === 'android' ? { ...src.strings[lang], ...src.android[lang] } : src.strings[lang];
+  return { lang, t, f: (s, vars) => src.fmt(s, vars), p: (base, n) => src.plural(t, base, n) };
 }
 
 /** The demo's state before the app starts: access granted, the library scanned, the unlock bought — each can be changed per screen. */
-export function prefs({ lang = 'de', theme = 'light', access = 'full', scanned = true, owned = true } = {}) {
+export function prefs({ lang = 'de', theme = 'light', access = 'full', scanned = true, owned = true, scanStep = null } = {}) {
   return {
     'fotonest-lang': lang,
     'fotonest-theme': theme,
     'fotonest-demo-access': access,
     'fotonest-demo-scanned': scanned ? '1' : null,
     'fotonest-demo-owned': owned ? '1' : null,
+    'fotonest-demo-scan-step': scanStep,
     // The production build is no debug build: no dry run, no debug badges.
     'fotonest-dry-run': '0',
   };
@@ -77,8 +79,17 @@ export const pause = (page, ms = 350) => page.waitForTimeout(ms);
 export const aria = label => `[aria-label="${label.replace(/"/g, '\\"')}"]`;
 export const sheet = '[role="dialog"]';
 
-/** A trip's card, by the start of its title ("Paris"). */
-export const tripCard = (w, place) => `button[aria-label^="${place}"]`;
+/** A trip's card, by the start of its title ("Paris"): its label is t.openTrip ("Paris, Mai 2026 öffnen", "Open Paris, May 2026"). */
+export const tripCard = (w, place) => {
+  const [before] = w.t.openTrip.split('{name}');
+  return `main button[aria-label^="${before}${place}"]`;
+};
+/** Every trip card. */
+export const tripCards = w => {
+  const [before, after] = w.t.openTrip.split('{name}');
+  // An empty ^= or $= matches nothing in CSS, so only the non-empty side is used.
+  return `main button${before ? `[aria-label^="${before}"]` : ''}${after ? `[aria-label$="${after}"]` : ''}`;
+};
 export async function openTrip(page, w, place = 'Paris') {
   await page.click(tripCard(w, place));
   await pause(page, 700);
@@ -119,23 +130,25 @@ const section = title => `section:has(> h2:text-is("${title}")) > div`;
  */
 export const SCREENS = [
   {
-    name: '01-scan', store: true, prefs: { scanned: false },
-    // A first scan of the demo takes about 2.6 s: caught half way.
+    name: '01-scan', store: true, prefs: { scanned: false, scanStep: '400' },
+    // Slowed down to about 10 s (normally 2.6 s), so the capture and its mark
+    // catch the card for sure: about a quarter through.
     wait: 1200,
     marks: () => ({ scan: 'section[aria-live="polite"]' }),
   },
   {
     name: '02-home', store: true,
-    marks: w => ({ cleanup: 'section[aria-labelledby="cleanup-h"]', 'trip-1': 'main button[aria-label] >> nth=2', tiles: 'main div.grid' }),
+    marks: w => ({ cleanup: 'section[aria-labelledby="cleanup-h"]', 'trip-1': `${tripCards(w)} >> nth=0`, tiles: 'main div.grid' }),
   },
   {
+    // The list of all trips once there are more than four; the demo has four, so home scrolled to them.
     name: '03-trips', store: true, run: async (page, w) => {
-      await page.click(`button:has-text("${w.t.allTrips}")`).catch(async () => {
-        await page.evaluate(() => window.scrollTo(0, 600));
-      });
+      const all = page.locator(`button:has-text("${w.t.allTrips}")`);
+      if (await all.count()) await all.first().click();
+      else await page.evaluate(() => document.getElementById('trips-h')?.scrollIntoView({ block: 'start' }));
       await pause(page, 700);
     },
-    marks: () => ({ 'trip-1': 'main button >> nth=0', 'trip-2': 'main button >> nth=1' }),
+    marks: w => ({ 'trip-1': `${tripCards(w)} >> nth=0`, 'trip-2': `${tripCards(w)} >> nth=1` }),
   },
   { name: '04-trip', store: true, run: (page, w) => openTrip(page, w), marks: w => ({ album: `button:has-text("${w.t.createAlbum}")` }) },
   {
@@ -158,7 +171,7 @@ export const SCREENS = [
       if (card) {
         await page.mouse.move(card.x + card.width / 2, card.y + card.height / 2);
         await page.mouse.down();
-        await page.mouse.move(card.x + card.width / 2 - 90, card.y + card.height / 2 + 6, { steps: 8 });
+        await page.mouse.move(card.x + card.width / 2 - 70, card.y + card.height / 2 + 6, { steps: 8 });
       }
     },
     after: async page => { await page.mouse.up(); },
@@ -213,12 +226,15 @@ export async function measure(page, wanted) {
       }
       radius = Math.min(radius, r.width / 2, r.height / 2);
       const f = v => Math.round(v * 1e5) / 1e5;
-      // Clipped to the screen: a grid runs on below the fold.
+      // Clipped to the screen: a grid runs on below the fold, the review's
+      // card leans out of it half way through a swipe.
       const top = Math.max(0, r.top);
       const bottom = Math.min(vh, r.bottom);
-      return { x: f(r.left / vw), y: f(top / vh), w: f(r.width / vw), h: f(Math.max(0, bottom - top) / vh), radius: f(radius / vw) };
+      const left = Math.max(0, r.left);
+      const right = Math.min(vw, r.right);
+      return { x: f(left / vw), y: f(top / vh), w: f(Math.max(0, right - left) / vw), h: f(Math.max(0, bottom - top) / vh), radius: f(radius / vw) };
     }, { vw, vh });
-    if (box.w <= 0 || box.h <= 0 || box.x < -0.001 || box.x + box.w > 1.001) {
+    if (box.w <= 0.05 || box.h <= 0.02) {
       throw new Error(`mark "${name}" is not on the screen (${selector})`);
     }
     marks[name] = box;
@@ -241,7 +257,7 @@ export async function capture({ variants, screens, outDir, clean = true, onlyNam
   const failed = [];
   try {
     for (const v of variants) {
-      const w = words(src, v.lang);
+      const w = words(src, v.lang, v.platform);
       const dir = path.join(outDir, v.id);
       if (clean && !onlyNames) fs.rmSync(dir, { recursive: true, force: true });
       fs.mkdirSync(dir, { recursive: true });

@@ -25,6 +25,8 @@ const K = {
   trashed: 'fotonest-demo-trashed',
   owned: 'fotonest-demo-owned',
   state: 'fotonest-state',
+  /** Milliseconds per step of a first scan (24 steps): screenshots slow it down to catch it. */
+  scanStep: 'fotonest-demo-scan-step',
 };
 const get = (k: string) => { try { return localStorage.getItem(k); } catch { return null; } };
 const set = (k: string, v: string | null) => {
@@ -86,8 +88,9 @@ export class DemoLibrary extends WebPlugin implements PhotoLibraryPlugin {
       const first = get(K.scanned) !== '1';
       // A first scan takes a moment, so its progress can be seen (and captured); a rescan is quick.
       const steps = first ? 24 : 4;
+      const stepMs = first ? Number(get(K.scanStep)) || 110 : 60;
       for (let i = 1; i <= steps; i++) {
-        await wait(first ? 110 : 60);
+        await wait(stepMs);
         // Like the native scan: a rescan only lists the library (nothing new to analyse).
         const phase = first && i > steps / 4 ? 'analyse' : 'list';
         this.notifyListeners('scanProgress', { phase, done: Math.round((i / steps) * total), total });

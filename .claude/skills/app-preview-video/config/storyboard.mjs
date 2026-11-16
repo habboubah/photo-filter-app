@@ -1,4 +1,4 @@
-// The film: Shoppinglist's App Store preview, chapter by chapter. This file
+// The film: Fotonest's App Store preview, chapter by chapter. This file
 // and the copy next to it (copy.<lang>.json) are all that is about this app —
 // the scripts play any storyboard.
 //
@@ -8,17 +8,18 @@
 //   hold     how long the caption stands, with its fades (about 0.6 s of it).
 //   setup    (optional) gets the app somewhere else first, off camera; the
 //            video dissolves to it.
-//   run      what is filmed: `a` taps, types and lights things up (the verbs
+//   run      what is filmed: `a` taps, scrolls and lights things up (the verbs
 //            are in scripts/film.mjs › Actor), `w` are the app's own words
 //            in the language being filmed (scripts/lib/shots.mjs › words).
 //   card     the end card instead: the icon, the name and the points from
 //            copy.<lang>.json › card, for `seconds`.
 //
-// Every label a tap needs comes from the app's strings (`w.t`), and every
-// item by its German catalogue name (`w.name('Karotten')`), like the store
+// Every label a tap needs comes from the app's strings (`w.t`), like the store
 // screenshots — one storyboard films every language, and a renamed button
-// stops the run with a message instead of filming the wrong thing.
-import { PORT, ORIGIN, SCREENS, aria, home, listTile, loadSource, seed, words } from '../../../../scripts/lib/shots.mjs';
+// stops the run with a message instead of filming the wrong thing. The film
+// runs on the demo library (src/native/demo/): drawn photos until licensed
+// ones replace them (docs/TODO.md, step 5).
+import { PORT, ORIGIN, SCREENS, aria, loadSource, prefs as demoPrefs, start, tripCard, words } from '../../../../scripts/lib/shots.mjs';
 
 export { loadSource, words };
 
@@ -51,41 +52,20 @@ export const video = {
 };
 
 export const locales = ['de', 'en'];
-export const browserLocale = { de: 'de-DE', en: 'en-GB', ar: 'ar' };
+export const browserLocale = { de: 'de-DE', en: 'en-GB' };
 
-/** The app's settings as it would have stored them. */
-export const prefs = lang => ({ 'shoppinglist-lang': lang, 'shoppinglist-theme': 'light' });
+/** The app's settings as it would have stored them, and the demo's state: scanned, unlocked, no dry run. */
+export const prefs = lang => Object.fromEntries(Object.entries(demoPrefs({ lang })).filter(([, v]) => v !== null));
 
-/**
- * What is on the lists when the film starts — fewer things than the store
- * screenshots show, so what is added in the film lands where the eye is.
- * By the catalogue's German names, like scripts/lib/shots.mjs › DEMO.
- */
-const START = {
-  supermarket: { items: ['Milch', 'Brot'], ticked: [] },
-  drugstore: { items: ['Zahnpasta', 'Duschgel', 'Windeln', 'Feuchttücher', 'Sonnencreme'], ticked: ['Duschgel'] },
-  clothing: { items: ['Socken', 'Winterjacke', 'Sneaker'], ticked: [] },
-};
-
-/** Before the camera runs: fill the app by using it, and go back to the start. */
+/** Before the camera runs: a fresh demo library, home. */
 export async function prepare(page, w) {
-  await home(page);
-  const demo = Object.entries(START).map(([id, d]) => ({ list: w.lists[id], entries: d.items.map(w.name), ticked: d.ticked.map(w.name) }));
-  await seed(page, { ...w, demo });
-  await home(page);
+  await start(page, demoPrefs({ lang: w.lang }));
 }
 
 /* ------------------------------------------------------------ what is tapped */
 
-const field = w => `input${aria(w.t.addPlaceholder)}`;
-/** A suggestion chip under the add field. */
-const chip = (w, de) => `button[role="listitem"]${aria(w.f(w.t.addNamed, { name: w.name(de) }))}`;
-/** A row of the results that typing brings up. */
-const match = (w, de) => `ul${aria(w.t.suggestions)} button:has-text("${w.name(de)}")`;
-/** An item's row on the list: a tap ticks it off. */
-const tick = (w, de) => `button${aria(w.f(w.t.markDone, { name: w.name(de) }))}`;
-/** Shopping mode's big button. */
-const intoBasket = w => `section${aria(w.t.nextUp)} button:has-text("${w.t.intoBasket}")`;
+const button = label => `button${aria(label)}`;
+const textButton = text => `button:has-text("${text}")`;
 
 /**
  * The parts a chapter may light up or move in on, by name. The store
@@ -94,77 +74,94 @@ const intoBasket = w => `section${aria(w.t.nextUp)} button:has-text("${w.t.intoB
  */
 export const marks = w => ({
   ...Object.assign({}, ...SCREENS.filter(s => s.marks).map(s => s.marks(w))),
-  'add-field': field(w),
-  // The bag: in a list's dock, or in shopping mode's head.
-  bag: ':is(button, span):has(> img[src="/icon.png"])',
+  paris: tripCard(w, 'Paris'),
+  'create-album': textButton(w.t.createAlbum),
+  'confirm-album': `[role="alertdialog"] ${textButton(w.t.createAlbum)}`,
+  similar: textButton(w.t.similarTile),
+  'first-group': 'main button >> nth=0',
+  'cleanup-button': textButton(w.t.cleanupButton),
+  'review-all': textButton(w.t.reviewAll),
+  keep: button(w.t.keep),
+  delete: button(w.t.delete),
+  back: button(w.t.back),
 });
 
 /* -------------------------------------------------------------- the chapters */
 
-// The story (Bring!'s preview has the same build: a line, then the app doing
-// it): your lists → a list for every shop → adding → ticking off into the
-// bag, until everything is in it → the icon and the name.
+// The story: what the app found (the clean-up card) → a trip becomes an album
+// → the best of near-identical shots → swiping through what can go → the icon
+// and the name.
 export const chapters = [
   {
     id: 'intro',
     caption: 'intro',
     hold: 2.0,
     run: async a => {
-      await a.pause(0.6);
+      await a.pause(0.4);
+      await a.spotlight('cleanup', 1.1);
+      await a.pause(0.2);
     },
   },
   {
-    id: 'lists',
-    caption: 'lists',
+    id: 'trips',
+    caption: 'trips',
     hold: 2.0,
-    run: async (a, w) => {
-      await a.tap('new-list');
-      await a.pause(0.75);
-      await a.spotlight('types', 1.1);
-      await a.tap(`[role="dialog"] button${aria(w.t.cancel)}`);
-      await a.pause(0.5);
-      await a.tap('list-supermarket');
-      await a.pause(0.85);
+    run: async a => {
+      await a.scrollTo('paris', { block: 'center' });
+      await a.pause(0.4);
+      await a.tap('paris');
+      await a.pause(0.9);
+      await a.tap('create-album');
+      await a.pause(0.6);
+      await a.tap('confirm-album');
+      // The toast: "Album angelegt".
+      await a.pause(1.3);
     },
   },
   {
-    id: 'add',
-    caption: 'add',
-    hold: 1.6,
-    run: async (a, w) => {
-      await a.tap(chip(w, 'Äpfel'));
-      await a.pause(0.5);
-      await a.tap(chip(w, 'Bananen'));
-      await a.pause(0.6);
-      await a.type('add-field', w.typed);
-      await a.spotlight(['add-bar', 'matches'], 1.0);
-      await a.tap(match(w, 'Karotten'));
-      await a.blur();
-      await a.pause(0.6);
-      // The list with what was just added, the bag and the button: the still
-      // the App Store shows where the video does not play.
-      a.poster();
-      await a.pause(0.25);
-    },
-  },
-  {
-    id: 'shop',
-    caption: 'shop',
+    id: 'best',
+    caption: 'best',
     hold: 2.0,
-    run: async (a, w) => {
-      await a.tap(tick(w, 'Äpfel'));
+    setup: async a => {
+      await a.tap('back', { dot: false });
+      await a.pause(0.5);
+      await a.page.evaluate(() => window.scrollTo(0, 0));
+      await a.tap('similar', { dot: false });
+      await a.pause(0.6);
+    },
+    run: async a => {
+      await a.tap('first-group');
+      await a.pause(0.8);
+      await a.spotlight('best', 1.2);
+      await a.pause(0.3);
+    },
+  },
+  {
+    id: 'review',
+    caption: 'review',
+    hold: 2.0,
+    setup: async a => {
+      await a.tap('back', { dot: false });
+      await a.pause(0.4);
+      await a.tap('back', { dot: false });
+      await a.pause(0.5);
+      await a.page.evaluate(() => window.scrollTo(0, 0));
+      await a.tap('cleanup-button', { dot: false });
+      await a.pause(0.5);
+      await a.tap('review-all', { dot: false });
       await a.pause(0.7);
-      await a.tap(tick(w, 'Brot'));
-      await a.pause(0.75);
-      await a.tap('start');
-      await a.pause(0.85);
-      // Three are left: each tap sends the next one into the bag.
-      for (let i = 0; i < 3; i++) {
-        await a.tap(intoBasket(w));
-        await a.pause(0.55);
-      }
-      // "Alles im Korb!"
-      await a.pause(1.1);
+    },
+    run: async a => {
+      // The review with its card and the two buttons: the still the App
+      // Store shows where the video does not play.
+      a.poster();
+      await a.pause(0.5);
+      await a.tap('delete');
+      await a.pause(0.7);
+      await a.tap('keep');
+      await a.pause(0.7);
+      await a.tap('delete');
+      await a.pause(0.8);
     },
   },
   { id: 'end', card: true, seconds: 2.5 },

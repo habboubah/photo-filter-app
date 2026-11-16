@@ -52,9 +52,10 @@ body {
 .headline {
   font-family: var(--font-display), var(--font-text), system-ui, sans-serif;
   font-size: calc(10.8 * var(--t) * var(--fit, 1));
-  line-height: 1.02;
-  font-weight: 800;
-  letter-spacing: -0.01em;
+  line-height: 1.04;
+  font-weight: 650;
+  font-optical-sizing: auto;
+  letter-spacing: -0.015em;
   color: var(--ink);
   text-wrap: balance;
 }

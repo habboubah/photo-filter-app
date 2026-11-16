@@ -31,27 +31,27 @@ they may only half-read. Every rule below exists for that reader.
    long — a headline that fits in English can wrap to three lines in German. Check
    the contact sheet, not the JSON.
 
-## Ribbon and points
+## Points
 
-- **The ribbon is one word**, at most 12 letters: *Kostenlos*, *Free*.
 - **A point is a fact in two to four words** that fits one pill (28 characters):
-  "Ohne Konto", "Nichts verlässt dein Handy". At most five on a slide.
-- **Facts, not reassurance.** "Nichts verlässt dein Handy" can be checked;
+  "Reisen sortiert", "Alles auf deinem Gerät". At most five on a slide.
+- **Facts, not reassurance.** "Alles auf deinem Gerät" can be checked;
   "100 % sicher" cannot. The same rule 3 applies: the slide that carries the
-  promise shows the screen that says so (*Einstellungen*: "Die App speichert
-  alles nur auf diesem Gerät.").
-- **Mark a point about the price** — `{ "text": "Kein Abo", "price": true }` —
-  so it stays off the App Store set (`reference/store-specs.md`).
+  promise shows the screen that says so (the scan: "Fotonest sieht sich deine
+  Fotos an", the settings' privacy row).
+- **No price words** ("kostenlos", "free", "kein Abo") anywhere in the set:
+  Fotonest sells an unlock, so they would mislead (`reference/store-specs.md`).
+  The ribbon stays off.
 
 ## Good / bad
 
 | ✅ | ❌ | why |
 |---|---|---|
-| Know what's in your pocket | Wallet overview screen | Names the outcome, not the UI |
-| See what you actually earn | Best earnings tracker ever | No superlative, no boast |
-| Hand over the right amount | Never lose money again! | Honest about what the screen does |
-| Stays on your phone | 100% secure and private | Claims exactly what is true: local storage |
-| Log a delivery in seconds | Download now and start logging | Benefit, not a call to action |
+| Every trip, found for you | Trip detection screen | Names the outcome, not the UI |
+| The best shot, suggested | The smartest AI photo picker ever | No superlative, no boast, no AI the app doesn't have |
+| Swipe: keep or delete | Delete all your duplicates automatically! | Honest: the app never deletes by itself |
+| Everything stays on your device | 100% secure and private | Claims exactly what is true: nothing leaves the phone |
+| See the space you'd free | Download now and free up gigabytes | Benefit, not a call to action or a number it can't promise |
 
 ## Locale notes
 

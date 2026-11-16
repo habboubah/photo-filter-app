@@ -119,7 +119,7 @@ store listing (one per listing language):
 
 So the App Store file is not Play's video. Uploading it to YouTube as it is
 would work and look narrow. A proper Play video is a second composition —
-1920 × 1080, the phone in the middle of the peach canvas, the caption beside
+1920 × 1080, the phone in the middle of the teal canvas, the caption beside
 it — from the same footage: `templates/stage.*` would get a landscape layout
 and the storyboard a second `video`. Not built (15 November 2026); offer it
 when Ahmad asks for a video on Google Play.

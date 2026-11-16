@@ -17,8 +17,8 @@ what the line says, four times over, and the icon at the end:
 | end card | the icon and the name on a flat colour | 2–3 s |
 
 What it does not have: a voice, a hand, a phone frame, a second line of text,
-a list of features. This skill's video has the same build in Shoppinglist's
-own look — the app's ink as the veil, Baloo for the words, the icon's peach
+a list of features. This skill's video has the same build in Fotonest's
+own look — the app's ink as the veil, Fraunces for the words, the icon's teal
 for the end card — so it sits next to the store screenshots as one set.
 
 ## The rules
@@ -27,30 +27,31 @@ for the end card — so it sits next to the store screenshots as one set.
    seconds, muted. The first caption is up from frame 0 and carries the
    listing's strongest line (the same one as the first screenshot).
 2. **One idea per chapter**, and the caption names the benefit, not the
-   screen: *Schnell hinzugefügt*, not *Der Hinzufügen-Bildschirm*. Use the
+   screen: *Ein Album pro Reise*, not *Der Reise-Bildschirm*. Use the
    store screenshots' headlines where a chapter shows the same thing — they
    were agreed with Ahmad and the listing reads as one voice.
 3. **A caption only claims what its chapter shows.** No line about sharing
-   over footage of ticking off.
-4. **Three to five chapters.** Four captions and the card fill 28 seconds; a
+   over footage of the review.
+4. **Three to five chapters.** Four captions and the card fill 24–28 seconds; a
    fifth means every chapter gets shorter. When a chapter goes in, another
    comes out.
-5. **Show the app's signature.** Here: a ticked item's picture hopping into
-   the bag, and *Alles im Korb!* with its burst. The video is the one place
+5. **Show the app's signature.** Here: a trip that becomes an album with one
+   tap, and the review's cards flying off left and right. The video is the one place
    in the listing where motion can be seen — spend the time there, not on
    settings.
-6. **Tell it in the order a user lives it**: lists → adding → the shop → done.
-   A story has an end; this one's is the full bag.
+6. **Tell it in the order a user lives it**: what was found → a trip → the
+   duplicates → clearing out. A story has an end; this one's is the review.
 7. **Taps the eye can follow.** One thing at a time, the touch dot a moment
    before the finger, a short pause after each result (0.5–0.9 s). A film
    where three things happen at once reads as noise at thumbnail size.
 8. **Light, not arrows.** To point at a part, dim the rest (`a.spotlight`) —
    once or twice in the whole video. A light on everything points at nothing.
-9. **Real, tidy data.** A handful of everyday things with pictures (the
-   storyboard's `START`), nothing that looks like a test ("asdf"), no real
-   name or address.
-10. **End on the icon**, with at most two facts that can be checked (*Ohne
-    Konto*, *Daten bleiben auf dem Gerät*). No price, no "download now": the
+9. **Real, tidy data.** Photos that look like a family's holidays — the
+   demo library, and for the upload licensed photos (no recognisable
+   children unless chosen on purpose), nothing that looks like a test, no
+   real name or address.
+10. **End on the icon**, with at most two facts that can be checked (*Alles
+    auf deinem Gerät*, *Löscht nie von selbst*). No price, no "download now": the
     reader is already on the listing, and Apple rejects price words.
 11. **Each language is written, not translated.** German runs longer; a
     caption that fits two lines in English may need three in German. Look at

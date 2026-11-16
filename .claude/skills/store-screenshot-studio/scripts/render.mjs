@@ -76,11 +76,14 @@ export function pointsFor(points, priceWords, where) {
 
 // ---------------------------------------------------------------- captures
 
-const rawPath = (file, locale) => path.join(root, cfg.rawDir.replaceAll('{locale}', locale), file);
+// A target (or the feature graphic) may take its captures from its own
+// folder: Google Play's come from `npm run screenshots -- --android`, with
+// Android's words (Ordner, Papierkorb). Same file names, same marks.
+const rawPath = (file, locale, dir = cfg.rawDir) => path.join(root, dir.replaceAll('{locale}', locale), file);
 
 /** One phone's worth of data: the capture, its shape, how the frame is placed. */
-function phoneData(spec, locale, device, where) {
-  const file = rawPath(spec.raw, locale);
+function phoneData(spec, locale, device, where, dir) {
+  const file = rawPath(spec.raw, locale, dir);
   let size;
   try {
     size = pngSize(file);
@@ -257,7 +260,7 @@ export function slidesFor(target) {
   const list = target.slides
     ? target.slides.map(id => cfg.slides.find(s => s.id === id) || die(`target "${target.id}" lists slide "${id}", which is not in slides.`))
     : cfg.slides;
-  return target.device ? list.map(s => ({ ...s, device: target.device })) : list;
+  return list.map(s => ({ ...s, ...(target.device && { device: target.device }), ...(target.rawDir && { rawDir: target.rawDir }) }));
 }
 
 /**
@@ -274,7 +277,7 @@ export function slideData(slide, locale, { ids = cfg.slides.map(s => s.id), inde
   if (!LAYOUTS.includes(slide.layout)) die(`${where} has layout "${slide.layout}". Use ${LAYOUTS.join(' or ')}.`);
 
   const style = cfg.style || {};
-  const phone = phoneData(slide, locale, slide.device, where);
+  const phone = phoneData(slide, locale, slide.device, where, slide.rawDir);
   const background = backgroundFor(slide.background, where);
   if (ribbon && !(background.ribbon && background.ribbonInk)) {
     die(`${where} carries the ribbon, but background "${slide.background}" has no "ribbon" / "ribbonInk" colours in theme.json.`);
@@ -297,7 +300,7 @@ export function slideData(slide, locale, { ids = cfg.slides.map(s => s.id), inde
     bezel: theme.device.bezel,
     background,
     phone,
-    second: slide.second ? phoneData(slide.second, locale, slide.device, `${where} › second`) : null,
+    second: slide.second ? phoneData(slide.second, locale, slide.device, `${where} › second`, slide.rawDir) : null,
     callouts: (slide.callouts || []).map((c, n) => calloutData(c, phone.file, copy.dir === 'rtl', `${where} › callouts[${n}]`)),
     stickers: stickersFor(ids, index, copy.dir === 'rtl'),
     // Off unless the caller passes ribbonFor(…).

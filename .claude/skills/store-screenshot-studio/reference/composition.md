@@ -15,19 +15,19 @@ a thumb, for about a second. Every rule below exists for that reader.
 A saturated brand colour with nothing in it — no gradient, no blur — makes the
 row of slides one block and the app's screens the lightest thing on it.
 
-- The set's colour is a `backgrounds` preset in `config/theme.json`: **peach**,
-  the icon's own colour, with the app's aubergine ink (9:1). **coral**, the
-  app's button colour with white type, is the louder alternative (5:1). Pick
-  one for the whole set.
-- **plum** is for the screen shown at night only: a dark screen on peach looks
-  like a hole.
+- The set's colour is a `backgrounds` preset in `config/theme.json`: **teal**,
+  the icon's own colour, with white type (6:1). **paper**, the app's page a
+  shade darker with the app's ink, is the quiet alternative. Pick one for the
+  whole set.
+- **night** is for a screen shown in dark mode only: a dark screen on teal
+  looks like a hole.
 - Shadows are mixed from the preset's `shade` (a darker tone of the same
   colour), never from grey: grey shadows on a colour look dirty.
 
 ## 2. A headline for a thumbnail
 
-- Baloo ExtraBold at 10.8 % of the canvas width, two or three lines, centred,
-  balanced. At thumbnail size that is still a readable word; the old 7.4 %
+- Fraunces at weight 650 and 10.8 % of the canvas width, two or three lines,
+  centred, balanced. At thumbnail size that is still a readable word; the old 7.4 %
   semibold was not.
 - At most five words (`reference/copywriting.md`), and no subline: a thumbnail
   has room for one message. `"sublines": true` in the config's `style` brings
@@ -94,9 +94,9 @@ begun.
 - `x: 1.0` on a slide is its seam to the next. The renderer gives each slide
   its own stickers and its neighbours' spill, per target — Play's eight slides
   are their own strip.
-- Twelve drawings in `assets/stickers/`: flat shapes in the manner of the app
-  ("flat and soft"), each with a paper edge so it holds on peach, coral and
-  plum alike. They are original; emoji are not used (Apple's and Google's are
+- Four drawings in `assets/stickers/` (two snapshots, a pin, a star): flat
+  shapes in the manner of the app, each with a paper edge so it holds on teal,
+  paper and night alike. They are original; emoji are not used (Apple's and Google's are
   not ours to put on artwork), nor is anything downloaded.
 - One per seam, alternating high and low, `y` roughly between 0.3 and 0.7 so
   it is clear of the copy on both layouts. A sticker may overlap a phone's edge
@@ -108,11 +108,11 @@ begun.
 
 Most people see only this one.
 
-- It says what the app is, in the app's own words: the list in front (items,
-  pictures, the circles to tick), home behind it.
-- It carries the promise as points: *Ohne Konto*, *Daten bleiben auf dem
-  Gerät* (and *Kein Abo* on Play). Facts, each provable in the app.
-- On Play it also carries the ribbon.
+- It says what the app is, in the app's own words: home in front (the clean-up
+  card with its number, the tiles, the trips), a trip behind it.
+- It carries the promise as points: *Reisen sortiert*, *Doppelte &
+  Unscharfe*, *Alles auf deinem Gerät*. Facts, each provable in the app. No
+  price words — the app sells an unlock.
 
 ## The feature graphic
 
@@ -151,4 +151,4 @@ Both sheets, every language:
 6. Copy on top, then below, then on top?
 7. Does the first slide alone say what the app is?
 8. Is everything shown true of the app as it is today — the name on its
-   screens, the points, the ribbon?
+   screens, the points?

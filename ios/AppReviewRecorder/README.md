@@ -2,26 +2,23 @@
 
 Records the screen recording App Review asks for (Guideline 2.1: "captured
 on a physical device … beginning with launching the app"): a UI test taps
-through the shopping list app installed on your iPhone while iOS records the
-screen. About 2–3 minutes; the video ends up in Photos.
+through Fotonest installed on your iPhone while iOS records the screen. About
+2 minutes; the video ends up in Photos (a video, so Fotonest itself ignores it).
 
-It is Spartopf's recorder (`../budget-app/ios/AppReviewRecorder`), copied on
-15 November 2026: the runner, the test and the scripts are the same, only
-`scenes.json` is this app's. It films a first shopping trip, from the icon on
-the home screen to the settings — only what a user needs, about 2–3 minutes
-(Ahmad, 15 November 2026: the first version ran 6 minutes) — in six scenes:
+It is the shopping list's recorder (originally Spartopf's,
+`../budget-app/ios/AppReviewRecorder`), copied on 16 November 2026: the
+runner, the test and the scripts are the same, only `scenes.json` is
+Fotonest's. Five scenes, from the icon on the home screen to the settings:
 
 | Scene | Shows |
 |---|---|
-| 1 Launch and the first list | The icon, *Your lists* with the three starter lists, the Supermarket list: three suggestions, typing "2 kg apples" and "Milk 3x" |
-| 2 Editing and deleting | A note on an item (the pencil), the bin → Undo |
-| 3 Ticking off and the basket | Two items hop into the bag, a tap on the bag shows *In the basket* |
-| 4 Shopping mode | *Up next* with *Into the basket* and *Later*, to *All in the basket!* |
-| 5 A list of your own | *New list*: its type and name; a suggestion of that type |
-| 6 Settings | Deutsch and back to English; dark and automatic; a list type of your own with a suggestion |
+| 1 Launch and the scan | The icon, the photo permission (*Limit Access…* if iOS asks), *Your photos* filling up, the clean-up card |
+| 2 A trip becomes an album | *Paris*, *Create album* → (the paywall and *Restore purchases*, only if the unlock isn't owned yet) → the confirmation → *Album made on …* |
+| 3 Near-identical photos and the best shot | A group, the suggested best photo, picking another one as the best |
+| 4 A review that deletes | *Clean up* › *Go through all*: delete, keep, delete, *Finish*, *Delete 2 photos* → iOS's own *Delete* dialog → *2 photos deleted* |
+| 5 Settings and the end | The settings down to *Privacy*, back home |
 
-Sharing a list and the backup (export and import) are not in the video, on
-purpose — don't put them back unasked. What it leaves out is listed at the end, for the Review Notes.
+The review notes (`store/listing.md`, 2.5) describe what the video leaves out.
 
 | File | What it is |
 |---|---|
@@ -30,7 +27,7 @@ purpose — don't put them back unasked. What it leaves out is listed at the end
 | `RecorderUITests/AppReviewRecordingTests.swift` | The test: preflight, scenes, stop the recording |
 | `RecorderHost/` | An empty app the UI test belongs to (a UI test needs one) |
 | `make-project.rb` | Generates the Xcode project (`gem install xcodeproj`, only to change its structure) |
-| `../../scripts/rehearse-app-review.mjs` | Plays `scenes.json` against the web app first |
+| `../../scripts/rehearse-app-review.mjs` | Plays `scenes.json` against the web app (the demo library) first |
 | `../../scripts/record-app-review.sh` | Runs the UI test on the connected iPhone |
 | `../../scripts/record-watch.sh` | Waits for run requests, so Claude can start runs |
 
@@ -40,54 +37,59 @@ purpose — don't put them back unasked. What it leaves out is listed at the end
    the phone). Then Settings › Developer › **Enable UI Automation** on.
 2. **Control Center:** long-press an empty spot › Add a Control › **Screen
    Recording**. Microphone off.
-3. Put the **app's icon on the first home screen page** (*Einkaufsliste* on a
-   German iPhone, *Shopping List* on an English one). No other app with that
-   name on the home screen's pages.
+3. Put **Fotonest's icon on the first home screen page**. No other app called
+   Fotonest on the home screen's pages.
 4. iPhone language **English or German** — the system buttons the recorder
-   taps (Screen Recording, Close, Update …) are listed in those two in
-   `scenes.json` › `system` and in the steps; add your language there to use
-   another.
-5. **Keyboard:** Settings › General › Keyboard › **Auto-Correction** and
-   **Predictive Text** off, so a German keyboard doesn't "correct" the
-   English demo words (later steps look for those words); without the
-   suggestions bar the video is cleaner too.
-6. **Mac:** Xcode signed in with the developer account (it already is, you
-   archive from it). The first run creates the signing for the recorder's
-   two bundle ids (`com.habboubah.korb.recorder`, `….recorder.uitests`) by
-   itself.
+   taps (Screen Recording, Delete, Update …) are listed in those two in
+   `scenes.json` › `system` and in the steps.
+5. **Mac:** Xcode signed in with the developer account. The first run creates
+   the signing for the recorder's two bundle ids
+   (`com.habboubah.fotonest.recorder`, `….recorder.uitests`) by itself.
 
-If Spartopf's recorder has run on this iPhone, 1, 2, 5 and 6 are done.
+If the shopping list's or Spartopf's recorder has run on this iPhone, 1, 2
+and 5 are done.
+
+## Preparation (once per iPhone, before the first recording)
+
+1. **The demo photos.** About 60 licensed photos with GPS and dates
+   (`docs/TODO.md`, step 5) — the scenes expect a trip called **Paris**, at
+   least one group of near-identical photos and at least three photos the
+   review offers. AirDrop them to the iPhone (or import them on the Mac with
+   Photos and let iCloud sync — then check the dates and places survived).
+2. **Limited Access to only those:** Settings › Apps › Fotonest › Photos ›
+   **Limited Access** › select the demo photos. The video must not show your
+   own photos. (If iOS asks during scene 1, the runner taps *Limit Access…*;
+   then select the demo photos in the picker by hand once, and record again.)
+3. **The unlock, bought once with the TestFlight build** (purchases in
+   TestFlight are free and stay with your Apple Account). Scene 2 then makes
+   the album straight away. The paywall itself is in the in-app purchase
+   screenshot for review (`screenshots/en/09-paywall.png`).
+4. **Debug only:** a debug build has the dry run on, so nothing would be
+   deleted — record with the TestFlight build, as App Review sees it.
 
 ## Every recording
 
-1. **Save your own lists:** Settings › Backup › Export backup, to iCloud
-   Drive. The run erases everything in the app.
-2. `npm run rehearse:app-review` — checks every step against the current
-   code in about 3 minutes.
-3. **No demo files to AirDrop:** nothing is imported in the video.
-4. The build you submit has to be the one installed from **TestFlight**,
-   and a build the scenes fit: `scenes.json` › `app.minVersion` (1.0.5, the
-   first with the "Tüte" look: the add field at the top, the pencil and the
-   bin on every row). The run prints which build the iPhone has; an older
-   one it **updates from TestFlight by itself** (it opens TestFlight and taps
-   Update in the app's row) before anything is reset or filmed. `UPDATE=0`
-   only says so and stops. A newer build than `minVersion` you install
-   yourself.
-   No need to delete the app before each run: every full run **resets it in
-   the app before the screen recording starts**, without asking — Settings ›
-   Language › English, Appearance › Automatic, Reset app. The video then
-   starts with the three starter lists, named in English. If the reset can't
-   be played the run stops there and records nothing (`RESET=0` skips the
-   reset and stops if the app isn't empty).
-5. Connect the iPhone by cable, unlock it, **Do Not Disturb** on.
-6. **Dry run:** `DRY_RUN=1 npm run record:app-review` — everything except the
-   screen recording. The real run resets what the dry run filled.
-7. **Record:** `npm run record:app-review`. Keep the phone unlocked and
+1. `npm run rehearse:app-review` — checks every step against the current
+   code in about 2 minutes.
+2. The build you submit has to be the one installed from **TestFlight**,
+   and a build the scenes fit: `scenes.json` › `app.minVersion` (0.1.0). The
+   run prints which build the iPhone has; an older one it **updates from
+   TestFlight by itself** before anything is reset or filmed (`UPDATE=0` only
+   says so and stops).
+   Every full run **resets Fotonest's decisions before the screen recording
+   starts**, without asking — Settings › Language › English, Appearance ›
+   Like the system, *Reset my decisions*. Your photos and the purchase stay.
+3. Connect the iPhone by cable, unlock it, **Do Not Disturb** on.
+4. **Dry run:** `DRY_RUN=1 npm run record:app-review` — everything except the
+   screen recording. **It does make the album and delete the two photos** (the
+   app can't tell a dry run of the recorder from a real one).
+5. **Tidy up after the dry run:** Photos › Albums › delete the album
+   *Paris, …*; Photos › Recently Deleted › recover the two photos.
+6. **Record:** `npm run record:app-review`. Keep the phone unlocked and
    don't touch it.
-8. **Afterwards:** the video is in Photos. Trim it, AirDrop it to the Mac,
+7. **Afterwards:** the video is in Photos. Trim it, AirDrop it to the Mac,
    upload it in App Store Connect › App Review Information › Attachment (or
-   attach it to the reply in the Resolution Center). Then Settings › Backup ›
-   Import backup with your own file, and your language again.
+   attach it to the reply in the Resolution Center). Then tidy up as in step 5.
    If the file is too large to attach, make it smaller first:
 
    ```bash
@@ -95,7 +97,7 @@ If Spartopf's recorder has run on this iPhone, 1, 2, 5 and 6 are done.
    ```
 
 Options: `PACE` scales every pause (0.65 unless set; `PACE=1` slower,
-`PACE=0.5` faster); `FROM=5 TO=7` only those scenes (no preflight, for trying
+`PACE=0.5` faster); `FROM=3 TO=4` only those scenes (no preflight, for trying
 a fix — the app must be in the state the scene before leaves it);
 `DEVICE=<udid>` with several iPhones.
 
@@ -110,8 +112,12 @@ frame, but `build/` fills up — delete old `app-review-recording-*.xcresult`
 now and then.
 
 **The first run on the iPhone will need fixes.** The scenes pass against the
-web build; system UI (the select menus, the keyboard) only
-shows on the phone. Start with the dry run and expect a round or two.
+web build with the drawn demo library; the real photos, the scan's speed and
+system UI (the permission and delete dialogs) only show on the phone. Start
+with the dry run and expect a round or two. Likely spots: the trip's name
+(*Open Paris* — your photos may name it differently, e.g. a district), the
+group's button (scene 3 taps the first "… photos" button) and the scan's
+timeout (scene 1 waits 60 s for the clean-up card).
 
 ## When it stops
 
@@ -119,30 +125,25 @@ The terminal names the scene, the step and what was missing; the
 `.xcresult` in `build/` (open it in Xcode) has a screenshot of the moment.
 The recording is stopped, so what was filmed so far is in Photos.
 
-- **"not found: …"** — a label changed in the app. Run the rehearsal: it fails
-  at the same step and prints what is on screen. Fix the label in
-  `scenes.json`.
-- **A suggestion chip isn't found** (scene 1, scene 5) — the chips are
-  buttons with `role="listitem"` (`src/components/AddBar.tsx`), which the
-  iPhone may not read as "Add “Bananas”". Their steps therefore carry the
-  chip's text as a second label (`["Add “Bananas”", "Bananas"]`); keep that
-  for every chip.
+- **"not found: …"** — a label changed in the app, or your photos differ
+  from the demo library (the trip's name, the number of photos). Run the
+  rehearsal: if it passes, look at the screenshot and change the step in
+  `scenes.json` to what your photos show.
+- **Scene 1 times out** — the scan took longer than 60 s, or no clean-up card
+  appeared (no near-identical or blurry photos among the selected ones). Give
+  the step a longer `timeout`, or add photos that make a group.
+- **Scene 2: the paywall appears and *Restore purchases* finds nothing** —
+  the unlock wasn't bought with this Apple Account (Preparation, 3).
+- **Scene 4: iOS's *Delete* dialog isn't tapped** — the dialog's button is
+  named differently in your language: add it to the `systemAlert` list.
 - **It works in the rehearsal but not on the iPhone** — system UI or a
-  difference in WebKit. The usual suspects, in order: the select menus
-  (`select`, scene 6), an element under the keyboard (after typing into the
-  add field, scene 1). Fix it in `SceneRunner.swift` or in the step,
+  difference in WebKit: the select menus in the preflight (`select`), the
+  swipe card in the review. Fix it in `SceneRunner.swift` or in the step,
   then `FROM=n DRY_RUN=1`.
 - **"can't reach … on screen"** — the page didn't scroll to it. If the
   rehearsal fails with "the page no longer scrolls", a sheet left the page's
   scroll lock on (`src/ui/useDialog.ts`); if it passes, look at the
   screenshot for what covers the row.
-- **"Done" does the wrong thing** (iPhone in English): the bar above the
-  keyboard has a button with the same name. The page's own comes first in
-  the tree; if a run shows otherwise, give that step `"role": "button"` and
-  say so.
-- **"… is greyed out"** — an earlier step didn't do what it should (*Add* in
-  *New list type* stays disabled without a name). Look at the screenshot for
-  what went in.
 - **The app left the screen** — a notification banner took a tap and opened
   another app. Do Not Disturb on, record again; don't upload that video.
 - **Signing errors** — open `AppReviewRecorder.xcodeproj` in Xcode once,
@@ -181,29 +182,14 @@ Any step with `"soft": true` may fail without stopping the recording.
 
 ## What the video doesn't show
 
-**Left out on purpose** (Ahmad, 15 November 2026): sharing — *Share list*,
-*Paste shared list*, a shared list arriving (the Review Notes in
-`store/listing.md`, 2.5, describe it) — and the backup, *Export backup* and
-*Import backup*.
+**Left out, because they leave the app or need another device:** Recently
+Deleted (in the Photos app), *Send feedback* and *Privacy* (mail and the
+browser), *Rate Fotonest* (not shown before the app is in the store), *Select
+photos* (iOS's picker), Android.
 
-**Left out, because they need the camera or another app.** A photo for an
-item or a list (the camera and the photo library — the only permissions the
-app asks for; the Review Notes describe it), *Send feedback* and *Privacy
-policy* (they leave the app), *Rate the app* (not shown before the app is in
-the store).
-
-**Left out to keep it short (2–3 minutes):** *All suggestions*, the live
-search, an item's quantity and unit, the swipe that deletes, sorting
-(*Newest first*), putting an item back from the basket, *Untick all*, a
-list's picture and colour, deleting a list → Undo, Arabic (right to left), adding a
-suggestion to a built-in type, a long press on a row (edits, like the
-pencil), editing and deleting a suggestion, *Often bought* and forgetting an
-entry, *Restore defaults*, *Remove ticked items*, *Empty list*, editing a
-list, adding the same item twice (the quantity goes up), Arabic search, and
-*Reset app* itself — every recording starts with it, before the screen
-recording does. A scene for any of them comes back only when Ahmad asks.
-
-**If App Review asks for the camera permission on video:** add a scene that
-taps *Photo* in *Edit item*; iOS then shows its own menu (Photo Library, Take
-Photo, Choose File), the permission alert (`systemAlert`, soft) and the
-camera, which the runner has no step for yet.
+**Left out to keep it short (about 2 minutes):** renaming, merging, splitting
+and hiding a trip, the list of all trips, the blurry list on its own
+(the review in scene 4 goes through blurry and near-identical photos
+together), undo in the review, *Reset my decisions* itself (every recording
+starts with it, before the screen recording does), dark mode, German. A scene
+for any of them comes back only when Ahmad asks.

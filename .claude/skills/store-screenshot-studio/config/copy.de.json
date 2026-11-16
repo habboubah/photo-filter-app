@@ -1,64 +1,53 @@
 {
   "locale": "de",
   "dir": "ltr",
-  "appName": "Einkaufsliste – ganz einfach",
-  "ribbon": "Kostenlos",
+  "appName": "Fotonest – Fotos aufräumen",
   "slides": {
     "home": {
-      "headline": "Deine Einkaufsliste, ganz einfach",
-      "subline": "Zuhause schreiben, im Laden abhaken",
+      "headline": "Deine Fotos, endlich aufgeräumt",
+      "subline": "Reisen sortiert, Doppeltes und Unscharfes gefunden",
       "points": [
-        {
-          "text": "Kein Abo",
-          "price": true
-        },
-        "Ohne Konto",
-        "Daten bleiben auf dem Gerät"
+        "Reisen sortiert",
+        "Doppelte & Unscharfe",
+        "Alles auf deinem Gerät"
       ]
     },
-    "list": {
-      "headline": "Alles nach Regalen sortiert",
-      "subline": "So, wie du durch den Laden gehst"
+    "trips": {
+      "headline": "Jede Reise von selbst gefunden",
+      "subline": "Mit Ort und Monat im Namen"
     },
-    "add": {
-      "headline": "Schnell hinzugefügt",
-      "subline": "„2 kg Kar…“ tippen, Vorschlag antippen, fertig"
+    "album": {
+      "headline": "Ein Album pro Reise",
+      "subline": "Direkt in deiner Fotos-App"
     },
-    "suggestions": {
-      "headline": "Hunderte Vorschläge mit Bild",
-      "subline": "Antippen genügt – so vergisst du nichts"
+    "group": {
+      "headline": "Das beste Foto vorgeschlagen",
+      "subline": "Scharf, gut belichtet, Augen offen"
     },
-    "shopping": {
-      "headline": "Im Laden einfach abhaken",
-      "subline": "Große Zeilen und dein Fortschritt im Blick"
+    "review": {
+      "headline": "Wischen: behalten oder weg",
+      "subline": "Jeder Schritt lässt sich zurücknehmen"
     },
-    "new-list": {
-      "headline": "Eine Liste für jeden Laden",
-      "subline": "Supermarkt, Drogerie, Baumarkt und mehr"
+    "blurry": {
+      "headline": "Unscharfe Fotos auf einen Blick",
+      "subline": "Die eindeutigen zuerst"
     },
-    "item": {
-      "headline": "Menge, Notiz und Bild",
-      "subline": "Jeder Artikel so genau, wie du ihn brauchst"
+    "cleanup": {
+      "headline": "Sieh, was frei wird",
+      "subline": "Bevor du irgendetwas löschst"
     },
-    "settings": {
-      "headline": "Deine Daten bleiben bei dir",
-      "subline": "Kein Konto, keine Cloud"
-    },
-    "dark": {
-      "headline": "Auch im Dunkelmodus",
-      "subline": "Hell, dunkel oder automatisch"
+    "private": {
+      "headline": "Alles bleibt auf deinem Gerät",
+      "subline": "Kein Konto, keine Cloud, keine Werbung"
     }
   },
   "featureGraphic": {
-    "headline": "Einkaufsliste – ganz einfach",
-    "subline": "Zuhause schreiben, im Laden abhaken. Ohne Konto, alles bleibt auf deinem Gerät.",
+    "headline": "Fotonest",
+    "subline": "Reisen sortiert, Doppeltes und Unscharfes aufgeräumt – alles auf deinem Handy.",
     "points": [
-      {
-        "text": "Kein Abo",
-        "price": true
-      },
-      "Ohne Konto",
-      "Daten bleiben auf dem Gerät"
+      "Reisen sortiert",
+      "Fast gleiche Fotos",
+      "Alles auf dem Gerät"
     ]
   }
 }

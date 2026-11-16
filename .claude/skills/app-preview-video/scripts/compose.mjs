@@ -220,7 +220,7 @@ function encoder({ ffmpeg, file, video, seconds }) {
     '-f', 'image2pipe', '-framerate', String(video.fps), '-c:v', 'png', '-i', 'pipe:0',
     ...audioIn,
     '-map', '0:v:0', '-map', '1:a:0',
-    // sRGB pictures → BT.709 video, said so in the file, so the peach stays the icon's peach.
+    // sRGB pictures → BT.709 video, said so in the file, so the teal stays the icon's teal.
     '-vf', 'scale=in_range=full:out_range=tv:out_color_matrix=bt709:flags=accurate_rnd+full_chroma_int+bicubic,format=yuv420p',
     '-c:v', 'libx264', '-profile:v', 'high', '-level:v', '4.0', '-preset', 'slow',
     '-crf', '14', '-maxrate', '12M', '-bufsize', '24M',

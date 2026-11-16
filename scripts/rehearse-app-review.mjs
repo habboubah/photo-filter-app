@@ -8,8 +8,8 @@
 //   npm run rehearse:app-review -- 5 8       scenes 5 to 8 (5 > 1 continues from the last run)
 //   SNAP=1 npm run rehearse:app-review       also print what is on screen at the end
 //
-// It starts a Vite dev server (the app-only settings rows show there with
-// shoppinglist-dev-native). Native steps — Control Center, the home screen, Face
+// It starts a Vite dev server with the demo library (scenes.json › rehearsal
+// sets its state: access granted, the library scanned, a purchase to restore). Native steps — Control Center, the home screen, Face
 // ID, system alerts, the share sheet — are skipped; file pickers get the files in
 // ios/AppReviewRecorder/demo-files. A tap with "saveDownloadAs" keeps what it
 // downloads there under that name (for a scene that imports it again later).

@@ -1,64 +1,53 @@
 {
   "locale": "en",
   "dir": "ltr",
-  "appName": "Shopping List – Nice & Easy",
-  "ribbon": "Free",
+  "appName": "Fotonest – Photo Cleanup",
   "slides": {
     "home": {
-      "headline": "Your shopping list, made simple",
-      "subline": "Write it at home, tick it off in the shop",
+      "headline": "Your photos, sorted at last",
+      "subline": "Trips sorted, duplicates and blurry shots found",
       "points": [
-        {
-          "text": "No subscription",
-          "price": true
-        },
-        "No account",
-        "Data stays on your device"
+        "Trips sorted",
+        "Duplicates & blurry shots",
+        "Stays on your device"
       ]
     },
-    "list": {
-      "headline": "Sorted by aisle",
-      "subline": "The way you walk through the shop"
+    "trips": {
+      "headline": "Every trip, found for you",
+      "subline": "Named with place and month"
     },
-    "add": {
-      "headline": "Added in seconds",
-      "subline": "Type “2 kg car…”, tap a suggestion, done"
+    "album": {
+      "headline": "An album per trip",
+      "subline": "Right in your Photos app"
     },
-    "suggestions": {
-      "headline": "Hundreds of suggestions with pictures",
-      "subline": "One tap each – nothing gets forgotten"
+    "group": {
+      "headline": "The best shot, suggested",
+      "subline": "Sharp, well exposed, eyes open"
     },
-    "shopping": {
-      "headline": "Tick off as you shop",
-      "subline": "Big rows and your progress at a glance"
+    "review": {
+      "headline": "Swipe: keep or delete",
+      "subline": "Every step can be undone"
     },
-    "new-list": {
-      "headline": "A list for every shop",
-      "subline": "Supermarket, drugstore, DIY and more"
+    "blurry": {
+      "headline": "Blurry photos at a glance",
+      "subline": "The clear cases first"
     },
-    "item": {
-      "headline": "Amount, note and picture",
-      "subline": "Every item as exact as you need it"
+    "cleanup": {
+      "headline": "See the space you'd free",
+      "subline": "Before you delete anything"
     },
-    "settings": {
-      "headline": "Your data stays with you",
-      "subline": "No account, no cloud"
-    },
-    "dark": {
-      "headline": "Dark mode included",
-      "subline": "Light, dark or automatic"
+    "private": {
+      "headline": "Everything stays on your device",
+      "subline": "No account, no cloud, no ads"
     }
   },
   "featureGraphic": {
-    "headline": "Shopping List – Nice & Easy",
-    "subline": "Write it at home, tick it off in the shop. No account, everything stays on your device.",
+    "headline": "Fotonest",
+    "subline": "Trips sorted, duplicates and blurry shots cleaned up – all on your phone.",
     "points": [
-      {
-        "text": "No subscription",
-        "price": true
-      },
-      "No account",
-      "Data stays on your device"
+      "Trips sorted",
+      "Near-identical photos",
+      "Stays on your device"
     ]
   }
 }
