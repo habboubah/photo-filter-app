@@ -240,7 +240,7 @@ further deleting need one one-time purchase (`com.habboubah.bildklar.unlock`, 4,
 | The AI: iPhone embedder test (Mac) / guardrails | `npm run test:ios:ai` / `npm run check:ai` |
 | The AI: model export / measurement / demo scores (venv: `ml/requirements.txt`) | `npm run ai:export` / `npm run ai:eval` / `npm run ai:demo` |
 | Build + open Xcode / Android Studio / a debug APK | `npm run build:ios` / `npm run build:android` / `npm run android:debug` |
-| Icons and splash from `assets/icon.svg` | `node scripts/icon-assets.mjs && npm run assets:generate` |
+| Icons and splash from `assets/icon-master.png` | `node scripts/icon-assets.mjs && npm run assets:generate` |
 | The city table (GeoNames) | `npm run cities` |
 | The demo photos and their facts | `npm run demo-photos` |
 | Every screen before and after a UI change | `npm run ui-review` (→ `screenshots/review/`) |

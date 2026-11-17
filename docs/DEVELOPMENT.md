@@ -92,7 +92,9 @@ npm test && npm run test:ios && npm run test:android
 
 ## Icon and splash
 
-The master is `assets/icon.svg` (three photos in a nest, on the teal).
+The master is `assets/icon-master.png` (a smiling broom sweeping photos together, on mint
+`#8AE1B7`); `assets/icon-master-foreground.png` is the same picture smaller for
+Android's adaptive icon. Both are 1024 × 1024, full-bleed, no transparency.
 
 ```bash
 node scripts/icon-assets.mjs && npm run assets:generate

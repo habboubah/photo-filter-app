@@ -261,7 +261,7 @@ access, no chat, no advertising). Not "Made for Kids". Result: **4+**.
 
 | Asset | Size | Note |
 |---|---|---|
-| App icon | 1024 × 1024 PNG, no transparency | From the Xcode asset catalogue (`assets/icon.svg` → `npm run assets:generate`) |
+| App icon | 1024 × 1024 PNG, no transparency | From the Xcode asset catalogue (`assets/icon-master.png` → `npm run assets:generate`) |
 | iPhone screenshots | **6.9"**: 1320 × 2868 (or 1290 × 2796), 3–10 per language | `npm run screenshots && npm run store-screenshots` → `screenshots/store/` |
 | In-app purchase screenshot | any iPhone screenshot of the paywall | Only for review: `screenshots/<lang>/09-paywall.png` |
 | App preview video | 886 × 1920, 15–30 s | Optional. `npm run app-preview` on the Mac |

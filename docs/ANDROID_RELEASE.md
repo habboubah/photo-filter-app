@@ -188,7 +188,7 @@ caveat.
 
 `@capacitor/android` must be on exactly the same version as `@capacitor/core`
 and `@capacitor/ios`. After adding or updating a plugin: `npx cap sync`. The
-launcher icon and the splash screens come from `assets/icon.svg`:
+launcher icon and the splash screens come from `assets/icon-master.png`:
 `node scripts/icon-assets.mjs && npm run assets:generate`. The Play Billing
 Library must stay on a version Play still accepts for uploads (8 or newer
 since August 2026; the current line is 9 — `billingVersion` in
