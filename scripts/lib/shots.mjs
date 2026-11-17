@@ -248,6 +248,15 @@ export const SCREENS = [
       await pause(page, 500);
     },
   },
+  // Ähnliche Videos: the demo's two takes at Lake Garda, at the end of the duplicates.
+  {
+    name: '35-lookalike', run: async (page, w) => {
+      await page.click(`button:has-text("${w.t.duplicatesTile}")`);
+      await pause(page, 600);
+      await page.locator('#lookalike-h').scrollIntoViewIfNeeded();
+      await pause(page, 400);
+    },
+  },
   // Fotos verkleinern: the photos that qualify, the largest saving first.
   { name: '34-compress', run: async (page, w) => { await page.click(`button:has-text("${w.t.compressPhotosTile}")`); await pause(page, 800); } },
   // Settings › Geschützt: one album switched on (the demo's family album).

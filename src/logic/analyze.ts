@@ -9,6 +9,7 @@ import { tripDates, tripPlace } from './naming';
 import { findGroups, findVideoDuplicates, RawGroup } from './similar';
 import { AppState } from './state';
 import { applyEdits, detectTrips, RawTrip } from './trips';
+import { findLookalikeVideos, rankLookalike } from './lookalike';
 
 /*
  * Everything the screens show, from the photos and the user's decisions.
@@ -36,7 +37,9 @@ export interface Detection {
 
 export function detect(lib: Library): Detection {
   const homes = findHomes(lib.photos);
-  return { homes, trips: detectTrips(lib.photos, homes), groups: [...findGroups(lib.photos), ...findVideoDuplicates(lib.photos)] };
+  const copies = findVideoDuplicates(lib.photos);
+  const lookalike = findLookalikeVideos(lib.photos, new Set(copies.flatMap(g => g.ids)));
+  return { homes, trips: detectTrips(lib.photos, homes), groups: [...findGroups(lib.photos), ...copies, ...lookalike] };
 }
 
 const sumBytes = (ids: string[], byId: Map<string, Photo>) => ids.reduce((s, id) => s + (byId.get(id)?.bytes ?? 0), 0);
@@ -70,7 +73,8 @@ export function buildGroups(lib: Library, raw: RawGroup[], state: AppState, face
       const ranked = p && f ? { ...p, ...f } : p;
       return ranked && !ranked.fav && guard?.has(id) ? { ...ranked, fav: true } : ranked;
     }).filter((p): p is Photo => !!p);
-    const suggested = (g.kind === 'duplicate' ? rankDuplicates(photos) : rankGroup(photos))[0]?.id ?? g.ids[0];
+    const ranked = g.kind === 'duplicate' ? rankDuplicates(photos) : g.kind === 'lookalike' ? rankLookalike(photos) : rankGroup(photos);
+    const suggested = ranked[0]?.id ?? g.ids[0];
     const picked = state.best[g.key];
     return { key: g.key, kind: g.kind, ids: g.ids, suggested, best: picked && g.ids.includes(picked) ? picked : suggested };
   }).sort((a, b) => (lib.byId.get(b.ids[0])?.t ?? 0) - (lib.byId.get(a.ids[0])?.t ?? 0));
@@ -104,7 +108,7 @@ export function summarize(
   lib: Library, groups: Group[], blurry: Photo[], kept: Set<string>, shots: Photo[] = [], utility: Photo[] = [], exposure: Photo[] = [],
 ): CleanupSummary {
   const counted = new Set<string>();
-  const tally = { similar: { count: 0, bytes: 0, groups: 0 }, duplicate: { count: 0, bytes: 0, groups: 0 } };
+  const tally = { similar: { count: 0, bytes: 0, groups: 0 }, duplicate: { count: 0, bytes: 0, groups: 0 }, lookalike: { count: 0, bytes: 0, groups: 0 } };
   for (const g of groups) {
     const into = tally[g.kind];
     let any = false;
@@ -139,11 +143,12 @@ export function summarize(
     if (isProtected(p, kept) || counted.has(p.id)) continue;
     uc++; ub += p.bytes;
   }
-  const count = tally.similar.count + tally.duplicate.count + bc + ec + sc + uc;
-  const bytes = tally.similar.bytes + tally.duplicate.bytes + bb + eb + sb + ub;
+  const count = tally.similar.count + tally.duplicate.count + tally.lookalike.count + bc + ec + sc + uc;
+  const bytes = tally.similar.bytes + tally.duplicate.bytes + tally.lookalike.bytes + bb + eb + sb + ub;
   return {
     similar: tally.similar,
     duplicates: tally.duplicate,
+    lookalike: tally.lookalike,
     blurry: { count: bc, bytes: bb },
     exposure: { count: ec, bytes: eb },
     screenshots: { count: sc, bytes: sb },

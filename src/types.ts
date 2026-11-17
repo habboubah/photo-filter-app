@@ -105,8 +105,11 @@ export interface Album {
   at: number;
 }
 
-/** similar: near-identical shots taken within a short time; duplicate: the same picture again, however much later (src/logic/similar.ts). */
-export type GroupKind = 'similar' | 'duplicate';
+/**
+ * similar: near-identical shots taken within a short time; duplicate: the same picture again, however much later
+ * (src/logic/similar.ts); lookalike: two videos of the same scene, taken within two hours (src/logic/lookalike.ts).
+ */
+export type GroupKind = 'similar' | 'duplicate' | 'lookalike';
 
 /** Photos that show the same picture: a series of near-identical shots, or copies. */
 export interface Group {
@@ -123,6 +126,8 @@ export interface Group {
 export interface CleanupSummary {
   similar: { count: number; bytes: number; groups: number };
   duplicates: { count: number; bytes: number; groups: number };
+  /** The extra takes of lookalike videos. */
+  lookalike: { count: number; bytes: number; groups: number };
   blurry: { count: number; bytes: number };
   /** Too dark or too bright (src/logic/exposure.ts), not already counted above. */
   exposure: { count: number; bytes: number };

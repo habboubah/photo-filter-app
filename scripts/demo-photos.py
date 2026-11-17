@@ -228,6 +228,11 @@ NOTES = [('receipt', datetime(2026, 3, 3, 18, 20)), ('letter', datetime(2026, 4,
 # Failed shots (src/logic/exposure.ts): one taken in a pocket (almost black,
 # a little sensor noise) and one washed out by the sun (almost white).
 ACCIDENTS = [('dark', datetime(2026, 9, 6, 15, 12)), ('bright', datetime(2026, 8, 30, 13, 40))]
+# A second take of the Lake Garda video 40 minutes later, shorter and from a
+# little further along — a lookalike video (src/logic/lookalike.ts), not a copy.
+# (Its time in manifest.json is the first take's + 42 minutes, set by hand: the
+# committed manifest's times come from an earlier run in another time zone.)
+TAKE = (datetime(2026, 7, 29, 16, 52), 61)
 GOODS = 'Milch Brot Käse Äpfel Kaffee Nudeln Tomaten Butter Wasser Saft Eier Reis Tee Joghurt'.split()
 
 
@@ -331,6 +336,8 @@ def extras(save):
     oops = random.Random(1312)
     for kind, when in ACCIDENTS:
         save(accident(oops, kind), when, 'home', {'note': True})
+    when, seconds = TAKE
+    save(poster(SCENES['garda'](random.Random(98), 3)), when, None, {'video': True, 'dur': seconds * 1000, 'take': True})
 
 
 SCENES = {'paris': paris, 'garda': garda, 'amsterdam': amsterdam, 'vienna': vienna}

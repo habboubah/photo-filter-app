@@ -15,7 +15,7 @@ import { isProtected } from './protect';
 export type Decision = 'keep' | 'delete' | 'later';
 /** What the app suggests: `none` for the decide-later pile, where the user already hesitated. */
 export type Suggestion = 'keep' | 'delete' | 'none';
-export type Reason = 'best' | 'original' | 'similar' | 'duplicate' | 'blurry' | 'screenshot' | 'utility' | 'large' | 'trip' | 'later' | 'dark' | 'bright' | 'video';
+export type Reason = 'best' | 'original' | 'similar' | 'duplicate' | 'blurry' | 'screenshot' | 'utility' | 'large' | 'trip' | 'later' | 'dark' | 'bright' | 'video' | 'lookalike' | 'bestTake';
 
 export interface ReviewItem {
   id: string;
@@ -26,14 +26,14 @@ export interface ReviewItem {
   label?: UtilityLabel;
 }
 
-const extraReason = (g: Group): Reason => (g.kind === 'duplicate' ? 'duplicate' : 'similar');
+const extraReason = (g: Group): Reason => (g.kind === 'duplicate' ? 'duplicate' : g.kind === 'lookalike' ? 'lookalike' : 'similar');
 
 /** A similar or duplicate group: the best one (keep), then the others (delete), in time order. */
 export function reviewGroup(group: Group, kept: Set<string>, byId: Map<string, Photo>): ReviewItem[] {
   return group.ids.map(id => ({
     id,
     suggest: id === group.best || isProtected(byId.get(id) ?? { id }, kept) ? 'keep' : 'delete',
-    reason: id === group.best ? (group.kind === 'duplicate' ? 'original' : 'best') : extraReason(group),
+    reason: id === group.best ? (group.kind === 'similar' ? 'best' : group.kind === 'lookalike' ? 'bestTake' : 'original') : extraReason(group),
   }));
 }
 
