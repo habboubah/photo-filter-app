@@ -26,6 +26,7 @@ import { buildMonths, onThisDay, progress } from './logic/months';
 import { findExposure } from './logic/exposure';
 import { sortFor, type SortScreen } from './logic/sort';
 import { protectedIds } from './logic/protect';
+import { batches, findCompressible, tally } from './logic/compress';
 import { cleanParts } from './logic/smartClean';
 import { streak } from './logic/streak';
 import { feedbackMail, openExternal, privacyUrl, rateUrl, systemFromAgent } from './links';
@@ -36,10 +37,6 @@ import { notifySuccess } from './ui/haptics';
 import { PermissionView } from './components/PermissionView';
 import { HomeView } from './components/HomeView';
 
-import { TripView } from './components/TripView';
-import { CleanupView } from './components/CleanupView';
-import { SimilarView } from './components/SimilarView';
-import { GroupView } from './components/GroupView';
 import type { FailedTab } from './components/FailedView';
 import { Progress } from './ui/Controls';
 import { Sheet } from './ui/Sheet';
@@ -62,6 +59,11 @@ const UtilityView = lazy(() => import('./components/UtilityView').then(m => ({ d
 const CategoryView = lazy(() => import('./components/CategoryView').then(m => ({ default: m.CategoryView })));
 const TripsView = lazy(() => import('./components/TripsView').then(m => ({ default: m.TripsView })));
 const SettingsView = lazy(() => import('./components/SettingsView').then(m => ({ default: m.SettingsView })));
+const TripView = lazy(() => import('./components/TripView').then(m => ({ default: m.TripView })));
+const CleanupView = lazy(() => import('./components/CleanupView').then(m => ({ default: m.CleanupView })));
+const SimilarView = lazy(() => import('./components/SimilarView').then(m => ({ default: m.SimilarView })));
+const GroupView = lazy(() => import('./components/GroupView').then(m => ({ default: m.GroupView })));
+const CompressView = lazy(() => import('./components/CompressView').then(m => ({ default: m.CompressView })));
 const ProtectedView = lazy(() => import('./components/ProtectedView').then(m => ({ default: m.ProtectedView })));
 const LicencesView = lazy(() => import('./components/SettingsView').then(m => ({ default: m.LicencesView })));
 
@@ -125,6 +127,7 @@ export default function App() {
   const today = useMemo(() => onThisDay(lib.photos, now), [lib, now]);
   const large = useMemo(() => findLarge(lib.photos), [lib]);
   const live = useMemo(() => findLive(lib.photos), [lib]);
+  const compressible = useMemo(() => findCompressible(lib.photos, kept), [lib, kept]);
   const hasLocations = useMemo(() => lib.photos.some(p => p.lat !== undefined), [lib]);
   // The decide-later pile, without photos that are gone (a full scan's view of the library prunes it for good).
   const laterPile = useMemo(() => state.later.filter(id => lib.byId.has(id)), [state.later, lib]);
@@ -184,6 +187,7 @@ export default function App() {
   const [monthsShown, setMonthsShown] = useState(24);
   const [showLarge, setShowLarge] = useState(false);
   const [showLive, setShowLive] = useState(false);
+  const [showCompress, setShowCompress] = useState(false);
   const [showUtility, setShowUtility] = useState(false);
   const [category, setCategory] = useState<MemoryLabel | null>(null);
   const [showSettings, setShowSettings] = useState(false);
@@ -221,6 +225,7 @@ export default function App() {
     ['large', showLarge, () => setShowLarge(false)],
     ['utility', showUtility, () => setShowUtility(false)],
     ['live', showLive, () => setShowLive(false)],
+    ['compress', showCompress, () => setShowCompress(false)],
     ['cleanup', showCleanup, () => setShowCleanup(false)],
     ['category', !!category, () => setCategory(null)],
     ['months', showMonths, () => setShowMonths(false)],
@@ -357,10 +362,51 @@ export default function App() {
   // Making a video smaller: progress while it runs, then the question whether the original may go.
   const [compressing, setCompressing] = useState<{ id: string; progress: number } | null>(null);
   const [afterCompress, setAfterCompress] = useState<{ id: string; before: number; after: number } | null>(null);
+  // Photos made smaller, in batches: where the run is (the progress events count within one batch).
+  const [photoRun, setPhotoRun] = useState<{ total: number; progress: number } | null>(null);
+  const [afterPhotos, setAfterPhotos] = useState<{ from: string[]; saved: number } | null>(null);
+  const run = useRef({ batch: 0, batches: 1, stop: false });
   useEffect(() => {
-    const handle = PhotoLibrary.addListener('compressProgress', e => setCompressing(c => (c && c.id === e.id ? { ...c, progress: e.progress } : c)));
-    return () => { void handle.then(h => h.remove()).catch(() => {}); };
+    const handle = PhotoLibrary.addListener('compressProgress', e => {
+      if (e.id === 'photos') {
+        const r = run.current;
+        setPhotoRun(p => (p ? { ...p, progress: Math.min(1, (r.batch + e.progress) / r.batches) } : p));
+        return;
+      }
+      setCompressing(c => (c && c.id === e.id ? { ...c, progress: e.progress } : c));
+    });
+    // Into the background: the run stops after the batch it is in (iOS would pause it anyway).
+    const away = CapacitorApp.addListener('appStateChange', ({ isActive }) => { if (!isActive) run.current.stop = true; });
+    return () => { for (const h of [handle, away]) void h.then(x => x.remove()).catch(() => {}); };
   }, []);
+  const compressPhotos = async (list: Photo[]) => {
+    const parts = batches(list.map(p => p.id));
+    run.current = { batch: 0, batches: parts.length, stop: false };
+    setPhotoRun({ total: list.length, progress: 0 });
+    const results: { from: string; to: string; before: number; after: number }[] = [];
+    let failed = false;
+    try {
+      for (const [i, part] of parts.entries()) {
+        if (run.current.stop) break;
+        run.current.batch = i;
+        const r = await PhotoLibrary.compressPhotos({ ids: part, dryRun: store.dryRun });
+        results.push(...r.results);
+        setPhotoRun(p => (p ? { ...p, progress: (i + 1) / parts.length } : p));
+      }
+    } catch {
+      failed = true;
+    } finally {
+      setPhotoRun(null);
+    }
+    const { count, saved } = tally(results);
+    if (store.dryRun) { show(fmt(t.dryRunCompressPhotos, { photos: plural(t, 'photos', count), size: bytes(t, saved) })); return; }
+    if (!count) { show(failed ? t.compressFailed : t.compressPhotosNone); return; }
+    store.startScan();
+    store.markDay();
+    if (run.current.stop) show(fmt(t.compressPhotosStopped, { photos: plural(t, 'photos', count) }));
+    setShowCompress(false);
+    setAfterPhotos({ from: results.map(r => r.from), saved });
+  };
   const compress = async (p: Photo) => {
     setCompressing({ id: p.id, progress: 0 });
     try {
@@ -569,6 +615,15 @@ export default function App() {
         />
       );
     }
+    if (showCompress) {
+      return (
+        <CompressView
+          t={t} photos={compressible.photos} screenshots={compressible.screenshots}
+          onBack={() => setShowCompress(false)}
+          onRun={list => needUnlock(() => { void compressPhotos(list); })}
+        />
+      );
+    }
     if (showLive) {
       return <LiveView t={t} {...sorting('live')} photos={live} onBack={() => setShowLive(false)} onConvert={list => needUnlock(() => setLiveConfirm(list))} />;
     }
@@ -649,6 +704,8 @@ export default function App() {
         groupCount={similarGroups.length} duplicateCount={dupGroups.length}
         blurryCount={blurry.length + exposureAll.length} screenshotCount={shots.length}
         large={{ count: large.length, bytes: large.reduce((sum, p) => sum + p.bytes, 0) }} liveCount={isAndroid() ? 0 : live.length}
+        compress={{ count: compressible.photos.length + compressible.screenshots.length, saving: compressible.saving }}
+        onCompress={() => setShowCompress(true)}
         utility={{ show: aiSeen.seen > 0, count: utility.length, bytes: utility.reduce((sum, p) => sum + p.bytes, 0) }}
         categories={cats.slice(0, 8).map(c => ({ label: c.label, count: c.photos.length, cover: c.photos[0].id }))}
         storage={store.storage} freedBytes={state.freed.bytes} streak={streak(state.days, now)}
@@ -737,6 +794,24 @@ export default function App() {
         onCancel={() => { setAfterCompress(null); show(t.compressKept); }}
       />
 
+      <Confirm
+        open={!!afterPhotos}
+        title={afterPhotos ? fmt(t.compressPhotosDone, { size: bytes(t, afterPhotos.saved) }) : ''}
+        body={afterPhotos ? fmt(t.compressPhotosDoneBody, { photos: plural(t, 'photos', afterPhotos.from.length) }) : ''}
+        confirmLabel={t.deleteOriginals}
+        cancelLabel={t.keepBoth}
+        danger
+        onConfirm={() => { const a = afterPhotos; setAfterPhotos(null); if (a) void trash(a.from); }}
+        onCancel={() => { setAfterPhotos(null); show(t.compressPhotosKept); }}
+      />
+
+      <Sheet open={!!photoRun} title={t.compressingPhotos} closeLabel={t.close} onClose={() => {}}>
+        <div className="space-y-3 pb-2">
+          <p className="text-label text-fg-mute num">{photoRun ? fmt(t.compressingPhotosBody, { done: Math.round(photoRun.progress * photoRun.total), total: photoRun.total }) : ''}</p>
+          <Progress value={photoRun?.progress ?? null} label={t.compressingPhotos} />
+        </div>
+      </Sheet>
+
       <Sheet open={!!compressing} title={t.compressing} closeLabel={t.close} onClose={() => {}}>
         <div className="space-y-3 pb-2">
           <p className="text-label text-fg-mute">{t.compressing}</p>
@@ -744,7 +819,7 @@ export default function App() {
         </div>
       </Sheet>
 
-      <Toast toast={toast} onDone={hide} raised={['trip', 'group', 'blurry', 'screenshots', 'utility', 'quickClean', 'large', 'live', 'cleanup', 'review'].includes(screen)} />
+      <Toast toast={toast} onDone={hide} raised={['trip', 'group', 'blurry', 'screenshots', 'utility', 'quickClean', 'large', 'live', 'compress', 'cleanup', 'review'].includes(screen)} />
     </div>
   );
 }

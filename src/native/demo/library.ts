@@ -190,6 +190,23 @@ export class DemoLibrary extends WebPlugin implements PhotoLibraryPlugin {
   }
 
   /** No home screen in a browser: the widget's content is only kept, for a look in the dev tools. */
+  /** Photos made smaller: half a JPEG, 30 % of a PNG, a little wait per photo; the copies show their original's picture. */
+  async compressPhotos({ ids, dryRun }: { ids: string[]; dryRun: boolean }) {
+    const all = new Map(this.photos().map(p => [p.id, p]));
+    const results: { from: string; to: string; before: number; after: number }[] = [];
+    for (const [i, id] of ids.entries()) {
+      await wait(60);
+      this.notifyListeners('compressProgress', { id: 'photos', progress: (i + 1) / ids.length });
+      const p = all.get(id);
+      if (!p || p.video || p.fmt === 'heic' || id.endsWith('-heic')) continue;
+      const after = Math.round(p.bytes * (p.fmt === 'png' ? 0.3 : 0.5));
+      const to = `${id}-heic`;
+      if (!dryRun) this.remember({ ...p, id: to, bytes: after, fmt: 'heic', t: p.t + 1 });
+      results.push({ from: id, to: dryRun ? '' : to, before: p.bytes, after });
+    }
+    return { results, dryRun };
+  }
+
   async setWidget(options: { title: string; line: string; photoId?: string; freeable?: number; pct?: number }) {
     set('bildklar-demo-widget', JSON.stringify(options));
   }

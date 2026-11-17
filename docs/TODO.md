@@ -225,6 +225,15 @@ Everything in TypeScript is tested by `npm run check`; what needs a phone:
       as `edited`? (debug build: the facts are in the review's debug badge only
       for sharpness — check via Safari's Web Inspector, `PhotoLibrary.getFacts`).
 
+- [ ] **Fotos verkleinern** (Swift `compressPhotos`, Kotlin `compressPhotos`
+      + `androidx.heifwriter:heifwriter:1.1.0`, not compiled in the cloud):
+      on each phone make 100 photos smaller, then check in Photos / the
+      Gallery that date, place, favourite and albums (iPhone) / folder
+      (Android) are kept, the copies look right (rotation!), and the originals
+      land in Recently Deleted / the Trash only after the dialog. The plan's
+      Swift test (a JPEG fixture → HEIC with the same date and GPS) and the
+      Android instrumented check are still to write.
+
 ## Known gaps (to decide later)
 
 - Arabic: the structure is there (RTL rules, the translation layout), the texts are not.

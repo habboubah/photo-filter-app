@@ -57,7 +57,7 @@ export function PaywallSheet({ t, open, free, onClose, onOwned, toast }: {
     } catch { toast(t.storeUnavailable); } finally { setBusy(null); }
   };
 
-  const points = [t.paywallAlbums, t.paywallDelete, t.paywallSave, t.paywallOnce, t.paywallPrivate];
+  const points = [t.paywallAlbums, t.paywallDelete, t.paywallPhotos, t.paywallSave, t.paywallOnce, t.paywallPrivate];
   return (
     <Sheet open={open} title={t.paywallTitle} closeLabel={t.close} onClose={onClose}>
       <div className="flex flex-col items-center text-center">

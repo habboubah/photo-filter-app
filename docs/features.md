@@ -105,6 +105,23 @@ Every feature, as the user sees it (German labels, English in brackets).
   listed under *Duplikate*.
 - Videos are not part of trips, near-identical groups or the blurry list.
 
+## Smaller photos (*Fotos verkleinern*, needs the unlock)
+- Home tile *Fotos verkleinern · bis zu 3,1 GB* [Smaller photos · up to …]
+  when there is something to gain (estimate: half of a camera JPEG, 70 % of a PNG).
+- Which photos: JPEG or PNG, at least 1 MB, not RAW/ProRAW, not edited (re-saving
+  would bake the edit in), not a Live Photo, not protected. PNG screenshots are
+  their own tab.
+- A grid, the largest saving first, all selected (a tap leaves one out; *Alle* /
+  *Keine*), then **42 Fotos verkleinern** → a progress sheet → *1,2 GB gespart —
+  Originale löschen?* [… saved — delete the originals?] → the system's dialog.
+- iPhone: re-saved as HEIC (quality 0.8) with all metadata (EXIF, GPS,
+  orientation, date), as a new photo with the same date, place, favourite flag,
+  in the same albums. Android: HEIC through HeifWriter where the phone has an
+  HEVC encoder, else JPEG at quality 82; EXIF, date taken and folder kept.
+- A copy is kept only when it is at least 30 % smaller. Works in batches of 20
+  and stops cleanly when the app goes to the background. The dry run encodes
+  but writes nothing.
+
 ## Live Photos (iPhone)
 - Every Live Photo, newest first, with the estimated saving (≈ 3 MB each).
   **In Fotos umwandeln** [Make plain photos] (needs the unlock) → a
