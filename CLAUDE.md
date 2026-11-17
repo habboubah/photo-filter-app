@@ -66,7 +66,10 @@ further deleting need one one-time purchase (`com.habboubah.bildklar.unlock`, 4,
 - **Shared primitives** in `src/ui/` (`Screen`, `Group`, `Row`, `MenuRow`,
   `IconTile`, `Next`, `Away`, `Dock`, `Empty`, `Sheet`, `Confirm`, `Button`,
   `IconButton`, `Field`, `Toast`, `Progress`, `SwitchRow`, `Segmented`,
-  `Badge`, `Thumb`, `PhotoGrid`, `Mosaic`, `haptics`). Compose them.
+  `Badge`, `Thumb`, `PhotoGrid`, `Mosaic`, `SortMenu`, `haptics`). Compose them.
+- **Screens opened less often are lazy** (`lazy()` in `App.tsx`, under one
+  `<Suspense>`): the main bundle has a budget (`scripts/perf-check.mjs`). A new
+  screen is lazy unless home needs it at once.
 - **Platform**: `src/platform.ts` (`isNative`, `isAndroid`, `isIos`). Never
   sniff the user agent for behaviour.
 - **Pure logic** goes in `src/logic/` (one module per concern, tested next to
@@ -100,8 +103,8 @@ further deleting need one one-time purchase (`com.habboubah.bildklar.unlock`, 4,
 ## Safety rules (never break these)
 - Never delete, move or change a photo automatically. Every delete or move
   needs the user's tap **and** the system's own dialog.
-- A new asset (a plain photo made from a Live Photo, a smaller copy of a video)
-  needs the user's tap and a confirmation in the app; the original stays and
+- A new asset (a plain photo made from a Live Photo, a smaller copy of a video
+  or of a photo) needs the user's tap and a confirmation in the app; the original stays and
   goes only through the system's delete dialog afterwards. The copy keeps the
   original's date, place and favourite flag (and, for a still, its albums).
 - Deleted photos go to Recently Deleted (iPhone) / the Trash (Android) only —
@@ -111,9 +114,14 @@ further deleting need one one-time purchase (`com.habboubah.bildklar.unlock`, 4,
   on (`store.ts`: `debug && dryRunPref !== false`); release builds never run dry.
 - On Android, files are moved (RELATIVE_PATH) only after `createWriteRequest`'s
   dialog, and their contents never change. Nothing is copied — except a smaller
-  video, which is a new file of the app's own next to the original.
-- A favourite (system Photos / Gallery) is never suggested for deleting, and a
-  photo the user kept in a review is never suggested again.
+  video or photo, which is a new file of the app's own next to the original.
+- A protected photo is never suggested for deleting — a favourite (system
+  Photos / Gallery), a photo kept in a review, one protected by hand, in a
+  protected trip or album. Every finder asks `isProtected` (`src/logic/protect.ts`)
+  or takes the protected set as its `kept`; never a check of its own.
+- Filing into albums while swiping writes nothing during the review; the end
+  screen confirms everything at once (`addToAlbums`; Android: one
+  `createWriteRequest` dialog).
 
 ## i18n
 - `src/translations.ts`: one flat object per language (`de`, `en`). Default
