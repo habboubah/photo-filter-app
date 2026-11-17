@@ -234,6 +234,10 @@ Everything in TypeScript is tested by `npm run check`; what needs a phone:
       Swift test (a JPEG fixture → HEIC with the same date and GPS) and the
       Android instrumented check are still to write.
 
+- [ ] **Videos in the review** (new native `preview`, not compiled in the
+      cloud): in a month with a video tap ▶ — iPhone plays it over the app
+      (close with ✕), Android opens the system player; back lands in the review.
+
 ## Known gaps (to decide later)
 
 - Arabic: the structure is there (RTL rules, the translation layout), the texts are not.

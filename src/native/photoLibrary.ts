@@ -71,6 +71,12 @@ export interface PhotoLibraryPlugin {
    * With `dryRun` nothing is written; the answer says what would have happened.
    */
   createAlbum(options: { title: string; ids: string[]; dryRun: boolean }): Promise<{ done: number; cancelled: boolean; dryRun: boolean }>;
+  /**
+   * Plays a video over the app: iPhone AVPlayerViewController (from the phone
+   * only — an iCloud-only video rejects); Android the system's player
+   * (ACTION_VIEW with a read grant).
+   */
+  preview(options: { id: string }): Promise<void>;
   /** iPhone: the user's own albums (not smart albums, not shared ones). Android: every folder that holds photos or videos. */
   listAlbums(): Promise<{ albums: AlbumInfo[] }>;
   /** The photo ids in these albums / folders (asked once per load, for the protected albums only). */
