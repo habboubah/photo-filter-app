@@ -310,10 +310,9 @@ export const SCREENS = [
   },
   // Fotos verkleinern: the photos that qualify, the largest saving first.
   { name: '34-compress', run: async (page, w) => { await page.click(`button:has-text("${w.t.compressPhotosTile}")`); await pause(page, 800); } },
-  // Settings › Geschützt: one album switched on (the demo's family album).
+  // Aufräumen › Geschützt (the last rows of home): one album switched on (the demo's family album).
   {
     name: '33-protected', run: async (page, w) => {
-      await openSettings(page, w);
       await page.click(`main button:has-text("${w.t.protectedRow}")`);
       await pause(page, 900);
       await page.locator('main [role="switch"]').first().check({ force: true });

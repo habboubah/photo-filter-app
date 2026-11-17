@@ -22,7 +22,8 @@ Every feature, as the user sees it (German labels, English in brackets).
   only look at new and changed photos (a quiet *wird aktualisiert …*), and drop
   deleted ones. It runs at every start, when coming back to the app after a
   while, and when photos change while the app is open.
-- *Neu durchsuchen* [Scan again] in Settings.
+- *Neu durchsuchen* [Scan again] at the end of *Aufräumen*, with when the last
+  scan ran (*Durchsucht vor 5 Minuten*).
 - iCloud-only originals are never downloaded.
 - **The on-device AI** (docs/AI.md) looks at each photo after that: the
   subtitle on *Aufräumen* counts along (*KI: 1.234 von 5.000 Fotos*), results show up
@@ -237,7 +238,7 @@ tab again scrolls to its top; Android's back button goes from *Ordnen* to
   one go — iPhone: the photos are added to the albums (nothing moves);
   Android: an album is a folder, so the photos move there after one system
   dialog (*Die Fotos werden in den Ordner verschoben*). Albums made here show
-  up in Settings › Geschützt.
+  up in *Aufräumen* › Geschützt.
 - **Decide later**: photos swiped up land on a pile; the end screen says
   *3 für später gemerkt* [3 saved for later]. *Aufräumen* › *Weitermachen* shows *Später entscheiden (3)*
   [Decide later] while the pile isn't empty; it goes through the pile with no
@@ -279,9 +280,10 @@ tab again scrolls to its top; Android's back button goes from *Ordnen* to
   at 18:00, scheduled on the phone — no server.
 
 ## Settings
-- **Fotos**: the access (all / selected / none), *Fotos auswählen*, *Zugriff
-  in den Einstellungen ändern*, *Neu durchsuchen*, the storage on the device
-  (free of total) and what Bildklar has freed so far (photos and size).
+- **Fotos**: *Zugriff* with the access (all / selected / none); a tap opens
+  the system's settings, where it is changed. Settings holds only what can be
+  changed: the storage, what was freed and *Fotos auswählen* are on
+  *Aufräumen*, so are *Geschützt* and *Neu durchsuchen* (its last rows).
 - **Vollversion**: unlock or *Freigeschaltet*, restore.
 - **Darstellung**: language (Deutsch, English), appearance (system, light, dark).
 - **Nur in der Debug-Version**: *Probelauf* [Dry run] — on by default in debug
@@ -313,8 +315,8 @@ tab again scrolls to its top; Android's back button goes from *Ordnen* to
   favourites; photos kept in a review; photos protected by hand (the shield
   *Schützen* [Protect] in the review: kept and protected for good); every photo
   of a trip marked *⋯ › Nie vorschlagen* [Never suggest]; and every photo of the
-  albums (iPhone) / folders (Android) switched on in *Einstellungen › Geschützt*.
-- Settings › Geschützt lists the albums / folders with a switch each, the
+  albums (iPhone) / folders (Android) switched on in *Aufräumen › Geschützt*.
+- *Aufräumen* › Geschützt (its last rows) lists the albums / folders with a switch each, the
   protected trips and the photos protected by hand; each protection is lifted
   with a tap.
 - In a duplicate or near-identical group a protected photo stays and ranks

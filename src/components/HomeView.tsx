@@ -1,9 +1,9 @@
 import type React from 'react';
-import { Aperture, CalendarDays, Check, Clock, FileVideo, ImagePlus, MessageCircle, Minimize2, Settings, Sparkles } from 'lucide-react';
+import { Aperture, CalendarDays, Check, Clock, FileVideo, ImagePlus, MessageCircle, Minimize2, RefreshCw, Settings, Shield, Sparkles } from 'lucide-react';
 import type { CleanupSummary, Storage } from '../types';
 import type { Access } from '../native/photoLibrary';
 import type { ScanView } from '../store';
-import { Strings, bytes, fmt, num, percent, plural } from '../translations';
+import { Strings, ago, bytes, fmt, num, percent, plural } from '../translations';
 import { Empty, Group, IconTile, Next, Row, Screen, SectionHead } from '../ui/Screen';
 import { Button, IconButton } from '../ui/Button';
 import { Progress } from '../ui/Controls';
@@ -39,7 +39,11 @@ interface Props {
   months: { done: number; total: number; pct: number };
   /** The decide-later pile (photos swiped up in a review). */
   later: { count: number; cover?: string };
+  /** How much is protected (src/logic/protect.ts): never suggested for deleting. */
+  protection: { albums: number; trips: number; photos: number };
   onLater: () => void;
+  onProtected: () => void;
+  onRescan: () => void;
   onSettings: () => void;
   onAddPhotos: () => void;
   onCleanup: () => void;
@@ -59,7 +63,7 @@ interface Props {
  * Home, the "Aufräumen" tab: the space that could be freed and where it comes
  * from (one bar), then every category as a card with its own photos — the
  * most space first — then the tools that make room without deleting, then
- * what was left half done.
+ * what was left half done; at the end what is kept safe and a fresh scan.
  */
 export function HomeView(p: Props) {
   const { t, summary } = p;
@@ -204,6 +208,22 @@ export function HomeView(p: Props) {
             )}
           </Group>
         </section>
+      )}
+
+      {has && (
+        <Group>
+          <Row
+            label={t.protectedRow}
+            sub={fmt(t.protectedRowSub, { albums: plural(t, 'albums', p.protection.albums), trips: plural(t, 'trips', p.protection.trips), photos: plural(t, 'photos', p.protection.photos) })}
+            leading={<IconTile icon={Shield} hue="mint" />} trailing={<Next />} onClick={p.onProtected}
+          />
+          {!p.scan.running && (
+            <Row
+              label={t.rescan} sub={p.scan.lastScanAt ? fmt(t.lastScan, { when: ago(t, p.scan.lastScanAt, Date.now()) }) : undefined}
+              leading={<IconTile icon={RefreshCw} hue="lilac" />} onClick={p.onRescan}
+            />
+          )}
+        </Group>
       )}
     </Screen>
   );

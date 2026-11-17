@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import translations, { androidStrings, bytes, fmt, languages, plural, setPlatform, stringsFor } from './translations';
+import translations, { ago, androidStrings, bytes, fmt, languages, plural, setPlatform, stringsFor } from './translations';
 
 describe('translations', () => {
   it('has every key with the same placeholders in every language', () => {
@@ -36,5 +36,15 @@ describe('translations', () => {
     expect(bytes(translations.de, 2_400_000_000)).toBe('2,4 GB');
     expect(bytes(translations.en, 850_000_000)).toBe('850 MB');
     expect(fmt('{a} {b}', { a: 1 })).toBe('1 {b}');
+  });
+});
+
+describe('ago', () => {
+  const now = Date.UTC(2026, 10, 17, 12);
+  it('says how long ago in the locale', () => {
+    expect(ago(translations.en, now - 20_000, now)).toBe('now');
+    expect(ago(translations.en, now - 5 * 60_000, now)).toBe('5 minutes ago');
+    expect(ago(translations.de, now - 3 * 3600_000, now)).toBe('vor 3 Stunden');
+    expect(ago(translations.de, now - 24 * 3600_000, now)).toBe('gestern');
   });
 });
