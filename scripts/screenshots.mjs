@@ -12,8 +12,8 @@
 // Once per machine:  npx playwright install chromium
 // Output: screenshots/<de|en>/01-scan.png, 01-scan.marks.json …
 //
-// The demo photos are drawn (scripts/demo-photos.py); for the real store set,
-// swap in licensed photos first (docs/TODO.md). Run it on the Mac, so the
+// The demo photos are real CC0 photos (scripts/demo-photos.py), fine for the
+// store set. Run it on the Mac, so the
 // system font is Apple's own. The screens and how each is reached:
 // scripts/lib/shots.mjs.
 import path from 'path';

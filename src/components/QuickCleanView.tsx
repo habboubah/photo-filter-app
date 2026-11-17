@@ -27,7 +27,7 @@ export function QuickCleanView({ t, parts, storage, onBack, onReview, onDelete }
   const chosen = selection(parts, on);
   const unsure = toCheck(parts, on);
   const label: Record<CleanKind, string> = {
-    duplicates: t.cleanupDuplicates, similar: t.cleanupSimilar, blurry: t.cleanupBlurry, exposure: t.cleanupExposure, screenshots: t.cleanupScreenshots,
+    duplicates: t.cleanupDuplicates, similar: t.cleanupSimilar, videos: t.lookalikeTitle, blurry: t.cleanupBlurry, exposure: t.cleanupExposure, screenshots: t.cleanupScreenshots,
   };
   const toggle = (kind: CleanKind, v: boolean) => setOn(s => {
     const next = new Set(s);
@@ -42,7 +42,7 @@ export function QuickCleanView({ t, parts, storage, onBack, onReview, onDelete }
           <SwitchRow
             key={part.kind}
             label={label[part.kind]}
-            sub={fmt(t.cleanupRowSub, { photos: plural(t, 'photos', part.ids.length), size: bytes(t, part.bytes) })}
+            sub={fmt(t.cleanupRowSub, { photos: plural(t, part.kind === 'videos' ? 'videos' : 'photos', part.ids.length), size: bytes(t, part.bytes) })}
             checked={on.has(part.kind)}
             onChange={v => toggle(part.kind, v)}
           />

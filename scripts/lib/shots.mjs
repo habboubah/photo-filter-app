@@ -348,13 +348,11 @@ export const SCREENS = [
       await pause(page, 900);
     },
   },
-  // Ähnliche Videos: the demo's two takes at Lake Garda, at the end of the duplicates.
+  // Ähnliche Videos: the demo's two takes at Lake Garda and a copied video — their own screen, apart from the photos.
   {
     name: '35-lookalike', run: async (page, w) => {
-      await page.click(`button:has-text("${w.t.duplicatesTile}")`);
-      await pause(page, 600);
-      await page.locator('#lookalike-h').scrollIntoViewIfNeeded();
-      await pause(page, 400);
+      await page.click(`main button:has-text("${w.t.lookalikeTitle}")`);
+      await pause(page, 800);
     },
   },
   // Fotos verkleinern: the photos that qualify, the largest saving first.

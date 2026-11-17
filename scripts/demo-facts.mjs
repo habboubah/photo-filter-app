@@ -1,5 +1,5 @@
 // The demo library's facts (src/native/demo/facts.json): for each photo
-// scripts/demo-photos.py drew, its time and place from manifest.json and its
+// scripts/demo-photos.py put in, its time and place from manifest.json and its
 // features computed by the app's own spec (src/logic/features.ts) from the
 // grey copy — exactly what the native scan would report. Sizes are made up in
 // the range of real phone photos, so the clean-up card shows realistic numbers.

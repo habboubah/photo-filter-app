@@ -32,7 +32,7 @@
      warn  — amber: blurry photos.
 
    Theme: data-theme = light | dark on <html> (store.ts). A tile's tint:
-   data-hue = one of the hues below; it exposes --hue-bg, --hue-ink and
+   data-hue = one of the hues below (similar videos = cyan); it exposes --hue-bg, --hue-ink and
    --hue-solid (the squircle behind a white glyph, as in iOS Settings).
    ========================================================================== */
 
@@ -156,6 +156,7 @@
   --t-rose-bg: #FFE1E3;     --t-rose-ink: #981A2A;     --t-rose-solid: #E8384A;
   --t-lilac-bg: #E9E4FF;    --t-lilac-ink: #4730A3;    --t-lilac-solid: #6A4DE3;
   --t-stone-bg: #E9E9EE;    --t-stone-ink: #46464D;    --t-stone-solid: #85858C;
+  --t-cyan-bg: #D3F1F7;     --t-cyan-ink: #0B5566;     --t-cyan-solid: #0A84A3;
 
   color-scheme: light;
 }
@@ -200,6 +201,7 @@
   --t-rose-bg: #3C1418;     --t-rose-ink: #FFAEB5;     --t-rose-solid: #DE3445;
   --t-lilac-bg: #231A46;    --t-lilac-ink: #C8BBFF;    --t-lilac-solid: #6C50E4;
   --t-stone-bg: #2C2C2E;    --t-stone-ink: #D2D2D7;    --t-stone-solid: #6E6E75;
+  --t-cyan-bg: #0C2E36;     --t-cyan-ink: #8FE3F2;     --t-cyan-solid: #0A7A96;
 
   color-scheme: dark;
 }
@@ -210,6 +212,7 @@
 [data-hue="rose"]  { --hue-bg: var(--t-rose-bg);  --hue-ink: var(--t-rose-ink);  --hue-solid: var(--t-rose-solid); }
 [data-hue="lilac"] { --hue-bg: var(--t-lilac-bg); --hue-ink: var(--t-lilac-ink); --hue-solid: var(--t-lilac-solid); }
 [data-hue="stone"] { --hue-bg: var(--t-stone-bg); --hue-ink: var(--t-stone-ink); --hue-solid: var(--t-stone-solid); }
+[data-hue="cyan"]  { --hue-bg: var(--t-cyan-bg);  --hue-ink: var(--t-cyan-ink);  --hue-solid: var(--t-cyan-solid); }
 
 /* ============ Utilities =================================================== */
 

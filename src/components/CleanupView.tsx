@@ -5,11 +5,13 @@ import { Dock, Group, IconTile, Next, Row, Screen } from '../ui/Screen';
 import { Button } from '../ui/Button';
 
 /** What the clean-up card counts, by kind, and the ways on: a review of all of it, or the quick clean. */
-export function CleanupView({ t, summary, onBack, onDuplicates, onSimilar, onBlurry, onExposure, onScreenshots, onUtility, onReviewAll, onQuickClean }: {
+export function CleanupView({ t, summary, onBack, onDuplicates, onVideoGroups, onSimilar, onBlurry, onExposure, onScreenshots, onUtility, onReviewAll, onQuickClean }: {
   t: Strings;
   summary: CleanupSummary;
   onBack: () => void;
   onDuplicates: () => void;
+  /** The similar videos (lookalike takes and copies of a video). */
+  onVideoGroups: () => void;
   onSimilar: () => void;
   onBlurry: () => void;
   onExposure: () => void;
@@ -33,9 +35,9 @@ export function CleanupView({ t, summary, onBack, onDuplicates, onSimilar, onBlu
           <Row
             label={t.lookalikeTitle}
             sub={fmt(t.cleanupRowSub, { photos: plural(t, 'videos', summary.lookalike.count), size: bytes(t, summary.lookalike.bytes) })}
-            leading={<IconTile icon={Clapperboard} hue="rose" />}
+            leading={<IconTile icon={Clapperboard} hue="cyan" />}
             trailing={<Next value={summary.lookalike.groups} />}
-            onClick={onDuplicates}
+            onClick={onVideoGroups}
           />
         )}
         <Row

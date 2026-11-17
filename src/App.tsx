@@ -12,7 +12,7 @@ import { PRODUCT_ID, Purchases } from './native/purchases';
 import { loadCities } from './cities';
 import { forgetThumbs } from './thumbs';
 import type { CityIndex } from './logic/geo';
-import { buildGroups, buildTrips, cleanupBlurry, detect, findBlurry, makeLibrary, summarize, openGroups } from './logic/analyze';
+import { buildGroups, buildTrips, cleanupBlurry, detect, findBlurry, makeLibrary, summarize, openGroups, isVideoGroup, mediaTotals } from './logic/analyze';
 import { folderName } from './logic/naming';
 import { addMerge, addSplit, removeMerge, removeSplits, setIgnored, setName } from './logic/trips';
 import {
@@ -124,8 +124,12 @@ export default function App() {
   const exposure = useMemo(() => findExposure(lib.photos, new Set(groups.flatMap(g => g.ids)), kept), [lib, groups, kept]);
   const exposureAll = useMemo(() => [...exposure.dark, ...exposure.bright], [exposure]);
   const similarGroups = useMemo(() => groups.filter(g => g.kind === 'similar'), [groups]);
-  // Exact copies and lookalike videos share the duplicates screen (the lookalikes under their own heading).
-  const dupGroups = useMemo(() => groups.filter(g => g.kind !== 'similar'), [groups]);
+  // Photos apart from videos: the duplicates screen holds copies of photos; copies of a video and lookalike takes are the similar videos.
+  const dupGroups = useMemo(() => groups.filter(g => g.kind === 'duplicate' && !isVideoGroup(g, lib.byId)), [groups, lib]);
+  const videoGroups = useMemo(() => groups.filter(g => isVideoGroup(g, lib.byId)), [groups, lib]);
+  // The analysis at the top of Aufräumen: every photo and every video, counted and sized.
+  const totals = useMemo(() => mediaTotals(lib.photos), [lib]);
+  const allVideos = useMemo(() => lib.photos.filter(p => p.video), [lib]);
   // "Now" for the screenshots' age and "On this day": taken again whenever the photos change.
   const now = useMemo(() => Date.now(), [photos]); // eslint-disable-line react-hooks/exhaustive-deps
   const shots = useMemo(() => findScreenshots(lib.photos, kept), [lib, kept]);
@@ -220,6 +224,9 @@ export default function App() {
   const [failedTab, setFailedTab] = useState<FailedTab>('blurry');
   const openFailed = (tab: FailedTab) => { setFailedTab(tab); setShowBlurry(true); };
   const [showDuplicates, setShowDuplicates] = useState(false);
+  const [showVideoGroups, setShowVideoGroups] = useState(false);
+  const [videoGroupsShown, setVideoGroupsShown] = useState(40);
+  const [showVideos, setShowVideos] = useState(false);
   const [duplicatesShown, setDuplicatesShown] = useState(40);
   const [showScreenshots, setShowScreenshots] = useState(false);
   const [showQuickClean, setShowQuickClean] = useState(false);
@@ -280,10 +287,12 @@ export default function App() {
     ['trip', !!trip, () => setTripKey(null)],
     ['similar', showSimilar, () => setShowSimilar(false)],
     ['duplicates', showDuplicates, () => setShowDuplicates(false)],
+    ['videoGroups', showVideoGroups, () => setShowVideoGroups(false)],
     ['blurry', showBlurry, () => setShowBlurry(false)],
     ['screenshots', showScreenshots, () => setShowScreenshots(false)],
     ['quickClean', showQuickClean, () => setShowQuickClean(false)],
     ['large', showLarge, () => setShowLarge(false)],
+    ['videos', showVideos, () => setShowVideos(false)],
     ['utility', showUtility, () => setShowUtility(false)],
     ['live', showLive, () => setShowLive(false)],
     ['compress', showCompress, () => setShowCompress(false)],
@@ -706,6 +715,15 @@ export default function App() {
         />
       );
     }
+    if (showVideoGroups) {
+      return (
+        <SimilarView
+          t={t} kind="lookalike" groups={videoGroups} byId={byId} kept={kept} shown={videoGroupsShown}
+          onMore={() => setVideoGroupsShown(n => n + 40)}
+          onBack={() => setShowVideoGroups(false)} onOpen={setGroupKey}
+        />
+      );
+    }
     if (showBlurry) {
       return (
         <FailedView
@@ -748,6 +766,17 @@ export default function App() {
         />
       );
     }
+    if (showVideos) {
+      return (
+        <LargeView
+          t={t} {...sorting('large')} photos={allVideos} videosOnly canCompress={extras}
+          onBack={() => setShowVideos(false)}
+          onReview={(list: Photo[]) => startReview(reviewLarge(list))}
+          onCompress={p => needUnlock(() => { void compress(p); })}
+          onDelete={p => deletePhotos([p.id])}
+        />
+      );
+    }
     if (showUtility) {
       return (
         <UtilityView
@@ -782,6 +811,7 @@ export default function App() {
         <CleanupView
           t={t} summary={summary} onBack={() => setShowCleanup(false)}
           onDuplicates={() => setShowDuplicates(true)}
+          onVideoGroups={() => setShowVideoGroups(true)}
           onSimilar={() => setShowSimilar(true)} onBlurry={() => openFailed('blurry')}
           onExposure={() => openFailed(exposure.dark.length ? 'dark' : 'bright')}
           onScreenshots={() => setShowScreenshots(true)}
@@ -873,6 +903,7 @@ export default function App() {
         t={t} access={access} photoCount={photos ? photos.length : null} scan={store.scan} summary={summary}
         found={{
           duplicates: { items: dupGroups.length, covers: dupGroups.slice(0, 4).map(g => g.ids.find(id => id !== g.suggested) ?? g.ids[0]) },
+          videos: { items: videoGroups.length, covers: videoGroups.slice(0, 4).map(g => g.ids.find(id => id !== g.suggested) ?? g.ids[0]) },
           similar: { items: similarGroups.length, covers: similarGroups.slice(0, 4).map(g => g.suggested) },
           failed: { items: failedAll.length, covers: failedAll.slice(0, 4).map(x => x.id) },
           screenshots: { items: shots.length, covers: shots.slice(0, 4).map(x => x.id) },
@@ -898,6 +929,15 @@ export default function App() {
         onSimilar={() => setShowSimilar(true)}
         onBlurry={() => openFailed('blurry')}
         onDuplicates={() => setShowDuplicates(true)}
+        onVideoGroups={() => setShowVideoGroups(true)}
+        onVideos={() => setShowVideos(true)}
+        analysis={{
+          photos: totals.photos, videos: totals.videos,
+          similarPhotos: summary ? { count: summary.similar.count, bytes: summary.similar.bytes } : { count: 0, bytes: 0 },
+          similarVideos: summary ? { count: summary.lookalike.count, bytes: summary.lookalike.bytes } : { count: 0, bytes: 0 },
+          chats: { count: sources.reduce((n, g) => n + g.photos.length, 0), bytes: sourcesBytes },
+          screenshots: { count: shots.length, bytes: shots.reduce((s, p) => s + p.bytes, 0) },
+        }}
         onScreenshots={() => setShowScreenshots(true)}
         onMonths={() => setShowMonths(true)}
         onLarge={() => setShowLarge(true)}

@@ -5,8 +5,8 @@ import facts from './facts.json';
 import { AI_VERSION } from '../../logic/ai';
 
 /*
- * The demo library: the PhotoLibrary plugin in a browser. 93 drawn photos and videos
- * (scripts/demo-photos.py) with the facts the native scan would report
+ * The demo library: the PhotoLibrary plugin in a browser. 101 photos and videos —
+ * real CC0 photos (scripts/demo-photos.py) and a few drawn screenshots and notes — with the facts the native scan would report
  * (scripts/demo-facts.mjs) — a home near Hanau and trips to Amsterdam,
  * Vienna, Paris and Lake Garda, with bursts, blurry shots, screenshots, three
  * copies "saved again from a messenger" (the duplicates), four videos (one

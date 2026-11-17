@@ -1,5 +1,5 @@
 import type React from 'react';
-import { Aperture, CalendarDays, Check, Clock, FileVideo, ImagePlus, MessageCircle, Minimize2, RefreshCw, Search, Settings, Shield, Sparkles } from 'lucide-react';
+import { Aperture, CalendarDays, Check, Clapperboard, Clock, Copy, FileVideo, Image as ImageIcon, ImagePlus, MessageCircle, Minimize2, RefreshCw, Search, Settings, Shield, Smartphone, Sparkles } from 'lucide-react';
 import type { CleanupSummary, Storage } from '../types';
 import type { Access } from '../native/photoLibrary';
 import type { ScanView } from '../store';
@@ -12,7 +12,10 @@ import { tapLight } from '../ui/haptics';
 import { Thumb } from '../ui/Photo';
 
 /** The categories that suggest photos to delete, each a photo card on home. */
-export type FoundKey = 'duplicates' | 'similar' | 'failed' | 'screenshots' | 'utility';
+export type FoundKey = 'duplicates' | 'similar' | 'videos' | 'failed' | 'screenshots' | 'utility';
+
+/** A count and its size, for the analysis at the top. */
+export interface Stat { count: number; bytes: number }
 
 /** One category: how many of it there are (groups or photos, as its screen counts), and a few of its photos. */
 export interface Found { items: number; covers: string[] }
@@ -39,6 +42,8 @@ interface Props {
   months: { done: number; total: number; pct: number };
   /** The decide-later pile (photos swiped up in a review). */
   later: { count: number; cover?: string };
+  /** The analysis at the top: every photo and video, the near-identical photos and similar videos that could go, chats, screenshots. */
+  analysis: { photos: Stat; videos: Stat; similarPhotos: Stat; similarVideos: Stat; chats: Stat; screenshots: Stat };
   /** How much is protected (src/logic/protect.ts): never suggested for deleting. */
   protection: { albums: number; trips: number; photos: number };
   onLater: () => void;
@@ -52,6 +57,10 @@ interface Props {
   onSimilar: () => void;
   onBlurry: () => void;
   onDuplicates: () => void;
+  /** The similar videos (lookalike takes and copies of a video). */
+  onVideoGroups: () => void;
+  /** Every video of the library. */
+  onVideos: () => void;
   onScreenshots: () => void;
   onUtility: () => void;
   onMonths: () => void;
@@ -86,7 +95,8 @@ export function HomeView(p: Props) {
   const gain = (k: FoundKey) => {
     if (!summary) return { bytes: 0, count: 0 };
     switch (k) {
-      case 'duplicates': return { bytes: summary.duplicates.bytes + summary.lookalike.bytes, count: summary.duplicates.count + summary.lookalike.count };
+      case 'duplicates': return summary.duplicates;
+      case 'videos': return summary.lookalike;
       case 'similar': return summary.similar;
       case 'failed': return { bytes: summary.blurry.bytes + summary.exposure.bytes, count: summary.blurry.count + summary.exposure.count };
       case 'screenshots': return summary.screenshots;
@@ -96,6 +106,7 @@ export function HomeView(p: Props) {
   const meta: Record<FoundKey, { label: string; hue: string; unit: 'groups' | 'photos'; onClick: () => void }> = {
     duplicates: { label: t.duplicatesTile, hue: 'rose', unit: 'groups', onClick: p.onDuplicates },
     similar: { label: t.similarTile, hue: 'lilac', unit: 'groups', onClick: p.onSimilar },
+    videos: { label: t.lookalikeTitle, hue: 'cyan', unit: 'groups', onClick: p.onVideoGroups },
     failed: { label: t.failedTile, hue: 'sand', unit: 'photos', onClick: p.onBlurry },
     screenshots: { label: t.screenshotsTile, hue: 'sky', unit: 'photos', onClick: p.onScreenshots },
     utility: { label: t.utilityTile, hue: 'mint', unit: 'photos', onClick: p.onUtility },
@@ -143,7 +154,16 @@ export function HomeView(p: Props) {
       )}
 
       {has && summary && (
-        <CleanupCard t={t} summary={summary} bar={bar} storage={p.storage} freedBytes={p.freedBytes} streak={p.streak} onOpen={p.onCleanup} />
+        <CleanupCard
+          t={t} summary={summary} bar={bar} storage={p.storage} freedBytes={p.freedBytes} streak={p.streak} onOpen={p.onCleanup}
+          analysis={
+            <Analysis
+              t={t} a={p.analysis}
+              onPhotos={p.onMonths} onVideos={p.onVideos} onSimilar={p.onSimilar} onVideoGroups={p.onVideoGroups}
+              onChats={p.onApps} onScreenshots={p.onScreenshots}
+            />
+          }
+        />
       )}
 
       {has && (cards.length > 0 || done.length > 0) && (
@@ -236,6 +256,45 @@ export function HomeView(p: Props) {
   );
 }
 
+/**
+ * The analysis inside the clean-up card: what the library holds, as six
+ * compact rows in two columns — all photos, all videos, the near-identical
+ * photos and similar videos that could go, chats & social media, screenshots
+ * — each with its icon, a count and its size, each opening its screen.
+ */
+function Analysis({ t, a, onPhotos, onVideos, onSimilar, onVideoGroups, onChats, onScreenshots }: {
+  t: Strings; a: Props['analysis'];
+  onPhotos: () => void; onVideos: () => void; onSimilar: () => void; onVideoGroups: () => void; onChats: () => void; onScreenshots: () => void;
+}) {
+  const tiles: { key: string; label: string; stat: Stat; unit: 'photos' | 'videos' | 'files'; icon: React.ComponentType<{ className?: string; strokeWidth?: number }>; hue: string; onClick: () => void }[] = [
+    { key: 'photos', label: t.statPhotos, stat: a.photos, unit: 'photos', icon: ImageIcon, hue: 'mint', onClick: onPhotos },
+    { key: 'videos', label: t.statVideos, stat: a.videos, unit: 'videos', icon: FileVideo, hue: 'stone', onClick: onVideos },
+    { key: 'similar', label: t.statSimilarPhotos, stat: a.similarPhotos, unit: 'photos', icon: Copy, hue: 'lilac', onClick: onSimilar },
+    { key: 'similarVideos', label: t.statSimilarVideos, stat: a.similarVideos, unit: 'videos', icon: Clapperboard, hue: 'cyan', onClick: onVideoGroups },
+    { key: 'chats', label: t.statChats, stat: a.chats, unit: 'files', icon: MessageCircle, hue: 'rose', onClick: onChats },
+    { key: 'screenshots', label: t.statScreenshots, stat: a.screenshots, unit: 'photos', icon: Smartphone, hue: 'sky', onClick: onScreenshots },
+  ];
+  return (
+    <div role="group" aria-label={t.analysisTitle} className="grid grid-cols-2 gap-x-3 gap-y-1 -mx-2">
+      {tiles.map(x => (
+        <button
+          key={x.key} type="button" onClick={() => { tapLight(); x.onClick(); }}
+          aria-label={`${x.label}: ${plural(t, x.unit, x.stat.count)}, ${bytes(t, x.stat.bytes)}`}
+          className="min-h-tap rounded-sm px-2 py-1.5 flex items-center gap-2.5 text-start press active:bg-surface-2 focus-visible:ring-focus"
+        >
+          <IconTile icon={x.icon} hue={x.hue} />
+          <span className="min-w-0 flex-1">
+            <span className="block text-label font-semibold text-fg leading-tight wrap-compound">{x.label}</span>
+            <span className="block text-caption text-fg-mute num mt-0.5">
+              <span className="font-bold text-fg">{num(t, x.stat.count)}</span> · {bytes(t, x.stat.bytes)}
+            </span>
+          </span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
 /** A row's photo in front of its label (44 px, soft corners). */
 function RowPhoto({ id }: { id: string }) {
   return <span className="w-11 h-11 shrink-0 rounded-[10px] overflow-hidden" aria-hidden="true"><Thumb id={id} className="!rounded-none" /></span>;
@@ -298,10 +357,16 @@ function ScanCard({ t, scan, first }: { t: Strings; scan: ScanView; first: boole
   );
 }
 
-function CleanupCard({ t, summary, bar, storage, freedBytes, streak, onOpen }: {
+/**
+ * The one card at the top of Aufräumen: the space that could be freed, its
+ * bar and legend, then the analysis (what the library holds), the free space
+ * and the button.
+ */
+function CleanupCard({ t, summary, bar, storage, freedBytes, streak, onOpen, analysis }: {
   t: Strings; summary: CleanupSummary; bar: { key: string; hue: string; bytes: number; label: string }[];
-  storage: Storage | null; freedBytes: number; streak: number; onOpen: () => void;
+  storage: Storage | null; freedBytes: number; streak: number; onOpen: () => void; analysis: React.ReactNode;
 }) {
+  const stats = <div className="mt-4 pt-3 border-t border-hairline">{analysis}</div>;
   const facts = (
     <>
       {storage && <p className="text-caption text-fg-mute num mt-3">{fmt(t.storageFree, { free: bytes(t, storage.free), total: bytes(t, storage.total) })}</p>}
@@ -321,6 +386,7 @@ function CleanupCard({ t, summary, bar, storage, freedBytes, streak, onOpen }: {
         </span>
         <p className="title-face text-title2 font-bold text-fg">{t.cleanupNone}</p>
         <p className="text-label text-fg-mute mt-1 wrap-prose">{t.cleanupNoneBody}</p>
+        {stats}
         {facts}
       </section>
     );
@@ -339,6 +405,7 @@ function CleanupCard({ t, summary, bar, storage, freedBytes, streak, onOpen }: {
           </li>
         ))}
       </ul>
+      {stats}
       {facts}
       <Button full size="lg" className="mt-5" onClick={onOpen}>{t.cleanupButton}</Button>
     </section>

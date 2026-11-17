@@ -1,3 +1,4 @@
+import { isVideoGroup } from './analyze';
 import type { Group, Photo } from '../types';
 import { blurLevel } from './blur';
 import { isProtected } from './protect';
@@ -18,8 +19,8 @@ import { type Ledger, adjusted } from './ledger';
  * similar shot the vectors are not sure of, a borderline blurry or dark one —
  * are kept apart (`check`): the screen offers them as a review.
  */
-export type CleanKind = 'similar' | 'duplicates' | 'blurry' | 'exposure' | 'screenshots';
-export const CLEAN_KINDS: CleanKind[] = ['duplicates', 'similar', 'blurry', 'exposure', 'screenshots'];
+export type CleanKind = 'similar' | 'duplicates' | 'videos' | 'blurry' | 'exposure' | 'screenshots';
+export const CLEAN_KINDS: CleanKind[] = ['duplicates', 'similar', 'videos', 'blurry', 'exposure', 'screenshots'];
 
 export interface CleanPart {
   kind: CleanKind;
@@ -41,7 +42,8 @@ export function cleanParts(
 ): CleanPart[] {
   const empty = (kind: CleanKind): CleanPart => ({ kind, ids: [], bytes: 0, check: [] });
   const parts: Record<CleanKind, CleanPart> = {
-    duplicates: empty('duplicates'), similar: empty('similar'), blurry: empty('blurry'), exposure: empty('exposure'), screenshots: empty('screenshots'),
+    duplicates: empty('duplicates'), similar: empty('similar'), videos: empty('videos'),
+    blurry: empty('blurry'), exposure: empty('exposure'), screenshots: empty('screenshots'),
   };
   const seen = new Set<string>();
   const add = (kind: CleanKind, p: Photo | undefined, trust: Trust, key: string) => {
@@ -52,11 +54,12 @@ export function cleanParts(
     parts[kind].bytes += p.bytes;
   };
   for (const g of groups) {
+    const kind: CleanKind = g.kind === 'similar' ? 'similar' : isVideoGroup(g, byId) ? 'videos' : 'duplicates';
     const best = byId.get(g.best);
     for (const id of g.ids) {
       const p = byId.get(id);
       if (id === g.best || !p || !best) continue;
-      add(g.kind === 'similar' ? 'similar' : 'duplicates', p, groupVerdict(g, p, best, cos?.(id, g.best)).trust, g.kind);
+      add(kind, p, groupVerdict(g, p, best, cos?.(id, g.best)).trust, g.kind);
     }
   }
   for (const p of blurry) {

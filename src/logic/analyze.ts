@@ -89,6 +89,18 @@ export function buildGroups(lib: Library, raw: RawGroup[], state: AppState, face
  * protected) is settled and not shown again. A new copy joining it later
  * opens it again — that one is not kept.
  */
+/** A group of videos: lookalike takes, or copies of a video. They are listed apart from the photos ("Ähnliche Videos"). */
+export function isVideoGroup(g: Group, byId: Map<string, Photo>): boolean {
+  return g.kind === 'lookalike' || (g.kind === 'duplicate' && !!byId.get(g.ids[0])?.video);
+}
+
+/** All photos and all videos of the library, counted and sized (the analysis on Aufräumen). */
+export function mediaTotals(photos: Photo[]): { photos: { count: number; bytes: number }; videos: { count: number; bytes: number } } {
+  const out = { photos: { count: 0, bytes: 0 }, videos: { count: 0, bytes: 0 } };
+  for (const p of photos) { const into = p.video ? out.videos : out.photos; into.count++; into.bytes += p.bytes; }
+  return out;
+}
+
 export function openGroups(groups: Group[], kept: Set<string>): Group[] {
   return groups.filter(g => g.ids.some(id => id !== g.best && !kept.has(id)));
 }
@@ -123,7 +135,8 @@ export function summarize(
   const counted = new Set<string>();
   const tally = { similar: { count: 0, bytes: 0, groups: 0 }, duplicate: { count: 0, bytes: 0, groups: 0 }, lookalike: { count: 0, bytes: 0, groups: 0 } };
   for (const g of groups) {
-    const into = tally[g.kind];
+    // Videos apart from photos: a copy of a video counts with the lookalike takes ("Ähnliche Videos").
+    const into = tally[isVideoGroup(g, lib.byId) ? 'lookalike' : g.kind];
     let any = false;
     for (const id of g.ids) {
       const p = lib.byId.get(id);

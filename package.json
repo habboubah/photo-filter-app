@@ -1,7 +1,7 @@
 {
   "name": "bildklar",
   "private": true,
-  "version": "2.0.6",
+  "version": "2.0.9",
   "type": "module",
   "scripts": {
     "dev": "vite --port=3001 --host=0.0.0.0",
@@ -41,6 +41,9 @@
     "check:listing": "node scripts/listing-lengths.mjs",
     "check:ai": "node --experimental-strip-types scripts/ai-check.mjs",
     "demo-photos": "python3 scripts/demo-photos.py && node --experimental-strip-types scripts/demo-facts.mjs",
+    "test-photos": "python3 scripts/test-photos.py",
+    "test-photos:sim": "bash scripts/test-photos-push.sh ios",
+    "test-photos:android": "bash scripts/test-photos-push.sh android",
     "ai:export": "python3 ml/export.py",
     "ai:eval": "python3 ml/eval.py",
     "ai:demo": "cd ml && python3 demo_ai.py && cd .. && node --experimental-strip-types scripts/demo-facts.mjs"

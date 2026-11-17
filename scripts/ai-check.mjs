@@ -10,7 +10,7 @@
 //   - no Google ML library (ML Kit, MediaPipe, LiteRT from Play services,
 //     Gemini Nano / AICore) or Firebase in the Android build files or the
 //     iOS package list — they report to Google;
-//   - the app's licence screen names the model.
+//   - the app's licence screen names the model and ONNX Runtime (src/licences.json).
 // Usage: node --experimental-strip-types scripts/ai-check.mjs
 import fs from 'fs';
 import path from 'path';
@@ -79,9 +79,12 @@ const code = f => read(f).split('\n').filter(line => !/^\s*(\/\/|#|\*|\/\*)/.tes
 const offenders = [...buildFiles, ...resolved].filter(f => fs.existsSync(path.join(root, f)) && BANNED.test(code(f)));
 report(offenders.length === 0, offenders.length ? `a Google ML library or Firebase in ${offenders.join(', ')}` : 'no ML Kit, MediaPipe, Play-services ML, AICore or Firebase');
 
-// The licence screen (Einstellungen › Lizenzen) lists src/licences.json (scripts/licences.mjs).
-report(/licences\.json/.test(read('src/components/LicencesView.tsx')) && /"name": "SigLIP 2"/.test(read('src/licences.json')),
-  'the licence screen names the model');
+// The licence screen (Einstellungen › Lizenzen, src/components/LicencesView.tsx) lists src/licences.json:
+// the model and its runtime must be there, on both phones.
+const licences = JSON.parse(read('src/licences.json'));
+const listed = name => licences.entries.some(e => e.name === name && !e.platforms);
+report(/licences\.json/.test(read('src/components/LicencesView.tsx')) && listed('SigLIP 2') && listed('ONNX Runtime'),
+  'the licence screen names the model and its runtime');
 
 if (failures) {
   console.log(`\n${failures} AI check(s) failed`);
