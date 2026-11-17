@@ -153,6 +153,13 @@ tests pass — **but it has not run on a phone.**
 
 ## 5. Store assets (milestone 7)
 
+- [ ] **After the iOS 27 redesign ("Glass", 17 November 2026, docs/REDESIGN.md)**:
+      everything below shows the old look until it is made again. On the Mac:
+      `npm run check`, then look at the app on a real iPhone and Android phone
+      (the glass, the floating sheets, the scroll edge under the bars);
+      `npm run assets:generate` for the new splash colours; then the
+      screenshots, the preview video and the App Review rehearsal below. Tell
+      Claude if the store studio's headlines should drop Fraunces too.
 - [ ] **Demo photos**: about 60 photos licensed for commercial use (or your
       own), **with GPS and dates in their EXIF**, so they form trips — ideally
       Paris, Lake Garda, Amsterdam and Vienna like the drawn demo (then the

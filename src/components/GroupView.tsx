@@ -73,11 +73,11 @@ export function GroupView({ t, group, byId, kept, debug, onBack, onPick, onRevie
       </div>
 
       <Dock>
-        <div className="flex gap-2">
-          <Button size="lg" variant="secondary" onClick={onReview}>{t.reviewGroup}</Button>
+        <div className="grid gap-1">
           <Button full size="lg" variant="danger" disabled={!others.length} onClick={() => onDeleteOthers(others)}>
             {others.length ? `${t.deleteOthers} · ${bytes(t, othersBytes)}` : t.deleteOthers}
           </Button>
+          <Button full variant="ghost" onClick={onReview}>{t.reviewGroup}</Button>
         </div>
       </Dock>
     </Screen>

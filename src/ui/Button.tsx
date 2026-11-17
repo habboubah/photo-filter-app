@@ -17,17 +17,18 @@ interface Props extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'cla
 // button instead of being clipped by it.
 const sizes: Record<Size, string> = {
   md: 'min-h-control py-2 px-5 text-body',
-  lg: 'min-h-[54px] py-3 px-6 text-body',
+  lg: 'min-h-[56px] py-3 px-6 text-body',
 };
 
 const variants: Record<Variant, string> = {
-  /** The teal fill — the one thing on a screen or a sheet to tap. */
-  primary: 'bg-accent-fill text-accent-fill-ink',
-  /** A quiet fill with the accent as its text. */
-  secondary: 'bg-surface-2 text-accent',
-  danger: 'bg-neg-dim text-neg',
-  /** The one irreversible-looking action ("Delete 4 photos"): solid red. */
-  destructive: 'bg-neg text-neg-ink',
+  /** Prominent glass: the teal fill with a sheen — the one thing on a screen or a sheet to tap. */
+  primary: 'bg-accent-fill text-accent-fill-ink sheen',
+  /** Glass with the accent as its text, beside a prominent one or on its own. */
+  secondary: 'glass text-accent',
+  /** Glass with the delete red as its text: deleting that still asks the system first. */
+  danger: 'glass text-neg',
+  /** The one irreversible-looking action ("Delete 4 photos"): red prominent glass. */
+  destructive: 'bg-neg text-neg-ink sheen',
   ghost: 'bg-transparent text-accent active:bg-accent-dim',
   /** The ink-black call to action ("Einkauf starten"): sits beside the accent one without competing. */
   ink: 'bg-fg text-bg',
@@ -48,7 +49,7 @@ export function Button({
       onMouseDown={e => e.preventDefault()}
       onClick={e => { if (!disabled) { tapLight(); onClick?.(e); } }}
       className={[
-        'inline-flex items-center justify-center gap-2 rounded-full font-extrabold',
+        'inline-flex items-center justify-center gap-2 rounded-full font-bold',
         'press select-none focus-visible:ring-focus',
         sizes[size],
         disabled ? 'bg-surface-2 text-fg-faint cursor-not-allowed active:!transform-none' : variants[variant],
@@ -66,7 +67,7 @@ interface IconButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElem
   /** Required: an unlabelled icon button is invisible to VoiceOver. */
   label: string;
   icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
-  /** `bar`: the round button of a screen's bar, a flat disc of the card colour. */
+  /** `bar`: the round glass button of a screen's bar; `filled`: the same material inside a card. */
   tone?: 'default' | 'accent' | 'danger' | 'filled' | 'bar';
   className?: string;
 }
@@ -76,8 +77,8 @@ export function IconButton({ label, icon: Icon, tone = 'default', onClick, class
     default: 'text-fg-mute active:bg-surface-2',
     accent: 'text-accent active:bg-accent-dim',
     danger: 'text-neg active:bg-neg-dim',
-    filled: 'bg-surface text-fg !rounded-sm active:bg-surface-2',
-    bar: 'bg-surface text-fg',
+    filled: 'glass-flat text-fg',
+    bar: 'glass text-fg',
   };
   return (
     <button

@@ -49,19 +49,18 @@ export function OrganizeView(p: Props) {
       {loaded && p.onThisDay.photos > 0 && p.onThisDay.cover && (
         <button
           type="button" onClick={() => { tapLight(); p.onOnThisDay(); }}
-          className="relative block w-full aspect-[16/10] rounded-lg overflow-hidden text-start press focus-visible:ring-focus"
+          className="relative block w-full aspect-[4/3] rounded-lg overflow-hidden bg-surface text-start press focus-visible:ring-focus"
         >
           <Thumb id={p.onThisDay.cover} size={LARGE} className="!rounded-none absolute inset-0" />
-          <span className="absolute inset-x-0 bottom-0 bg-veil text-on-color px-5 py-4 flex items-end gap-3">
-            <span className="min-w-0 flex-1">
-              <span className="flex items-center gap-1.5 text-label font-bold">
-                <History className="w-4 h-4 shrink-0" aria-hidden="true" />{t.onThisDay}
-              </span>
-              <span className="block display text-heading font-semibold num wrap-compound mt-0.5">
-                {fmt(t.onThisDayBody, { photos: plural(t, 'photos', p.onThisDay.photos), years: p.onThisDay.years.map(y => String(y)).join(', ') })}
-              </span>
+          <span className="absolute inset-0 photo-shade" aria-hidden="true" />
+          <span className="absolute top-3 start-3 inline-flex items-center gap-1.5 rounded-full glass text-fg text-caption font-bold px-3 py-1.5">
+            <History className="w-4 h-4 shrink-0" aria-hidden="true" />{t.onThisDay}
+          </span>
+          <span className="absolute inset-x-0 bottom-0 text-on-color px-5 pb-4 flex items-end gap-3">
+            <span className="min-w-0 flex-1 display text-title2 num wrap-compound">
+              {fmt(t.onThisDayBody, { photos: plural(t, 'photos', p.onThisDay.photos), years: p.onThisDay.years.map(y => String(y)).join(', ') })}
             </span>
-            <span className="shrink-0 rounded-full bg-surface text-fg text-label font-extrabold px-4 py-2">{t.onThisDayOpen}</span>
+            <span className="shrink-0 rounded-full glass text-fg text-label font-bold px-4 py-2">{t.onThisDayOpen}</span>
           </span>
         </button>
       )}
@@ -99,11 +98,14 @@ export function OrganizeView(p: Props) {
             {p.categories.map(c => (
               <button
                 key={c.label} type="button" onClick={() => { tapLight(); p.onCategory(c.label); }}
-                className="shrink-0 w-[132px] rounded-md card p-[6px] text-start press focus-visible:ring-focus"
+                className="relative shrink-0 w-[140px] aspect-[4/5] rounded-md overflow-hidden bg-surface text-start press focus-visible:ring-focus"
               >
-                <span className="block w-full aspect-square rounded-[14px] overflow-hidden"><Thumb id={c.cover} className="!rounded-none" /></span>
-                <span className="block text-label font-bold text-fg mt-2 px-1.5 truncate">{t[`aiLabel_${c.label}`]}</span>
-                <span className="block text-caption text-fg-mute num px-1.5 pb-1">{plural(t, 'photos', c.count)}</span>
+                <Thumb id={c.cover} className="!rounded-none absolute inset-0" />
+                <span className="absolute inset-0 photo-shade" aria-hidden="true" />
+                <span className="absolute inset-x-0 bottom-0 px-3 pb-2.5 text-on-color">
+                  <span className="block text-label font-semibold truncate">{t[`aiLabel_${c.label}`]}</span>
+                  <span className="block text-caption font-medium num opacity-90">{plural(t, 'photos', c.count)}</span>
+                </span>
               </button>
             ))}
           </div>
@@ -113,26 +115,25 @@ export function OrganizeView(p: Props) {
   );
 }
 
-/** A trip as a large card: a photo from its middle as the cover, its name under it, how many photos and how much space. */
+/** A trip as a large card, as a memory in Photos: a photo from its middle edge to edge, its name and how many photos and how much space on a shade at its foot. */
 function TripCover({ trip, t, onOpen }: { trip: Trip; t: Strings; onOpen: () => void }) {
   const cover = trip.ids[Math.floor(trip.ids.length / 2)];
   return (
     <button
       type="button" onClick={() => { tapLight(); onOpen(); }}
       aria-label={fmt(t.openTrip, { name: trip.title })}
-      className="block w-full rounded-lg card p-[6px] text-start press focus-visible:ring-focus"
+      className="relative block w-full aspect-[16/11] rounded-lg overflow-hidden bg-surface text-start press focus-visible:ring-focus"
     >
-      <span className="relative block w-full aspect-[2/1] rounded-[18px] overflow-hidden">
-        {cover && <Thumb id={cover} size={LARGE} className="!rounded-none absolute inset-0" />}
-        {trip.album && (
-          <span className="absolute top-3 start-3 inline-flex items-center gap-1 rounded-full bg-veil text-on-color text-caption font-bold px-2.5 py-1">
-            <Check className="w-3.5 h-3.5" strokeWidth={3} aria-hidden="true" />{t.albumBadge}
-          </span>
-        )}
-      </span>
-      <span className="block px-3 pt-3 pb-2">
-        <span className="block display text-heading font-semibold text-fg wrap-compound">{trip.title}</span>
-        <span className="block text-caption text-fg-mute mt-0.5 num">
+      {cover && <Thumb id={cover} size={LARGE} className="!rounded-none absolute inset-0" />}
+      <span className="absolute inset-0 photo-shade" aria-hidden="true" />
+      {trip.album && (
+        <span className="absolute top-3 start-3 inline-flex items-center gap-1 rounded-full glass text-keep text-caption font-bold px-2.5 py-1.5">
+          <Check className="w-3.5 h-3.5" strokeWidth={3} aria-hidden="true" />{t.albumBadge}
+        </span>
+      )}
+      <span className="absolute inset-x-0 bottom-0 px-5 pb-4 text-on-color">
+        <span className="block display text-title2 wrap-compound">{trip.title}</span>
+        <span className="block text-label font-medium mt-0.5 num opacity-90">
           {fmt(t.tripMeta, { photos: plural(t, 'photos', trip.ids.length), size: bytes(t, trip.bytes) })}
         </span>
       </span>

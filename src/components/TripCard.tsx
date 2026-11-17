@@ -14,7 +14,7 @@ export function TripCard({ trip, t, onOpen }: { trip: Trip; t: Strings; onOpen: 
     >
       <Mosaic ids={trip.ids} className="w-[76px] h-[76px] shrink-0 rounded-[14px]" />
       <span className="min-w-0 flex-1">
-        <span className={`block display text-heading font-semibold wrap-compound ${trip.ignored ? 'text-fg-mute' : 'text-fg'}`}>{trip.title}</span>
+        <span className={`block title-face text-body font-semibold wrap-compound ${trip.ignored ? 'text-fg-mute' : 'text-fg'}`}>{trip.title}</span>
         <span className="block text-caption text-fg-mute mt-0.5">
           {fmt(t.tripMeta, { photos: plural(t, 'photos', trip.ids.length), size: bytes(t, trip.bytes) })}
         </span>

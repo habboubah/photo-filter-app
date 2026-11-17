@@ -46,11 +46,11 @@ export function QuickCleanView({ t, parts, storage, onBack, onReview, onDelete }
         ))}
       </Group>
       <Dock>
-        <div className="flex gap-2">
-          <Button size="lg" variant="secondary" disabled={!chosen.ids.length} onClick={() => onReview(chosen.ids)}>{t.quickCleanFirst}</Button>
+        <div className="grid gap-1">
           <Button full size="lg" variant="danger" disabled={!chosen.ids.length} onClick={() => onDelete(chosen.ids)}>
             {chosen.ids.length ? `${plural(t, 'deleteN', chosen.ids.length)} · ${bytes(t, chosen.bytes)}` : t.quickCleanNothing}
           </Button>
+          <Button full variant="ghost" disabled={!chosen.ids.length} onClick={() => onReview(chosen.ids)}>{t.quickCleanFirst}</Button>
         </div>
       </Dock>
     </Screen>

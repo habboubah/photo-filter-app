@@ -34,12 +34,12 @@ interface Props {
 }
 
 /**
- * Every screen's shell, the iOS way: a large title that
- * scrolls with the content, and a bar that stays — back on the left, round
- * flat buttons on the right, the title appearing small in the middle once
- * the large one has scrolled away. No divider: where the content meets the
- * bar it fades out (a gradient, never a blur — backdrop-filter over a
- * scrolling list is too expensive in a WebView).
+ * Every screen's shell, the iOS 27 way: a large title that scrolls with the
+ * content, and a bar that floats — back on the left, round glass buttons on
+ * the right, the title appearing small in the middle once the large one has
+ * scrolled away. The content passes under the bar; once it does, the scroll
+ * edge effect fades it into the page (a gradient, never a blur —
+ * backdrop-filter over a scrolling list is too expensive in a WebView).
  */
 export function Screen({ title, eyebrow, subtitle, onBack, backLabel, actions, info, leading, trailing, docked, tabbed, still, top, hideTitle, children }: Props) {
   const [scrolled, setScrolled] = useState(false);
@@ -53,24 +53,29 @@ export function Screen({ title, eyebrow, subtitle, onBack, backLabel, actions, i
 
   return (
     <div className={`relative isolate mx-auto w-full max-w-xl min-h-screen ${docked ? 'pb-safe-dock' : tabbed ? 'pb-safe-tabs' : 'pb-16'}`}>
-      <header className="sticky top-0 z-30 safe-top bg-bg">
+      <header className="sticky top-0 z-30 safe-top">
+        {/* Scroll edge: once content passes under the bar, it fades into the page behind the buttons and the title. */}
+        <div
+          aria-hidden="true"
+          className={`absolute inset-x-0 top-0 -bottom-8 pointer-events-none edge-fade-top transition-opacity duration-200 ${scrolled ? 'opacity-100' : 'opacity-0'}`}
+        />
         {/* Sides size to their content and the title takes what is left, so a
             wide action can never sit on top of it. */}
-        <div className="px-[16px] min-h-[54px] grid grid-cols-[minmax(44px,auto)_minmax(0,1fr)_minmax(44px,auto)] gap-2 items-center">
+        <div className="relative px-[16px] min-h-[54px] grid grid-cols-[minmax(44px,auto)_minmax(0,1fr)_minmax(44px,auto)] gap-2 items-center">
           <div className="justify-self-start">
             {onBack && (
               <button
                 type="button" onClick={() => { tapLight(); onBack(); }}
                 title={backLabel} aria-label={backLabel}
-                className="h-tap w-tap inline-flex items-center justify-center rounded-full bg-surface text-fg press focus-visible:ring-focus"
+                className="h-tap w-tap inline-flex items-center justify-center rounded-full glass text-fg press focus-visible:ring-focus"
               >
-                <ChevronLeft className="w-6 h-6 -ms-0.5 rtl:rotate-180" strokeWidth={2.25} />
+                <ChevronLeft className="w-6 h-6 -ms-0.5 rtl:rotate-180" strokeWidth={2.4} />
               </button>
             )}
           </div>
           <span
             aria-hidden="true"
-            className={`min-w-0 title-face text-chrome-title font-bold text-fg text-center truncate transition-opacity duration-200 ${scrolled ? 'opacity-100' : 'opacity-0'}`}
+            className={`min-w-0 title-face text-chrome-title font-semibold text-fg text-center truncate transition-opacity duration-200 ${scrolled ? 'opacity-100' : 'opacity-0'}`}
           >
             {title}
           </span>
@@ -79,11 +84,6 @@ export function Screen({ title, eyebrow, subtitle, onBack, backLabel, actions, i
             {actions}
           </div>
         </div>
-        {/* Scroll edge: the content fades into the bar instead of meeting a line. */}
-        <div
-          aria-hidden="true"
-          className={`absolute inset-x-0 top-full h-5 pointer-events-none edge-fade-top transition-opacity duration-200 ${scrolled ? 'opacity-100' : 'opacity-0'}`}
-        />
       </header>
 
       {top && <div className="px-[16px] pt-1 pb-5">{top}</div>}
@@ -94,8 +94,8 @@ export function Screen({ title, eyebrow, subtitle, onBack, backLabel, actions, i
         {leading}
         <div className="min-w-0 flex-1">
           {eyebrow && <p className="eyebrow text-fg-mute mb-0.5">{eyebrow}</p>}
-          <h1 className="title-face text-title font-extrabold text-fg wrap-compound">{title}</h1>
-          {subtitle && <div className="text-label font-bold text-fg-mute wrap-prose">{subtitle}</div>}
+          <h1 className="title-face text-title font-bold text-fg wrap-compound">{title}</h1>
+          {subtitle && <div className="text-label font-semibold text-fg-mute wrap-prose mt-0.5 num">{subtitle}</div>}
         </div>
         {trailing}
       </div>
@@ -127,7 +127,7 @@ export function SectionHead({ id, title, action }: { id?: string; title: string;
 export function Group({ title, footer, children }: { title?: string; footer?: React.ReactNode; children: React.ReactNode }) {
   return (
     <section>
-      {title && <h2 className="px-[16px] pb-1.5 eyebrow text-fg-mute wrap-compound">{title}</h2>}
+      {title && <h2 className="px-[20px] pb-2 title-face text-label font-semibold text-fg-mute wrap-compound">{title}</h2>}
       <div className="rounded-md card overflow-hidden divide-hairline-inset">{children}</div>
       {footer && <p className="px-[16px] pt-2 text-caption text-fg-mute wrap-prose">{footer}</p>}
     </section>
@@ -135,7 +135,7 @@ export function Group({ title, footer, children }: { title?: string; footer?: Re
 }
 
 /** Where the hairline under a row starts: past its leading picture (an icon tile by default; `lead` for a larger one). */
-const sepOf = (leading: unknown, lead = 32) => ({ '--sep': leading ? `${16 + lead + 12}px` : '1rem' } as React.CSSProperties);
+const sepOf = (leading: unknown, lead = 30) => ({ '--sep': leading ? `${16 + lead + 14}px` : '1rem' } as React.CSSProperties);
 
 /** One row in a Group. A button when `onClick` is set. */
 export function Row({ label, sub, leading, trailing, onClick, ariaLabel, danger, lead }: {
@@ -146,7 +146,7 @@ export function Row({ label, sub, leading, trailing, onClick, ariaLabel, danger,
   onClick?: () => void;
   ariaLabel?: string;
   danger?: boolean;
-  /** The leading picture's width in px, when it is not a 32 px icon tile. */
+  /** The leading picture's width in px, when it is not a 30 px icon tile. */
   lead?: number;
 }) {
   const sep = sepOf(leading, lead);
@@ -160,7 +160,7 @@ export function Row({ label, sub, leading, trailing, onClick, ariaLabel, danger,
       {trailing}
     </>
   );
-  const shell = 'relative w-full min-h-[56px] px-[16px] py-3 flex items-center gap-[12px]';
+  const shell = 'relative w-full min-h-[54px] px-[16px] py-2.5 flex items-center gap-[14px]';
   if (!onClick) return <div className={shell} style={sep}>{body}</div>;
   return (
     <button
@@ -186,7 +186,7 @@ export function MenuRow<V extends string>({ label, leading, value, options, onCh
   onChange: (value: V) => void;
 }) {
   return (
-    <label className="relative w-full min-h-[56px] px-[16px] py-3 flex items-center gap-[12px] transition-colors active:bg-surface-2 focus-within:ring-focus" style={sepOf(leading)}>
+    <label className="relative w-full min-h-[54px] px-[16px] py-2.5 flex items-center gap-[14px] transition-colors active:bg-surface-2 focus-within:ring-focus" style={sepOf(leading)}>
       {leading}
       {/* Side by side while both fit; with large text the choice moves under the label. */}
       <span className="min-w-0 flex-1 flex flex-wrap items-center gap-x-3 gap-y-0.5">
@@ -210,13 +210,13 @@ export function MenuRow<V extends string>({ label, leading, value, options, onCh
 }
 
 /**
- * The coloured tile in front of a settings row: a symbol in one of the list
- * hues on its pale tint, so a row is found by its colour.
+ * The coloured squircle in front of a settings row, as in iOS Settings: a
+ * white symbol on one of the list hues, so a row is found by its colour.
  */
 export function IconTile({ icon: Icon, hue }: { icon: React.ComponentType<{ className?: string; strokeWidth?: number }>; hue: string }) {
   return (
-    <span data-hue={hue} aria-hidden="true" className="w-[32px] h-[32px] rounded-[11px] bg-hue-bg text-hue-ink inline-flex items-center justify-center shrink-0">
-      <Icon className="w-[18px] h-[18px]" strokeWidth={2.2} />
+    <span data-hue={hue} aria-hidden="true" className="w-[30px] h-[30px] rounded-[9px] bg-hue-solid text-on-color inline-flex items-center justify-center shrink-0 sheen !shadow-none">
+      <Icon className="w-[18px] h-[18px]" strokeWidth={2.3} />
     </span>
   );
 }
@@ -226,7 +226,7 @@ export function Next({ value }: { value?: React.ReactNode }) {
   return (
     <span className="shrink-0 flex items-center gap-1.5 text-fg-mute">
       {value !== undefined && (
-        <span className="min-w-[1.75rem] min-h-[1.5rem] px-2 rounded-full bg-surface-2 text-fg inline-flex items-center justify-center text-caption font-extrabold tabular-nums">{value}</span>
+        <span className="min-w-[1.75rem] min-h-[1.5rem] px-2 rounded-full bg-surface-2 text-fg-mute inline-flex items-center justify-center text-caption font-bold tabular-nums">{value}</span>
       )}
       <ChevronRight className="w-5 h-5 text-fg-faint rtl:rotate-180" aria-hidden="true" />
     </span>
@@ -271,10 +271,10 @@ export function ActionRow({ label, sub, leading, onClick, ariaLabel, actions, le
   lead?: number;
 }) {
   return (
-    <div className="relative w-full min-h-[56px] flex items-center pe-1" style={sepOf(leading, lead)}>
+    <div className="relative w-full min-h-[54px] flex items-center pe-1" style={sepOf(leading, lead)}>
       <button
         type="button" onClick={() => { tapLight(); onClick(); }} aria-label={ariaLabel}
-        className="flex-1 min-w-0 self-stretch px-[16px] py-3 flex items-center gap-[12px] text-start transition-colors active:bg-surface-2 focus-visible:ring-focus"
+        className="flex-1 min-w-0 self-stretch px-[16px] py-2.5 flex items-center gap-[14px] text-start transition-colors active:bg-surface-2 focus-visible:ring-focus"
       >
         {leading}
         <span className="min-w-0 flex-1">
@@ -296,7 +296,7 @@ export function ActionRow({ label, sub, leading, onClick, ariaLabel, actions, le
 export function Dock({ children }: { children: React.ReactNode }) {
   return createPortal(
     <div className="fixed inset-x-0 bottom-0 z-20 pointer-events-none">
-      <div className="mx-auto w-full max-w-xl px-[16px] pt-8 pb-dock dock-fade">
+      <div className="mx-auto w-full max-w-xl px-[16px] pt-10 pb-dock dock-fade">
         <div className="pointer-events-auto">{children}</div>
       </div>
     </div>,

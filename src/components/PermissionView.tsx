@@ -30,7 +30,7 @@ export function PermissionView({ t, access, albums, onAllow, onOpenSettings, onS
       </div>
       <main className="flex-1 flex flex-col px-6 pb-safe-8">
         <img src="/icon.png" alt="" className="w-[88px] h-[88px] rounded-[22px] mt-6" draggable={false} />
-        <h1 className="title-face text-title font-extrabold text-fg mt-6 wrap-compound">{asked ? t.deniedTitle : t.permTitle}</h1>
+        <h1 className="title-face text-title font-bold text-fg mt-6 wrap-compound">{asked ? t.deniedTitle : t.permTitle}</h1>
         <p className="text-body text-fg-mute mt-3 wrap-prose">
           {access === 'restricted' ? t.restrictedBody : asked ? t.deniedBody : t.permBody}
         </p>
@@ -38,7 +38,7 @@ export function PermissionView({ t, access, albums, onAllow, onOpenSettings, onS
           <ul className="mt-8 space-y-4">
             {points.map(({ icon: Icon, hue, text }) => (
               <li key={text} className="flex items-center gap-3">
-                <span data-hue={hue} className="w-10 h-10 shrink-0 rounded-[12px] bg-hue-bg text-hue-ink inline-flex items-center justify-center" aria-hidden="true">
+                <span data-hue={hue} className="w-10 h-10 shrink-0 rounded-[12px] bg-hue-solid text-on-color sheen !shadow-none inline-flex items-center justify-center" aria-hidden="true">
                   <Icon className="w-5 h-5" />
                 </span>
                 <span className="text-body text-fg wrap-prose">{text}</span>

@@ -6,7 +6,7 @@ import type { ScanView } from '../store';
 import { Strings, ago, bytes, fmt, num, percent, plural } from '../translations';
 import { Empty, Group, IconTile, Next, Row, Screen, SectionHead } from '../ui/Screen';
 import { Button, IconButton } from '../ui/Button';
-import { Progress } from '../ui/Controls';
+import { BigNumber, Progress } from '../ui/Controls';
 import { StorageBar } from '../ui/StorageBar';
 import { tapLight } from '../ui/haptics';
 import { Thumb } from '../ui/Photo';
@@ -120,12 +120,14 @@ export function HomeView(p: Props) {
       actions={<IconButton label={t.settings} icon={Settings} tone="bar" onClick={p.onSettings} />}
     >
       {p.access === 'limited' && (
-        <section className="rounded-md card p-4 flex items-center gap-3">
-          <span data-hue="sky" className="w-10 h-10 shrink-0 rounded-[12px] bg-hue-bg text-hue-ink inline-flex items-center justify-center" aria-hidden="true">
-            <ImagePlus className="w-5 h-5" />
-          </span>
-          <p className="flex-1 min-w-0 text-label text-fg wrap-prose">{t.limitedBanner}</p>
-          <Button variant="secondary" onClick={p.onAddPhotos}>{t.addPhotos}</Button>
+        <section className="rounded-md card p-4">
+          <div className="flex items-center gap-3">
+            <span data-hue="sky" className="w-10 h-10 shrink-0 rounded-[12px] bg-hue-solid text-on-color sheen !shadow-none inline-flex items-center justify-center" aria-hidden="true">
+              <ImagePlus className="w-5 h-5" />
+            </span>
+            <p className="flex-1 min-w-0 text-label text-fg wrap-prose">{t.limitedBanner}</p>
+          </div>
+          <Button full variant="secondary" className="mt-3 !shadow-none glass-flat" onClick={p.onAddPhotos}>{t.addPhotos}</Button>
         </section>
       )}
 
@@ -235,9 +237,10 @@ function RowPhoto({ id }: { id: string }) {
 }
 
 /**
- * A category as a card: a few of its own photos on top (one, two side by
- * side, one large and two small, or four), then its name with its dot — the
- * hue of its segment in the bar above — and the space it would free.
+ * A category as a card made of its own photos (one, two side by side, one
+ * large and two small, or four), edge to edge, as the collections in Photos:
+ * its name with its dot — the hue of its segment in the bar above — and the
+ * space it would free lie on a shade at the foot of the photos.
  */
 function PhotoCard({ hue, label, value, sub, covers, wide, onClick }: {
   hue: string; label: string; value: string; sub?: string; covers: string[]; wide?: boolean; onClick: () => void;
@@ -249,19 +252,20 @@ function PhotoCard({ hue, label, value, sub, covers, wide, onClick }: {
   return (
     <button
       type="button" onClick={() => { tapLight(); onClick(); }}
-      className={`rounded-md card p-[6px] text-start press focus-visible:ring-focus flex flex-col ${wide ? 'col-span-2' : ''}`}
+      className={`relative block rounded-md overflow-hidden bg-surface text-start press focus-visible:ring-focus ${wide ? 'col-span-2 aspect-[2/1]' : 'aspect-[4/5]'}`}
     >
-      <span data-hue={hue} className={`grid gap-[2px] w-full ${wide ? 'aspect-[2/1]' : 'aspect-[4/3]'} rounded-[14px] overflow-hidden ${ids.length ? 'bg-surface' : 'bg-hue-bg'} ${layout}`} aria-hidden="true">
+      <span data-hue={hue} className={`absolute inset-0 grid gap-[2px] ${ids.length ? '' : 'bg-hue-bg'} ${layout}`} aria-hidden="true">
         {ids.map(id => <Thumb key={id} id={id} className="!rounded-none" />)}
       </span>
-      <span className="block px-2 pt-2.5 pb-1.5">
-        <span className="flex items-center gap-1.5 text-body font-bold text-fg">
-          <span data-hue={hue} className="w-2.5 h-2.5 rounded-full bg-hue-ink shrink-0" aria-hidden="true" />
+      <span className="absolute inset-0 photo-shade" aria-hidden="true" />
+      <span className="absolute inset-x-0 bottom-0 px-3.5 pb-3 pt-6 text-on-color">
+        <span className="flex items-center gap-1.5 text-label font-semibold">
+          <span data-hue={hue} className="w-2.5 h-2.5 rounded-full bg-hue-solid ring-[1.5px] ring-on-color shrink-0" aria-hidden="true" />
           <span className="min-w-0 wrap-compound">{label}</span>
         </span>
-        <span className="block text-label num mt-0.5">
-          <span className="font-bold text-fg">{value}</span>
-          {sub && <span className="text-fg-mute"> · {sub}</span>}
+        <span className="block num mt-0.5 leading-tight">
+          <span className="display text-title2">{value}</span>
+          {sub && <span className="text-caption font-semibold opacity-90"> · {sub}</span>}
         </span>
       </span>
     </button>
@@ -273,7 +277,7 @@ function ScanCard({ t, scan, first }: { t: Strings; scan: ScanView; first: boole
   return (
     <section className="rounded-lg card p-5 space-y-3" aria-live="polite">
       <div className="flex items-center gap-3">
-        <span data-hue="mint" className="w-10 h-10 shrink-0 rounded-[12px] bg-hue-bg text-hue-ink inline-flex items-center justify-center" aria-hidden="true">
+        <span data-hue="mint" className="w-10 h-10 shrink-0 rounded-[12px] bg-hue-solid text-on-color sheen !shadow-none inline-flex items-center justify-center" aria-hidden="true">
           <Sparkles className="w-5 h-5" />
         </span>
         <div className="min-w-0">
@@ -296,15 +300,19 @@ function CleanupCard({ t, summary, bar, storage, freedBytes, streak, onOpen }: {
   const facts = (
     <>
       {storage && <p className="text-caption text-fg-mute num mt-3">{fmt(t.storageFree, { free: bytes(t, storage.free), total: bytes(t, storage.total) })}</p>}
-      {freedBytes > 0 && <p className="text-caption text-keep font-bold num mt-1">{fmt(t.freedSoFar, { size: bytes(t, freedBytes) })}</p>}
-      {streak >= 2 && <p className="text-caption text-accent font-bold num mt-1">{fmt(t.streakLine, { n: num(t, streak) })}</p>}
+      {(freedBytes > 0 || streak >= 2) && (
+        <p className="flex flex-wrap gap-1.5 mt-2.5">
+          {freedBytes > 0 && <span className="rounded-full bg-keep-dim text-keep text-caption font-bold num px-2.5 py-1">{fmt(t.freedSoFar, { size: bytes(t, freedBytes) })}</span>}
+          {streak >= 2 && <span className="rounded-full bg-accent-dim text-accent text-caption font-bold num px-2.5 py-1">{fmt(t.streakLine, { n: num(t, streak) })}</span>}
+        </p>
+      )}
     </>
   );
   if (summary.total.count === 0) {
     return (
       <section className="rounded-lg card p-6">
-        <span className="w-10 h-10 rounded-full bg-keep-dim text-keep inline-flex items-center justify-center mb-3" aria-hidden="true">
-          <Check className="w-5 h-5" strokeWidth={2.6} />
+        <span className="w-12 h-12 rounded-full bg-keep text-keep-ink sheen inline-flex items-center justify-center mb-3" aria-hidden="true">
+          <Check className="w-6 h-6" strokeWidth={2.8} />
         </span>
         <p className="title-face text-title2 font-bold text-fg">{t.cleanupNone}</p>
         <p className="text-label text-fg-mute mt-1 wrap-prose">{t.cleanupNoneBody}</p>
@@ -315,9 +323,17 @@ function CleanupCard({ t, summary, bar, storage, freedBytes, streak, onOpen }: {
   const shown = bar.filter(b => b.bytes > 0);
   return (
     <section className="rounded-lg card p-6" aria-labelledby="cleanup-h">
-      <p id="cleanup-h" className="eyebrow text-fg-mute">{t.cleanupCard}</p>
-      <p className="display text-display font-semibold text-fg num mt-1 mb-4">{bytes(t, summary.total.bytes)}</p>
+      <p id="cleanup-h" className="text-label font-semibold text-fg-mute">{t.cleanupCard}</p>
+      <p className="text-display text-fg mt-1 mb-5"><BigNumber text={bytes(t, summary.total.bytes)} /></p>
       <StorageBar parts={shown} label={fmt(t.storageBarLabel, { list: shown.map(b => `${b.label} ${bytes(t, b.bytes)}`).join(', ') })} />
+      {/* The bar's legend, as in iPhone Storage: a dot and a name per segment. */}
+      <ul className="flex flex-wrap gap-x-3.5 gap-y-1 mt-2.5" aria-hidden="true">
+        {shown.map(b => (
+          <li key={b.key} className="inline-flex items-center gap-1.5 text-caption text-fg-mute">
+            <span data-hue={b.hue} className="w-2 h-2 rounded-full bg-hue-solid" />{b.label}
+          </li>
+        ))}
+      </ul>
       {facts}
       <Button full size="lg" className="mt-5" onClick={onOpen}>{t.cleanupButton}</Button>
     </section>

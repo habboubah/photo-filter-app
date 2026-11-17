@@ -43,7 +43,7 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.`;
 
-// The shared texts: Apache 2.0 from TypeScript's LICENSE.txt (the plain licence), the OFL from the fonts' own file.
+// The shared texts: Apache 2.0 from TypeScript's LICENSE.txt (the plain licence), the OFL from the font's own file.
 const ofl = read('src', 'assets', 'fonts', 'OFL.txt');
 const texts = {
   'Apache-2.0': reflow(read('node_modules', 'typescript', 'LICENSE.txt')),
@@ -55,7 +55,6 @@ const texts = {
 const native = [
   { name: 'ONNX Runtime', version: '1.24.2', licence: 'MIT', text: MIT('Microsoft Corporation') },
   { name: 'SigLIP 2', licence: 'Apache-2.0', notice: 'google/siglip2-base-patch32-256 — Copyright 2025 Google LLC. Bildklar ships the image encoder, exported to ONNX and quantised to 8-bit weights, and label vectors made with the text encoder.', text: '@Apache-2.0' },
-  { name: 'Fraunces', licence: 'OFL-1.1', notice: 'Copyright 2020 The Fraunces Project Authors (github.com/undercasetype/Fraunces)', text: '@OFL-1.1' },
   { name: 'Figtree', licence: 'OFL-1.1', notice: 'Copyright 2022 The Figtree Project Authors (github.com/erikdkennedy/figtree)', text: '@OFL-1.1' },
   { name: 'GeoNames', licence: 'CC-BY-4.0', note: 'licenceGeo', text: '@CC-BY-4.0' },
   { name: 'AndroidX', licence: 'Apache-2.0', platforms: ['android'], notice: 'AppCompat, Core, CoordinatorLayout, ExifInterface, HeifWriter — Copyright The Android Open Source Project', text: '@Apache-2.0' },

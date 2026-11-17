@@ -1,53 +1,66 @@
-# Redesign — "Album, modernised" (17 November 2026)
+# Redesign — "Glass", the iOS 27 look (17 November 2026)
 
-The plan behind the redesign of Bildklar's screens: what changes, where in the
-code, and in which order. The look stays "Album" (warm paper, white cards,
-slate ink, one teal; see `docs/PLAN.md`, *Design*). Structure, cards,
-typography and chrome change. No feature goes, no logic in `src/logic/` or the
-native code changes.
+The second redesign of the day. The first ("Album, modernised", below) fixed
+the structure: two tabs, photo cards, one unit (MB), the paragraphs behind an
+(i). This one changes the look: Ahmad asked for an app that looks "like iOS
+27". No feature goes, no logic in `src/logic/` or native code changes.
 
-## Why
+## What iOS 27 looks like (research, 17 November 2026)
 
-The home screen had grown into one long scroll where everything weighed the
-same: the clean-up card listed four categories that the tiles right under it
-listed again; the tiles were pastel text blocks without a single photo, each
-counting in its own unit (groups, photos, files · MB); trips fell far below
-the fold. Screens opened with paragraphs. Fraunces at three sizes plus round
-floating bar buttons read more like a printed brochure than a current app.
+- Liquid Glass (iOS 26) stays; iOS 27 refines it: **a darkened edge** on glass
+  elements for depth and separation, **brighter specular highlights**, better
+  diffusion of what is behind, a **uniform toolbar** where content scrolls
+  under floating bars (the scroll edge effect), and a Settings slider from
+  "ultra clear" to "fully tinted" (MacRumors, Cult of Mac, June 2026).
+- Tab bars float as capsules; search goes back into the tab bar (9to5Mac,
+  May 2026).
+- The best photo cleaners (Clever Cleaner, CleanMy Phone, Slidebox) win on a
+  clean, uncluttered interface and lose on pushy paywalls.
 
-What the best apps of the kind do (research, November 2026): Gemini Photos
-shows each category as a card with a grid of the photos it found; Slidebox
-files a photo into an album with one tap while swiping; the swipe cleaners win
-on simplicity and lose on pushy paywalls; CleanMyPhone and Clever Cleaner rank
-categories by the space they free; Apple's Photos went back to two tabs in
-iOS 26; Material 3 Expressive asks for springy motion but little of it on
-screens used quickly and often.
+## What Bildklar takes from it
 
-## What changes
-
-| Part | Before | After | Where |
+| Part | Before ("Album") | After ("Glass") | Where |
 |---|---|---|---|
-| Navigation | One home, everything on it | Two tabs on the root: **Aufräumen** and **Ordnen** (a floating pill, opaque, no blur) | `App.tsx` (`tab` beside `pushed`), `src/ui/TabBar.tsx` |
-| Clean-up card | Number, dot list, button | Number, a **storage bar** (one segment per category, sized by MB), free space, button | `HomeView.tsx`, `src/ui/StorageBar.tsx` |
-| Categories | Pastel text tiles | **Photo cards**: a 2 × 2 mosaic of the category's own photos, the MB to gain, the count; sorted by MB; empty ones collapse into one "Erledigt" line | `HomeView.tsx` (`PhotoCard`) |
-| Tools | Tiles among the categories | Rows with a photo under **Mehr Platz** (large files, smaller photos, Live Photos, from apps) | `HomeView.tsx` |
-| Later, months | Cards among the rest | Rows under **Weitermachen** | `HomeView.tsx` |
-| On this day, trips, AI categories | On home | On **Ordnen**: a photo card for *An diesem Tag*, trips as big cover cards, the categories | `src/components/OrganizeView.tsx` (lazy) |
-| Rescan | A bar button on home | Settings › Neu durchsuchen (and the automatic rescan on return) | — |
-| Type | Fraunces for every title | Figtree for titles and the UI; Fraunces only for the big numbers and trip names | `src/index.css` (`title-face`), `Screen.tsx`, `Sheet.tsx` |
+| Page | Warm paper `#F7F3EC` / slate | Grouped background `#F2F2F7` / black | `src/index.css` |
+| Floating controls | Opaque discs and pills | Drawn glass: translucent fill, sheen, specular line, darkened edge, shadow (`glass`, `glass-flat`, `sheen`) | `index.css`, `Button`, `TabBar`, `Screen`, `Sheet`, `Toast` |
+| Top bar | Solid page colour | Content passes under it; the scroll edge fade appears once scrolled | `ui/Screen.tsx` |
+| Tab bar | Opaque pill, teal tint | Glass capsule, the current tab in a glass lens; a fade under it | `ui/TabBar.tsx` |
+| Big numbers, trip names | Fraunces | Figtree 800, tight; the unit small and quiet (`BigNumber`) | `ui/Controls.tsx` |
+| Category cards | Mosaic on top, name below | The photos fill the card, the name and MB lie white on a shade | `HomeView.tsx` |
+| Trips, *An diesem Tag*, AI categories | Cover with text below | Photo cards, text on the shade, glass chips | `OrganizeView.tsx` |
+| Clean-up card | Number, bar | Number with a small unit, an iPhone-Storage bar (one track) with a legend, chips for "freed" and the streak | `HomeView.tsx`, `ui/StorageBar.tsx` |
+| Settings rows | Pastel tiles, coloured symbol | White symbol on a solid squircle (iOS Settings) | `IconTile`, `--hue-solid` |
+| Two actions in the dock | Side by side (wrapped on small phones) | The prominent one on top, the other as a text button under it | Cleanup, Group, Quick clean, Trip |
+| Sheets | Bottom-attached | Float inset from the edges, 38 px corners | `ui/Sheet.tsx` |
+| Switch | 51 × 31 | iOS 26's wider track with a pill knob | `ui/Controls.tsx` |
+| Review | Solid round buttons | Prominent glass (sheen) keep / delete, glass "later", glass album chips | `ReviewView.tsx` |
 
-Then (same day): every list screen's paragraph moved behind an (i) in its bar
-(`<Screen info>`); the Dock buttons say count and size; the review counts the
-marked space up under its progress; the end screen leads with the space it
-frees in Fraunces; the paywall shows five benefits and the price on its own,
-with "pay once" and "stays on your device" under it.
+Contrast: `npm run audit:contrast` now also checks the inks on glass (over the
+page and over a dark and a light photo), white on a photo card's shade, and
+the white glyph on every hue's squircle.
 
-## Order
+## Left for later
 
-0. Before: `npm run ui-review` → `screenshots/review-before/`; this file.
-1. Tokens and type.
-2. Tabs.
-3. *Aufräumen* and *Ordnen* — done and merged on 17 November 2026.
-4. The list screens. 5. Review and end screen. 6. Paywall. 7. Store
-   screenshots, App Review scenes, docs — all done on 17 November 2026.
+- The store screenshots, the preview video and the App Review recording show
+  the old look until they are made again (`npm run ui-review`,
+  `npm run screenshots`, `npm run store-screenshots`, `npm run app-preview`,
+  `npm run rehearse:app-review`). The studio's theme
+  (`.claude/skills/store-screenshot-studio/config/theme.json`) and the preview
+  video's (`.claude/skills/app-preview-video/config/theme.json`) still use the
+  paper colour and Fraunces — restyle them to match when the set is redone.
+- The splash screens: `npm run assets:generate` (its colours are updated in
+  `package.json`).
 
+---
+
+# Before: "Album, modernised" (17 November 2026, morning)
+
+What changed then: two tabs (*Aufräumen*, *Ordnen*); the clean-up card's dot
+list became a storage bar; the category tiles became photo cards ranked by
+the MB they free; tools and "continue" became rows; trips, *An diesem Tag*
+and the AI categories moved to *Ordnen*; every list screen's paragraph moved
+behind an (i); the Dock buttons say count and size; Figtree for titles,
+Fraunces only for the big numbers and trip names. Research then: Gemini
+Photos' cards with photo grids, Slidebox's album chips, the swipe cleaners'
+simplicity, CleanMyPhone / Clever Cleaner ranking by size, iOS 26's two-tab
+Photos, Material 3 Expressive.
