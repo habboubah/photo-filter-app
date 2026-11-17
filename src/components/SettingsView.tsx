@@ -114,18 +114,3 @@ export function SettingsView(p: Props) {
     </Screen>
   );
 }
-
-export function LicencesView({ t, onBack }: { t: Strings; onBack: () => void }) {
-  return (
-    <Screen title={t.licencesTitle} onBack={onBack} backLabel={t.back}>
-      <p className="text-label text-fg-mute px-1 wrap-prose">{t.licencesIntro}</p>
-      <div className="rounded-md card p-5 space-y-4 text-label text-fg wrap-prose">
-        <p>{t.licenceGeo}</p>
-        <p>{t.licenceFonts}</p>
-        <p>{t.licenceIcons}</p>
-        <p>{t.licenceCode}</p>
-        <p>{t.licenceAi}</p>
-      </div>
-    </Screen>
-  );
-}

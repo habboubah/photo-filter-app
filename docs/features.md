@@ -304,7 +304,9 @@ tab again scrolls to its top; Android's back button goes from *Ordnen* to
 - **Nur in der Debug-Version**: *Probelauf* [Dry run] — on by default in debug
   builds: nothing in the photo library changes, the app says what it would have done.
 - **Über die App**: rate (once the App Store id is set), feedback by mail,
-  privacy policy, licences (GeoNames, fonts, icons).
+  privacy policy, *Lizenzen*: every open-source part the app ships (npm
+  packages, ONNX Runtime, the SigLIP 2 model, the fonts, GeoNames; on Android
+  also AndroidX, Media3, Kotlin), a tap shows its full licence text.
 - *Von vorn anfangen* [Start over] (*Deine Fotos bleiben, wie sie sind*; with
   undo): Bildklar forgets every decision — kept, protected and decide-later
   photos, best-shot picks, trip edits, the months marked as done, the sort
