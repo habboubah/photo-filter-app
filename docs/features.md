@@ -240,8 +240,8 @@ tab again scrolls to its top; Android's back button goes from *Ordnen* to
   protected: people need them. The clean-up
   card counts them once (*Unwichtige Fotos (KI)*), after duplicates,
   near-identical and blurry photos.
-- *Auf deinen Fotos* [On your photos]: a row of the memory categories with
-  a cover and a count; a tap shows the photos.
+- *Auf deinen Fotos* [On your photos]: the memory categories, four to a
+  row, each a photo with its name and count under it; a tap shows the photos.
 
 ## Search (*Suchen*)
 - The magnifier on both tabs opens **Suchen** [Search]: *Was ist auf dem
@@ -251,7 +251,7 @@ tab again scrolls to its top; Android's back button goes from *Ordnen* to
   *Schnuller*, *Laternenumzug* …); tap one. Several words find photos that
   show all of them.
 - *In deinen Fotos* [In your photos]: before anything is typed, up to 16
-  cards with words your library really has (of about 60), each with its best
+  cards (three to a row, four on a wider screen) with words your library really has (of about 60), each with its best
   photo: first up to six family words (*Baby*, *Kind*, *Familie*, *Zwillinge*,
   *Geburtstag* …), then the others with most photos (*Kassenzettel*, *Stadt*,
   *Zoo* …); no two cards with mostly the same photos. A tap searches for it. A word the library hasn't got is not offered, and a photo of an ID
