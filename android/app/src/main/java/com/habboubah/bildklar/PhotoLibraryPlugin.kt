@@ -11,6 +11,8 @@ import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.database.ContentObserver
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import androidx.heifwriter.HeifWriter
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
@@ -85,6 +87,8 @@ class PhotoLibraryPlugin : Plugin() {
     private val workers = Executors.newFixedThreadPool(3)
     /** Thumbnails and reads for the screens, apart from the analysis so a running scan never holds them up. */
     private val io = Executors.newFixedThreadPool(4)
+    /** Photos made smaller: one batch at a time, apart from the scan and the screens. */
+    private val work = Executors.newSingleThreadExecutor()
     private val running = AtomicBoolean(false)
     private val cancelled = AtomicBoolean(false)
     /** Made on the scan thread the first time it is needed; null when the model can't load (the AI's phase is then skipped). */
@@ -745,6 +749,112 @@ class PhotoLibraryPlugin : Plugin() {
     }
 
     /** The finished copy into MediaStore, next to the original (its folder, its date); pending until written. */
+    private data class PhotoInfo(val size: Long, val path: String?, val name: String?, val taken: Long, val fav: Boolean, val mime: String?)
+
+    private fun photoInfo(uri: Uri): PhotoInfo? = context.contentResolver.query(
+        uri,
+        arrayOf(MediaStore.MediaColumns.SIZE, MediaStore.MediaColumns.RELATIVE_PATH, MediaStore.MediaColumns.DISPLAY_NAME,
+            MediaStore.Images.Media.DATE_TAKEN, MediaStore.MediaColumns.IS_FAVORITE, MediaStore.MediaColumns.MIME_TYPE),
+        null, null, null,
+    )?.use { c -> if (c.moveToFirst()) PhotoInfo(c.getLong(0), c.getString(1), c.getString(2), c.getLong(3), c.getInt(4) == 1, c.getString(5)) else null }
+
+    /**
+     * "Fotos verkleinern": each JPEG or PNG re-encoded — HEIC (HeifWriter, quality 80) when the phone has
+     * an HEVC encoder, else JPEG at quality 82 — with its EXIF copied (orientation, date, GPS …), saved next to
+     * the original (same folder, same DATE_TAKEN, IS_PENDING while written) and kept only when at least 30 %
+     * smaller. The originals stay; the web layer asks to trash them (createTrashRequest, the system's dialog).
+     * A dry run encodes but writes nothing. One batch (≤ 20) per call; progress as `compressProgress` "photos".
+     */
+    @PluginMethod
+    fun compressPhotos(call: PluginCall) {
+        val list = ids(call).filter { !isVideo(it) }
+        val dryRun = call.getBoolean("dryRun", false) == true
+        work.execute {
+            val results = JSArray()
+            list.forEachIndexed { i, id ->
+                try { compressOne(id, dryRun)?.let { results.put(it) } } catch (_: Exception) { /* skipped: unreadable or no room */ }
+                notifyListeners("compressProgress", JSObject().put("id", "photos").put("progress", (i + 1).toDouble() / list.size))
+            }
+            call.resolve(JSObject().put("results", results).put("dryRun", dryRun))
+        }
+    }
+
+    private fun compressOne(id: String, dryRun: Boolean): JSObject? {
+        val source = contentUri(id)
+        val info = photoInfo(source) ?: return null
+        val resolver = context.contentResolver
+        val original = resolver.openInputStream(source)?.use { it.readBytes() } ?: return null
+        val exif = ExifInterface(original.inputStream())
+        val exifBlock = exifBlock(original)
+        // Decoded as stored (BitmapFactory leaves the EXIF orientation alone): the copy keeps the orientation tag / rotation.
+        val bmp = BitmapFactory.decodeByteArray(original, 0, original.size) ?: return null
+        val out = File(context.cacheDir, "smaller-${System.nanoTime()}")
+        try {
+            val heic = try {
+                val writer = HeifWriter.Builder(out.path, bmp.width, bmp.height, HeifWriter.INPUT_MODE_BITMAP)
+                    .setQuality(HEIC_QUALITY).setRotation(exif.rotationDegrees).build()
+                writer.start()
+                writer.addBitmap(bmp)
+                if (exifBlock != null) writer.addExifData(0, exifBlock, 0, exifBlock.size)
+                writer.stop(30_000)
+                writer.close()
+                true
+            } catch (_: Exception) {
+                // No HEVC encoder on this phone: a JPEG at quality 82 instead, its EXIF copied tag by tag.
+                out.outputStream().use { bmp.compress(Bitmap.CompressFormat.JPEG, JPEG_QUALITY, it) }
+                copyExif(exif, out)
+                false
+            }
+            val after = out.length()
+            if (after <= 0 || after > info.size * (1 - KEEP_MIN_SAVING)) return null
+            if (dryRun) return JSObject().put("from", id).put("to", "").put("before", info.size).put("after", after)
+            val base = (info.name ?: "Bildklar").substringBeforeLast('.')
+            val values = ContentValues().apply {
+                put(MediaStore.MediaColumns.DISPLAY_NAME, if (heic) "$base.heic" else "$base-klein.jpg")
+                put(MediaStore.MediaColumns.MIME_TYPE, if (heic) "image/heic" else "image/jpeg")
+                put(MediaStore.MediaColumns.RELATIVE_PATH, info.path?.takeIf { it.isNotBlank() } ?: "${Environment.DIRECTORY_PICTURES}/")
+                if (info.taken > 0) put(MediaStore.Images.Media.DATE_TAKEN, info.taken)
+                if (info.fav) put(MediaStore.MediaColumns.IS_FAVORITE, 1)
+                put(MediaStore.MediaColumns.IS_PENDING, 1)
+            }
+            val uri = resolver.insert(MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY), values) ?: return null
+            resolver.openOutputStream(uri)?.use { stream -> out.inputStream().use { it.copyTo(stream) } }
+                ?: run { resolver.delete(uri, null, null); return null }
+            values.clear()
+            values.put(MediaStore.MediaColumns.IS_PENDING, 0)
+            resolver.update(uri, values, null, null)
+            val created = "${MediaStore.VOLUME_EXTERNAL_PRIMARY}:${ContentUris.parseId(uri)}"
+            return JSObject().put("from", id).put("to", created).put("before", info.size).put("after", after)
+        } finally {
+            bmp.recycle()
+            out.delete()
+        }
+    }
+
+    /** A JPEG's EXIF block as HeifWriter wants it ("Exif\0\0" then the TIFF header), or null (a PNG, or none). */
+    private fun exifBlock(jpeg: ByteArray): ByteArray? {
+        if (jpeg.size < 4 || jpeg[0] != 0xFF.toByte() || jpeg[1] != 0xD8.toByte()) return null
+        var i = 2
+        while (i + 4 <= jpeg.size && jpeg[i] == 0xFF.toByte()) {
+            val marker = jpeg[i + 1].toInt() and 0xFF
+            val length = ((jpeg[i + 2].toInt() and 0xFF) shl 8) or (jpeg[i + 3].toInt() and 0xFF)
+            if (marker == 0xDA || length < 2) return null
+            val start = i + 4
+            if (marker == 0xE1 && start + 6 <= jpeg.size && String(jpeg, start, 4, Charsets.US_ASCII) == "Exif") {
+                return jpeg.copyOfRange(start, minOf(jpeg.size, i + 2 + length))
+            }
+            i += 2 + length
+        }
+        return null
+    }
+
+    /** The EXIF the copy keeps when it is a JPEG: when, where, how, which way up. */
+    private fun copyExif(from: ExifInterface, file: File) {
+        val to = ExifInterface(file.path)
+        for (tag in EXIF_TAGS) from.getAttribute(tag)?.let { to.setAttribute(tag, it) }
+        to.saveAttributes()
+    }
+
     private fun saveCompressed(call: PluginCall, out: File, info: VideoInfo) {
         try {
             val after = out.length()
@@ -853,5 +963,22 @@ class PhotoLibraryPlugin : Plugin() {
         private const val THUMB_CAP = 200L * 1024 * 1024
         /** URIs per MediaStore request: well inside a binder transaction's limit. */
         private const val REQUEST_CHUNK = 1500
+        /** "Fotos verkleinern" (provisional, like the plan's other numbers; src/logic/compress.ts KEEP_MIN_SAVING). */
+        private const val HEIC_QUALITY = 80
+        private const val JPEG_QUALITY = 82
+        private const val KEEP_MIN_SAVING = 0.3
+        /** What a JPEG copy keeps of the original's EXIF. */
+        private val EXIF_TAGS = listOf(
+            ExifInterface.TAG_ORIENTATION, ExifInterface.TAG_DATETIME, ExifInterface.TAG_DATETIME_ORIGINAL, ExifInterface.TAG_DATETIME_DIGITIZED,
+            ExifInterface.TAG_OFFSET_TIME, ExifInterface.TAG_OFFSET_TIME_ORIGINAL, ExifInterface.TAG_OFFSET_TIME_DIGITIZED,
+            ExifInterface.TAG_SUBSEC_TIME, ExifInterface.TAG_SUBSEC_TIME_ORIGINAL, ExifInterface.TAG_SUBSEC_TIME_DIGITIZED,
+            ExifInterface.TAG_GPS_LATITUDE, ExifInterface.TAG_GPS_LATITUDE_REF, ExifInterface.TAG_GPS_LONGITUDE, ExifInterface.TAG_GPS_LONGITUDE_REF,
+            ExifInterface.TAG_GPS_ALTITUDE, ExifInterface.TAG_GPS_ALTITUDE_REF, ExifInterface.TAG_GPS_TIMESTAMP, ExifInterface.TAG_GPS_DATESTAMP,
+            ExifInterface.TAG_MAKE, ExifInterface.TAG_MODEL, ExifInterface.TAG_SOFTWARE, ExifInterface.TAG_ARTIST, ExifInterface.TAG_COPYRIGHT,
+            ExifInterface.TAG_IMAGE_DESCRIPTION, ExifInterface.TAG_USER_COMMENT,
+            ExifInterface.TAG_F_NUMBER, ExifInterface.TAG_EXPOSURE_TIME, ExifInterface.TAG_PHOTOGRAPHIC_SENSITIVITY, ExifInterface.TAG_FOCAL_LENGTH,
+            ExifInterface.TAG_FOCAL_LENGTH_IN_35MM_FILM, ExifInterface.TAG_FLASH, ExifInterface.TAG_WHITE_BALANCE, ExifInterface.TAG_LENS_MAKE,
+            ExifInterface.TAG_LENS_MODEL,
+        )
     }
 }

@@ -106,6 +106,16 @@ export interface PhotoLibraryPlugin {
    */
   compressVideo(options: { id: string; dryRun: boolean }): Promise<{ created: string | null; before: number; after: number; dryRun: boolean }>;
   /**
+   * "Fotos verkleinern": each JPEG / PNG re-saved as HEIC (Android without an
+   * HEVC encoder: JPEG at quality 82) with its metadata, kept only when at
+   * least 30 % smaller, next to the original with the same date, place,
+   * favourite flag (and, on the iPhone, albums). Progress as
+   * `compressProgress` events with id "photos" (0–1 within the call). The
+   * originals stay until the app asks to trash them. Call with at most
+   * COMPRESS_BATCH (20) ids. With `dryRun` nothing is written.
+   */
+  compressPhotos(options: { ids: string[]; dryRun: boolean }): Promise<{ results: { from: string; to: string; before: number; after: number }[]; dryRun: boolean }>;
+  /**
    * What the home-screen widget shows (iPhone: WidgetKit, through the App
    * Group folder; Android: the app widget): a title and a line in the app's
    * language, and a photo for "On this day". The widget redraws at once.

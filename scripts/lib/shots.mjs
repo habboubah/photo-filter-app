@@ -248,6 +248,8 @@ export const SCREENS = [
       await pause(page, 500);
     },
   },
+  // Fotos verkleinern: the photos that qualify, the largest saving first.
+  { name: '34-compress', run: async (page, w) => { await page.click(`button:has-text("${w.t.compressPhotosTile}")`); await pause(page, 800); } },
   // Settings › Geschützt: one album switched on (the demo's family album).
   {
     name: '33-protected', run: async (page, w) => {

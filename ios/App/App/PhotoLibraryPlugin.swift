@@ -7,6 +7,8 @@ import Vision
 import AVFoundation
 import WidgetKit
 import CryptoKit
+import ImageIO
+import UniformTypeIdentifiers
 import Capacitor
 
 /// The app's own bridge view controller, so it can register our own plugins.
@@ -70,6 +72,7 @@ public class PhotoLibraryPlugin: CAPPlugin, CAPBridgedPlugin, PHPhotoLibraryChan
         CAPPluginMethod(name: "getStorage", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "convertLive", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "compressVideo", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "compressPhotos", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "setWidget", returnType: CAPPluginReturnPromise),
     ]
 
@@ -730,6 +733,78 @@ public class PhotoLibraryPlugin: CAPPlugin, CAPBridgedPlugin, PHPhotoLibraryChan
             }
             call.resolve(["converted": converted, "skipped": list.count - converted.count, "dryRun": false])
         }
+    }
+
+    /// A copy is kept only when it is at least this much smaller (src/logic/compress.ts KEEP_MIN_SAVING, provisional).
+    private static let keepMinSaving = 0.3
+    /// HEIC quality for "Fotos verkleinern" (provisional, like the plan's other numbers).
+    private static let heicQuality = 0.8
+
+    /// "Fotos verkleinern": each JPEG or PNG re-saved as HEIC (quality 0.8) with all its metadata (EXIF, GPS,
+    /// orientation, date), kept only when at least 30 % smaller, as a new asset with the same creation date,
+    /// place and favourite flag in the same albums. The originals stay — the web layer asks to trash them
+    /// (the system's dialog). A dry run encodes but writes nothing. One batch (≤ 20) per call; progress as
+    /// `compressProgress` events with id "photos". Skipped: Live Photos, edited photos, iCloud-only originals.
+    @objc func compressPhotos(_ call: CAPPluginCall) {
+        let list = ids(call)
+        let dryRun = call.getBool("dryRun") ?? false
+        work.async { [weak self] in
+            guard let self else { return }
+            var assets: [PHAsset] = []
+            self.fetch(list).enumerateObjects { a, _, _ in assets.append(a) }
+            var results: [[String: Any]] = []
+            for (i, asset) in assets.enumerated() {
+                autoreleasepool {
+                    defer { self.emit("compressProgress", ["id": "photos", "progress": Double(i + 1) / Double(max(1, assets.count))]) }
+                    guard asset.mediaType == .image, !asset.mediaSubtypes.contains(.photoLive),
+                          let data = self.imageData(asset), let heic = Self.heic(data) else { return }
+                    let before = Int64(data.count)
+                    let after = Int64(heic.count)
+                    guard Double(after) <= Double(before) * (1 - Self.keepMinSaving) else { return }
+                    if dryRun {
+                        results.append(["from": asset.localIdentifier, "to": "", "before": before, "after": after])
+                        return
+                    }
+                    let albums = PHAssetCollection.fetchAssetCollectionsContaining(asset, with: .album, options: nil)
+                    let name = (PHAssetResource.assetResources(for: asset).first { $0.type == .photo }?.originalFilename as NSString?)?
+                        .deletingPathExtension ?? "Bildklar"
+                    var created: String?
+                    do {
+                        try PHPhotoLibrary.shared().performChangesAndWait {
+                            let request = PHAssetCreationRequest.forAsset()
+                            let options = PHAssetResourceCreationOptions()
+                            options.originalFilename = "\(name).heic"
+                            request.addResource(with: .photo, data: heic, options: options)
+                            request.creationDate = asset.creationDate
+                            request.location = asset.location
+                            request.isFavorite = asset.isFavorite
+                            guard let placeholder = request.placeholderForCreatedAsset else { return }
+                            created = placeholder.localIdentifier
+                            albums.enumerateObjects { album, _, _ in
+                                if album.canPerform(.addContent), let change = PHAssetCollectionChangeRequest(for: album) {
+                                    change.addAssets([placeholder] as NSArray)
+                                }
+                            }
+                        }
+                    } catch {
+                        return
+                    }
+                    if let created { results.append(["from": asset.localIdentifier, "to": created, "before": before, "after": after]) }
+                }
+            }
+            call.resolve(["results": results, "dryRun": dryRun])
+        }
+    }
+
+    /// The picture re-encoded as HEIC, with every property of the original copied over (EXIF, GPS, orientation, dates).
+    private static func heic(_ data: Data) -> Data? {
+        guard let source = CGImageSourceCreateWithData(data as CFData, nil), CGImageSourceGetCount(source) > 0 else { return nil }
+        let out = NSMutableData()
+        guard let dest = CGImageDestinationCreateWithData(out, UTType.heic.identifier as CFString, 1, nil) else { return nil }
+        let options = [kCGImageDestinationLossyCompressionQuality: heicQuality] as CFDictionary
+        CGImageDestinationAddImageFromSource(dest, source, 0, options)
+        guard CGImageDestinationFinalize(dest) else { return nil }
+        return out as Data
     }
 
     /// The video as Photos plays it (trims included), from the phone only.
