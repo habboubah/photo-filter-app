@@ -20,8 +20,6 @@ import facts from './facts.json';
  */
 
 const urls = import.meta.glob('./photos/*.jpg', { eager: true, query: '?url', import: 'default' }) as Record<string, string>;
-/** A copy the demo made (a still from a Live Photo, a smaller video) shows its original's picture. */
-const urlOf = (id: string) => urls[`./photos/${id.split('-')[0]}.jpg`] ?? '';
 
 const K = {
   access: 'bildklar-demo-access',
@@ -33,12 +31,35 @@ const K = {
   state: 'bildklar-state',
   /** Milliseconds per step of a first scan (24 steps): screenshots slow it down to catch it. */
   scanStep: 'bildklar-demo-scan-step',
+  /** Which library `npm run dev` shows: "test" (the test library, when built) or "demo" (the curated 101). */
+  library: 'bildklar-demo-library',
 };
 const get = (k: string) => { try { return localStorage.getItem(k); } catch { return null; } };
 const set = (k: string, v: string | null) => {
   try { if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch { /* storage is unavailable */ }
 };
 const wait = (ms: number) => new Promise(r => setTimeout(r, ms));
+
+/*
+ * The photos: the curated demo (facts.json, ./photos/) — or, in `npm run dev`,
+ * the whole test library when scripts/demo-library.py has built it
+ * (./test-library/, see testLibrary.ts). `?library=demo` / `?library=test`
+ * switches and is remembered. Production builds (the checks, the screenshots,
+ * the preview video) never contain the test library.
+ */
+let data: { facts: Photo[]; urlOf: (id: string) => string } = {
+  facts: facts as Photo[],
+  /** A copy the demo made (a still from a Live Photo, a smaller video) shows its original's picture. */
+  urlOf: id => urls[`./photos/${id.split('-')[0]}.jpg`] ?? '',
+};
+function wantsTestLibrary() {
+  const q = new URLSearchParams(location.search).get('library');
+  if (q === 'demo' || q === 'test') set(K.library, q);
+  return get(K.library) !== 'demo';
+}
+const ready: Promise<void> = import.meta.env.DEV && wantsTestLibrary()
+  ? import('./testLibrary').then(m => { if (m.facts.length) data = { facts: m.facts, urlOf: m.urlOf }; }).catch(() => undefined)
+  : Promise.resolve();
 
 const ACCESS = ['notDetermined', 'denied', 'restricted', 'limited', 'full'] as const;
 /** In "limited" the demo sees only the photos of the last trip — as if just those were picked. */
@@ -65,7 +86,7 @@ export class DemoLibrary extends WebPlugin implements PhotoLibraryPlugin {
     const gone = new Set<string>(JSON.parse(get(K.trashed) ?? '[]'));
     const limited = this.access() === 'limited';
     const made: Photo[] = JSON.parse(get(K.made) ?? '[]');
-    return [...(facts as Photo[]), ...made]
+    return [...data.facts, ...made]
       .filter(p => !gone.has(p.id) && (!limited || p.t >= LIMITED_FROM))
       .sort((a, b) => a.t - b.t || (a.id < b.id ? -1 : 1));
   }
@@ -90,15 +111,17 @@ export class DemoLibrary extends WebPlugin implements PhotoLibraryPlugin {
   async openSettings() { /* nothing to open in a browser */ }
 
   async getScanState(): Promise<ScanState> {
+    await ready;
     const scanned = get(K.scanned) === '1';
     return { running: this.running, count: scanned ? this.photos().length : 0, pending: 0, lastScanAt: scanned ? Date.now() - 3600_000 : 0 };
   }
 
   async startScan() {
+    await ready;
     if (this.running) return;
     this.running = true;
     void (async () => {
-      const total = (facts as Photo[]).length;
+      const total = data.facts.length;
       const first = get(K.scanned) !== '1';
       // A first scan takes a moment, so its progress can be seen (and captured); a rescan is quick.
       const steps = first ? 24 : 4;
@@ -118,13 +141,14 @@ export class DemoLibrary extends WebPlugin implements PhotoLibraryPlugin {
   async cancelScan() { this.running = false; }
 
   async getFacts({ offset, limit }: { offset: number; limit: number }) {
+    await ready;
     const all = get(K.scanned) === '1' ? this.photos() : [];
     return { rows: all.slice(offset, offset + limit), total: all.length };
   }
 
   async scoreFaces() { return { rows: [] }; }
 
-  async thumbnail({ id }: { id: string; size: number }) { return { path: urlOf(id) }; }
+  async thumbnail({ id }: { id: string; size: number }) { await ready; return { path: data.urlOf(id) }; }
 
   async createAlbum({ ids, dryRun }: { title: string; ids: string[]; dryRun: boolean }) {
     await wait(400);
@@ -169,10 +193,12 @@ export class DemoLibrary extends WebPlugin implements PhotoLibraryPlugin {
   }
 
   async listAlbums() {
+    await ready;
     return { albums: this.albums().map(a => ({ id: a.id, title: a.title, count: a.members.length })) };
   }
 
   async albumMembers({ ids }: { ids: string[] }) {
+    await ready;
     const wanted = new Set(ids);
     return { ids: [...new Set(this.albums().filter(a => wanted.has(a.id)).flatMap(a => a.members))] };
   }
@@ -188,6 +214,7 @@ export class DemoLibrary extends WebPlugin implements PhotoLibraryPlugin {
   }
 
   async convertLive({ ids, dryRun }: { ids: string[]; dryRun: boolean }) {
+    await ready;
     await wait(500);
     const all = new Map(this.photos().map(p => [p.id, p]));
     const converted: { from: string; to: string }[] = [];
@@ -202,6 +229,7 @@ export class DemoLibrary extends WebPlugin implements PhotoLibraryPlugin {
   }
 
   async compressVideo({ id, dryRun }: { id: string; dryRun: boolean }) {
+    await ready;
     const p = this.photos().find(x => x.id === id);
     if (!p?.video) throw new Error('No video');
     for (let i = 1; i <= 8; i++) {
@@ -219,6 +247,7 @@ export class DemoLibrary extends WebPlugin implements PhotoLibraryPlugin {
   /** No home screen in a browser: the widget's content is only kept, for a look in the dev tools. */
   /** Photos made smaller: half a JPEG, 30 % of a PNG, a little wait per photo; the copies show their original's picture. */
   async compressPhotos({ ids, dryRun }: { ids: string[]; dryRun: boolean }) {
+    await ready;
     const all = new Map(this.photos().map(p => [p.id, p]));
     const results: { from: string; to: string; before: number; after: number }[] = [];
     for (const [i, id] of ids.entries()) {
@@ -249,8 +278,9 @@ export class DemoLibrary extends WebPlugin implements PhotoLibraryPlugin {
 
   /** A 128 GB phone that is nearly full; what the demo "deleted" comes back as free space. */
   async getStorage() {
+    await ready;
     const gone = new Set<string>(JSON.parse(get(K.trashed) ?? '[]'));
-    const freed = (facts as Photo[]).filter(p => gone.has(p.id)).reduce((s, p) => s + p.bytes, 0);
+    const freed = data.facts.filter(p => gone.has(p.id)).reduce((s, p) => s + p.bytes, 0);
     return { free: 2_400_000_000 + freed, total: 128_000_000_000 };
   }
 
