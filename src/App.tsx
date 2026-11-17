@@ -5,7 +5,7 @@ import { StatusBar, Style } from '@capacitor/status-bar';
 import { KeepAwake } from '@capacitor-community/keep-awake';
 import { AlertTriangle, FlaskConical } from 'lucide-react';
 import { useAppStore } from './store';
-import { bytes, fmt, plural, stringsFor } from './translations';
+import { bytes, fmt, percent, plural, stringsFor } from './translations';
 import type { Photo, Trip } from './types';
 import { PhotoLibrary } from './native/photoLibrary';
 import { PRODUCT_ID, Purchases } from './native/purchases';
@@ -22,7 +22,7 @@ import {
 import { aiProgress, categories, findUtility, type MemoryLabel } from './logic/ai';
 import { findScreenshots, isOldShot, oldShots } from './logic/screenshots';
 import { findLarge, findLive } from './logic/large';
-import { buildMonths, onThisDay } from './logic/months';
+import { buildMonths, onThisDay, progress } from './logic/months';
 import { findExposure } from './logic/exposure';
 import { sortFor, type SortScreen } from './logic/sort';
 import { cleanParts } from './logic/smartClean';
@@ -113,6 +113,8 @@ export default function App() {
   const parts = useMemo(() => cleanParts(groups, blurry, old, kept, lib.byId, exposureAll), [groups, blurry, old, kept, lib, exposureAll]);
   const months = useMemo(() => buildMonths(lib.photos), [lib]);
   const doneMonths = useMemo(() => new Set(state.months), [state.months]);
+  /** The share of the library gone through month by month, whole percent (for home, the months and the widget). */
+  const pct = useMemo(() => progress(months, doneMonths), [months, doneMonths]);
   const today = useMemo(() => onThisDay(lib.photos, now), [lib, now]);
   const large = useMemo(() => findLarge(lib.photos), [lib]);
   const live = useMemo(() => findLive(lib.photos), [lib]);
@@ -140,7 +142,8 @@ export default function App() {
       }
       : {
         title: summary.total.count ? t.cleanupCard : t.cleanupNone,
-        line: [summary.total.count ? bytes(t, summary.total.bytes) : null,
+        // With nothing to clean up, the progress figure says something instead (when there is one).
+        line: [summary.total.count ? bytes(t, summary.total.bytes) : pct > 0 ? fmt(t.widgetProgress, { pct: percent(t, pct) }) : null,
           storage ? fmt(t.storageValue, { free: bytes(t, storage.free), total: bytes(t, storage.total) }) : null].filter(Boolean).join(' · '),
       };
     const key = JSON.stringify(data);
@@ -151,7 +154,7 @@ export default function App() {
     }, 1500);
     return () => window.clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [photos, summary, today, store.storage, language]);
+  }, [photos, summary, today, store.storage, language, pct]);
 
   /* ---------------------------------------------------------- navigation */
 
@@ -616,7 +619,7 @@ export default function App() {
         utility={{ show: aiSeen.seen > 0, count: utility.length, bytes: utility.reduce((sum, p) => sum + p.bytes, 0) }}
         categories={cats.slice(0, 8).map(c => ({ label: c.label, count: c.photos.length, cover: c.photos[0].id }))}
         storage={store.storage} freedBytes={state.freed.bytes} streak={streak(state.days, now)}
-        months={{ done: months.filter(m => doneMonths.has(m.key)).length, total: months.length }}
+        months={{ done: months.filter(m => doneMonths.has(m.key)).length, total: months.length, pct }}
         onThisDay={{ photos: today.ids.length, years: today.years, cover: today.ids[0] }}
         later={{ count: laterPile.length, cover: laterPile[0] }}
         onLater={() => startReview(reviewLater(laterPile))}

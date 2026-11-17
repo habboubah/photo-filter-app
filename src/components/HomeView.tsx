@@ -4,7 +4,7 @@ import type { CleanupSummary, Storage, Trip } from '../types';
 import type { Access } from '../native/photoLibrary';
 import type { ScanView } from '../store';
 import type { MemoryLabel } from '../logic/ai';
-import { Strings, bytes, fmt, num, plural } from '../translations';
+import { Strings, bytes, fmt, num, percent, plural } from '../translations';
 import { Empty, Screen } from '../ui/Screen';
 import { Button, IconButton } from '../ui/Button';
 import { Progress } from '../ui/Controls';
@@ -33,7 +33,8 @@ interface Props {
   storage: Storage | null;
   freedBytes: number;
   streak: number;
-  months: { done: number; total: number };
+  /** Months gone through, and the share of all photos in them (src/logic/months.ts progress). */
+  months: { done: number; total: number; pct: number };
   onThisDay: { photos: number; years: number[]; cover?: string };
   /** The decide-later pile (photos swiped up in a review). */
   later: { count: number; cover?: string };
@@ -167,7 +168,8 @@ export function HomeView(p: Props) {
           </span>
           <span className="min-w-0 flex-1">
             <span className="block text-body font-bold text-fg">{t.monthsCard}</span>
-            <span className="block text-caption text-fg-mute num">{fmt(t.monthsCardBody, { done: num(t, p.months.done), total: num(t, p.months.total) })}</span>
+            <span className="block text-caption text-fg-mute num">{fmt(t.progressDone, { pct: percent(t, p.months.pct) })}</span>
+            <span className="block mt-1.5 max-w-[160px]"><Progress thin value={p.months.pct / 100} label={fmt(t.progressDone, { pct: percent(t, p.months.pct) })} /></span>
           </span>
           <ChevronRight className="w-5 h-5 text-fg-faint shrink-0 rtl:rotate-180" aria-hidden="true" />
         </button>

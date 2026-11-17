@@ -3,12 +3,13 @@ import { ArrowDownUp } from 'lucide-react';
 import { tapLight } from './haptics';
 
 /** A progress track; without a total it shows a soft sweep instead. */
-export function Progress({ value, label }: { value: number | null; label: string }) {
+/** `thin`: a hairline track for a figure beside other text (the months' progress). */
+export function Progress({ value, label, thin }: { value: number | null; label: string; thin?: boolean }) {
   return (
     <div
       role="progressbar" aria-label={label}
       aria-valuemin={0} aria-valuemax={100} aria-valuenow={value === null ? undefined : Math.round(value * 100)}
-      className="h-2 rounded-full bg-surface-2 overflow-hidden"
+      className={`${thin ? 'h-1' : 'h-2'} rounded-full bg-surface-2 overflow-hidden`}
     >
       {value === null
         ? <div className="h-full w-1/3 rounded-full bg-accent-fill sweep" />

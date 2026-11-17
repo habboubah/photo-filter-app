@@ -86,7 +86,8 @@ const de = {
   freedSoFar: 'Bisher freigegeben: {size}',
   streakLine: '{n} Tage in Folge aufgeräumt',
   monthsCard: 'Monat für Monat',
-  monthsCardBody: '{done} von {total} Monaten durchgesehen',
+  progressDone: '{pct} durchgesehen',
+  widgetProgress: '{pct} deiner Fotos durchgesehen',
   laterCard: 'Später entscheiden',
   laterCardBody: 'Fotos, bei denen du dir noch nicht sicher warst',
   onThisDay: 'An diesem Tag',
@@ -245,7 +246,7 @@ const de = {
   monthsIntro: 'Geh deine Fotos Monat für Monat durch: links wischen zum Löschen, rechts zum Behalten. Bildklar markiert, was es löschen würde.',
   monthMeta: '{photos} · {size}',
   monthDone: 'Durchgesehen',
-  monthsDone: '{done} von {total} durchgesehen',
+  monthsDone: '{done} von {total} Monaten',
   showMore: 'Mehr zeigen',
   sortLabel: 'Sortieren',
   sort_newest: 'Neueste zuerst',
@@ -454,7 +455,8 @@ const en: Strings = {
   freedSoFar: 'Freed so far: {size}',
   streakLine: '{n} days in a row of cleaning up',
   monthsCard: 'Month by month',
-  monthsCardBody: '{done} of {total} months gone through',
+  progressDone: '{pct} gone through',
+  widgetProgress: '{pct} of your photos gone through',
   laterCard: 'Decide later',
   laterCardBody: 'Photos you weren’t sure about yet',
   onThisDay: 'On this day',
@@ -609,7 +611,7 @@ const en: Strings = {
   monthsIntro: 'Go through your photos a month at a time: swipe left to delete, right to keep. Bildklar marks what it would delete.',
   monthMeta: '{photos} · {size}',
   monthDone: 'Done',
-  monthsDone: '{done} of {total} done',
+  monthsDone: '{done} of {total} months',
   showMore: 'Show more',
   sortLabel: 'Sort',
   sort_newest: 'Newest first',
@@ -834,6 +836,8 @@ export function plural(t: Strings, base: PluralBase<Strings>, n: number, vars: R
 
 /** A number in the app's locale: 48.210 / 48,210. */
 export const num = (t: Strings, n: number) => n.toLocaleString(t.locale);
+/** A whole percentage (0–100) in the language's way: "38 %", "38%". */
+export const percent = (t: Strings, n: number) => (n / 100).toLocaleString(t.locale, { style: 'percent', maximumFractionDigits: 0 });
 
 /** A size in the app's locale: "850 MB", "2,4 GB". */
 export function bytes(t: Strings, b: number): string {
