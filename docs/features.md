@@ -38,11 +38,12 @@ tab again scrolls to its top; Android's back button goes from *Ordnen* to
 
 ### Aufräumen [Clean up]
 - The number of photos under the title.
-- **Analyse** [Analysis] at the top: six tiles, each a count and its size and
-  each opening its screen — *Fotos* (all photos → *Monat für Monat*),
-  *Videos* (all videos, largest first), *Ähnliche Fotos* (near-identical
-  photos that could go), *Ähnliche Videos* (similar videos that could go),
-  *Chats & Social*, *Screenshots*.
+- **The analysis**, inside the clean-up card under the bar: six rows in two
+  columns, each with its icon, a count and its size and each opening its
+  screen — *Fotos* (all photos → *Monat für Monat*), *Videos* (all videos,
+  largest first), *Ähnliche Fotos* (near-identical photos that could go),
+  *Ähnliche Videos* (similar videos that could go), *Chats & Social*,
+  *Screenshots*.
 - **The clean-up card**: the space that could be freed (one big number), a
   bar split into one segment per category (sized by the space it frees, in
   the category's colour), the free space on the device (*2,4 GB von 128 GB
