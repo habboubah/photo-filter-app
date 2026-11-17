@@ -15,7 +15,7 @@ import { isProtected } from './protect';
 export type Decision = 'keep' | 'delete' | 'later';
 /** What the app suggests: `none` for the decide-later pile, where the user already hesitated. */
 export type Suggestion = 'keep' | 'delete' | 'none';
-export type Reason = 'best' | 'original' | 'similar' | 'duplicate' | 'blurry' | 'screenshot' | 'utility' | 'large' | 'trip' | 'later' | 'dark' | 'bright';
+export type Reason = 'best' | 'original' | 'similar' | 'duplicate' | 'blurry' | 'screenshot' | 'utility' | 'large' | 'trip' | 'later' | 'dark' | 'bright' | 'video';
 
 export interface ReviewItem {
   id: string;
@@ -86,7 +86,9 @@ export function reviewCleanup(
 /**
  * A run of photos in time order — a trip, a month, this day in earlier years:
  * extra shots, too dark or too bright photos, blurry photos and (when `oldShot` says so) old screenshots
- * suggested for deleting, the rest kept.
+ * and screen recordings suggested for deleting, the rest kept. Videos (months and "On this day"; trips
+ * hold photos only): a copy or lookalike of another (its group) → delete, an old screen recording →
+ * delete, every other video → keep, its length and size shown.
  */
 export function reviewTrip(
   ids: string[], groups: Group[], byId: Map<string, Photo>, kept: Set<string>, oldShot?: (p: Photo) => boolean,
@@ -99,7 +101,8 @@ export function reviewTrip(
     const protectedPhoto = isProtected(p ?? { id }, kept);
     const why = extra.get(id);
     if (!protectedPhoto && why) return { id, suggest: 'delete', reason: why };
-    if (!protectedPhoto && p?.shot && oldShot?.(p)) return { id, suggest: 'delete', reason: 'screenshot' };
+    if (!protectedPhoto && (p?.shot || p?.rec) && oldShot?.(p)) return { id, suggest: 'delete', reason: 'screenshot' };
+    if (p?.video) return { id, suggest: 'keep', reason: 'video' };
     const exposure = p && !protectedPhoto ? exposureLevel(p) : null;
     if (exposure) return { id, suggest: 'delete', reason: exposure };
     if (!protectedPhoto && (level === 'high' || level === 'medium')) return { id, suggest: 'delete', reason: 'blurry', level };
@@ -147,6 +150,12 @@ export const laterIds = (s: Session) => s.items.filter(i => s.decisions[i.id] ==
 /** The photos given a final answer in this session (kept or marked for deleting): they leave the pile. */
 export const settledIds = (s: Session) =>
   s.items.filter(i => s.decisions[i.id] === 'keep' || s.decisions[i.id] === 'delete').map(i => i.id);
+
+/** The marked ones, photos and videos apart (the end screen counts videos separately). */
+export function deleteSplit(s: Session, byId: Map<string, Photo>): { photos: string[]; videos: string[] } {
+  const ids = toDelete(s);
+  return { photos: ids.filter(id => !byId.get(id)?.video), videos: ids.filter(id => byId.get(id)?.video) };
+}
 
 /** The photos marked for deleting. Undecided ones are kept. */
 export const toDelete = (s: Session) => s.items.filter(i => s.decisions[i.id] === 'delete').map(i => i.id);

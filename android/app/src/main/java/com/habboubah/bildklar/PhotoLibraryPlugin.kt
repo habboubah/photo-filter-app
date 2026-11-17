@@ -587,6 +587,23 @@ class PhotoLibraryPlugin : Plugin() {
         }
     }
 
+    /** A video (or photo) shown in the system's own player / viewer, with a read grant for its content URI. */
+    @PluginMethod
+    fun preview(call: PluginCall) {
+        val id = call.getString("id")?.takeIf { it.contains(':') } ?: run { call.reject("No id"); return }
+        val intent = Intent(Intent.ACTION_VIEW)
+            .setDataAndType(contentUri(id), if (isVideo(id)) "video/*" else "image/*")
+            .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        activity.runOnUiThread {
+            try {
+                activity.startActivity(intent)
+                call.resolve()
+            } catch (_: android.content.ActivityNotFoundException) {
+                call.reject("No player for this file")
+            }
+        }
+    }
+
     /**
      * Android's "albums" for Settings › Geschützt: every folder (RELATIVE_PATH)
      * that holds photos or videos, titled by its last part, with how many.

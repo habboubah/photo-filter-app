@@ -3,12 +3,13 @@ import type { Photo } from '../types';
 import { makeLibrary, detect, findBlurry, buildGroups } from './analyze';
 import { rankGroup } from './best';
 import { duration, findLarge, findLive, LARGE_MIN } from './large';
-import { reviewLarge } from './review';
-import { findScreenshots } from './screenshots';
+import { decide, deleteSplit, reviewLarge, reviewTrip, startSession } from './review';
+import { findScreenshots, isOldShot } from './screenshots';
 import { findGroups, findVideoDuplicates } from './similar';
 import { emptyState } from './state';
 import { detectTrips } from './trips';
 import { findHomes } from './home';
+import { buildMonths } from './months';
 
 const T = new Date(2026, 4, 2, 15).getTime();
 let n = 0;
@@ -92,5 +93,42 @@ describe('bursts', () => {
     expect(rankGroup([sharp, pick])[0].id).toBe(pick.id);
     const fav = photo({ sharp: 100, fav: true });
     expect(rankGroup([sharp, pick, fav])[0].id).toBe(fav.id);
+  });
+});
+
+describe('videos in the month review', () => {
+  const DAY = 24 * 3600_000;
+  const now = Date.UTC(2026, 10, 17);
+  const v = (id: string, extra: Partial<Photo> = {}): Photo => ({ id, t: now - 40 * DAY, bytes: 50_000_000, w: 1920, h: 1080, video: true, dur: 30_000, ...extra });
+
+  it('joins the month and on this day in time order', () => {
+    const photo: Photo = { id: 'p', t: now - 40 * DAY + 1000, bytes: 1, w: 1, h: 1 };
+    const film = v('film');
+    const months = buildMonths(makeLibrary([photo, film]).photos);
+    expect(months[0].ids).toEqual(['film', 'p']);
+  });
+
+  it('suggests deleting a copy and an old screen recording, keeps every other video with its length', () => {
+    const a = v('a');
+    const copy = v('copy', { t: a.t + 60_000 });
+    const rec = v('rec', { rec: true });
+    const freshRec = v('fresh', { rec: true, t: now - DAY });
+    const plain = v('plain');
+    const lib = makeLibrary([a, copy, rec, freshRec, plain]);
+    const groups = [{ key: 'v:a', kind: 'duplicate' as const, ids: ['a', 'copy'], best: 'a', suggested: 'a' }];
+    const items = reviewTrip(lib.photos.map(p => p.id), groups, lib.byId, new Set(), p => isOldShot(p, now));
+    const by = Object.fromEntries(items.map(i => [i.id, [i.suggest, i.reason]]));
+    expect(by.copy).toEqual(['delete', 'duplicate']);
+    expect(by.rec).toEqual(['delete', 'screenshot']);
+    expect(by.fresh).toEqual(['keep', 'video']);
+    expect(by.plain).toEqual(['keep', 'video']);
+    expect(by.a).toEqual(['keep', 'video']);
+  });
+
+  it('counts videos apart at the end', () => {
+    const lib = makeLibrary([v('x'), { id: 'p', t: 1, bytes: 1, w: 1, h: 1 }]);
+    let s = startSession([{ id: 'x', suggest: 'keep', reason: 'video' }, { id: 'p', suggest: 'delete', reason: 'blurry' }]);
+    s = decide(decide(s, 'delete'), 'delete');
+    expect(deleteSplit(s, lib.byId)).toEqual({ photos: ['p'], videos: ['x'] });
   });
 });

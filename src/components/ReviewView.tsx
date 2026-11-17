@@ -3,7 +3,7 @@ import { animate, motion, useMotionValue, useReducedMotion, useTransform } from 
 import { Check, Clock, Play, Shield, Trash2, Undo2, X } from 'lucide-react';
 import type { Confidence, Photo } from '../types';
 import { Strings, bytes, fmt, num, plural } from '../translations';
-import { Decision, ReviewItem, Session, laterIds, toDelete } from '../logic/review';
+import { Decision, ReviewItem, Session, deleteSplit, laterIds, toDelete } from '../logic/review';
 import { duration } from '../logic/large';
 import { Button, IconButton } from '../ui/Button';
 import { Thumb } from '../ui/Photo';
@@ -19,7 +19,7 @@ const THRESHOLD = 110;
  * the summary at the end offers "Delete N photos", which goes through the
  * system's own dialog.
  */
-export function ReviewView({ t, session, finished, byId, debug, onDecide, onProtect, onUndo, onFinish, onDelete, onClose }: {
+export function ReviewView({ t, session, finished, byId, debug, onDecide, onProtect, onPreview, onUndo, onFinish, onDelete, onClose }: {
   t: Strings;
   session: Session;
   finished: boolean;
@@ -28,6 +28,8 @@ export function ReviewView({ t, session, finished, byId, debug, onDecide, onProt
   onDecide: (d: Decision) => void;
   /** The shield: the photo is kept and protected for good (src/logic/protect.ts). */
   onProtect: (id: string) => void;
+  /** A video: played in the system's player over the app. */
+  onPreview: (id: string) => void;
   onUndo: () => void;
   onFinish: () => void;
   onDelete: (ids: string[]) => void;
@@ -71,7 +73,7 @@ export function ReviewView({ t, session, finished, byId, debug, onDecide, onProt
                 <div className="h-full bg-accent-fill rounded-full transition-[width] duration-300" style={{ width: `${(session.index / session.items.length) * 100}%` }} />
               </div>
             </div>
-            <Card key={item.id} t={t} item={item} photo={byId.get(item.id)} debug={debug} onDecide={onDecide} onProtect={() => onProtect(item.id)} />
+            <Card key={item.id} t={t} item={item} photo={byId.get(item.id)} debug={debug} onDecide={onDecide} onProtect={() => onProtect(item.id)} onPreview={() => onPreview(item.id)} />
             <div className="px-6 pb-safe-8 pt-3">
               <div className="flex justify-center items-end gap-6">
                 <RoundButton label={t.delete} tone="neg" icon={Trash2} onClick={() => onDecide('delete')} />
@@ -89,8 +91,8 @@ export function ReviewView({ t, session, finished, byId, debug, onDecide, onProt
   );
 }
 
-function Card({ t, item, photo, debug, onDecide, onProtect }: {
-  t: Strings; item: ReviewItem; photo?: Photo; debug: boolean; onDecide: (d: Decision) => void; onProtect: () => void;
+function Card({ t, item, photo, debug, onDecide, onProtect, onPreview }: {
+  t: Strings; item: ReviewItem; photo?: Photo; debug: boolean; onDecide: (d: Decision) => void; onProtect: () => void; onPreview: () => void;
 }) {
   const reduce = useReducedMotion();
   const x = useMotionValue(0);
@@ -105,6 +107,7 @@ function Card({ t, item, photo, debug, onDecide, onProtect }: {
     blurry: levelText[item.level ?? 'medium'], screenshot: photo?.rec ? t.reasonRecording : t.reasonScreenshot,
     utility: item.label ? fmt(t.reasonUtility, { label: t[`aiLabel_${item.label}`] }) : '',
     large: photo ? bytes(t, photo.bytes) : '', trip: '', later: t.reasonLater, dark: t.reasonDark, bright: t.reasonBright,
+    video: photo ? `${duration(photo.dur ?? 0)} · ${bytes(t, photo.bytes)}` : '',
   };
   const chip = item.suggest === 'delete' ? t.suggestDelete : item.suggest === 'keep' ? t.suggestKeep : '';
   const reason = reasons[item.reason];
@@ -168,6 +171,16 @@ function Card({ t, item, photo, debug, onDecide, onProtect }: {
             <Play className="w-3.5 h-3.5" fill="currentColor" strokeWidth={0} aria-hidden="true" />{t.videoBadge} · {duration(photo.dur ?? 0)}
           </span>
         )}
+        {photo?.video && (
+          <button
+            type="button" aria-label={fmt(t.playVideo, { length: duration(photo.dur ?? 0) })}
+            onPointerDownCapture={e => e.stopPropagation()}
+            onClick={() => { tapLight(); onPreview(); }}
+            className="absolute top-1/2 start-1/2 -translate-x-1/2 -translate-y-1/2 w-[72px] h-[72px] rounded-full bg-veil text-on-color inline-flex items-center justify-center press focus-visible:ring-focus"
+          >
+            <Play className="w-8 h-8 ms-1" fill="currentColor" strokeWidth={0} aria-hidden="true" />
+          </button>
+        )}
         {debug && photo && (
           <span className="absolute bottom-3 end-3 px-2 py-1 rounded-full bg-veil text-on-color text-micro font-bold num">
             {fmt(t.sharpnessDebug, { s: photo.sharp ?? '–', c: photo.contrast ?? '–' })}
@@ -202,14 +215,20 @@ function Summary({ t, session, byId, onDelete, onClose }: {
   t: Strings; session: Session; byId: Map<string, Photo>; onDelete: (ids: string[]) => void; onClose: () => void;
 }) {
   const ids = toDelete(session);
+  const split = deleteSplit(session, byId);
   const later = laterIds(session).length;
-  const size = ids.reduce((s, id) => s + (byId.get(id)?.bytes ?? 0), 0);
+  const sizeOf = (list: string[]) => list.reduce((s, id) => s + (byId.get(id)?.bytes ?? 0), 0);
   return (
     <main className="flex-1 flex flex-col px-6 pb-safe-8 pt-6">
       <h1 className="display text-title font-semibold text-fg">{t.reviewDoneTitle}</h1>
       <p className="text-body text-fg-mute mt-2 wrap-prose">
-        {ids.length ? fmt(t.reviewDoneBody, { photos: plural(t, 'photos', ids.length), size: bytes(t, size) }) : t.reviewNothing}
+        {!ids.length ? t.reviewNothing
+          : split.photos.length ? fmt(t.reviewDoneBody, { photos: plural(t, 'photos', split.photos.length), size: bytes(t, sizeOf(split.photos)) })
+            : fmt(t.reviewDoneBody, { photos: plural(t, 'videos', split.videos.length), size: bytes(t, sizeOf(split.videos)) })}
       </p>
+      {split.photos.length > 0 && split.videos.length > 0 && (
+        <p className="text-body text-fg-mute wrap-prose num">{fmt(t.reviewDoneVideos, { videos: plural(t, 'videos', split.videos.length), size: bytes(t, sizeOf(split.videos)) })}</p>
+      )}
       {later > 0 && <p className="text-label text-accent font-bold num mt-1">{plural(t, 'laterSaved', later)}</p>}
       {ids.length > 0 && (
         <div className="grid grid-cols-4 gap-[4px] mt-6">
@@ -219,7 +238,9 @@ function Summary({ t, session, byId, onDelete, onClose }: {
       <div className="flex-1 min-h-8" />
       {ids.length > 0 && (
         <>
-          <Button full size="lg" variant="destructive" icon={Trash2} onClick={() => onDelete(ids)}>{plural(t, 'deleteN', ids.length)}</Button>
+          <Button full size="lg" variant="destructive" icon={Trash2} onClick={() => onDelete(ids)}>
+            {split.videos.length ? plural(t, 'deleteFilesN', ids.length) : plural(t, 'deleteN', ids.length)}
+          </Button>
           <p className="text-caption text-fg-mute text-center mt-3 mb-4 wrap-prose">{t.deleteHint}</p>
         </>
       )}

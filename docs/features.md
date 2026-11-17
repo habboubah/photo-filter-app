@@ -153,6 +153,13 @@ Every feature, as the user sees it (German labels, English in brackets).
   and the size; a month gone through to its end is marked *Durchgesehen* [Done].
 - A tap reviews the month: extra shots, blurry photos and old screenshots are
   suggested for deleting, the rest for keeping.
+- **Videos** join the month (and *An diesem Tag*) in time order: a copy of
+  another video → delete; a screen recording older than 30 days → delete;
+  every other video → keep, with its length and size (*2:14 · 480 MB*). A
+  video shows its poster frame with a play button: a tap plays it in the
+  system's player (iPhone: over the app; never downloaded from iCloud).
+  The end screen counts videos apart (*Dazu 2 Videos, 1,1 GB*). Trips stay
+  photos only.
 
 ## Failed shots (*Missglückt*)
 - The home tile *Missglückt* [Failed shots] opens one screen with three tabs:

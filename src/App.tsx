@@ -478,6 +478,7 @@ export default function App() {
           t={t} session={review.session} finished={review.finished} byId={byId} debug={store.debug}
           onDecide={onDecide} onUndo={onUndo}
           onProtect={id => { store.protectPhotos([id], true); onDecide('keep'); show(t.protected); }}
+          onPreview={id => { void PhotoLibrary.preview({ id }).catch(() => show(t.previewFailed)); }}
           onFinish={() => setReview(r => (r ? { ...r, finished: true } : r))}
           onDelete={ids => { applyLater(review.session); deletePhotos(ids, keptAgainstSuggestion(review.session), () => {
             if (isDone(review.session)) review.onDone?.();

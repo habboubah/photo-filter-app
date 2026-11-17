@@ -131,6 +131,9 @@ export class DemoLibrary extends WebPlugin implements PhotoLibraryPlugin {
     return { done: ids.length, cancelled: false, dryRun };
   }
 
+  /** No player in a browser: the demo remembers what it was asked to play (the checks look at it). */
+  async preview({ id }: { id: string }) { set('bildklar-demo-preview', id); }
+
   /** Two made-up albums: the family photos at home and the Lake Garda summer. */
   private albums(): { id: string; title: string; members: string[] }[] {
     const all = this.photos().filter(p => !p.shot && !p.video);

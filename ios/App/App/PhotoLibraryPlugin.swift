@@ -5,6 +5,7 @@ import Photos
 import PhotosUI
 import Vision
 import AVFoundation
+import AVKit
 import WidgetKit
 import CryptoKit
 import ImageIO
@@ -63,6 +64,7 @@ public class PhotoLibraryPlugin: CAPPlugin, CAPBridgedPlugin, PHPhotoLibraryChan
         CAPPluginMethod(name: "thumbnail", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "createAlbum", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "listAlbums", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "preview", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "albumMembers", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "trash", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "getState", returnType: CAPPluginReturnPromise),
@@ -618,6 +620,29 @@ public class PhotoLibraryPlugin: CAPPlugin, CAPBridgedPlugin, PHPhotoLibraryChan
                 call.resolve(["done": 0, "cancelled": true, "dryRun": false])
             } else {
                 call.reject(error?.localizedDescription ?? "Could not create the album")
+            }
+        }
+    }
+
+    /// A video played over the app (the review's play button), from the phone only — never downloaded from iCloud.
+    @objc func preview(_ call: CAPPluginCall) {
+        guard let id = call.getString("id"), let asset = fetch([id]).firstObject, asset.mediaType == .video else {
+            call.reject("No video")
+            return
+        }
+        let options = PHVideoRequestOptions()
+        options.isNetworkAccessAllowed = false
+        options.deliveryMode = .automatic
+        PHImageManager.default().requestAVAsset(forVideo: asset, options: options) { [weak self] avAsset, _, _ in
+            DispatchQueue.main.async {
+                guard let avAsset, let presenter = self?.bridge?.viewController else {
+                    call.reject("The video is not on this iPhone")
+                    return
+                }
+                let player = AVPlayerViewController()
+                player.player = AVPlayer(playerItem: AVPlayerItem(asset: avAsset))
+                presenter.present(player, animated: true) { player.player?.play() }
+                call.resolve()
             }
         }
     }
