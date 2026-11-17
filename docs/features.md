@@ -184,8 +184,9 @@ tab again scrolls to its top; Android's back button goes from *Ordnen* to
   its round close button; the screen stays on while it plays. Never handed to
   another app. A file the phone can't play: *Dieses Video lässt sich hier nicht
   abspielen.*
-- The web demo has no video files: the play button only remembers what it was
-  asked to play.
+- In the browser (`npm run dev`) the test library's videos play full screen
+  over the app with the browser's controls; the curated demo has pictures
+  only, so its videos say *Dieses Video lässt sich hier nicht abspielen.*
 
 ## Smaller photos (*Fotos verkleinern*, needs the unlock)
 - Home tile *Fotos verkleinern · bis zu 3,1 GB* [Smaller photos · up to …]
