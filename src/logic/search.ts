@@ -117,16 +117,22 @@ export function search(vectors: Vectors, file: WordFile, concepts: number[], all
  */
 /** The candidates, by their concept's first English word. */
 export const EXAMPLE_WORDS = [
+  // the family words (EXAMPLE_FAMILY of them)
   'baby', 'child', 'toddler', 'family', 'twins', 'siblings', 'birthday', 'playground', 'sleeping', 'bath',
-  'dog', 'cat', 'beach', 'snow', 'mountains', 'city', 'christmas', 'eid', 'ramadan', 'zoo',
-  'food', 'cake', 'flowers', 'sunset', 'car', 'receipt', 'document', 'qr code',
+  'first steps', 'toys', 'drawing', 'kindergarten',
+  // the rest
+  'dog', 'cat', 'horse', 'bird', 'zoo', 'farm', 'beach', 'sea', 'lake', 'mountains', 'forest', 'park', 'garden',
+  'flowers', 'snow', 'sunset', 'night', 'city', 'old town', 'museum', 'christmas', 'eid', 'ramadan', 'easter',
+  'halloween', 'carnival', 'fireworks', 'wedding', 'friends', 'selfie', 'food', 'cake', 'pizza', 'ice cream',
+  'restaurant', 'pool', 'swimming', 'football', 'hiking', 'skiing', 'car', 'airplane', 'train', 'boat',
+  'receipt', 'document', 'qr code',
 ];
 /** The first this many of EXAMPLE_WORDS are the family words. */
-export const EXAMPLE_FAMILY = 10;
-export const EXAMPLE_FAMILY_MAX = 4;
+export const EXAMPLE_FAMILY = 14;
+export const EXAMPLE_FAMILY_MAX = 6;
 export const EXAMPLE_SURE = -7.5;
 export const EXAMPLE_MIN = 2;
-export const EXAMPLE_COUNT = 8;
+export const EXAMPLE_COUNT = 16;
 /** The words offered while the AI hasn't seen the photos yet: plain chips. */
 export const FALLBACK_WORDS = ['baby', 'dog', 'beach', 'birthday', 'snow', 'playground', 'food', 'receipt'];
 
