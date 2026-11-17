@@ -20,18 +20,20 @@ const THRESHOLD = 110;
 /**
  * A review: one photo at a time, swiped left to delete, right to keep or up
  * to decide later (or the three buttons, or the arrow keys), with undo. Nothing is deleted here;
- * the summary at the end offers "Delete N photos", which goes through the
- * system's own dialog.
+ * the summary at the end puts the marked ones into "Zum Löschen" (src/logic/bin.ts). Gone through
+ * from the bin itself (`bin`), it offers "Delete N photos", which goes through the system's own dialog.
  */
 /** What the end screen writes: the photos marked for deleting, and the photos filed into albums (Session.albums). */
 export interface ReviewOutcome { deleteIds: string[]; albums: { album: string; ids: string[] }[] }
 
-export function ReviewView({ t, session, finished, byId, debug, albums, android, onDecide, onFile, onProtect, onPreview, onLike, onUndo, onFinish, onDelete, onClose }: {
+export function ReviewView({ t, session, finished, byId, debug, bin = false, albums, android, onDecide, onFile, onProtect, onPreview, onLike, onUndo, onFinish, onDelete, onClose }: {
   t: Strings;
   session: Session;
   finished: boolean;
   byId: Map<string, Photo>;
   debug: boolean;
+  /** "Zum Löschen" gone through again: the end deletes for real (else it puts the marked ones into the bin). */
+  bin?: boolean;
   /** The albums for the chips, the last used first (iPhone albums / Android folders). */
   albums: { id: string; title: string }[];
   /** Android: filing moves the photos into the folder (said on the end screen). */
@@ -94,7 +96,7 @@ export function ReviewView({ t, session, finished, byId, debug, albums, android,
         <IconButton label={t.undo} icon={Undo2} tone="bar" onClick={onUndo} disabled={!session.history.length} className={session.history.length ? '' : 'opacity-40'} />
       </header>
       {done
-        ? <Summary t={t} session={session} byId={byId} chips={chips} android={android} onDelete={onDelete} onClose={onClose} />
+        ? <Summary t={t} session={session} byId={byId} bin={bin} chips={chips} android={android} onDelete={onDelete} onClose={onClose} />
         : (
           <>
             <div className="px-[16px] pt-1">
@@ -165,7 +167,7 @@ function Card({ t, item, photo, debug, onDecide, onProtect, onPreview, onLike }:
     utility: item.label ? fmt(t.reasonUtility, { label: t[`aiLabel_${item.label}`] }) : '',
     large: photo ? bytes(t, photo.bytes) : '', trip: '', later: t.reasonLater, dark: t.reasonDark, bright: t.reasonBright,
     video: photo ? `${duration(photo.dur ?? 0)} · ${bytes(t, photo.bytes)}` : '',
-    lookalike: t.reasonLookalike, bestTake: t.reasonBestTake, app: t.reasonApp, found: '',
+    lookalike: t.reasonLookalike, bestTake: t.reasonBestTake, app: t.reasonApp, found: '', bin: t.reasonBin,
   };
   const details: Record<Detail, string> = {
     exactCopy: t.detailExactCopy, smallerCopy: t.detailSmallerCopy, alteredCopy: t.detailAlteredCopy, burstExtra: t.detailBurstExtra,
@@ -292,8 +294,8 @@ function RoundButton({ label, tone, icon: Icon, onClick }: { label: string; tone
   );
 }
 
-function Summary({ t, session, byId, chips, android, onDelete, onClose }: {
-  t: Strings; session: Session; byId: Map<string, Photo>; chips: { id: string; title: string }[]; android: boolean;
+function Summary({ t, session, byId, bin, chips, android, onDelete, onClose }: {
+  t: Strings; session: Session; byId: Map<string, Photo>; bin: boolean; chips: { id: string; title: string }[]; android: boolean;
   onDelete: (outcome: ReviewOutcome) => void; onClose: () => void;
 }) {
   const ids = toDelete(session);
@@ -301,7 +303,9 @@ function Summary({ t, session, byId, chips, android, onDelete, onClose }: {
   const filed = plan.reduce((n, a) => n + a.ids.length, 0);
   const albumTitle = (key: string) => chips.find(c => c.id === key)?.title ?? (isNewAlbum(key) ? key.slice(4) : key);
   const split = deleteSplit(session, byId);
-  const later = laterIds(session).length;
+  // From the bin, a photo swiped up just stays there: no decide-later pile.
+  const later = bin ? 0 : laterIds(session).length;
+  const restored = bin ? session.items.filter(i => session.decisions[i.id] === 'keep').length : 0;
   const sizeOf = (list: string[]) => list.reduce((s, id) => s + (byId.get(id)?.bytes ?? 0), 0);
   return (
     <main className="flex-1 flex flex-col px-6 pb-safe-8 pt-6">
@@ -321,10 +325,11 @@ function Summary({ t, session, byId, chips, android, onDelete, onClose }: {
         <p className="text-body text-fg-mute wrap-prose num">{fmt(t.reviewDoneVideos, { videos: plural(t, 'videos', split.videos.length), size: bytes(t, sizeOf(split.videos)) })}</p>
       )}
       {later > 0 && <p className="text-label text-accent font-bold num mt-1">{plural(t, 'laterSaved', later)}</p>}
+      {restored > 0 && <p className="text-label text-keep font-bold num mt-1">{plural(t, 'binRestoreHint', restored)}</p>}
       {filed > 0 && (
         <div className="mt-5 rounded-md card p-4 space-y-1.5">
           <p className="text-body font-bold text-fg num">
-            {[ids.length ? plural(t, 'deleteN', ids.length) : null, fmt(t.filedSummary, { photos: plural(t, 'photos', filed), albums: plural(t, 'albums', plan.length) })].filter(Boolean).join(' · ')}
+            {[ids.length ? (bin ? plural(t, 'deleteN', ids.length) : `${t.binAdd} · ${plural(t, 'photos', ids.length)}`) : null, fmt(t.filedSummary, { photos: plural(t, 'photos', filed), albums: plural(t, 'albums', plan.length) })].filter(Boolean).join(' · ')}
           </p>
           <ul className="text-caption text-fg-mute space-y-0.5">
             {plan.map(a => <li key={a.album} className="num">{`${albumTitle(a.album)} · ${plural(t, 'photos', a.ids.length)}`}</li>)}
@@ -341,9 +346,11 @@ function Summary({ t, session, byId, chips, android, onDelete, onClose }: {
       {ids.length > 0 && (
         <>
           <Button full size="lg" variant="destructive" icon={Trash2} onClick={() => onDelete({ deleteIds: ids, albums: plan })}>
-            {filed > 0 ? t.deleteAndFile : split.videos.length ? plural(t, 'deleteFilesN', ids.length) : plural(t, 'deleteN', ids.length)}
+            {bin
+              ? (filed > 0 ? t.deleteAndFile : split.videos.length ? plural(t, 'deleteFilesN', ids.length) : plural(t, 'deleteN', ids.length))
+              : (filed > 0 ? t.binAddAndFile : `${t.binAdd} · ${split.videos.length ? plural(t, 'files', ids.length) : plural(t, 'photos', ids.length)}`)}
           </Button>
-          <p className="text-caption text-fg-mute text-center mt-3 mb-4 wrap-prose">{t.deleteHint}</p>
+          <p className="text-caption text-fg-mute text-center mt-3 mb-4 wrap-prose">{bin ? t.deleteHint : t.binHint}</p>
         </>
       )}
       {!ids.length && filed > 0 && (

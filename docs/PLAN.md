@@ -150,6 +150,10 @@ the dry run): losing them costs nothing.
   confirming the system's own dialog (iOS's delete alert, Android's
   write/trash request).
 - Deleted photos go to Recently Deleted / the Trash only.
+- Choosing photos to delete only puts them aside in *Zum Löschen*
+  (`src/logic/bin.ts`, kept in the decisions file): they leave every finder
+  at once and can be put back. The real delete — the system's dialog — starts
+  from that list only, so a wrong swipe or tap never costs a photo.
 - **Dry run**: debug builds start with it on (Einstellungen › Nur in der
   Debug-Version › Probelauf): every write to the library is skipped and the app
   says what it would have done. Release builds never run dry.

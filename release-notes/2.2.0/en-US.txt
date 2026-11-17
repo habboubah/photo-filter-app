@@ -1,6 +1,7 @@
 New in Bildklar 2.2 – cleaning up you can trust:
-• Every suggestion says how sure Bildklar is, and why: exact copy, blurrier, eyes closed …
-• Quick clean takes only the sure photos; you go through the unsure ones yourself
+• “To delete”: what you choose to delete waits there first – put anything back any time
+• Every suggestion says how sure Bildklar is – and why
+• Quick clean takes only the sure photos
 • Near-identical photos and edited copies are found more accurately
 • Search: "baby", "dog", "beach" – with suggestions from your own photos
 • Similar photos for any photo

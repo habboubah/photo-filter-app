@@ -8,7 +8,8 @@ import { type Ledger, normalizeLedger } from './ledger';
 /*
  * The user's own decisions — everything the app cannot work out again from
  * the photos: trip names, cuts, joins and hidden trips, the albums made, the
- * best shot picked by hand, the photos kept in a review. On the phones this
+ * best shot picked by hand, the photos kept in a review, the photos waiting
+ * in "Zum Löschen". On the phones this
  * lives in the native SQLite database next to the scan cache (PhotoLibrary
  * getState / setState): a phone short of space — this app's users — may
  * clear a web view's localStorage. On the web (the demo) it is localStorage.
@@ -41,6 +42,8 @@ export interface AppState {
   early: boolean;
   /** The decide-later pile: photos swiped up in a review, in the order they were put off (src/logic/review.ts). */
   later: string[];
+  /** "Zum Löschen": photos the user chose to delete, waiting for the real delete, newest first (src/logic/bin.ts). */
+  bin: string[];
   /** The order the user chose for each list screen (src/logic/sort.ts SORT_DEFAULT keys). */
   sort: Record<string, SortKey>;
   /** Photos, trips and albums never suggested for deleting (src/logic/protect.ts). */
@@ -65,6 +68,7 @@ export const emptyState = (): AppState => ({
   freeUsed: 0,
   early: false,
   later: [],
+  bin: [],
   sort: {},
   protect: { ids: [], trips: [], albums: [], similar: true },
   recentAlbums: [],
@@ -117,6 +121,8 @@ export function normalizeState(raw: unknown): AppState {
   s.best = stringMap(raw.best);
   s.kept = [...new Set(strings(raw.kept))];
   s.later = [...new Set(strings(raw.later))];
+  // Added 17 November 2026: older state files have no bin.
+  s.bin = [...new Set(strings(raw.bin))];
   if (isObj(raw.protect)) {
     s.protect = {
       ids: [...new Set(strings(raw.protect.ids))],

@@ -10,6 +10,7 @@ import { AppState, RECENT_ALBUMS, SCHEMA_VERSION, emptyState, normalizeState, pr
 import type { TripEdits } from './logic/trips';
 import { addDay } from './logic/streak';
 import { learnPick } from './logic/best';
+import { addToBin, removeFromBin } from './logic/bin';
 import { record } from './logic/ledger';
 import type { Session } from './logic/review';
 import type { SortKey } from './logic/sort';
@@ -162,6 +163,15 @@ export function useAppStore() {
   /** Photos no longer in the library leave the pile. */
   const pruneLaterPile = (exists: (id: string) => boolean) =>
     setState(s => { const later = pruneLater(s.later, exists); return later === s.later ? s : { ...s, later }; });
+  /** Photos chosen for deleting: put aside in "Zum Löschen" (src/logic/bin.ts), not deleted yet. */
+  const binAdd = (ids: string[]) =>
+    setState(s => { const bin = addToBin(s.bin, ids); return bin === s.bin ? s : { ...s, bin }; });
+  /** Photos put back from "Zum Löschen", or deleted for good: they leave it. */
+  const binRemove = (ids: string[]) =>
+    setState(s => { const bin = removeFromBin(s.bin, ids); return bin === s.bin ? s : { ...s, bin }; });
+  /** Photos no longer in the library (deleted elsewhere) leave the bin. */
+  const pruneBin = (exists: (id: string) => boolean) =>
+    setState(s => { const bin = pruneLater(s.bin, exists); return bin === s.bin ? s : { ...s, bin }; });
   /** Photos protected by hand (the shield in the review), or no longer. Protected ones count as kept; lifting it lifts both. */
   const protectPhotos = (ids: string[], on: boolean) => setState(s => {
     const list = toggled(s.protect.ids, ids, on);
@@ -206,7 +216,8 @@ export function useAppStore() {
   /** Forget every decision but the purchase, the free deletes and the "freed so far" count; returns the old state for undo. */
   const resetDecisions = (): AppState => {
     const before = state;
-    setState(s => ({ ...emptyState(), owned: s.owned, freed: s.freed, days: s.days, freeUsed: s.freeUsed, early: s.early }));
+    // What waits in "Zum Löschen" stays: it is a delete in progress, not a suggestion.
+    setState(s => ({ ...emptyState(), owned: s.owned, freed: s.freed, days: s.days, freeUsed: s.freeUsed, early: s.early, bin: s.bin }));
     return before;
   };
   const restoreState = (s: AppState) => setState(s);
@@ -484,7 +495,7 @@ export function useAppStore() {
   return {
     language, setLanguage, themeMode, setThemeMode,
     debug, dryRunAvailable, dryRun, setDryRun,
-    state, stateReady, storageError, updateTrips, recordAlbum, setBest, recordReview, addKept, removeKept, updateLater, pruneLaterPile, setSort, protectPhotos, protectTrip, protectAlbum, protectSimilar, albumMembers, useAlbums, markMonthDone, addFreed, markDay, countFree, resetDecisions, restoreState,
+    state, stateReady, storageError, updateTrips, recordAlbum, setBest, recordReview, addKept, removeKept, updateLater, pruneLaterPile, binAdd, binRemove, pruneBin, setSort, protectPhotos, protectTrip, protectAlbum, protectSimilar, albumMembers, useAlbums, markMonthDone, addFreed, markDay, countFree, resetDecisions, restoreState,
     reminder, setReminder,
     owned: isOwned, setOwned,
     access, refreshAccess, accessGranted,

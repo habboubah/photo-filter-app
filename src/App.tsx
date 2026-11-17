@@ -17,7 +17,7 @@ import { folderName } from './logic/naming';
 import { addMerge, addSplit, removeMerge, removeSplits, setIgnored, setName } from './logic/trips';
 import {
   Decision, ReviewItem, Session, decide, fileTo, isDone, isNewAlbum, keptAgainstSuggestion, laterIds, reviewBlurry, reviewCleanup, reviewGroup,
-  reviewExposure, reviewFound, reviewLarge, reviewLater, reviewScreenshots, reviewTrip, reviewUtility, settledIds, startSession, undo,
+  reviewBin, reviewExposure, reviewFound, reviewLarge, reviewLater, reviewScreenshots, reviewTrip, reviewUtility, settledIds, startSession, undo,
 } from './logic/review';
 import { aiProgress, categories, findSensitive, findUtility, type MemoryLabel } from './logic/ai';
 import { findScreenshots, isOldShot, oldShots } from './logic/screenshots';
@@ -32,12 +32,13 @@ import { cleanParts } from './logic/smartClean';
 import { type Verdict, groupVerdict } from './logic/confidence';
 import { adjustItems, strictUtility } from './logic/ledger';
 import { streak } from './logic/streak';
+import { binOutcome, binPhotos, withoutBin } from './logic/bin';
 import { feedbackMail, openExternal, privacyUrl, rateUrl, systemFromAgent } from './links';
 import { devNative, isAndroid, isIos } from './platform';
 import { Toast, useToast } from './ui/Toast';
 import { PlayerContext, type Player } from './ui/play';
 import { Confirm } from './ui/Sheet';
-import { notifySuccess } from './ui/haptics';
+import { notifySuccess, tapLight } from './ui/haptics';
 import { PermissionView } from './components/PermissionView';
 import { HomeView } from './components/HomeView';
 import { TabBar } from './ui/TabBar';
@@ -77,9 +78,13 @@ const LicenceView = lazy(() => import('./components/LicencesView').then(m => ({ 
 const OrganizeView = lazy(() => import('./components/OrganizeView').then(m => ({ default: m.OrganizeView })));
 const SearchView = lazy(() => import('./components/SearchView').then(m => ({ default: m.SearchView })));
 const LikeView = lazy(() => import('./components/LikeView').then(m => ({ default: m.LikeView })));
+const BinView = lazy(() => import('./components/BinView').then(m => ({ default: m.BinView })));
 
-/** `onDone`: what happens once the review was gone through to its end (a month marked as done). */
-interface Review { session: Session; finished: boolean; onDone?: () => void }
+/**
+ * `onDone`: what happens once the review was gone through to its end (a month marked as done).
+ * `bin`: "Zum Löschen" gone through again — the end deletes for real, what was kept goes back.
+ */
+interface Review { session: Session; finished: boolean; onDone?: () => void; bin?: boolean }
 
 export default function App() {
   const store = useAppStore();
@@ -94,7 +99,12 @@ export default function App() {
     if (photos?.length && !cities) void loadCities().then(setCities);
   }, [photos, cities]);
 
-  const lib = useMemo(() => makeLibrary(photos ?? []), [photos]);
+  // "Zum Löschen" (src/logic/bin.ts): what the user chose to delete is put aside there and leaves
+  // every finder, group, trip and count below — `lib` is the library without it. `all` has it.
+  const all = useMemo(() => makeLibrary(photos ?? []), [photos]);
+  const lib = useMemo(() => (state.bin.length ? makeLibrary(withoutBin(all.photos, state.bin)) : all), [all, state.bin]);
+  const binned = useMemo(() => binPhotos(state.bin, all.byId), [state.bin, all]);
+  const binBytes = useMemo(() => binned.reduce((s, p) => s + p.bytes, 0), [binned]);
   const detection = useMemo(() => detect(lib, store.vectors), [lib, store.vectors]);
   const trips = useMemo(
     () => buildTrips(lib, detection.trips, state, cities, language, t.locale),
@@ -163,12 +173,15 @@ export default function App() {
   const sources = useMemo(() => groupBySource(lib.photos, isAndroid() ? undefined : store.appAlbums), [lib, store.appAlbums]);
   const sourcesBytes = useMemo(() => sources.reduce((s, g) => s + g.bytes, 0), [sources]);
   const hasLocations = useMemo(() => lib.photos.some(p => p.lat !== undefined), [lib]);
-  // The decide-later pile, without photos that are gone (a full scan's view of the library prunes it for good).
+  // The decide-later pile, without photos that are gone or in the bin (a full scan's view of the library prunes both for good).
   const laterPile = useMemo(() => state.later.filter(id => lib.byId.has(id)), [state.later, lib]);
   useEffect(() => {
-    if (photos && store.access === 'full' && !store.scan.running && store.stateReady) store.pruneLaterPile(id => lib.byId.has(id));
+    if (photos && store.access === 'full' && !store.scan.running && store.stateReady) {
+      store.pruneLaterPile(id => all.byId.has(id));
+      store.pruneBin(id => all.byId.has(id));
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [photos, store.access, store.scan.running, store.stateReady, lib]);
+  }, [photos, store.access, store.scan.running, store.stateReady, all]);
 
   /* ------------------------------------------------------------- widget */
 
@@ -244,6 +257,7 @@ export default function App() {
   /** The part whose licence is open (Einstellungen › Lizenzen › one row). */
   const [licence, setLicence] = useState<string | null>(null);
   const [showProtected, setShowProtected] = useState(false);
+  const [showBin, setShowBin] = useState(false);
   const [review, setReview] = useState<Review | null>(null);
   const [showSearch, setShowSearch] = useState(false);
   /** The photo whose look-alikes are shown (Ähnliche Fotos), over a review or the search. */
@@ -267,7 +281,12 @@ export default function App() {
   /** The decide-later pile after a review: what was put off joins it, what was decided leaves it. */
   const applyLater = (session: Session) => store.updateLater(laterIds(session), settledIds(session));
   const closeReview = () => {
-    if (review) {
+    if (review?.bin) {
+      // Left early: what was swiped right goes back now, the rest stays in the bin.
+      const { restore } = binOutcome(review.session);
+      store.binRemove(restore);
+      if (restore.length) show(plural(t, 'binRestored', restore.length));
+    } else if (review) {
       store.recordReview(review.session);
       store.addKept(keptAgainstSuggestion(review.session));
       applyLater(review.session);
@@ -284,6 +303,7 @@ export default function App() {
     ['licence', !!licence, () => setLicence(null)],
     ['licences', showLicences, () => setShowLicences(false)],
     ['protected', showProtected, () => setShowProtected(false)],
+    ['bin', showBin, () => setShowBin(false)],
     ['group', !!group, () => setGroupKey(null)],
     ['trip', !!trip, () => setTripKey(null)],
     ['similar', showSimilar, () => setShowSimilar(false)],
@@ -386,7 +406,8 @@ export default function App() {
       if (r.cancelled) { show(t.deleteCancelled); return false; }
       store.addKept(keepIds);
       if (r.dryRun) { show(fmt(t.dryRunDelete, { photos: plural(t, 'photos', ids.length) })); return true; }
-      store.addFreed(r.trashed.length, r.trashed.reduce((sum, id) => sum + (lib.byId.get(id)?.bytes ?? 0), 0));
+      store.addFreed(r.trashed.length, r.trashed.reduce((sum, id) => sum + (all.byId.get(id)?.bytes ?? 0), 0));
+      store.binRemove(r.trashed);
       store.markDay();
       if (free) store.countFree(r.trashed.length);
       store.removePhotos(r.trashed);
@@ -420,6 +441,20 @@ export default function App() {
       deleteLeft: left > 0 ? () => { closePaywall(); window.setTimeout(() => run(ids.slice(0, left), true), 250); } : undefined,
     });
     setPaywall(true);
+  };
+
+  /**
+   * Choosing photos to delete puts them into "Zum Löschen" (src/logic/bin.ts): they leave their
+   * group and every count at once, and nothing is deleted yet — the bin's screen does that, through
+   * the system's dialog. `keepIds`: kept against a suggestion in the same review (never suggested again).
+   */
+  const toBin = (ids: string[], keepIds: string[] = [], after?: () => void) => {
+    store.addKept(keepIds);
+    if (!ids.length) { after?.(); return; }
+    store.binAdd(ids);
+    tapLight();
+    after?.();
+    show(plural(t, 'binAdded', ids.length), { label: t.undo, run: () => store.binRemove(ids) });
   };
 
   const [albumFor, setAlbumFor] = useState<Trip | null>(null);
@@ -529,10 +564,10 @@ export default function App() {
   /** A list screen's order and how to change it (src/logic/sort.ts). */
   const sorting = (screen: SortScreen) => ({ sort: sortFor(state.sort, screen), onSort: (k: Parameters<typeof store.setSort>[1]) => store.setSort(screen, k) });
 
-  const startReview = (items: ReviewItem[], onDone?: () => void) => {
+  const startReview = (items: ReviewItem[], onDone?: () => void, bin?: boolean) => {
     if (!items.length) return;
     // How sure each suggestion is, as this phone's ledger has it (src/logic/ledger.ts).
-    setReview({ session: startSession(adjustItems(items, state.ledger)), finished: false, onDone });
+    setReview({ session: startSession(adjustItems(items, state.ledger)), finished: false, onDone, bin });
     if (extras && !albumList) void PhotoLibrary.listAlbums().then(r => setAlbumList(r.albums)).catch(() => setAlbumList([]));
   };
 
@@ -615,20 +650,27 @@ export default function App() {
     if (review) {
       return (
         <ReviewView
-          t={t} session={review.session} finished={review.finished} byId={byId} debug={store.debug}
+          t={t} session={review.session} finished={review.finished} byId={review.bin ? all.byId : byId} debug={store.debug} bin={review.bin}
           onDecide={onDecide} onUndo={onUndo} albums={chips} android={isAndroid()} onFile={extras ? onFile : undefined}
           onProtect={id => { store.protectPhotos([id], true); onDecide('keep'); show(t.protected); }}
           onPreview={player.play}
-          onLike={id => { if (store.vectors.has(id)) setLikeId(id); else show(t.likeNone); }}
+          onLike={review.bin ? undefined : id => { if (store.vectors.has(id)) setLikeId(id); else show(t.likeNone); }}
           onFinish={() => setReview(r => (r ? { ...r, finished: true } : r))}
           onDelete={outcome => {
+            if (review.bin) {
+              // From the bin: what was kept goes back, what was marked is deleted now (the system's dialog).
+              const { restore } = binOutcome(review.session);
+              store.binRemove(restore);
+              void fileAlbums(outcome.albums).then(() => {
+                if (outcome.deleteIds.length) deletePhotos(outcome.deleteIds, [], () => setReview(null));
+                else { if (restore.length) show(plural(t, 'binRestored', restore.length)); setReview(null); }
+              });
+              return;
+            }
             applyLater(review.session);
             store.recordReview(review.session);
             const finish = () => { if (isDone(review.session)) review.onDone?.(); setReview(null); };
-            void fileAlbums(outcome.albums).then(() => {
-              if (outcome.deleteIds.length) deletePhotos(outcome.deleteIds, keptAgainstSuggestion(review.session), finish);
-              else { store.addKept(keptAgainstSuggestion(review.session)); finish(); }
-            });
+            void fileAlbums(outcome.albums).then(() => toBin(outcome.deleteIds, keptAgainstSuggestion(review.session), finish));
           }}
           onClose={closeReview}
         />
@@ -651,6 +693,17 @@ export default function App() {
         />
       );
     }
+    if (showBin) {
+      return (
+        <BinView
+          t={t} photos={binned}
+          onBack={() => setShowBin(false)}
+          onRestore={ids => { store.binRemove(ids); show(plural(t, 'binRestored', ids.length), { label: t.undo, run: () => store.binAdd(ids) }); }}
+          onDelete={ids => deletePhotos(ids, [], () => { if (ids.length === binned.length) setShowBin(false); })}
+          onReview={ids => startReview(reviewBin(ids), undefined, true)}
+        />
+      );
+    }
     if (group) {
       return (
         <GroupView
@@ -664,7 +717,7 @@ export default function App() {
               id !== group.suggested && chosen && suggested ? { chosen: withFaces(chosen)!, suggested: withFaces(suggested)! } : undefined);
           }}
           onReview={() => startReview(reviewGroup(group, kept, byId, cos))}
-          onDeleteOthers={ids => deletePhotos(ids, [], () => setGroupKey(null))}
+          onDeleteOthers={ids => toBin(ids, [], () => setGroupKey(null))}
           onKeepAll={() => {
             const ids = group.ids.filter(id => !state.kept.includes(id));
             store.addKept(ids);
@@ -762,7 +815,7 @@ export default function App() {
             const reasons = new Map(reviewCleanup(groups, cleanupBlurry(blurry, kept), kept, byId, old, [], exposureAll, cos).map(i => [i.id, i]));
             startReview(ids.map(id => reasons.get(id)).filter((i): i is ReviewItem => !!i));
           }}
-          onDelete={ids => deletePhotos(ids, [], () => setShowQuickClean(false))}
+          onDelete={ids => toBin(ids, [], () => setShowQuickClean(false))}
         />
       );
     }
@@ -773,7 +826,7 @@ export default function App() {
           onBack={() => setShowLarge(false)}
           onReview={(list: Photo[]) => startReview(reviewLarge(list))}
           onCompress={p => needUnlock(() => { void compress(p); })}
-          onDelete={p => deletePhotos([p.id])}
+          onDelete={p => toBin([p.id])}
         />
       );
     }
@@ -784,7 +837,7 @@ export default function App() {
           onBack={() => setShowVideos(false)}
           onReview={(list: Photo[]) => startReview(reviewLarge(list))}
           onCompress={p => needUnlock(() => { void compress(p); })}
-          onDelete={p => deletePhotos([p.id])}
+          onDelete={p => toBin([p.id])}
         />
       );
     }
@@ -929,6 +982,8 @@ export default function App() {
         storage={store.storage} freedBytes={state.freed.bytes} streak={streak(state.days, now)}
         months={{ done: months.filter(m => doneMonths.has(m.key)).length, total: months.length, pct }}
         later={{ count: laterPile.length, cover: laterPile[0] }}
+        bin={{ count: binned.length, bytes: binBytes, cover: binned[0]?.id }}
+        onBin={() => setShowBin(true)}
         protection={{ albums: state.protect.albums.length, trips: state.protect.trips.length, photos: state.protect.ids.length }}
         onLater={() => startReview(reviewLater(laterPile))}
         onProtected={() => setShowProtected(true)}
@@ -1046,7 +1101,7 @@ export default function App() {
         </div>
       </Sheet>
 
-      <Toast toast={toast} onDone={hide} raised={['trip', 'group', 'blurry', 'screenshots', 'utility', 'quickClean', 'large', 'live', 'compress', 'cleanup', 'review', 'search', 'like'].includes(screen)} />
+      <Toast toast={toast} onDone={hide} raised={screen === 'bin' ? 'high' : ['trip', 'group', 'blurry', 'screenshots', 'utility', 'quickClean', 'large', 'live', 'compress', 'cleanup', 'review', 'search', 'like'].includes(screen)} />
     </div>
     </PlayerContext.Provider>
   );

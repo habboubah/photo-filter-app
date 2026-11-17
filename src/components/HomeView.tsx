@@ -1,5 +1,5 @@
 import type React from 'react';
-import { Aperture, CalendarDays, Check, Clock, FileVideo, Image as ImageIcon, ImagePlus, MessageCircle, Minimize2, RefreshCw, Search, Settings, Shield, Sparkles } from 'lucide-react';
+import { Aperture, CalendarDays, Check, Clock, FileVideo, Image as ImageIcon, ImagePlus, MessageCircle, Minimize2, RefreshCw, Search, Settings, Shield, Sparkles, Trash2 } from 'lucide-react';
 import type { CleanupSummary, Storage } from '../types';
 import type { Access } from '../native/photoLibrary';
 import type { ScanView } from '../store';
@@ -42,11 +42,14 @@ interface Props {
   months: { done: number; total: number; pct: number };
   /** The decide-later pile (photos swiped up in a review). */
   later: { count: number; cover?: string };
+  /** "Zum Löschen" (src/logic/bin.ts): what the user chose to delete, waiting for the real delete. */
+  bin: { count: number; bytes: number; cover?: string };
   /** Every photo and every video scanned (the clean-up card's table and its bar). */
   analysis: { photos: Stat; videos: Stat };
   /** How much is protected (src/logic/protect.ts): never suggested for deleting. */
   protection: { albums: number; trips: number; photos: number };
   onLater: () => void;
+  onBin: () => void;
   onProtected: () => void;
   onRescan: () => void;
   onSettings: () => void;
@@ -216,10 +219,18 @@ export function HomeView(p: Props) {
         </section>
       )}
 
-      {has && (p.later.count > 0 || p.months.total > 0) && (
+      {has && (p.bin.count > 0 || p.later.count > 0 || p.months.total > 0) && (
         <section aria-labelledby="continue-h">
           <SectionHead id="continue-h" title={t.continueTitle} />
           <Group>
+            {p.bin.count > 0 && (
+              <Row
+                label={t.binTitle} sub={`${bytes(t, p.bin.bytes)} · ${t.binCardBody}`} onClick={p.onBin}
+                ariaLabel={`${t.binTitle} (${num(t, p.bin.count)})`}
+                leading={p.bin.cover ? <RowPhoto id={p.bin.cover} /> : <IconTile icon={Trash2} hue="rose" />} lead={p.bin.cover ? 44 : undefined}
+                trailing={<Next value={num(t, p.bin.count)} />}
+              />
+            )}
             {p.later.count > 0 && (
               <Row
                 label={t.laterCard} sub={t.laterCardBody} onClick={p.onLater}
