@@ -81,6 +81,15 @@ export interface PhotoLibraryPlugin {
   listAlbums(): Promise<{ albums: AlbumInfo[] }>;
   /** The photo ids in these albums / folders (asked once per load, for the protected albums only). */
   albumMembers(options: { ids: string[] }): Promise<{ ids: string[] }>;
+  /**
+   * Photos filed into albums while swiping, all in one go. iPhone: added to
+   * the album (`albumId`) or a new one (`title`) — adding only links a photo,
+   * nothing moves, and iOS asks nothing. Android: an album is a folder, so the
+   * photos move there (`albumId` is its RELATIVE_PATH; a new one is
+   * Pictures/<title>/) after one createWriteRequest dialog for all of them.
+   * With `dryRun` nothing is written.
+   */
+  addToAlbums(options: { groups: { albumId?: string; title?: string; ids: string[] }[]; dryRun: boolean }): Promise<{ done: number; cancelled: boolean; dryRun: boolean }>;
   /** Moves photos to Recently Deleted (iPhone) / the Trash (Android) after the system's own dialog. Never deletes for good. */
   trash(options: { ids: string[]; dryRun: boolean }): Promise<{ trashed: string[]; cancelled: boolean; dryRun: boolean }>;
 

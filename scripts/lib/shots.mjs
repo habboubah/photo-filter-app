@@ -248,6 +248,28 @@ export const SCREENS = [
       await pause(page, 500);
     },
   },
+  // Albums while swiping: the chips under the photo, two photos filed, then the end screen.
+  {
+    name: '36-album-chips', run: async (page, w) => {
+      await page.click(`button:has-text("${w.t.monthsCard}")`);
+      await pause(page, 600);
+      await page.click('main button >> nth=0');
+      await pause(page, 900);
+    },
+  },
+  {
+    name: '37-album-summary', run: async (page, w) => {
+      await page.click(`button:has-text("${w.t.monthsCard}")`);
+      await pause(page, 600);
+      await page.click('main button >> nth=4');
+      await pause(page, 900);
+      for (let i = 0; i < 2; i++) { await page.click(`[role="group"][aria-label="${w.t.fileIntoAlbum}"] button >> nth=0`); await pause(page, 250); }
+      await page.click(`button${aria(w.t.delete)}`);
+      await pause(page, 200);
+      await page.click(`button:has-text("${w.t.finishReview}")`);
+      await pause(page, 600);
+    },
+  },
   // Ähnliche Videos: the demo's two takes at Lake Garda, at the end of the duplicates.
   {
     name: '35-lookalike', run: async (page, w) => {

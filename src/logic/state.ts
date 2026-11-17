@@ -15,6 +15,8 @@ import type { Protection } from './protect';
  * optional; bump SCHEMA_VERSION and migrate here when a shape changes.
  */
 export const SCHEMA_VERSION = 1;
+/** How many recently used albums are remembered for the chips. */
+export const RECENT_ALBUMS = 12;
 
 export interface AppState {
   schemaVersion: number;
@@ -39,6 +41,8 @@ export interface AppState {
   sort: Record<string, SortKey>;
   /** Photos, trips and albums never suggested for deleting (src/logic/protect.ts). */
   protect: Protection;
+  /** Albums used while swiping, the last used first (ids from PhotoLibrary.listAlbums), for the chips' order. */
+  recentAlbums: string[];
 }
 
 export const emptyState = (): AppState => ({
@@ -54,6 +58,7 @@ export const emptyState = (): AppState => ({
   later: [],
   sort: {},
   protect: { ids: [], trips: [], albums: [] },
+  recentAlbums: [],
 });
 
 const isObj = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
@@ -108,6 +113,7 @@ export function normalizeState(raw: unknown): AppState {
       albums: [...new Set(strings(raw.protect.albums))],
     };
   }
+  s.recentAlbums = [...new Set(strings(raw.recentAlbums))].slice(0, RECENT_ALBUMS);
   if (isObj(raw.sort)) for (const [k, v] of Object.entries(raw.sort)) if (isSortKey(v)) s.sort[k] = v;
   s.owned = raw.owned === true;
   s.months = [...new Set(strings(raw.months).filter(k => /^\d{4}-\d{2}$/.test(k)))];

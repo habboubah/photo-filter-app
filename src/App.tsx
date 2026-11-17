@@ -7,7 +7,7 @@ import { AlertTriangle, FlaskConical } from 'lucide-react';
 import { useAppStore } from './store';
 import { bytes, fmt, percent, plural, stringsFor } from './translations';
 import type { Photo, Trip } from './types';
-import { PhotoLibrary } from './native/photoLibrary';
+import { PhotoLibrary, type AlbumInfo } from './native/photoLibrary';
 import { PRODUCT_ID, Purchases } from './native/purchases';
 import { loadCities } from './cities';
 import { forgetThumbs } from './thumbs';
@@ -16,7 +16,7 @@ import { buildGroups, buildTrips, cleanupBlurry, detect, findBlurry, makeLibrary
 import { folderName } from './logic/naming';
 import { addMerge, addSplit, removeMerge, removeSplits, setIgnored, setName } from './logic/trips';
 import {
-  Decision, ReviewItem, Session, decide, isDone, keptAgainstSuggestion, laterIds, reviewBlurry, reviewCleanup, reviewGroup,
+  Decision, ReviewItem, Session, decide, fileTo, isDone, isNewAlbum, keptAgainstSuggestion, laterIds, reviewBlurry, reviewCleanup, reviewGroup,
   reviewExposure, reviewLarge, reviewLater, reviewScreenshots, reviewTrip, reviewUtility, settledIds, startSession, undo,
 } from './logic/review';
 import { aiProgress, categories, findUtility, type MemoryLabel } from './logic/ai';
@@ -40,7 +40,7 @@ import { HomeView } from './components/HomeView';
 import type { FailedTab } from './components/FailedView';
 import { Progress } from './ui/Controls';
 import { Sheet } from './ui/Sheet';
-import { ReviewView } from './components/ReviewView';
+import type { ReviewOutcome } from './components/ReviewView';
 import { PaywallSheet, type FreeInfo } from './components/PaywallSheet';
 import { freeDelete, freeLeft } from './logic/allowance';
 
@@ -63,6 +63,7 @@ const TripView = lazy(() => import('./components/TripView').then(m => ({ default
 const CleanupView = lazy(() => import('./components/CleanupView').then(m => ({ default: m.CleanupView })));
 const SimilarView = lazy(() => import('./components/SimilarView').then(m => ({ default: m.SimilarView })));
 const GroupView = lazy(() => import('./components/GroupView').then(m => ({ default: m.GroupView })));
+const ReviewView = lazy(() => import('./components/ReviewView').then(m => ({ default: m.ReviewView })));
 const CompressView = lazy(() => import('./components/CompressView').then(m => ({ default: m.CompressView })));
 const ProtectedView = lazy(() => import('./components/ProtectedView').then(m => ({ default: m.ProtectedView })));
 const LicencesView = lazy(() => import('./components/SettingsView').then(m => ({ default: m.LicencesView })));
@@ -447,7 +448,43 @@ export default function App() {
   const sorting = (screen: SortScreen) => ({ sort: sortFor(state.sort, screen), onSort: (k: Parameters<typeof store.setSort>[1]) => store.setSort(screen, k) });
 
   const startReview = (items: ReviewItem[], onDone?: () => void) => {
-    if (items.length) setReview({ session: startSession(items), finished: false, onDone });
+    if (!items.length) return;
+    setReview({ session: startSession(items), finished: false, onDone });
+    if (!albumList) void PhotoLibrary.listAlbums().then(r => setAlbumList(r.albums)).catch(() => setAlbumList([]));
+  };
+
+  /* -------------------------------------------- albums while swiping */
+
+  // The chips: the albums (iPhone) / folders (Android), the last used first, then by name. Asked when a review opens.
+  const [albumList, setAlbumList] = useState<AlbumInfo[] | null>(null);
+  const chips = useMemo(() => {
+    const recent = state.recentAlbums;
+    const rank = (id: string) => { const i = recent.indexOf(id); return i === -1 ? Infinity : i; };
+    return (albumList ?? []).slice().sort((a, b) => rank(a.id) - rank(b.id) || a.title.localeCompare(b.title, t.locale))
+      .map(a => ({ id: a.id, title: a.title }));
+  }, [albumList, state.recentAlbums, t.locale]);
+  const onFile = (album: string) => needUnlock(() => setReview(r => (r ? { ...r, session: fileTo(r.session, album) } : r)));
+  /** The end screen's albums: one native call for all of them (Android: one dialog). True when done (or nothing to do). */
+  const fileAlbums = async (plan: ReviewOutcome['albums']): Promise<boolean> => {
+    if (!plan.length) return true;
+    const filed = plan.reduce((n, a) => n + a.ids.length, 0);
+    try {
+      const r = await PhotoLibrary.addToAlbums({
+        groups: plan.map(a => (isNewAlbum(a.album) ? { title: a.album.slice(4), ids: a.ids } : { albumId: a.album, ids: a.ids })),
+        dryRun: store.dryRun,
+      });
+      if (r.cancelled) { show(t.filedCancelled); return false; }
+      if (r.dryRun) { show(fmt(t.dryRunFiled, { photos: plural(t, 'photos', filed) })); return true; }
+      store.useAlbums(plan.map(a => a.album).filter(a => !isNewAlbum(a)));
+      setAlbumList(null);
+      if (isAndroid()) store.startScan();
+      notifySuccess();
+      show(fmt(t.filedDone, { photos: plural(t, 'photos', r.done) }));
+      return true;
+    } catch {
+      show(t.filedFailed);
+      return false;
+    }
   };
   const isOld = (p: Photo) => isOldShot(p, now);
   const openMonth = (key: string) => {
@@ -477,14 +514,18 @@ export default function App() {
       return (
         <ReviewView
           t={t} session={review.session} finished={review.finished} byId={byId} debug={store.debug}
-          onDecide={onDecide} onUndo={onUndo}
+          onDecide={onDecide} onUndo={onUndo} albums={chips} android={isAndroid()} onFile={onFile}
           onProtect={id => { store.protectPhotos([id], true); onDecide('keep'); show(t.protected); }}
           onPreview={id => { void PhotoLibrary.preview({ id }).catch(() => show(t.previewFailed)); }}
           onFinish={() => setReview(r => (r ? { ...r, finished: true } : r))}
-          onDelete={ids => { applyLater(review.session); deletePhotos(ids, keptAgainstSuggestion(review.session), () => {
-            if (isDone(review.session)) review.onDone?.();
-            setReview(null);
-          }); }}
+          onDelete={outcome => {
+            applyLater(review.session);
+            const finish = () => { if (isDone(review.session)) review.onDone?.(); setReview(null); };
+            void fileAlbums(outcome.albums).then(() => {
+              if (outcome.deleteIds.length) deletePhotos(outcome.deleteIds, keptAgainstSuggestion(review.session), finish);
+              else { store.addKept(keptAgainstSuggestion(review.session)); finish(); }
+            });
+          }}
           onClose={closeReview}
         />
       );
