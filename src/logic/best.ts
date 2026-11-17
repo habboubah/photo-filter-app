@@ -54,12 +54,18 @@ export function rankGroup(photos: Photo[]): Photo[] {
 }
 
 /**
- * The copy to keep of a duplicate group: a favourite, else the one with the
- * most pixels (a messenger copy is smaller than the original), else the
- * sharpest, else the oldest — the original came first.
+ * The copy to keep of a duplicate group: a favourite (or a protected photo,
+ * src/logic/analyze.ts buildGroups), else the one the user edited (they put
+ * work into it — deleting the edited copy is the regret photo cleaners are
+ * known for), else one that knows where it was taken (a messenger copy loses
+ * the place), else the one with the most pixels (a messenger copy is smaller
+ * than the original), else the sharpest, else the oldest — the original came first.
  */
 export function rankDuplicates(photos: Photo[]): Photo[] {
   const ranked = [...photos].sort((a, b) => {
+    if (!!a.edited !== !!b.edited) return a.edited ? -1 : 1;
+    const placed = (p: Photo) => p.lat !== undefined;
+    if (placed(a) !== placed(b)) return placed(a) ? -1 : 1;
     const px = b.w * b.h - a.w * a.h;
     if (px !== 0) return px;
     const sharp = (b.sharp ?? 0) - (a.sharp ?? 0);

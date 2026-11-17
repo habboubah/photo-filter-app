@@ -104,7 +104,7 @@ export interface LabelModel {
   labelsVersion: number;
   bias: number;
   /** LABELS.length × VEC_DIM. */
-  rows: Float32Array;
+  rows: Float64Array;
 }
 
 interface LabelFile {
@@ -116,7 +116,7 @@ interface LabelFile {
 export function labelModel(file: LabelFile): LabelModel | null {
   if (file.aiVersion !== AI_VERSION || file.labelsVersion !== LABELS_VERSION || file.dim !== VEC_DIM) return null;
   if (file.labels.length !== LABELS.length || file.labels.some((l, i) => l.id !== LABELS[i].id || l.kind !== LABELS[i].kind)) return null;
-  const rows = new Float32Array(LABELS.length * VEC_DIM);
+  const rows = new Float64Array(LABELS.length * VEC_DIM);
   for (const [i, l] of file.labels.entries()) {
     const v = decode(l.v);
     if (!v) return null;
@@ -131,33 +131,50 @@ export function labelModel(file: LabelFile): LabelModel | null {
  * copied, only the new ones are worked out (the AI's pass adds vectors in
  * batches).
  */
-export function scoreLabels(vectors: Vectors, model: LabelModel, prev?: Int16Array): Int16Array {
+export function scoreLabels(vectors: Vectors, model: LabelModel, prev?: Int16Array, from?: number, to?: number): Int16Array {
   const n = LABELS.length;
   const out = new Int16Array(vectors.size * n);
-  const from = prev && prev.length <= out.length ? prev.length / n : 0;
-  if (from) out.set(prev!.subarray(0, from * n));
-  const d = vectors.data;
-  const rows = model.rows;
-  for (let s = from; s < vectors.size; s++) {
-    const o = s * VEC_DIM;
-    const inv = vectors.inv[s];
-    for (let l = 0; l < n; l++) {
-      const r = l * VEC_DIM;
-      let dot = 0;
-      for (let i = 0; i < VEC_DIM; i++) dot += d[o + i] * rows[r + i];
-      out[s * n + l] = Math.round((dot * inv + model.bias) * 10);
-    }
-  }
+  const start = from ?? (prev && prev.length <= out.length ? prev.length / n : 0);
+  if (prev && prev.length <= out.length) out.set(prev);
+  scoreInto(out, vectors, model, start, to ?? vectors.size);
   return out;
 }
 
-/** The photos with their label scores laid on (Photo.ai), from the vectors' slots. Photos without a vector stay as they are. */
+/** The label scores of slots [from, to) into `out` (the hot loop: 33 × 256 multiplications per photo). */
+export function scoreInto(out: Int16Array, vectors: Vectors, model: LabelModel, from: number, to: number): void {
+  const n = LABELS.length;
+  const D = VEC_DIM; // a local: the loop must not look an imported binding up 8,448 times per photo
+  const d = vectors.data;
+  const rows = model.rows;
+  const v = new Float64Array(D);
+  for (let s = from; s < to; s++) {
+    const o = s * D;
+    for (let i = 0; i < D; i++) v[i] = d[o + i];
+    const inv = vectors.inv[s];
+    for (let l = 0; l < n; l++) {
+      const r = l * D;
+      let d0 = 0; let d1 = 0; let d2 = 0; let d3 = 0;
+      for (let i = 0; i < D; i += 4) {
+        d0 += v[i] * rows[r + i];
+        d1 += v[i + 1] * rows[r + i + 1];
+        d2 += v[i + 2] * rows[r + i + 2];
+        d3 += v[i + 3] * rows[r + i + 3];
+      }
+      out[s * n + l] = Math.round(((d0 + d1 + d2 + d3) * inv + model.bias) * 10);
+    }
+  }
+}
+
+/**
+ * The photos with their label scores laid on (Photo.ai), from the vectors' slots. Photos without a
+ * vector — or whose slot has no scores yet (more vectors arrived, their scores are on the way) — stay as they are.
+ */
 export function withScores(photos: Photo[], vectors: Vectors, scores: Int16Array): Photo[] {
   const n = LABELS.length;
-  if (scores.length !== vectors.size * n) return photos;
+  const scored = scores.length / n;
   return photos.map(p => {
     const s = vectors.slot(p.id);
-    return s === undefined ? p : { ...p, ai: scores.subarray(s * n, (s + 1) * n) };
+    return s === undefined || s >= scored ? p : { ...p, ai: scores.subarray(s * n, (s + 1) * n) };
   });
 }
 

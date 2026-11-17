@@ -1,5 +1,6 @@
 import type { Photo } from '../types';
 import { LABELS } from './ai';
+import { VEC_DIM, type VectorRow, pack } from './vectors';
 
 /*
  * A made-up photo library for the tests and the performance budget: a family
@@ -128,4 +129,19 @@ export function fakeLibrary(n: number, seed = 1, end = Date.UTC(2026, 10, 1)): F
     p.ai = z;
   }
   return { photos, trips };
+}
+
+/**
+ * Made-up compact vectors for the photos (src/logic/vectors.ts), so the
+ * analysis can be timed as it runs on a phone after the AI's pass: each
+ * vector follows its photo's hash bit by bit, with noise of its own — photos
+ * with close hashes (a burst) get alike vectors, the others don't.
+ */
+export function fakeVectors(photos: Photo[], seed = 1): VectorRow[] {
+  const r = prng(seed + 4711);
+  return photos.filter(p => p.hash && !p.shot).map(p => {
+    const bits = p.hash!.split('').flatMap(h => parseInt(h, 16).toString(2).padStart(4, '0').split('').map(Number));
+    const v = Array.from({ length: VEC_DIM }, (_, k) => (bits[k % 64] ? 1 : -1) * 0.6 + (r() - 0.5) * 0.5);
+    return { id: p.id, v: pack(v) };
+  });
 }

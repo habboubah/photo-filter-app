@@ -19,7 +19,7 @@ import {
   Decision, ReviewItem, Session, decide, fileTo, isDone, isNewAlbum, keptAgainstSuggestion, laterIds, reviewBlurry, reviewCleanup, reviewGroup,
   reviewExposure, reviewLarge, reviewLater, reviewScreenshots, reviewTrip, reviewUtility, settledIds, startSession, undo,
 } from './logic/review';
-import { aiProgress, categories, findUtility, type MemoryLabel } from './logic/ai';
+import { aiProgress, categories, findSensitive, findUtility, type MemoryLabel } from './logic/ai';
 import { findScreenshots, isOldShot, oldShots } from './logic/screenshots';
 import { findLarge, findLive } from './logic/large';
 import { buildMonths, onThisDay, progress } from './logic/months';
@@ -90,7 +90,7 @@ export default function App() {
   }, [photos, cities]);
 
   const lib = useMemo(() => makeLibrary(photos ?? []), [photos]);
-  const detection = useMemo(() => detect(lib), [lib]);
+  const detection = useMemo(() => detect(lib, store.vectors), [lib, store.vectors]);
   const trips = useMemo(
     () => buildTrips(lib, detection.trips, state, cities, language, t.locale),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -98,10 +98,12 @@ export default function App() {
   );
   // Every photo never to be suggested but the favourites (src/logic/protect.ts): kept in a review,
   // protected by hand, in a protected trip or album. Every finder below takes it as `kept`.
+  // Photos of identity documents and bank cards (src/logic/ai.ts sensitiveLabel) are protected too.
+  const sensitive = useMemo(() => findSensitive(lib.photos), [lib]);
   const kept = useMemo(() => {
     const tripIds = new Map(trips.map(x => [x.key, x.ids]));
-    return protectedIds(state.kept, state.protect, key => tripIds.get(key), store.albumMembers);
-  }, [state.kept, state.protect, trips, store.albumMembers]);
+    return protectedIds(state.kept, state.protect, key => tripIds.get(key), [...store.albumMembers, ...sensitive]);
+  }, [state.kept, state.protect, trips, store.albumMembers, sensitive]);
   // Settled groups (every photo but the one to keep is kept — "Alle behalten") are not shown again (openGroups).
   const groups = useMemo(
     () => openGroups(buildGroups(lib, detection.groups, state, store.faces, kept), kept),

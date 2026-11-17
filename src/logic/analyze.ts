@@ -10,6 +10,7 @@ import { findGroups, findVideoDuplicates, RawGroup } from './similar';
 import { AppState } from './state';
 import { applyEdits, detectTrips, RawTrip } from './trips';
 import { findLookalikeVideos, rankLookalike } from './lookalike';
+import type { Vectors } from './vectors';
 
 /*
  * Everything the screens show, from the photos and the user's decisions.
@@ -35,11 +36,12 @@ export interface Detection {
   groups: RawGroup[];
 }
 
-export function detect(lib: Library): Detection {
+/** `vectors`: the AI's compact vectors (src/logic/vectors.ts) — similar groups and copies are confirmed with them. */
+export function detect(lib: Library, vectors?: Vectors): Detection {
   const homes = findHomes(lib.photos);
   const copies = findVideoDuplicates(lib.photos);
   const lookalike = findLookalikeVideos(lib.photos, new Set(copies.flatMap(g => g.ids)));
-  return { homes, trips: detectTrips(lib.photos, homes), groups: [...findGroups(lib.photos), ...copies, ...lookalike] };
+  return { homes, trips: detectTrips(lib.photos, homes), groups: [...findGroups(lib.photos, undefined, undefined, vectors), ...copies, ...lookalike] };
 }
 
 const sumBytes = (ids: string[], byId: Map<string, Photo>) => ids.reduce((s, id) => s + (byId.get(id)?.bytes ?? 0), 0);

@@ -4,7 +4,7 @@ import type { Album, Photo, Storage, ThemeMode } from './types';
 import translations, { DEFAULT_LANGUAGE, isLanguage, Language, loadLanguage } from './translations';
 import { Access, PAGE, PhotoLibrary, ScanProgress, loadAllFacts } from './native/photoLibrary';
 import { Vectors } from './logic/vectors';
-import { AI_VERSION, type LabelModel, labelModel, scoreLabels, withScores } from './logic/ai';
+import { AI_VERSION, LABELS, type LabelModel, labelModel, scoreInto, scoreLabels, withScores } from './logic/ai';
 import { PRODUCT_ID, Purchases } from './native/purchases';
 import { AppState, RECENT_ALBUMS, SCHEMA_VERSION, emptyState, normalizeState, pruneLater } from './logic/state';
 import type { TripEdits } from './logic/trips';
@@ -61,6 +61,9 @@ export interface ScanView extends ScanProgress {
 /** During the AI's pass (16 photos per progress event), the facts are read again every this many photos. */
 const AI_RELOAD_EVERY = 480;
 const AI_BATCH = 16;
+
+/** Photos whose label scores are worked out between two pauses (src/logic/ai.ts scoreInto). */
+const SCORE_SLICE = 2000;
 
 /** A rescan when the app comes back after this long. */
 const RESCAN_AFTER_MS = 2 * 60_000;
@@ -254,13 +257,25 @@ export function useAppStore() {
   useEffect(() => {
     void import('./logic/aiLabels.json').then(m => setLabels(labelModel(m.default))).catch(() => setLabels(null));
   }, []);
-  // Each photo's label scores, worked out once per vector (only the new ones when more arrive).
+  // Each photo's label scores, worked out once per vector (only the new ones when more arrive), in
+  // slices of SCORE_SLICE photos with a pause between, so 50,000 of them never freeze the screen.
+  const [scores, setScores] = useState<Int16Array | null>(null);
   const scoresRef = useRef<Int16Array | undefined>(undefined);
-  const scores = useMemo(() => {
-    if (!labels || !vectors.size) return null;
-    const next = scoreLabels(vectors, labels, scoresRef.current);
-    scoresRef.current = next;
-    return next;
+  useEffect(() => {
+    if (!labels || !vectors.size) return;
+    let alive = true;
+    void (async () => {
+      const prev = scoresRef.current;
+      const out = scoreLabels(vectors, labels, prev, 0, 0);
+      for (let from = prev ? Math.min(prev.length / LABELS.length, vectors.size) : 0; from < vectors.size; from += SCORE_SLICE) {
+        scoreInto(out, vectors, labels, from, Math.min(vectors.size, from + SCORE_SLICE));
+        await new Promise(r => window.setTimeout(r, 0));
+        if (!alive) return;
+      }
+      scoresRef.current = out;
+      setScores(out);
+    })();
+    return () => { alive = false; };
   }, [vectors, labels]);
   const photos = useMemo(() => (facts && scores ? withScores(facts, vectors, scores) : facts), [facts, vectors, scores]);
 
