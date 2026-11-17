@@ -290,9 +290,11 @@ tab again scrolls to its top; Android's back button goes from *Ordnen* to
   builds: nothing in the photo library changes, the app says what it would have done.
 - **Über die App**: rate (once the App Store id is set), feedback by mail,
   privacy policy, licences (GeoNames, fonts, icons).
-- *Meine Entscheidungen zurücksetzen* [Reset my decisions] (with undo): trip
-  edits, best-shot picks, kept photos, the months marked as done (the
-  "freed so far" count stays).
+- *Von vorn anfangen* [Start over] (*Deine Fotos bleiben, wie sie sind*; with
+  undo): Bildklar forgets every decision — kept, protected and decide-later
+  photos, best-shot picks, trip edits, the months marked as done, the sort
+  orders — so everything is suggested again. The photos and albums, the
+  purchase and the "freed so far" count stay.
 
 ## Photos from apps (*Aus Apps*, Android)
 - Photos and videos saved by messengers and other apps, told apart by their

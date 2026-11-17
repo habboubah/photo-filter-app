@@ -27,7 +27,7 @@ the screen, and the same scene file rehearsed against the web build first.
 - **No real photos on film.** Bildklar shows the photo library, so the iPhone
   gives it **Limited Access to the demo photos only** (README, *Preparation*).
   Every full run resets Bildklar's decisions first (Settings › Language ›
-  English, Appearance › Like the system, *Reset my decisions* —
+  English, Appearance › Like the system, *Start over* —
   `preflight.reset`, not in the video).
 - **The run changes the photo library for real**: scene 2 makes an album
   *Paris, …*, scene 4 deletes two photos (Recently Deleted) — the dry run too.
@@ -104,7 +104,7 @@ about 2.5 s per action on the iPhone plus the pauses × `PACE` (0.65).
   (place and month), so it depends on the demo photos on the iPhone.
 - Sheets and confirmations are `aria-modal`: while one is open only it can be
   reached. A confirmation's button has the action's name (*Create album*,
-  *Reset my decisions* twice).
+  *Start over* twice).
 - `<select>` rows (Language, Appearance) open a system menu → `select`. The
   label of the row changes with the language: `"in": "Sprache"` in German.
 - iOS's alerts (the photo permission, *Delete*, the App Store's *Sign In*)

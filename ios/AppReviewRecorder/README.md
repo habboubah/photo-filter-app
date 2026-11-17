@@ -78,7 +78,7 @@ and 5 are done.
    says so and stops).
    Every full run **resets Bildklar's decisions before the screen recording
    starts**, without asking — Settings › Language › English, Appearance ›
-   Like the system, *Reset my decisions*. Your photos and the purchase stay.
+   Like the system, *Start over*. Your photos and the purchase stay.
 3. Connect the iPhone by cable, unlock it, **Do Not Disturb** on.
 4. **Dry run:** `DRY_RUN=1 npm run record:app-review` — everything except the
    screen recording. **It does make the album and delete the two photos** (the
@@ -190,6 +190,6 @@ photos* (iOS's picker), Android.
 **Left out to keep it short (about 2 minutes):** renaming, merging, splitting
 and hiding a trip, the list of all trips, the blurry list on its own
 (the review in scene 4 goes through blurry and near-identical photos
-together), undo in the review, *Reset my decisions* itself (every recording
+together), undo in the review, *Start over* itself (every recording
 starts with it, before the screen recording does), dark mode, German. A scene
 for any of them comes back only when Ahmad asks.

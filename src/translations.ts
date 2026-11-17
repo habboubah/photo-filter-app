@@ -437,9 +437,10 @@ const de = {
   privacy: 'Datenschutz',
   licences: 'Lizenzen',
   resetSection: 'Zurücksetzen',
-  resetDecisions: 'Meine Entscheidungen zurücksetzen',
-  resetTitle: 'Entscheidungen zurücksetzen?',
-  resetBody: 'Umbenannte, geteilte, zusammengeführte und ausgeblendete Reisen, gewählte beste Fotos und behaltene Fotos werden vergessen. Deine Fotos und Alben bleiben, wie sie sind.',
+  resetDecisions: 'Von vorn anfangen',
+  resetDecisionsSub: 'Deine Fotos bleiben, wie sie sind',
+  resetTitle: 'Von vorn anfangen?',
+  resetBody: 'Bildklar vergisst, was du entschieden hast: behaltene, geschützte und für später gemerkte Fotos, die gewählten besten Fotos, bearbeitete Reisen, durchgesehene Monate und Sortierungen. Alles wird wieder vorgeschlagen. Deine Fotos und Alben bleiben, wie sie sind.',
   resetDone: 'Zurückgesetzt',
   licencesTitle: 'Lizenzen',
   licencesIntro: 'Bildklar steht auf den Schultern anderer. Danke!',
@@ -886,9 +887,10 @@ const en: Strings = {
   privacy: 'Privacy',
   licences: 'Licences',
   resetSection: 'Reset',
-  resetDecisions: 'Reset my decisions',
-  resetTitle: 'Reset your decisions?',
-  resetBody: 'Renamed, split, joined and hidden trips, picked best photos and kept photos are forgotten. Your photos and albums stay as they are.',
+  resetDecisions: 'Start over',
+  resetDecisionsSub: 'Your photos stay as they are',
+  resetTitle: 'Start over?',
+  resetBody: 'Bildklar forgets what you decided: kept, protected and saved-for-later photos, the best shots you picked, edited trips, months gone through and sort orders. Everything is suggested again. Your photos and albums stay as they are.',
   resetDone: 'Reset',
   licencesTitle: 'Licences',
   licencesIntro: 'Bildklar stands on the shoulders of others. Thank you!',
@@ -927,6 +929,7 @@ export default translations;
  */
 export const androidStrings: Record<keyof typeof translations, Partial<Strings>> = {
   de: {
+    resetBody: 'Bildklar vergisst, was du entschieden hast: behaltene, geschützte und für später gemerkte Fotos, die gewählten besten Fotos, bearbeitete Reisen, durchgesehene Monate und Sortierungen. Alles wird wieder vorgeschlagen. Deine Fotos und Ordner bleiben, wie sie sind.',
     protectedAlbums: 'Ordner',
     protectedAlbumsHint: 'Die Fotos in den eingeschalteten Ordnern werden nie vorgeschlagen. Die Ordner selbst bleiben, wie sie sind.',
     protectedNoAlbums: 'Keine Ordner mit Fotos gefunden',
@@ -965,6 +968,7 @@ export const androidStrings: Record<keyof typeof translations, Partial<Strings>>
     paywallFile: 'Fotos beim Durchgehen in Ordner sortieren',
   },
   en: {
+    resetBody: 'Bildklar forgets what you decided: kept, protected and saved-for-later photos, the best shots you picked, edited trips, months gone through and sort orders. Everything is suggested again. Your photos and folders stay as they are.',
     protectedAlbums: 'Folders',
     protectedAlbumsHint: 'Photos in the folders switched on are never suggested. The folders themselves stay as they are.',
     protectedNoAlbums: 'No folders with photos found',

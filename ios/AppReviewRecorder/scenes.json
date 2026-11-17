@@ -13,10 +13,10 @@
    {"select": "English", "in": ["Language", "Sprache"]},
    {"pause": 0.5},
    {"select": "Like the system", "in": "Appearance"},
-   {"scrollTo": "Reset my decisions"},
-   {"tap": "Reset my decisions"},
+   {"scrollTo": "Start over"},
+   {"tap": "Start over"},
    {"pause": 1},
-   {"tap": "Reset my decisions"},
+   {"tap": "Start over"},
    {"pause": 0.5},
    {"tap": "Back"},
    {"pause": 0.5}

@@ -102,7 +102,7 @@ export function SettingsView(p: Props) {
       </Group>
 
       <Group title={t.resetSection}>
-        <Row label={t.resetDecisions} danger onClick={() => setConfirmReset(true)} />
+        <Row label={t.resetDecisions} sub={t.resetDecisionsSub} danger onClick={() => setConfirmReset(true)} />
       </Group>
 
       <Confirm
