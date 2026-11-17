@@ -13,6 +13,10 @@ interface Props {
   themeMode: ThemeMode;
   access: Access | null;
   owned: boolean;
+  /** The unlock is for sale (src/logic/allowance.ts): before that, the section shows only for an owner. */
+  onSale: boolean;
+  /** Deleting is not counted (an early install): the unlock row then names no free deletes. */
+  unlimited: boolean;
   /** Deletes left without the unlock. */
   freeLeft: number;
   debug: boolean;
@@ -87,12 +91,14 @@ export function SettingsView(p: Props) {
         <SwitchRow label={t.reminderRow} sub={t.reminderSub} checked={p.reminder} onChange={p.onReminder} />
       </Group>
 
-      <Group title={t.unlockSection}>
-        {p.owned
-          ? <Row label={t.unlocked} leading={<IconTile icon={BadgeCheck} hue="mint" />} />
-          : <Row label={t.unlockRow} sub={p.freeLeft > 0 ? plural(t, 'freeLeft', p.freeLeft) : t.freeUsedUp} leading={<IconTile icon={Unlock} hue="mint" />} trailing={<Next />} onClick={p.onUnlock} />}
-        <Row label={t.restore} leading={<IconTile icon={RotateCcw} hue="stone" />} onClick={p.onRestore} />
-      </Group>
+      {(p.onSale || p.owned) && (
+        <Group title={t.unlockSection}>
+          {p.owned
+            ? <Row label={t.unlocked} leading={<IconTile icon={BadgeCheck} hue="mint" />} />
+            : <Row label={t.unlockRow} sub={p.unlimited ? undefined : p.freeLeft > 0 ? plural(t, 'freeLeft', p.freeLeft) : t.freeUsedUp} leading={<IconTile icon={Unlock} hue="mint" />} trailing={<Next />} onClick={p.onUnlock} />}
+          {p.onSale && <Row label={t.restore} leading={<IconTile icon={RotateCcw} hue="stone" />} onClick={p.onRestore} />}
+        </Group>
+      )}
 
       <Group title={t.displaySection}>
         <MenuRow

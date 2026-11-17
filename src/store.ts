@@ -9,6 +9,7 @@ import type { TripEdits } from './logic/trips';
 import { addDay } from './logic/streak';
 import type { SortKey } from './logic/sort';
 import { toggled } from './logic/protect';
+import { UNLOCK_ON_SALE } from './logic/allowance';
 import { LocalNotifications } from '@capacitor/local-notifications';
 
 /*
@@ -95,7 +96,11 @@ export function useAppStore() {
     PhotoLibrary.getState()
       .then(({ json }) => { if (json) setState(normalizeState(JSON.parse(json))); })
       .catch(() => { /* first launch, or unreadable: start empty */ })
-      .finally(() => setStateReady(true));
+      .finally(() => {
+        // While nothing is for sale, this install counts as an early one (src/logic/allowance.ts).
+        if (!UNLOCK_ON_SALE) setState(s => (s.early ? s : { ...s, early: true }));
+        setStateReady(true);
+      });
   }, []);
   useEffect(() => {
     if (!stateReady) return;
@@ -173,10 +178,10 @@ export function useAppStore() {
   const addFreed = (count: number, bytes: number) => {
     if (count > 0) setState(s => ({ ...s, freed: { count: s.freed.count + count, bytes: s.freed.bytes + Math.max(0, bytes) } }));
   };
-  /** Forget every decision but the purchase and the "freed so far" count; returns the old state for undo. */
+  /** Forget every decision but the purchase, the free deletes and the "freed so far" count; returns the old state for undo. */
   const resetDecisions = (): AppState => {
     const before = state;
-    setState(s => ({ ...emptyState(), owned: s.owned, freed: s.freed, days: s.days, freeUsed: s.freeUsed }));
+    setState(s => ({ ...emptyState(), owned: s.owned, freed: s.freed, days: s.days, freeUsed: s.freeUsed, early: s.early }));
     return before;
   };
   const restoreState = (s: AppState) => setState(s);

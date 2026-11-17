@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { FREE_DELETES, freeDelete, freeLeft } from './allowance';
+import { FREE_DELETES, UNLOCK_ON_SALE, deletesUnlimited, extrasShown, freeDelete, freeLeft } from './allowance';
 import { normalizeState } from './state';
 
 describe('free deletes', () => {
@@ -20,5 +20,29 @@ describe('free deletes', () => {
     expect(normalizeState({ freeUsed: 12 }).freeUsed).toBe(12);
     expect(normalizeState({ freeUsed: -3 }).freeUsed).toBe(0);
     expect(normalizeState({ freeUsed: 'x' }).freeUsed).toBe(0);
+  });
+});
+
+describe('the launch phase', () => {
+  it('sells nothing yet', () => {
+    expect(UNLOCK_ON_SALE).toBe(false);
+  });
+  it('hides the extras until they are for sale, unless the unlock is owned', () => {
+    expect(extrasShown(false, false)).toBe(false);
+    expect(extrasShown(true, false)).toBe(true);
+    expect(extrasShown(false, true)).toBe(true);
+  });
+  it('deletes without a limit while nothing is for sale', () => {
+    expect(deletesUnlimited(false, false, false)).toBe(true);
+  });
+  it('limits only new installs once the unlock is for sale', () => {
+    expect(deletesUnlimited(false, false, true)).toBe(false);
+    expect(deletesUnlimited(false, true, true)).toBe(true);
+    expect(deletesUnlimited(true, false, true)).toBe(true);
+  });
+  it('remembers an install from the free launch in the saved state', () => {
+    expect(normalizeState({}).early).toBe(false);
+    expect(normalizeState({ early: true }).early).toBe(true);
+    expect(normalizeState({ early: 'yes' }).early).toBe(false);
   });
 });

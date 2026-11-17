@@ -35,6 +35,8 @@ export interface AppState {
   days: string[];
   /** Photos deleted without the unlock (src/logic/allowance.ts). */
   freeUsed: number;
+  /** Bildklar ran on this phone while nothing was for sale: deleting stays unlimited (src/logic/allowance.ts). */
+  early: boolean;
   /** The decide-later pile: photos swiped up in a review, in the order they were put off (src/logic/review.ts). */
   later: string[];
   /** The order the user chose for each list screen (src/logic/sort.ts SORT_DEFAULT keys). */
@@ -55,6 +57,7 @@ export const emptyState = (): AppState => ({
   freed: { count: 0, bytes: 0 },
   days: [],
   freeUsed: 0,
+  early: false,
   later: [],
   sort: {},
   protect: { ids: [], trips: [], albums: [] },
@@ -124,6 +127,7 @@ export function normalizeState(raw: unknown): AppState {
     if (typeof bytes === 'number' && Number.isFinite(bytes) && bytes > 0) s.freed.bytes = Math.round(bytes);
   }
   if (typeof raw.freeUsed === 'number' && Number.isFinite(raw.freeUsed) && raw.freeUsed > 0) s.freeUsed = Math.round(raw.freeUsed);
+  s.early = raw.early === true;
   s.days = [...new Set(strings(raw.days).filter(k => /^\d{4}-\d{2}-\d{2}$/.test(k)))].sort().slice(-60);
   return s;
 }
