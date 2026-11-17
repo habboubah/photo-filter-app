@@ -4,9 +4,9 @@ import { buildGroups, cleanupBlurry, findBlurry, makeLibrary, summarize } from '
 import { exposureScore, rankGroup } from './best';
 import { blurLevel } from './blur';
 import { findGroups } from './similar';
-import { emptyState, normalizeState, SCHEMA_VERSION } from './state';
+import { emptyState, normalizeState, pruneLater, SCHEMA_VERSION } from './state';
 import {
-  decide, isDone, keptAgainstSuggestion, reviewCleanup, reviewGroup, reviewTrip, startSession, toDelete, undo,
+  decide, isDone, keptAgainstSuggestion, laterIds, reviewCleanup, reviewGroup, reviewLater, reviewTrip, settledIds, startSession, toDelete, undo,
 } from './review';
 import { nearHash, prng } from './fixtures';
 
@@ -193,5 +193,40 @@ describe('stored decisions', () => {
     expect(Object.keys(s.trips.albums)).toEqual(['a']);
     expect(s.kept).toEqual(['p2']);
     expect(s.owned).toBe(true);
+  });
+});
+
+describe('the decide-later pile', () => {
+  const items = (ids: string[]) => ids.map(id => ({ id, suggest: 'delete' as const, reason: 'similar' as const }));
+
+  it('puts photos swiped up on the pile and keeps them out of the delete list', () => {
+    let s = startSession(items(['a', 'b', 'c']));
+    s = decide(s, 'later');
+    s = decide(s, 'delete');
+    s = decide(s, 'keep');
+    expect(laterIds(s)).toEqual(['a']);
+    expect(toDelete(s)).toEqual(['b']);
+    expect(settledIds(s)).toEqual(['b', 'c']);
+    expect(keptAgainstSuggestion(s)).toEqual(['c']);
+    expect(isDone(s)).toBe(true);
+  });
+
+  it('undoes a later like any other answer', () => {
+    let s = decide(startSession(items(['a', 'b'])), 'later');
+    s = undo(s);
+    expect(laterIds(s)).toEqual([]);
+    expect(s.index).toBe(0);
+  });
+
+  it('goes through the pile without a suggestion', () => {
+    expect(reviewLater(['x', 'y']).map(i => [i.id, i.suggest, i.reason])).toEqual([['x', 'none', 'later'], ['y', 'none', 'later']]);
+  });
+
+  it('stores the pile, without doubles, and drops photos that are gone', () => {
+    expect(normalizeState({ later: ['a', 'a', 3, 'b'] }).later).toEqual(['a', 'b']);
+    expect(normalizeState({}).later).toEqual([]);
+    const pile = ['a', 'b', 'c'];
+    expect(pruneLater(pile, id => id !== 'b')).toEqual(['a', 'c']);
+    expect(pruneLater(pile, () => true)).toBe(pile);
   });
 });

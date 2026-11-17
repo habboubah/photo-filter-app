@@ -240,6 +240,21 @@ export const SCREENS = [
       await pause(page, 700);
     },
   },
+  // The decide-later pile: two photos swiped up in a review, then the pile gone through from home.
+  {
+    name: '31-later', run: async (page, w) => {
+      await openCleanupReview(page, w);
+      for (let i = 0; i < 2; i++) { await page.click(`button${aria(w.t.later)}`); await pause(page, 150); }
+      await page.click(`button:has-text("${w.t.finishReview}")`);
+      await pause(page, 400);
+      await page.click(`main button:has-text("${w.t.done}")`);
+      await pause(page, 600);
+      await page.click(`button${aria(w.t.back)}`);
+      await pause(page, 700);
+      await page.click(`button:has-text("${w.t.laterCard}")`);
+      await pause(page, 900);
+    },
+  },
 ];
 
 /**

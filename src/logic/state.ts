@@ -31,6 +31,8 @@ export interface AppState {
   days: string[];
   /** Photos deleted without the unlock (src/logic/allowance.ts). */
   freeUsed: number;
+  /** The decide-later pile: photos swiped up in a review, in the order they were put off (src/logic/review.ts). */
+  later: string[];
 }
 
 export const emptyState = (): AppState => ({
@@ -43,6 +45,7 @@ export const emptyState = (): AppState => ({
   freed: { count: 0, bytes: 0 },
   days: [],
   freeUsed: 0,
+  later: [],
 });
 
 const isObj = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
@@ -52,6 +55,16 @@ function stringMap(v: unknown): Record<string, string> {
   const out: Record<string, string> = {};
   for (const [k, x] of Object.entries(v)) if (typeof x === 'string') out[k] = x;
   return out;
+}
+
+/**
+ * The pile without the photos that are gone from the library (deleted
+ * elsewhere, or by Bildklar). Returns the same array when nothing is gone, so
+ * the state is not written again for nothing.
+ */
+export function pruneLater(later: string[], exists: (id: string) => boolean): string[] {
+  const left = later.filter(exists);
+  return left.length === later.length ? later : left;
 }
 
 export function normalizeState(raw: unknown): AppState {
@@ -79,6 +92,7 @@ export function normalizeState(raw: unknown): AppState {
   }
   s.best = stringMap(raw.best);
   s.kept = [...new Set(strings(raw.kept))];
+  s.later = [...new Set(strings(raw.later))];
   s.owned = raw.owned === true;
   s.months = [...new Set(strings(raw.months).filter(k => /^\d{4}-\d{2}$/.test(k)))];
   if (isObj(raw.freed)) {

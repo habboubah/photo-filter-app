@@ -4,16 +4,20 @@ import { blurLevel } from './blur';
 
 /*
  * A review: photos shown one by one, each with the app's suggestion, swiped
- * to keep or to delete. Nothing happens to a photo during a review; only
- * "Delete N photos" at the end, confirmed in the system's own dialog, moves
- * the ones marked to Recently Deleted / the Trash.
+ * to keep, to delete or (swiped up) to decide later. Nothing happens to a
+ * photo during a review; only "Delete N photos" at the end, confirmed in the
+ * system's own dialog, moves the ones marked to Recently Deleted / the Trash.
+ * The ones put off land on the decide-later pile (AppState.later), which is
+ * gone through again from home without a suggestion.
  */
-export type Decision = 'keep' | 'delete';
-export type Reason = 'best' | 'original' | 'similar' | 'duplicate' | 'blurry' | 'screenshot' | 'utility' | 'large' | 'trip';
+export type Decision = 'keep' | 'delete' | 'later';
+/** What the app suggests: `none` for the decide-later pile, where the user already hesitated. */
+export type Suggestion = 'keep' | 'delete' | 'none';
+export type Reason = 'best' | 'original' | 'similar' | 'duplicate' | 'blurry' | 'screenshot' | 'utility' | 'large' | 'trip' | 'later';
 
 export interface ReviewItem {
   id: string;
-  suggest: Decision;
+  suggest: Suggestion;
   reason: Reason;
   level?: Confidence;
   /** For `utility`: what the on-device AI took the photo for (src/logic/ai.ts). */
@@ -91,6 +95,11 @@ export function reviewTrip(
   });
 }
 
+/** The decide-later pile: no suggestion — the user already hesitated over each of them once. */
+export function reviewLater(ids: string[]): ReviewItem[] {
+  return ids.map(id => ({ id, suggest: 'none', reason: 'later' }));
+}
+
 /* ------------------------------------------------------ the session itself */
 
 export interface Session {
@@ -120,6 +129,12 @@ export function undo(s: Session): Session {
   const { [s.items[last].id]: _gone, ...decisions } = s.decisions;
   return { ...s, index: last, decisions, history: s.history.slice(0, -1) };
 }
+
+/** The photos put on the decide-later pile in this session. */
+export const laterIds = (s: Session) => s.items.filter(i => s.decisions[i.id] === 'later').map(i => i.id);
+/** The photos given a final answer in this session (kept or marked for deleting): they leave the pile. */
+export const settledIds = (s: Session) =>
+  s.items.filter(i => s.decisions[i.id] === 'keep' || s.decisions[i.id] === 'delete').map(i => i.id);
 
 /** The photos marked for deleting. Undecided ones are kept. */
 export const toDelete = (s: Session) => s.items.filter(i => s.decisions[i.id] === 'delete').map(i => i.id);

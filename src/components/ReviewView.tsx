@@ -1,9 +1,9 @@
 import { useEffect } from 'react';
 import { animate, motion, useMotionValue, useReducedMotion, useTransform } from 'motion/react';
-import { Check, Play, Trash2, Undo2, X } from 'lucide-react';
+import { Check, Clock, Play, Trash2, Undo2, X } from 'lucide-react';
 import type { Confidence, Photo } from '../types';
 import { Strings, bytes, fmt, num, plural } from '../translations';
-import { Decision, ReviewItem, Session, toDelete } from '../logic/review';
+import { Decision, ReviewItem, Session, laterIds, toDelete } from '../logic/review';
 import { duration } from '../logic/large';
 import { Button, IconButton } from '../ui/Button';
 import { Thumb } from '../ui/Photo';
@@ -14,8 +14,8 @@ import { notifyWarning, tapLight, tapMedium } from '../ui/haptics';
 const THRESHOLD = 110;
 
 /**
- * A review: one photo at a time, swiped left to delete or right to keep (or
- * the two buttons, or the arrow keys), with undo. Nothing is deleted here;
+ * A review: one photo at a time, swiped left to delete, right to keep or up
+ * to decide later (or the three buttons, or the arrow keys), with undo. Nothing is deleted here;
  * the summary at the end offers "Delete N photos", which goes through the
  * system's own dialog.
  */
@@ -44,6 +44,7 @@ export function ReviewView({ t, session, finished, byId, debug, onDecide, onUndo
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'ArrowLeft') onDecide('delete');
       else if (e.key === 'ArrowRight') onDecide('keep');
+      else if (e.key === 'ArrowUp') { e.preventDefault(); onDecide('later'); }
       else if ((e.metaKey || e.ctrlKey) && e.key === 'z') onUndo();
     };
     window.addEventListener('keydown', onKey);
@@ -70,8 +71,9 @@ export function ReviewView({ t, session, finished, byId, debug, onDecide, onUndo
             </div>
             <Card key={item.id} t={t} item={item} photo={byId.get(item.id)} debug={debug} onDecide={onDecide} />
             <div className="px-6 pb-safe-8 pt-3">
-              <div className="flex justify-center gap-6">
+              <div className="flex justify-center items-end gap-6">
                 <RoundButton label={t.delete} tone="neg" icon={Trash2} onClick={() => onDecide('delete')} />
+                <RoundButton label={t.later} tone="later" icon={Clock} onClick={() => onDecide('later')} />
                 <RoundButton label={t.keep} tone="keep" icon={Check} onClick={() => onDecide('keep')} />
               </div>
               <div className="flex justify-between items-center mt-4">
@@ -90,16 +92,19 @@ function Card({ t, item, photo, debug, onDecide }: {
 }) {
   const reduce = useReducedMotion();
   const x = useMotionValue(0);
+  const y = useMotionValue(0);
   const rotate = useTransform(x, [-240, 0, 240], [-10, 0, 10]);
   const delOpacity = useTransform(x, [-THRESHOLD, -20, 0], [1, 0, 0]);
   const keepOpacity = useTransform(x, [0, 20, THRESHOLD], [0, 0, 1]);
+  const laterOpacity = useTransform(y, [-THRESHOLD, -20, 0], [1, 0, 0]);
   const levelText: Record<Confidence, string> = { high: t.levelHigh, medium: t.levelMedium, low: t.levelLow };
   const reasons: Record<ReviewItem['reason'], string> = {
     best: t.reasonBest, original: t.reasonOriginal, similar: t.reasonSimilar, duplicate: t.reasonDuplicate,
     blurry: levelText[item.level ?? 'medium'], screenshot: photo?.rec ? t.reasonRecording : t.reasonScreenshot,
     utility: item.label ? fmt(t.reasonUtility, { label: t[`aiLabel_${item.label}`] }) : '',
-    large: photo ? bytes(t, photo.bytes) : '', trip: '',
+    large: photo ? bytes(t, photo.bytes) : '', trip: '', later: t.reasonLater,
   };
+  const chip = item.suggest === 'delete' ? t.suggestDelete : item.suggest === 'keep' ? t.suggestKeep : '';
   const reason = reasons[item.reason];
   const when = photo ? new Date(photo.t).toLocaleString(t.locale, { dateStyle: 'medium', timeStyle: 'short' }) : '';
 
@@ -107,34 +112,44 @@ function Card({ t, item, photo, debug, onDecide }: {
     tapMedium();
     if (d === 'delete') notifyWarning();
     if (reduce) { onDecide(d); return; }
-    void animate(x, d === 'delete' ? -window.innerWidth : window.innerWidth, { duration: 0.22, ease: [0.32, 0.72, 0, 1] })
-      .then(() => onDecide(d));
+    const ease = [0.32, 0.72, 0, 1] as const;
+    const flight = d === 'later'
+      ? animate(y, -window.innerHeight, { duration: 0.22, ease })
+      : animate(x, d === 'delete' ? -window.innerWidth : window.innerWidth, { duration: 0.22, ease });
+    void flight.then(() => onDecide(d));
   };
 
   return (
     <div className="flex-1 flex flex-col px-[16px] pt-4 min-h-0">
       <div className="flex items-center gap-2 pb-3">
-        <span className={`inline-flex items-center px-3 py-1 rounded-full text-caption font-extrabold ${item.suggest === 'delete' ? 'bg-neg-dim text-neg' : 'bg-keep-dim text-keep'}`}>
-          {item.suggest === 'delete' ? t.suggestDelete : t.suggestKeep}
-        </span>
+        {chip && (
+          <span className={`inline-flex items-center px-3 py-1 rounded-full text-caption font-extrabold ${item.suggest === 'delete' ? 'bg-neg-dim text-neg' : 'bg-keep-dim text-keep'}`}>
+            {chip}
+          </span>
+        )}
         {reason && <span className="text-caption text-fg-mute truncate">{reason}</span>}
       </div>
       <motion.div
-        drag="x"
+        drag
         dragSnapToOrigin
         dragElastic={0.9}
-        style={{ x, rotate }}
+        style={{ x, y, rotate }}
         onDragEnd={(_, info) => {
-          if (info.offset.x < -THRESHOLD || info.velocity.x < -700) fling('delete');
+          const up = -info.offset.y > Math.abs(info.offset.x);
+          if (up && (info.offset.y < -THRESHOLD || info.velocity.y < -700)) fling('later');
+          else if (info.offset.x < -THRESHOLD || info.velocity.x < -700) fling('delete');
           else if (info.offset.x > THRESHOLD || info.velocity.x > 700) fling('keep');
         }}
-        className="relative flex-1 min-h-[300px] rounded-lg overflow-hidden bg-surface shadow-e2 touch-pan-y cursor-grab active:cursor-grabbing"
+        className="relative flex-1 min-h-[300px] rounded-lg overflow-hidden bg-surface shadow-e2 touch-none cursor-grab active:cursor-grabbing"
         role="img"
-        aria-label={`${when}. ${item.suggest === 'delete' ? t.suggestDelete : t.suggestKeep}. ${reason}`}
+        aria-label={[when, chip, reason].filter(Boolean).join('. ')}
       >
         <div className="absolute inset-0"><Thumb id={item.id} size={LARGE} className="!rounded-none !object-contain bg-surface-2" /></div>
         <motion.span style={{ opacity: delOpacity }} className="absolute top-6 end-6 px-4 py-2 rounded-[12px] border-[3px] border-neg bg-surface text-neg text-heading font-extrabold rotate-[8deg]" aria-hidden="true">
           {t.delete}
+        </motion.span>
+        <motion.span style={{ opacity: laterOpacity }} className="absolute top-6 start-1/2 -translate-x-1/2 px-4 py-2 rounded-[12px] border-[3px] border-accent bg-surface text-accent text-heading font-extrabold" aria-hidden="true">
+          {t.later}
         </motion.span>
         <motion.span style={{ opacity: keepOpacity }} className="absolute top-6 start-6 px-4 py-2 rounded-[12px] border-[3px] border-keep bg-surface text-keep text-heading font-extrabold -rotate-[8deg]" aria-hidden="true">
           {t.keep}
@@ -155,14 +170,20 @@ function Card({ t, item, photo, debug, onDecide }: {
   );
 }
 
-function RoundButton({ label, tone, icon: Icon, onClick }: { label: string; tone: 'neg' | 'keep'; icon: typeof Check; onClick: () => void }) {
+const ROUND_TONE = {
+  neg: 'w-[68px] h-[68px] bg-neg text-neg-ink',
+  keep: 'w-[68px] h-[68px] bg-keep text-keep-ink',
+  later: 'w-[52px] h-[52px] bg-surface text-accent',
+} as const;
+
+function RoundButton({ label, tone, icon: Icon, onClick }: { label: string; tone: keyof typeof ROUND_TONE; icon: typeof Check; onClick: () => void }) {
   return (
     <button
       type="button" onClick={() => { tapLight(); onClick(); }} aria-label={label}
       className={`flex flex-col items-center gap-1.5 press focus-visible:ring-focus rounded-full`}
     >
-      <span className={`w-[68px] h-[68px] rounded-full inline-flex items-center justify-center shadow-e2 ${tone === 'neg' ? 'bg-neg text-neg-ink' : 'bg-keep text-keep-ink'}`}>
-        <Icon className="w-7 h-7" strokeWidth={2.4} aria-hidden="true" />
+      <span className={`rounded-full inline-flex items-center justify-center shadow-e2 ${ROUND_TONE[tone]}`}>
+        <Icon className={tone === 'later' ? 'w-6 h-6' : 'w-7 h-7'} strokeWidth={2.4} aria-hidden="true" />
       </span>
       <span className="text-caption font-bold text-fg">{label}</span>
     </button>
@@ -173,6 +194,7 @@ function Summary({ t, session, byId, onDelete, onClose }: {
   t: Strings; session: Session; byId: Map<string, Photo>; onDelete: (ids: string[]) => void; onClose: () => void;
 }) {
   const ids = toDelete(session);
+  const later = laterIds(session).length;
   const size = ids.reduce((s, id) => s + (byId.get(id)?.bytes ?? 0), 0);
   return (
     <main className="flex-1 flex flex-col px-6 pb-safe-8 pt-6">
@@ -180,6 +202,7 @@ function Summary({ t, session, byId, onDelete, onClose }: {
       <p className="text-body text-fg-mute mt-2 wrap-prose">
         {ids.length ? fmt(t.reviewDoneBody, { photos: plural(t, 'photos', ids.length), size: bytes(t, size) }) : t.reviewNothing}
       </p>
+      {later > 0 && <p className="text-label text-accent font-bold num mt-1">{plural(t, 'laterSaved', later)}</p>}
       {ids.length > 0 && (
         <div className="grid grid-cols-4 gap-[4px] mt-6">
           {ids.slice(0, 12).map(id => <div key={id} className="aspect-square"><Thumb id={id} /></div>)}

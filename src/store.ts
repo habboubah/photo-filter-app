@@ -4,7 +4,7 @@ import type { Album, Photo, Storage, ThemeMode } from './types';
 import translations, { DEFAULT_LANGUAGE, isLanguage, Language } from './translations';
 import { Access, PhotoLibrary, ScanProgress, loadAllFacts } from './native/photoLibrary';
 import { PRODUCT_ID, Purchases } from './native/purchases';
-import { AppState, SCHEMA_VERSION, emptyState, normalizeState } from './logic/state';
+import { AppState, SCHEMA_VERSION, emptyState, normalizeState, pruneLater } from './logic/state';
 import type { TripEdits } from './logic/trips';
 import { addDay } from './logic/streak';
 import { LocalNotifications } from '@capacitor/local-notifications';
@@ -117,6 +117,21 @@ export function useAppStore() {
   const addKept = (ids: string[]) => {
     if (ids.length) setState(s => ({ ...s, kept: [...new Set([...s.kept, ...ids])] }));
   };
+  /**
+   * The decide-later pile after a review: the photos put off join it (at the
+   * end, once), the ones given a final answer leave it.
+   */
+  const updateLater = (add: string[], settled: string[]) => {
+    if (!add.length && !settled.length) return;
+    setState(s => {
+      const gone = new Set(settled);
+      const later = [...new Set([...s.later.filter(id => !gone.has(id)), ...add])];
+      return later.length === s.later.length && later.every((id, i) => id === s.later[i]) ? s : { ...s, later };
+    });
+  };
+  /** Photos no longer in the library leave the pile. */
+  const pruneLaterPile = (exists: (id: string) => boolean) =>
+    setState(s => { const later = pruneLater(s.later, exists); return later === s.later ? s : { ...s, later }; });
   /** Photos deleted without the unlock: counted against the free ones. */
   const countFree = (n: number) => {
     if (n > 0) setState(s => ({ ...s, freeUsed: s.freeUsed + n }));
@@ -325,7 +340,7 @@ export function useAppStore() {
   return {
     language, setLanguage, themeMode, setThemeMode,
     debug, dryRunAvailable, dryRun, setDryRun,
-    state, stateReady, storageError, updateTrips, recordAlbum, setBest, addKept, markMonthDone, addFreed, markDay, countFree, resetDecisions, restoreState,
+    state, stateReady, storageError, updateTrips, recordAlbum, setBest, addKept, updateLater, pruneLaterPile, markMonthDone, addFreed, markDay, countFree, resetDecisions, restoreState,
     reminder, setReminder,
     owned: isOwned, setOwned,
     access, refreshAccess, accessGranted,

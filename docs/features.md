@@ -44,6 +44,7 @@ Every feature, as the user sees it (German labels, English in brackets).
   earlier years, a card with one of them and the years; *Ansehen* [Look back]
   reviews them (extra shots and blurry ones suggested for deleting).
 - **Monat für Monat** [Month by month]: how many months are gone through.
+- **Später entscheiden** [Decide later] with the number of photos on the pile (see *Review*).
 - **Trips**: the newest four as cards (a mosaic of their photos, the name,
   photos and size, *Album erstellt* once made); *Alle Reisen* [All trips].
 
@@ -150,13 +151,19 @@ Every feature, as the user sees it (German labels, English in brackets).
 
 ## Review
 - One photo at a time, large, with the suggestion (*Vorschlag: löschen —
-  fast gleich wie ein anderes Foto*). Swipe left to delete, right to keep — or
-  the two buttons, or the arrow keys. Undo at the top; *Beenden* [Finish] any time.
+  fast gleich wie ein anderes Foto*). Swipe left to delete, right to keep, up
+  for **Später** [Later] — or the three buttons, or the arrow keys (← → ↑).
+  Undo at the top; *Beenden* [Finish] any time.
 - At the end: *Zum Löschen markiert: 4 Fotos (13 MB)* with thumbnails and
   **4 Fotos löschen** [Delete 4 photos] → the system's dialog → Recently
   Deleted (iPhone) / the Trash (Android). Nothing is deleted before that.
   Needs the unlock.
 - Photos you kept against the suggestion are remembered and not suggested again.
+- **Decide later**: photos swiped up land on a pile; the end screen says
+  *3 für später gemerkt* [3 saved for later]. Home shows *Später entscheiden (3)*
+  [Decide later] while the pile isn't empty; it goes through the pile with no
+  suggestion. A photo leaves the pile once it is kept or deleted, or when it
+  is gone from the library.
 
 ## The unlock
 - Scanning, trips, groups, the blurry list and reviews are free. Making an

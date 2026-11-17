@@ -16,8 +16,8 @@ import { buildGroups, buildTrips, cleanupBlurry, detect, findBlurry, makeLibrary
 import { folderName } from './logic/naming';
 import { addMerge, addSplit, removeMerge, removeSplits, setIgnored, setName } from './logic/trips';
 import {
-  Decision, ReviewItem, Session, decide, isDone, keptAgainstSuggestion, reviewBlurry, reviewCleanup, reviewGroup,
-  reviewLarge, reviewScreenshots, reviewTrip, reviewUtility, startSession, undo,
+  Decision, ReviewItem, Session, decide, isDone, keptAgainstSuggestion, laterIds, reviewBlurry, reviewCleanup, reviewGroup,
+  reviewLarge, reviewLater, reviewScreenshots, reviewTrip, reviewUtility, settledIds, startSession, undo,
 } from './logic/review';
 import { aiProgress, categories, findUtility, type MemoryLabel } from './logic/ai';
 import { findScreenshots, isOldShot, oldShots } from './logic/screenshots';
@@ -103,6 +103,12 @@ export default function App() {
   const large = useMemo(() => findLarge(lib.photos), [lib]);
   const live = useMemo(() => findLive(lib.photos), [lib]);
   const hasLocations = useMemo(() => lib.photos.some(p => p.lat !== undefined), [lib]);
+  // The decide-later pile, without photos that are gone (a full scan's view of the library prunes it for good).
+  const laterPile = useMemo(() => state.later.filter(id => lib.byId.has(id)), [state.later, lib]);
+  useEffect(() => {
+    if (photos && store.access === 'full' && !store.scan.running && store.stateReady) store.pruneLaterPile(id => lib.byId.has(id));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [photos, store.access, store.scan.running, store.stateReady, lib]);
 
   /* ------------------------------------------------------------- widget */
 
@@ -159,9 +165,12 @@ export default function App() {
   const trip = tripKey ? trips.find(x => x.key === tripKey) ?? null : null;
   const group = groupKey ? groups.find(g => g.key === groupKey) ?? null : null;
 
+  /** The decide-later pile after a review: what was put off joins it, what was decided leaves it. */
+  const applyLater = (session: Session) => store.updateLater(laterIds(session), settledIds(session));
   const closeReview = () => {
     if (review) {
       store.addKept(keptAgainstSuggestion(review.session));
+      applyLater(review.session);
       if (isDone(review.session)) review.onDone?.();
     }
     setReview(null);
@@ -387,10 +396,10 @@ export default function App() {
           t={t} session={review.session} finished={review.finished} byId={byId} debug={store.debug}
           onDecide={onDecide} onUndo={onUndo}
           onFinish={() => setReview(r => (r ? { ...r, finished: true } : r))}
-          onDelete={ids => deletePhotos(ids, keptAgainstSuggestion(review.session), () => {
+          onDelete={ids => { applyLater(review.session); deletePhotos(ids, keptAgainstSuggestion(review.session), () => {
             if (isDone(review.session)) review.onDone?.();
             setReview(null);
-          })}
+          }); }}
           onClose={closeReview}
         />
       );
@@ -582,6 +591,8 @@ export default function App() {
         storage={store.storage} freedBytes={state.freed.bytes} streak={streak(state.days, now)}
         months={{ done: months.filter(m => doneMonths.has(m.key)).length, total: months.length }}
         onThisDay={{ photos: today.ids.length, years: today.years, cover: today.ids[0] }}
+        later={{ count: laterPile.length, cover: laterPile[0] }}
+        onLater={() => startReview(reviewLater(laterPile))}
         onSettings={() => setShowSettings(true)}
         onRescan={store.startScan}
         onAddPhotos={addPhotos}

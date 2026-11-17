@@ -1,5 +1,5 @@
 import type React from 'react';
-import { Aperture, CalendarDays, ChevronRight, Copy, FileVideo, Focus, History, ImagePlus, Layers, MapPin, ReceiptText, RefreshCw, Settings, Smartphone, Sparkles } from 'lucide-react';
+import { Aperture, CalendarDays, ChevronRight, Clock, Copy, FileVideo, Focus, History, ImagePlus, Layers, MapPin, ReceiptText, RefreshCw, Settings, Smartphone, Sparkles } from 'lucide-react';
 import type { CleanupSummary, Storage, Trip } from '../types';
 import type { Access } from '../native/photoLibrary';
 import type { ScanView } from '../store';
@@ -34,6 +34,9 @@ interface Props {
   streak: number;
   months: { done: number; total: number };
   onThisDay: { photos: number; years: number[]; cover?: string };
+  /** The decide-later pile (photos swiped up in a review). */
+  later: { count: number; cover?: string };
+  onLater: () => void;
   onSettings: () => void;
   onRescan: () => void;
   onAddPhotos: () => void;
@@ -164,6 +167,25 @@ export function HomeView(p: Props) {
           <span className="min-w-0 flex-1">
             <span className="block text-body font-bold text-fg">{t.monthsCard}</span>
             <span className="block text-caption text-fg-mute num">{fmt(t.monthsCardBody, { done: num(t, p.months.done), total: num(t, p.months.total) })}</span>
+          </span>
+          <ChevronRight className="w-5 h-5 text-fg-faint shrink-0 rtl:rotate-180" aria-hidden="true" />
+        </button>
+      )}
+
+      {loaded && p.later.count > 0 && (
+        <button
+          type="button" onClick={() => { tapLight(); p.onLater(); }}
+          aria-label={`${t.laterCard} (${num(t, p.later.count)})`}
+          className="w-full rounded-md card p-[10px] flex items-center gap-3 text-start press focus-visible:ring-focus"
+        >
+          <span className="w-12 h-12 shrink-0 rounded-[10px] overflow-hidden">
+            {p.later.cover && <Thumb id={p.later.cover} className="!rounded-none" />}
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="flex items-center gap-1.5 text-body font-bold text-fg">
+              <Clock className="w-4 h-4 text-accent shrink-0" aria-hidden="true" />{t.laterCard} <span className="num text-fg-mute">({num(t, p.later.count)})</span>
+            </span>
+            <span className="block text-caption text-fg-mute wrap-prose">{t.laterCardBody}</span>
           </span>
           <ChevronRight className="w-5 h-5 text-fg-faint shrink-0 rtl:rotate-180" aria-hidden="true" />
         </button>
