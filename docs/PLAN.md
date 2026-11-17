@@ -5,7 +5,8 @@ of tens of thousands of pictures into trips (one tap makes an album), finds
 near-identical and blurry photos, and suggests what could go — all on the
 device. Not a "storage cleaner": the trips are the point, the clean-up comes
 with them. Scanning and looking are free; making albums and deleting need one
-one-time purchase.
+one-time purchase — once it is on sale: the app launches free (see *Decisions*,
+"Pricing").
 
 This is the step 0 page of the build prompt (Project › `claude/build-prompt.md`),
 kept true as the app grows: the architecture, the data model, the platform
@@ -196,6 +197,7 @@ sofa).
 |---|---|---|
 | Name | **Bildklar** — *Bildklar KI: Foto Reiniger* / *Bildklar AI: Photo Cleaner*; code name `bildklar`; bundle id `com.habboubah.bildklar` | Renamed from *Fotonest* on 16 November 2026: *Fotonest*, *FotoNest* and *PhotoNest* (incl. a "PhotoNest: AI Photo Cleaner") were already in both stores. *Bildklar* ("clear picture") was free in both stores' search (16 Nov 2026); "KI"/"AI" stands for the on-device Vision analysis of the best shot on the iPhone. **Not yet reserved in App Store Connect / Play Console** — do that first (docs/TODO.md). |
 | Price | **4,99 €**, one-time, product `com.habboubah.bildklar.unlock` on both stores | An impulse price for a tool you use a few times a year; "pay once, no subscription" is the pitch. Changeable in both consoles at any time, without an app update. |
+| Pricing (17 Nov 2026) | **Launch free, sell later.** `UNLOCK_ON_SALE = false` (`src/logic/allowance.ts`): nothing for sale, deleting unlimited, the extras (albums/folders, smaller videos and photos, Live Photos as stills) hidden — not shown locked, which App Review rejects as "coming soon" (guideline 2.1). Every start marks the install `early`. Selling (after about 5,000 downloads and good ratings) is one update: the switch to `true`, the IAP submitted with that version, the store texts, the album slide and the album scene back (git history). The 50-delete limit then applies to new installs only — early ones keep deleting without a limit, so nobody loses what they had. A reinstall loses `early` unless a backup brings the decisions back (Android's Google backup includes `files/state.json`); on iPhone, `AppTransaction.originalPurchaseDate` (StoreKit 2) can restore it then. | Ahmad wants downloads and reviews first. Taking away what users had would cost exactly those reviews; adding paid extras later costs none. |
 | Android albums | **Folders**, after the system's consent | The only "album" every gallery app shows. Copying would double the storage, in-app albums would be invisible elsewhere. |
 | minSdk | **30** (Android 11) | Trash and write requests exist from 30: a deleted photo always lands in the Trash. |
 | iOS minimum | **16** | Room for StoreKit 2 and Vision without fallbacks; covers iPhone 8 and newer. (The rescan compares modification dates, which works on any version.) |

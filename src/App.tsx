@@ -44,7 +44,7 @@ import { Progress } from './ui/Controls';
 import { Sheet } from './ui/Sheet';
 import type { ReviewOutcome } from './components/ReviewView';
 import { PaywallSheet, type FreeInfo } from './components/PaywallSheet';
-import { freeDelete, freeLeft } from './logic/allowance';
+import { UNLOCK_ON_SALE, deletesUnlimited, extrasShown, freeDelete, freeLeft } from './logic/allowance';
 
 /*
  * Screens opened less often are loaded on first use (the main bundle has a
@@ -295,6 +295,9 @@ export default function App() {
 
   /* ------------------------------------------------------------- unlock */
 
+  // The launch phase (src/logic/allowance.ts): the extras hidden, deleting unlimited.
+  const extras = extrasShown(store.owned);
+  const unlimited = deletesUnlimited(store.owned, state.early);
   const [paywall, setPaywall] = useState(false);
   /** Set when the paywall opened for a delete larger than the free deletions left. */
   const [paywallFree, setPaywallFree] = useState<FreeInfo | null>(null);
@@ -352,11 +355,12 @@ export default function App() {
    * Deleting without the unlock: the first FREE_DELETES photos go through as
    * usual. A selection larger than what is left opens the paywall, which also
    * offers to delete just the photos still free (the first ones selected).
+   * While nothing is for sale, and for installs from that time, nothing counts.
    */
   const deletePhotos = (ids: string[], keepIds: string[] = [], after?: () => void) => {
     const run = (list: string[], free: boolean, done?: () => void) =>
       void trash(list, keepIds, free).then(ok => { if (ok) done?.(); });
-    if (store.owned) { run(ids, false, after); return; }
+    if (unlimited) { run(ids, false, after); return; }
     const { all, left } = freeDelete(state.freeUsed, ids.length);
     if (all) { run(ids, true, after); return; }
     afterUnlock.current = () => run(ids, false, after);
@@ -477,7 +481,7 @@ export default function App() {
   const startReview = (items: ReviewItem[], onDone?: () => void) => {
     if (!items.length) return;
     setReview({ session: startSession(items), finished: false, onDone });
-    if (!albumList) void PhotoLibrary.listAlbums().then(r => setAlbumList(r.albums)).catch(() => setAlbumList([]));
+    if (extras && !albumList) void PhotoLibrary.listAlbums().then(r => setAlbumList(r.albums)).catch(() => setAlbumList([]));
   };
 
   /* -------------------------------------------- albums while swiping */
@@ -541,7 +545,7 @@ export default function App() {
       return (
         <ReviewView
           t={t} session={review.session} finished={review.finished} byId={byId} debug={store.debug}
-          onDecide={onDecide} onUndo={onUndo} albums={chips} android={isAndroid()} onFile={onFile}
+          onDecide={onDecide} onUndo={onUndo} albums={chips} android={isAndroid()} onFile={extras ? onFile : undefined}
           onProtect={id => { store.protectPhotos([id], true); onDecide('keep'); show(t.protected); }}
           onPreview={id => { void PhotoLibrary.preview({ id }).catch(() => show(t.previewFailed)); }}
           onFinish={() => setReview(r => (r ? { ...r, finished: true } : r))}
@@ -592,7 +596,7 @@ export default function App() {
           isMerged={state.trips.merges.some(g => g.includes(trip.key))}
           isSplit={!!state.trips.splits[base]}
           onBack={() => setTripKey(null)}
-          onCreateAlbum={() => needUnlock(() => setAlbumFor(trip))}
+          onCreateAlbum={extras ? () => needUnlock(() => setAlbumFor(trip)) : undefined}
           onReview={() => startReview(reviewTrip(trip.ids, groups, byId, kept))}
           onRename={name => store.updateTrips(e => setName(e, trip.key, name))}
           onSplit={at => { store.updateTrips(e => addSplit(e, trip.key, at)); show(t.tripSplit); }}
@@ -669,7 +673,7 @@ export default function App() {
     if (showLarge) {
       return (
         <LargeView
-          t={t} {...sorting('large')} photos={large} canCompress
+          t={t} {...sorting('large')} photos={large} canCompress={extras}
           onBack={() => setShowLarge(false)}
           onReview={(list: Photo[]) => startReview(reviewLarge(list))}
           onCompress={p => needUnlock(() => { void compress(p); })}
@@ -737,17 +741,13 @@ export default function App() {
     if (showSettings) {
       return (
         <SettingsView
-          t={t} language={language} themeMode={store.themeMode} access={access} owned={store.owned} freeLeft={freeLeft(state.freeUsed)}
-          debug={store.debug} dryRunAvailable={store.dryRunAvailable} dryRun={store.dryRun} storage={store.storage} freed={state.freed}
+          t={t} language={language} themeMode={store.themeMode} access={access} owned={store.owned} onSale={UNLOCK_ON_SALE} unlimited={unlimited} freeLeft={freeLeft(state.freeUsed)}
+          debug={store.debug} dryRunAvailable={store.dryRunAvailable} dryRun={store.dryRun}
           reminder={store.reminder}
-          protection={{ albums: state.protect.albums.length, trips: state.protect.trips.length, photos: state.protect.ids.length }}
-          onProtected={() => setShowProtected(true)}
           onReminder={on => { void store.setReminder(on, t.reminderTitle, t.reminderBody).then(ok => { if (on && !ok) show(t.reminderDenied); }); }}
           onBack={() => setShowSettings(false)}
           onLanguage={store.setLanguage} onTheme={store.setThemeMode}
-          onAddPhotos={addPhotos}
           onOpenSettings={() => { void PhotoLibrary.openSettings(); }}
-          onRescan={() => { store.startScan(); setShowSettings(false); }}
           onUnlock={() => setPaywall(true)}
           onRestore={restore}
           onDryRun={store.setDryRun}
@@ -765,7 +765,7 @@ export default function App() {
     if (access && !hasAccess) {
       return (
         <PermissionView
-          t={t} access={access}
+          t={t} access={access} albums={extras}
           onAllow={async () => {
             const { access: a } = await PhotoLibrary.requestAccess().catch(() => ({ access: 'denied' as const }));
             await store.accessGranted(a);
@@ -802,15 +802,18 @@ export default function App() {
           ...(aiSeen.seen > 0 ? { utility: { items: utility.length, covers: utility.slice(0, 4).map(x => x.id) } } : {}),
         }}
         large={{ count: large.length, bytes: large.reduce((sum, x) => sum + x.bytes, 0), cover: large[0]?.id }}
-        liveCount={isAndroid() ? 0 : live.length} liveCover={live[0]?.id}
-        compress={{ count: compressible.photos.length + compressible.screenshots.length, saving: compressible.saving, cover: (compressible.photos[0] ?? compressible.screenshots[0])?.id }}
+        liveCount={isAndroid() || !extras ? 0 : live.length} liveCover={live[0]?.id}
+        compress={{ count: extras ? compressible.photos.length + compressible.screenshots.length : 0, saving: compressible.saving, cover: (compressible.photos[0] ?? compressible.screenshots[0])?.id }}
         onCompress={() => setShowCompress(true)}
         apps={sourcesBytes >= APPS_TILE_MIN ? { bytes: sourcesBytes, cover: sources[0]?.photos[0]?.id } : null}
         onApps={() => setShowApps(true)}
         storage={store.storage} freedBytes={state.freed.bytes} streak={streak(state.days, now)}
         months={{ done: months.filter(m => doneMonths.has(m.key)).length, total: months.length, pct }}
         later={{ count: laterPile.length, cover: laterPile[0] }}
+        protection={{ albums: state.protect.albums.length, trips: state.protect.trips.length, photos: state.protect.ids.length }}
         onLater={() => startReview(reviewLater(laterPile))}
+        onProtected={() => setShowProtected(true)}
+        onRescan={() => store.startScan()}
         onSettings={() => setShowSettings(true)}
         onAddPhotos={addPhotos}
         onCleanup={() => setShowCleanup(true)}

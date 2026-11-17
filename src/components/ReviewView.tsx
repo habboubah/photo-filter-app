@@ -36,7 +36,8 @@ export function ReviewView({ t, session, finished, byId, debug, albums, android,
   android: boolean;
   onDecide: (d: Decision) => void;
   /** An album chip: the photo kept and filed into it (or `new:<title>`). */
-  onFile: (album: string) => void;
+  /** Absent while albums are not offered (src/logic/allowance.ts): no chips then. */
+  onFile?: (album: string) => void;
   /** The shield: the photo is kept and protected for good (src/logic/protect.ts). */
   onProtect: (id: string) => void;
   /** A video: played in the system's player over the app. */
@@ -52,7 +53,7 @@ export function ReviewView({ t, session, finished, byId, debug, albums, android,
   const chips = [...made, ...albums];
   const [naming, setNaming] = useState(false);
   const [title, setTitle] = useState('');
-  const create = () => { const name = title.trim(); if (name) onFile(newAlbumKey(name)); setNaming(false); setTitle(''); };
+  const create = () => { const name = title.trim(); if (name) onFile?.(newAlbumKey(name)); setNaming(false); setTitle(''); };
   const done = finished || !item;
   // What the photos marked so far would free: counts up as you swipe left.
   const marked = toDelete(session).reduce((sum, id) => sum + (byId.get(id)?.bytes ?? 0), 0);
@@ -98,7 +99,7 @@ export function ReviewView({ t, session, finished, byId, debug, albums, android,
               </div>
             </div>
             <Card key={item.id} t={t} item={item} photo={byId.get(item.id)} debug={debug} onDecide={onDecide} onProtect={() => onProtect(item.id)} onPreview={() => onPreview(item.id)} />
-            <div role="group" aria-label={t.fileIntoAlbum} className="flex gap-2 overflow-x-auto px-[16px] pt-3 pb-1">
+            {onFile && <div role="group" aria-label={t.fileIntoAlbum} className="flex gap-2 overflow-x-auto px-[16px] pt-3 pb-1">
               {chips.map(c => {
                 const on = session.albums[item.id] === c.id;
                 return (
@@ -118,7 +119,7 @@ export function ReviewView({ t, session, finished, byId, debug, albums, android,
               >
                 <Plus className="w-4 h-4" aria-hidden="true" />{t.newAlbum}
               </button>
-            </div>
+            </div>}
             <div className="px-6 pb-safe-8 pt-3">
               <div className="flex justify-center items-end gap-6">
                 <RoundButton label={t.delete} tone="neg" icon={Trash2} onClick={() => onDecide('delete')} />

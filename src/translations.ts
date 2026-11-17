@@ -38,6 +38,7 @@ const de = {
   permTitle: 'Bring Ordnung in deine Fotos',
   permBody: 'Bildklar findet deine Reisen, fast gleiche und unscharfe Fotos – direkt auf deinem iPhone.',
   permPoint1: 'Jede Reise wird mit einem Tipp zum Album',
+  permPoint1Trips: 'Deine Reisen auf einen Blick – nach Ort und Datum',
   permPoint2: 'Doppelte und verwackelte Fotos finden und aufräumen',
   permPoint3: 'Alles bleibt auf deinem Gerät – kein Konto, keine Cloud',
   permAllow: 'Fotos freigeben',
@@ -193,7 +194,8 @@ const de = {
   files_other: '{n} Dateien',
   largeTile: 'Große Dateien',
   largeTitle: 'Große Dateien',
-  largeIntro: 'Die größten Fotos und Videos zuerst. Hier schlägt Bildklar nichts zum Löschen vor – große Dateien sind oft die wertvollen. Ein Video kannst du auch verkleinern.',
+  largeIntro: 'Die größten Fotos und Videos zuerst. Hier schlägt Bildklar nichts zum Löschen vor – große Dateien sind oft die wertvollen.',
+  largeCompressNote: 'Ein Video kannst du auch verkleinern.',
   filterVideos: 'Videos',
   filterPhotos: 'Fotos',
   noLarge: 'Keine großen Dateien',
@@ -384,7 +386,6 @@ const de = {
   accessFull: 'Alle Fotos',
   accessLimited: 'Ausgewählte Fotos',
   accessNone: 'Kein Zugriff',
-  manageAccess: 'Zugriff in den Einstellungen ändern',
   protectedRow: 'Geschützt',
   protectedRowSub: '{albums} · {trips} · {photos}',
   protectedTitle: 'Geschützt',
@@ -407,9 +408,7 @@ const de = {
   tripProtected: 'Fotos aus „{name}“ werden nie vorgeschlagen',
   albums_one: '1 Album',
   albums_other: '{n} Alben',
-  storageRow: 'Speicher auf dem Gerät',
   storageValue: '{free} von {total} frei',
-  freedRow: 'Mit Bildklar freigegeben',
   reminderSection: 'Erinnerung',
   reminderRow: 'Wöchentliche Erinnerung',
   reminderSub: 'Sonntags um 18 Uhr – auf deinem Gerät geplant, ohne Server.',
@@ -438,9 +437,10 @@ const de = {
   privacy: 'Datenschutz',
   licences: 'Lizenzen',
   resetSection: 'Zurücksetzen',
-  resetDecisions: 'Meine Entscheidungen zurücksetzen',
-  resetTitle: 'Entscheidungen zurücksetzen?',
-  resetBody: 'Umbenannte, geteilte, zusammengeführte und ausgeblendete Reisen, gewählte beste Fotos und behaltene Fotos werden vergessen. Deine Fotos und Alben bleiben, wie sie sind.',
+  resetDecisions: 'Von vorn anfangen',
+  resetDecisionsSub: 'Deine Fotos bleiben, wie sie sind',
+  resetTitle: 'Von vorn anfangen?',
+  resetBody: 'Bildklar vergisst, was du entschieden hast: behaltene, geschützte und für später gemerkte Fotos, die gewählten besten Fotos, bearbeitete Reisen, durchgesehene Monate und Sortierungen. Alles wird wieder vorgeschlagen. Deine Fotos und Alben bleiben, wie sie sind.',
   resetDone: 'Zurückgesetzt',
   licencesTitle: 'Lizenzen',
   licencesIntro: 'Bildklar steht auf den Schultern anderer. Danke!',
@@ -497,6 +497,7 @@ const en: Strings = {
   permTitle: 'Bring order to your photos',
   permBody: 'Bildklar finds your trips, near-identical and blurry photos – right on your iPhone.',
   permPoint1: 'Turn every trip into an album with one tap',
+  permPoint1Trips: 'Your trips at a glance – by place and date',
   permPoint2: 'Find and clear out duplicate and shaky shots',
   permPoint3: 'Everything stays on your device – no account, no cloud',
   permAllow: 'Allow access to photos',
@@ -648,7 +649,8 @@ const en: Strings = {
   files_other: '{n} files',
   largeTile: 'Large files',
   largeTitle: 'Large files',
-  largeIntro: 'The biggest photos and videos first. Bildklar suggests nothing for deleting here – big files are often the precious ones. You can also make a video smaller.',
+  largeIntro: 'The biggest photos and videos first. Bildklar suggests nothing for deleting here – big files are often the precious ones.',
+  largeCompressNote: 'You can also make a video smaller.',
   filterVideos: 'Videos',
   filterPhotos: 'Photos',
   noLarge: 'No large files',
@@ -834,7 +836,6 @@ const en: Strings = {
   accessFull: 'All photos',
   accessLimited: 'Selected photos',
   accessNone: 'No access',
-  manageAccess: 'Change access in Settings',
   protectedRow: 'Protected',
   protectedRowSub: '{albums} · {trips} · {photos}',
   protectedTitle: 'Protected',
@@ -857,9 +858,7 @@ const en: Strings = {
   tripProtected: 'Photos from “{name}” are never suggested',
   albums_one: '1 album',
   albums_other: '{n} albums',
-  storageRow: 'Storage on this device',
   storageValue: '{free} of {total} free',
-  freedRow: 'Freed with Bildklar',
   reminderSection: 'Reminder',
   reminderRow: 'Weekly reminder',
   reminderSub: 'Sundays at 6 pm – scheduled on your device, no server.',
@@ -888,9 +887,10 @@ const en: Strings = {
   privacy: 'Privacy',
   licences: 'Licences',
   resetSection: 'Reset',
-  resetDecisions: 'Reset my decisions',
-  resetTitle: 'Reset your decisions?',
-  resetBody: 'Renamed, split, joined and hidden trips, picked best photos and kept photos are forgotten. Your photos and albums stay as they are.',
+  resetDecisions: 'Start over',
+  resetDecisionsSub: 'Your photos stay as they are',
+  resetTitle: 'Start over?',
+  resetBody: 'Bildklar forgets what you decided: kept, protected and saved-for-later photos, the best shots you picked, edited trips, months gone through and sort orders. Everything is suggested again. Your photos and albums stay as they are.',
   resetDone: 'Reset',
   licencesTitle: 'Licences',
   licencesIntro: 'Bildklar stands on the shoulders of others. Thank you!',
@@ -929,6 +929,7 @@ export default translations;
  */
 export const androidStrings: Record<keyof typeof translations, Partial<Strings>> = {
   de: {
+    resetBody: 'Bildklar vergisst, was du entschieden hast: behaltene, geschützte und für später gemerkte Fotos, die gewählten besten Fotos, bearbeitete Reisen, durchgesehene Monate und Sortierungen. Alles wird wieder vorgeschlagen. Deine Fotos und Ordner bleiben, wie sie sind.',
     protectedAlbums: 'Ordner',
     protectedAlbumsHint: 'Die Fotos in den eingeschalteten Ordnern werden nie vorgeschlagen. Die Ordner selbst bleiben, wie sie sind.',
     protectedNoAlbums: 'Keine Ordner mit Fotos gefunden',
@@ -967,6 +968,7 @@ export const androidStrings: Record<keyof typeof translations, Partial<Strings>>
     paywallFile: 'Fotos beim Durchgehen in Ordner sortieren',
   },
   en: {
+    resetBody: 'Bildklar forgets what you decided: kept, protected and saved-for-later photos, the best shots you picked, edited trips, months gone through and sort orders. Everything is suggested again. Your photos and folders stay as they are.',
     protectedAlbums: 'Folders',
     protectedAlbumsHint: 'Photos in the folders switched on are never suggested. The folders themselves stay as they are.',
     protectedNoAlbums: 'No folders with photos found',
@@ -1057,4 +1059,17 @@ export function bytes(t: Strings, b: number): string {
   while (v >= 1000 && i < units.length - 1) { v /= 1000; i++; }
   const digits = v < 10 && i >= 2 ? 1 : 0;
   return `${v.toLocaleString(t.locale, { maximumFractionDigits: digits, minimumFractionDigits: digits })} ${units[i]}`;
+}
+
+/** How long ago, in the app's locale: "vor 5 Minuten", "gestern", "now". */
+export function ago(t: Strings, at: number, now: number): string {
+  const rtf = new Intl.RelativeTimeFormat(t.locale, { numeric: 'auto' });
+  const s = Math.round((at - now) / 1000);
+  const steps: [Intl.RelativeTimeFormatUnit, number][] = [['second', 60], ['minute', 60], ['hour', 24], ['day', 7], ['week', 4.35], ['month', 12]];
+  let v = s;
+  for (const [unit, size] of steps) {
+    if (Math.abs(v) < size) return rtf.format(unit === 'second' ? 0 : Math.round(v), unit);
+    v /= size;
+  }
+  return rtf.format(Math.round(v), 'year');
 }

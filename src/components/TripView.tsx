@@ -18,7 +18,8 @@ interface Props {
   isMerged: boolean;
   isSplit: boolean;
   onBack: () => void;
-  onCreateAlbum: () => void;
+  /** Absent while albums are not offered (src/logic/allowance.ts, the launch phase). */
+  onCreateAlbum?: () => void;
   onReview: () => void;
   onRename: (name: string) => void;
   onSplit: (at: number) => void;
@@ -74,7 +75,7 @@ export function TripView(p: Props) {
 
       <Dock>
         <div className="flex gap-2">
-          {trip.album
+          {trip.album || !p.onCreateAlbum
             ? <Button full size="lg" onClick={p.onReview}>{t.reviewTrip}</Button>
             : <>
                 <Button size="lg" variant="secondary" onClick={p.onReview} aria-label={t.reviewTrip}>{t.reviewGroup}</Button>
@@ -93,7 +94,7 @@ export function TripView(p: Props) {
             {p.isMerged && <Row label={t.undoMerge} leading={<IconTile icon={Undo2} hue="stone" />} onClick={() => { p.onUndoMerge(); close(); }} />}
           </Group>
           <Group>
-            {trip.album && <Row label={t.createAgain} leading={<IconTile icon={AlbumIcon} hue="mint" />} onClick={() => { close(); p.onCreateAlbum(); }} />}
+            {trip.album && p.onCreateAlbum && <Row label={t.createAgain} leading={<IconTile icon={AlbumIcon} hue="mint" />} onClick={() => { close(); p.onCreateAlbum?.(); }} />}
             <Row
               label={p.isProtected ? t.neverSuggestOn : t.neverSuggest}
               leading={<IconTile icon={p.isProtected ? ShieldOff : Shield} hue="mint" />}

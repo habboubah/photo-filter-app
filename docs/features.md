@@ -22,7 +22,8 @@ Every feature, as the user sees it (German labels, English in brackets).
   only look at new and changed photos (a quiet *wird aktualisiert …*), and drop
   deleted ones. It runs at every start, when coming back to the app after a
   while, and when photos change while the app is open.
-- *Neu durchsuchen* [Scan again] in Settings.
+- *Neu durchsuchen* [Scan again] at the end of *Aufräumen*, with when the last
+  scan ran (*Durchsucht vor 5 Minuten*).
 - iCloud-only originals are never downloaded.
 - **The on-device AI** (docs/AI.md) looks at each photo after that: the
   subtitle on *Aufräumen* counts along (*KI: 1.234 von 5.000 Fotos*), results show up
@@ -237,7 +238,7 @@ tab again scrolls to its top; Android's back button goes from *Ordnen* to
   one go — iPhone: the photos are added to the albums (nothing moves);
   Android: an album is a folder, so the photos move there after one system
   dialog (*Die Fotos werden in den Ordner verschoben*). Albums made here show
-  up in Settings › Geschützt.
+  up in *Aufräumen* › Geschützt.
 - **Decide later**: photos swiped up land on a pile; the end screen says
   *3 für später gemerkt* [3 saved for later]. *Aufräumen* › *Weitermachen* shows *Später entscheiden (3)*
   [Decide later] while the pile isn't empty; it goes through the pile with no
@@ -245,7 +246,20 @@ tab again scrolls to its top; Android's back button goes from *Ordnen* to
   is gone from the library.
 
 ## The unlock
-- Scanning, trips, groups, the blurry list and reviews are free. Making an
+- **Not for sale yet — the launch phase** (`UNLOCK_ON_SALE` is `false` in
+  `src/logic/allowance.ts`, since 17 November 2026). Everything below is
+  built, but what the unlock pays for is **hidden**, not shown locked: no
+  *Album erstellen* on a trip, no album chips in a review, no *Fotos
+  verkleinern* and *Live Photos* tiles, no *Video verkleinern* in the large
+  files, no *Vollversion* section in Settings, never the paywall. Deleting has
+  **no limit** and nothing is counted. The permission screen promises the
+  trips instead of an album per trip. Someone who owns the unlock anyway (a
+  TestFlight purchase, the demo's `owned`) sees the extras.
+- **Every start in the launch phase marks the install as early**
+  (`AppState.early`, kept by *Von vorn anfangen*). When the
+  unlock goes on sale, early installs keep deleting without a limit; only the
+  extras need the purchase. New installs from then on get the 50 free deletes.
+- Once on sale: scanning, trips, groups, the blurry list and reviews are free. Making an
   album/folder, smaller videos, Live Photo conversion and deleting need
   **one one-time purchase** (4,99 €, no subscription). The paywall appears
   when needed, and from Settings.
@@ -279,18 +293,23 @@ tab again scrolls to its top; Android's back button goes from *Ordnen* to
   at 18:00, scheduled on the phone — no server.
 
 ## Settings
-- **Fotos**: the access (all / selected / none), *Fotos auswählen*, *Zugriff
-  in den Einstellungen ändern*, *Neu durchsuchen*, the storage on the device
-  (free of total) and what Bildklar has freed so far (photos and size).
+- **Fotos** (only with limited access): *Zugriff auf alle Fotos erlauben*
+  [Allow access to all photos] opens the system's settings, the only place
+  where iOS (and Android, once decided) lets the access change. With full
+  access there is nothing to do; with none the app shows its permission
+  screen instead. Settings holds only what can be changed: the storage, what was freed and *Fotos auswählen* are on
+  *Aufräumen*, so are *Geschützt* and *Neu durchsuchen* (its last rows).
 - **Vollversion**: unlock or *Freigeschaltet*, restore.
 - **Darstellung**: language (Deutsch, English), appearance (system, light, dark).
 - **Nur in der Debug-Version**: *Probelauf* [Dry run] — on by default in debug
   builds: nothing in the photo library changes, the app says what it would have done.
 - **Über die App**: rate (once the App Store id is set), feedback by mail,
   privacy policy, licences (GeoNames, fonts, icons).
-- *Meine Entscheidungen zurücksetzen* [Reset my decisions] (with undo): trip
-  edits, best-shot picks, kept photos, the months marked as done (the
-  "freed so far" count stays).
+- *Von vorn anfangen* [Start over] (*Deine Fotos bleiben, wie sie sind*; with
+  undo): Bildklar forgets every decision — kept, protected and decide-later
+  photos, best-shot picks, trip edits, the months marked as done, the sort
+  orders — so everything is suggested again. The photos and albums, the
+  purchase and the "freed so far" count stay.
 
 ## Photos from apps (*Aus Apps*, Android)
 - Photos and videos saved by messengers and other apps, told apart by their
@@ -313,8 +332,8 @@ tab again scrolls to its top; Android's back button goes from *Ordnen* to
   favourites; photos kept in a review; photos protected by hand (the shield
   *Schützen* [Protect] in the review: kept and protected for good); every photo
   of a trip marked *⋯ › Nie vorschlagen* [Never suggest]; and every photo of the
-  albums (iPhone) / folders (Android) switched on in *Einstellungen › Geschützt*.
-- Settings › Geschützt lists the albums / folders with a switch each, the
+  albums (iPhone) / folders (Android) switched on in *Aufräumen › Geschützt*.
+- *Aufräumen* › Geschützt (its last rows) lists the albums / folders with a switch each, the
   protected trips and the photos protected by hand; each protection is lifted
   with a tap.
 - In a duplicate or near-identical group a protected photo stays and ranks

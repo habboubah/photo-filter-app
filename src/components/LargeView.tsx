@@ -38,7 +38,7 @@ export function LargeView({ t, photos, canCompress, sort, onSort, onBack, onRevi
   const size = (p: Photo) => `${p.exact ? '' : '≈ '}${bytes(t, p.bytes)}`;
 
   return (
-    <Screen title={t.largeTitle} subtitle={`${plural(t, 'files', list.length)} · ${approx ? '≈ ' : ''}${bytes(t, total)}`} onBack={onBack} backLabel={t.back} info={{ label: t.aboutScreen, close: t.close, body: t.largeIntro }} docked={list.length > 0}
+    <Screen title={t.largeTitle} subtitle={`${plural(t, 'files', list.length)} · ${approx ? '≈ ' : ''}${bytes(t, total)}`} onBack={onBack} backLabel={t.back} info={{ label: t.aboutScreen, close: t.close, body: canCompress ? `${t.largeIntro} ${t.largeCompressNote}` : t.largeIntro }} docked={list.length > 0}
       actions={<SortButton t={t} value={sort} onChange={onSort} />}>
       <Segmented
         label={t.largeTitle} value={filter} onChange={setFilter}

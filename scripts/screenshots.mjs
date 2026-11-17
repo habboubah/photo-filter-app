@@ -1,5 +1,6 @@
 // Raw store screenshots of Bildklar, in German and English: nine screens per
-// language at 1290 × 2796 (430 × 932 pt @3x), as plain app screens, from the
+// language (seven while nothing is for sale: no album, no paywall — see
+// scripts/lib/shots.mjs) at 1290 × 2796 (430 × 932 pt @3x), as plain app screens, from the
 // demo library. Next to each, <screen>.marks.json says where its parts are
 // (the clean-up card, the best shot …), for the pieces the store set lifts
 // out of the phone. `npm run store-screenshots` then frames and captions them
@@ -28,6 +29,7 @@ const failed = await capture({
   outDir,
   onlyNames: onlyArg(),
   marks: true,
+  forStore: true,
 });
 console.log(`\n${failed.length ? 'Done, with gaps' : 'Done'} → screenshots/<de|en>${android ? '-android' : ''}/  (1290 × 2796). Next: npm run store-screenshots`);
 if (failed.length) process.exit(1);

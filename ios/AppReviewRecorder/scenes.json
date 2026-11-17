@@ -1,5 +1,5 @@
 {
- "about": "The App Review screen recording for Bildklar (Bildklar KI: Foto Reiniger / Bildklar AI: Photo Cleaner), one step per line, in the order a new user meets the app: the scan, a trip turned into an album, near-identical photos and the best shot, a review that deletes two photos with iOS's own dialog, the settings. About 2 minutes. The paywall shows only while the unlock isn't owned: on the iPhone it was bought beforehand with the TestFlight account (README.md, Preparation), so the album is made straight away; in the rehearsal the paywall appears and Restore Purchases unlocks it. The iPhone UI test (RecorderUITests) plays this file on a real iPhone that has the demo photos and has given Bildklar Limited Access to only those; scripts/rehearse-app-review.mjs plays the same file against the web build to check every label first. Step keys: see README.md.",
+ "about": "The App Review screen recording for Bildklar (Bildklar KI: Foto Reiniger / Bildklar AI: Photo Cleaner), one step per line, in the order a new user meets the app: the scan, a trip found by itself, near-identical photos and the best shot, a review that deletes two photos with iOS's own dialog, the settings. About 2 minutes. Nothing is for sale yet (UNLOCK_ON_SALE in src/logic/allowance.ts): no paywall, no album button for a new user — so the recording shows the trip, not an album. When the unlock goes on sale, bring back the album scene (git history: \"A trip becomes an album\"). The iPhone UI test (RecorderUITests) plays this file on a real iPhone that has the demo photos and has given Bildklar Limited Access to only those; scripts/rehearse-app-review.mjs plays the same file against the web build to check every label first. Step keys: see README.md.",
  "app": {
   "bundleId": "com.habboubah.bildklar",
   "iconName": ["Bildklar"],
@@ -13,10 +13,10 @@
    {"select": "English", "in": ["Language", "Sprache"]},
    {"pause": 0.5},
    {"select": "Like the system", "in": "Appearance"},
-   {"scrollTo": "Reset my decisions"},
-   {"tap": "Reset my decisions"},
+   {"scrollTo": "Start over"},
+   {"tap": "Start over"},
    {"pause": 1},
-   {"tap": "Reset my decisions"},
+   {"tap": "Start over"},
    {"pause": 0.5},
    {"tap": "Back"},
    {"pause": 0.5}
@@ -48,18 +48,13 @@
     {"see": "Space you could free up", "timeout": 60},
     {"pause": 2}
   ]},
-  { "name": "A trip becomes an album", "steps": [
+  { "name": "A trip, found by itself", "steps": [
     {"tap": "Organise", "role": "button"},
     {"pause": 1.5},
     {"tap": "Open Paris"},
     {"pause": 2},
-    {"tap": "Create album", "role": "button"},
-    {"pause": 1.5},
-    {"optional": [{"see": "Unlock Bildklar", "timeout": 3}, {"pause": 2}, {"tap": "Restore purchases"}, {"optional": [{"systemAlert": ["Sign In", "Anmelden", "OK"], "timeout": 4}, {"pause": 2}]}, {"pause": 3}]},
-    {"tap": "Create album", "role": "button", "timeout": 10},
-    {"pause": 2.5},
-    {"see": "Album made on"},
-    {"pause": 2},
+    {"see": "Go through the photos"},
+    {"pause": 3},
     {"tap": "Back"},
     {"pause": 1.5},
     {"tap": "Clean up", "role": "button"},

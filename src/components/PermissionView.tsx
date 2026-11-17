@@ -8,16 +8,18 @@ import { Button, IconButton } from '../ui/Button';
  * button that asks. When access was denied (or is restricted by Screen
  * Time), the way to the system settings instead — the system won't ask twice.
  */
-export function PermissionView({ t, access, onAllow, onOpenSettings, onSettings }: {
+export function PermissionView({ t, access, albums, onAllow, onOpenSettings, onSettings }: {
   t: Strings;
   access: Access;
+  /** Albums are offered (src/logic/allowance.ts): the first point promises them, else the trips. */
+  albums: boolean;
   onAllow: () => void;
   onOpenSettings: () => void;
   onSettings: () => void;
 }) {
   const asked = access === 'denied' || access === 'restricted';
   const points = [
-    { icon: MapIcon, hue: 'sky', text: t.permPoint1 },
+    { icon: MapIcon, hue: 'sky', text: albums ? t.permPoint1 : t.permPoint1Trips },
     { icon: Copy, hue: 'lilac', text: t.permPoint2 },
     { icon: Lock, hue: 'mint', text: t.permPoint3 },
   ];
