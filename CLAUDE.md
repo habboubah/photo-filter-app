@@ -16,7 +16,7 @@ the root; every other document lives in `docs/` (only `README.md` stays here):
 | `README.md` | Only the commands: setup, run, build, check, screenshots, release |
 | `docs/TECHNOLOGY.md` | An overview for readers: the stack, the tools, which AI runs, how and why |
 | `docs/PLAN.md` | The concept: architecture, data model, platform mapping, design, the decisions and why |
-| `docs/DEVELOPMENT.md` | The project layout, the single checks, the native tests, the demo library, the city table, icons |
+| `docs/DEVELOPMENT.md` | The project layout, the single checks, the native tests, the demo library, the test library, the city table, icons |
 | `docs/features.md` | Every feature, as the user sees it |
 | `docs/TODO.md` | What only Ahmad can do: devices, Xcode, the stores, photos |
 | `docs/APP_STORE_RELEASE.md`, `docs/ANDROID_RELEASE.md` | The store releases step by step |
@@ -278,6 +278,7 @@ the store set, the preview video and the App Review scenes follow the switch
 | The city table (GeoNames) | `npm run cities` |
 | The licences list (after adding or updating a dependency) | `npm run licences` |
 | The demo photos and their facts | `npm run demo-photos` |
+| A real test library (~200 CC0 photos and videos, dates and places) / onto the simulator / onto Android | `npm run test-photos` / `test-photos:sim` / `test-photos:android` |
 | Every screen before and after a UI change | `npm run ui-review` (→ `screenshots/review/`) |
 | Store screenshots: raw (iPhone words / Android words) / framed | `npm run screenshots` (`-- --android`) / `npm run store-screenshots` |
 | The App Store preview video | `npm run app-preview` (needs ffmpeg) |
