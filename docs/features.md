@@ -300,7 +300,7 @@ tab again scrolls to its top; Android's back button goes from *Ordnen* to
   screen instead. Settings holds only what can be changed: the storage, what was freed and *Fotos auswählen* are on
   *Aufräumen*, so are *Geschützt* and *Neu durchsuchen* (its last rows).
 - **Vollversion**: unlock or *Freigeschaltet*, restore.
-- **Darstellung**: language (Deutsch, English), appearance (system, light, dark).
+- **Darstellung**: language (Deutsch, English, العربية — right to left), appearance (system, light, dark).
 - **Nur in der Debug-Version**: *Probelauf* [Dry run] — on by default in debug
   builds: nothing in the photo library changes, the app says what it would have done.
 - **Über die App**: rate (once the App Store id is set), feedback by mail,

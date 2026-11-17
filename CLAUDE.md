@@ -134,17 +134,28 @@ the store set, the preview video and the App Review scenes follow the switch
   `createWriteRequest` dialog).
 
 ## i18n
-- `src/translations.ts`: one flat object per language (`de`, `en`). Default
-  `de`; first run follows the device language. Every key in every block, with
-  the same `{placeholders}` (`translations.test.ts` checks).
+- `src/translations.ts`: one flat object per language (`de`, `en`, `ar`).
+  Default `de`; first run follows the device language. Every key in every
+  block, with the same `{placeholders}` (`translations.test.ts` checks).
 - Counts go through `plural(t, 'photos', n)` (`_one` / `_other` keys) and sizes
-  through `bytes(t, n)` — never hand-built.
+  through `bytes(t, n)` — never hand-built. Arabic's extra forms (two: صورتان,
+  few: 3–10 صور) live in `EXTRA_PLURALS`; a new `_one`/`_other` pair needs its
+  Arabic `_two` / `_few` there too.
 - **Android's wording**: a string that names the iPhone, Apple Photos, an
   album or "Zuletzt gelöscht" gets a twin in `androidStrings` (a test fails
   otherwise). Albums are "Ordner" on Android.
-- Keep the shopping list's RTL rules so Arabic can come without layout work:
-  logical spacing (`ps-`/`pe-`/`start-`/`end-`), `rtl:rotate-180` on
-  directional icons, numbers in `num`.
+- **Arabic** (`dir: 'rtl'`, since 17 November 2026): the layout mirrors itself
+  through logical spacing (`ps-`/`pe-`/`start-`/`end-`), `rtl:rotate-180` on
+  directional icons, numbers in `num` (Western digits). What follows the
+  finger stays physical: the review's delete / keep buttons and stamps
+  (`dir="ltr"`, `left-`/`right-`) match the swipe. Figtree has no Arabic, so
+  the system's Arabic face draws it; titles drop their tracking in RTL (it
+  would tear the joined letters). Trip names take the English city name and
+  the Arabic comma; Android's folder wording has Arabic twins too. Native
+  texts: `ar.lproj` (permission, widget), `values-ar` (launcher, widget).
+  The Arabic block is its own chunk (`src/translations.ar.ts`), loaded by
+  `loadLanguage('ar')` before the first render and before switching to it, so
+  the main bundle stays German and English.
 
 ## Styling — "Glass" (iOS 27 look, 17 November 2026, docs/REDESIGN.md)
 - The look of the system apps since iOS 26, as refined in iOS 27: the content

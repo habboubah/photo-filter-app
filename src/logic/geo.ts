@@ -24,7 +24,8 @@ export interface City {
 }
 
 /** A city's name in the app's language: its German or English name, else the local one. */
-export const cityName = (c: City, lang: string) => (lang === 'de' ? c.de : lang === 'en' ? c.en : undefined) ?? c.name;
+/** The city's name in the app's language: German or English from the table; Arabic uses the English one (the table has no Arabic names yet). */
+export const cityName = (c: City, lang: string) => (lang === 'de' ? c.de : lang === 'en' || lang === 'ar' ? c.en : undefined) ?? c.name;
 
 /** Parses src/data/cities.tsv (scripts/cities.mjs writes it). */
 export function parseCities(tsv: string): City[] {

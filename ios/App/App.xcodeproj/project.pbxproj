@@ -87,6 +87,7 @@
 		F0E5A0081FED7965001685AA /* FeatureMath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = FeatureMath.swift; path = ../PhotoFeatures/Sources/PhotoFeatures/FeatureMath.swift; sourceTree = SOURCE_ROOT; };
 		F0E5A00A1FED7965001685AA /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		F6761F64129AE703BA677BC0 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		57266F6FD6713154A3C756F1 /* ar */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.strings; name = ar; path = ar.lproj/Localizable.strings; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -328,6 +329,7 @@
 			children = (
 				632F2E7902BD872524959D36 /* de */,
 				631358432289F2BFAF2057B4 /* en */,
+				57266F6FD6713154A3C756F1 /* ar */,
 			);
 			name = Localizable.strings;
 			sourceTree = "<group>";

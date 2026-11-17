@@ -50,7 +50,8 @@ export function buildTrips(lib: Library, raw: RawTrip[], state: AppState, index:
     const photos = t.ids.map(id => lib.byId.get(id)).filter((p): p is Photo => !!p);
     const place = tripPlace(photos, index, lang) ?? '';
     const dates = tripDates(t.start, t.end, locale);
-    const autoTitle = place ? `${place}, ${dates}` : dates;
+    // Arabic writes its own comma (،); everything else the Latin one.
+    const autoTitle = place ? `${place}${lang === 'ar' ? '، ' : ', '}${dates}` : dates;
     return {
       key: t.key, start: t.start, end: t.end, ids: t.ids,
       place, dates, autoTitle, title: t.name ?? autoTitle,

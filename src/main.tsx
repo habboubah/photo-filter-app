@@ -3,7 +3,8 @@ import { createRoot } from 'react-dom/client';
 import { MotionConfig } from 'motion/react';
 import App from './App.tsx';
 import { applyDynamicType } from './dynamicType.ts';
-import { DEFAULT_LANGUAGE, isLanguage, setPlatform, stringsFor } from './translations.ts';
+import { DEFAULT_LANGUAGE, isLanguage, loadLanguage, setPlatform, stringsFor } from './translations.ts';
+import { initialLanguage } from './store.ts';
 import { isAndroid } from './platform.ts';
 import './index.css';
 
@@ -47,12 +48,15 @@ if (isAndroid()) {
   setPlatform('android');
 }
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <ErrorBoundary>
-      <MotionConfig reducedMotion="user">
-        <App />
-      </MotionConfig>
-    </ErrorBoundary>
-  </StrictMode>,
-);
+// The starting language's strings first (Arabic is its own chunk), then the app.
+void loadLanguage(initialLanguage()).catch(() => {}).finally(() => {
+  createRoot(document.getElementById('root')!).render(
+    <StrictMode>
+      <ErrorBoundary>
+        <MotionConfig reducedMotion="user">
+          <App />
+        </MotionConfig>
+      </ErrorBoundary>
+    </StrictMode>,
+  );
+});

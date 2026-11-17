@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <!-- The launcher name in this language (the same: the name is a brand) and the widget's texts. -->
+    <string name="app_name">Bildklar</string>
+    <string name="title_activity_main">Bildklar</string>
+    <string name="widget_description">في مثل هذا اليوم – أو كم من المساحة يمكنك تحريرها</string>
+    <string name="widget_open">افتح Bildklar مرة واحدة وسيظهر شيء هنا.</string>
+</resources>

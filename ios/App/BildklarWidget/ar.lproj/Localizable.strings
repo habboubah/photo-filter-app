@@ -1,0 +1,6 @@
+"widgetName" = "Bildklar";
+"widgetDescription" = "في مثل هذا اليوم – أو كم من المساحة يمكنك تحريرها. لشاشة القفل أيضًا.";
+"widgetOpen" = "افتح Bildklar مرة واحدة وسيظهر شيء هنا.";
+"lockFreeable" = "%@ يمكن تحريرها";
+"lockProgress" = "تمت مراجعة %@";
+"lockNothing" = "لا شيء للتنظيف";
