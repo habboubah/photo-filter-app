@@ -1,3 +1,4 @@
+import { isVideoGroup } from './analyze';
 import type { Group, Photo } from '../types';
 import { blurLevel } from './blur';
 import { isProtected } from './protect';
@@ -10,8 +11,8 @@ import { isProtected } from './protect';
  * sure (high, medium); screenshots only the old ones (already filtered).
  * Nothing is deleted here — this only lists what the dialog will be asked for.
  */
-export type CleanKind = 'similar' | 'duplicates' | 'blurry' | 'exposure' | 'screenshots';
-export const CLEAN_KINDS: CleanKind[] = ['duplicates', 'similar', 'blurry', 'exposure', 'screenshots'];
+export type CleanKind = 'similar' | 'duplicates' | 'videos' | 'blurry' | 'exposure' | 'screenshots';
+export const CLEAN_KINDS: CleanKind[] = ['duplicates', 'similar', 'videos', 'blurry', 'exposure', 'screenshots'];
 
 export interface CleanPart { kind: CleanKind; ids: string[]; bytes: number }
 
@@ -22,6 +23,7 @@ export function cleanParts(
   const parts: Record<CleanKind, CleanPart> = {
     duplicates: { kind: 'duplicates', ids: [], bytes: 0 },
     similar: { kind: 'similar', ids: [], bytes: 0 },
+    videos: { kind: 'videos', ids: [], bytes: 0 },
     blurry: { kind: 'blurry', ids: [], bytes: 0 },
     exposure: { kind: 'exposure', ids: [], bytes: 0 },
     screenshots: { kind: 'screenshots', ids: [], bytes: 0 },
@@ -34,7 +36,8 @@ export function cleanParts(
     parts[kind].bytes += p.bytes;
   };
   for (const g of groups) {
-    for (const id of g.ids) if (id !== g.best) add(g.kind === 'similar' ? 'similar' : 'duplicates', byId.get(id));
+    const kind: CleanKind = g.kind === 'similar' ? 'similar' : isVideoGroup(g, byId) ? 'videos' : 'duplicates';
+    for (const id of g.ids) if (id !== g.best) add(kind, byId.get(id));
   }
   for (const p of blurry) {
     const level = blurLevel(p);

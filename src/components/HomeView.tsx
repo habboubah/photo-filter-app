@@ -1,5 +1,5 @@
 import type React from 'react';
-import { Aperture, CalendarDays, Check, Clock, FileVideo, ImagePlus, MessageCircle, Minimize2, RefreshCw, Settings, Shield, Sparkles } from 'lucide-react';
+import { Aperture, CalendarDays, Check, Clapperboard, Clock, Copy, FileVideo, Image as ImageIcon, ImagePlus, MessageCircle, Minimize2, RefreshCw, Settings, Shield, Smartphone, Sparkles } from 'lucide-react';
 import type { CleanupSummary, Storage } from '../types';
 import type { Access } from '../native/photoLibrary';
 import type { ScanView } from '../store';
@@ -12,7 +12,10 @@ import { tapLight } from '../ui/haptics';
 import { Thumb } from '../ui/Photo';
 
 /** The categories that suggest photos to delete, each a photo card on home. */
-export type FoundKey = 'duplicates' | 'similar' | 'failed' | 'screenshots' | 'utility';
+export type FoundKey = 'duplicates' | 'similar' | 'videos' | 'failed' | 'screenshots' | 'utility';
+
+/** A count and its size, for the analysis at the top. */
+export interface Stat { count: number; bytes: number }
 
 /** One category: how many of it there are (groups or photos, as its screen counts), and a few of its photos. */
 export interface Found { items: number; covers: string[] }
@@ -39,6 +42,8 @@ interface Props {
   months: { done: number; total: number; pct: number };
   /** The decide-later pile (photos swiped up in a review). */
   later: { count: number; cover?: string };
+  /** The analysis at the top: every photo and video, the near-identical photos and similar videos that could go, chats, screenshots. */
+  analysis: { photos: Stat; videos: Stat; similarPhotos: Stat; similarVideos: Stat; chats: Stat; screenshots: Stat };
   /** How much is protected (src/logic/protect.ts): never suggested for deleting. */
   protection: { albums: number; trips: number; photos: number };
   onLater: () => void;
@@ -50,6 +55,10 @@ interface Props {
   onSimilar: () => void;
   onBlurry: () => void;
   onDuplicates: () => void;
+  /** The similar videos (lookalike takes and copies of a video). */
+  onVideoGroups: () => void;
+  /** Every video of the library. */
+  onVideos: () => void;
   onScreenshots: () => void;
   onUtility: () => void;
   onMonths: () => void;
@@ -84,7 +93,8 @@ export function HomeView(p: Props) {
   const gain = (k: FoundKey) => {
     if (!summary) return { bytes: 0, count: 0 };
     switch (k) {
-      case 'duplicates': return { bytes: summary.duplicates.bytes + summary.lookalike.bytes, count: summary.duplicates.count + summary.lookalike.count };
+      case 'duplicates': return summary.duplicates;
+      case 'videos': return summary.lookalike;
       case 'similar': return summary.similar;
       case 'failed': return { bytes: summary.blurry.bytes + summary.exposure.bytes, count: summary.blurry.count + summary.exposure.count };
       case 'screenshots': return summary.screenshots;
@@ -94,6 +104,7 @@ export function HomeView(p: Props) {
   const meta: Record<FoundKey, { label: string; hue: string; unit: 'groups' | 'photos'; onClick: () => void }> = {
     duplicates: { label: t.duplicatesTile, hue: 'rose', unit: 'groups', onClick: p.onDuplicates },
     similar: { label: t.similarTile, hue: 'lilac', unit: 'groups', onClick: p.onSimilar },
+    videos: { label: t.lookalikeTitle, hue: 'cyan', unit: 'groups', onClick: p.onVideoGroups },
     failed: { label: t.failedTile, hue: 'sand', unit: 'photos', onClick: p.onBlurry },
     screenshots: { label: t.screenshotsTile, hue: 'sky', unit: 'photos', onClick: p.onScreenshots },
     utility: { label: t.utilityTile, hue: 'mint', unit: 'photos', onClick: p.onUtility },
@@ -135,6 +146,14 @@ export function HomeView(p: Props) {
 
       {loaded && p.photoCount === 0 && !p.scan.running && (
         <Empty title={t.emptyLibraryTitle} body={t.emptyLibraryBody} />
+      )}
+
+      {has && summary && (
+        <Analysis
+          t={t} a={p.analysis}
+          onPhotos={p.onMonths} onVideos={p.onVideos} onSimilar={p.onSimilar} onVideoGroups={p.onVideoGroups}
+          onChats={p.onApps} onScreenshots={p.onScreenshots}
+        />
       )}
 
       {has && summary && (
@@ -228,6 +247,47 @@ export function HomeView(p: Props) {
         </Group>
       )}
     </Screen>
+  );
+}
+
+/**
+ * The analysis at the top of Aufräumen: what the library holds, as six small
+ * tiles — all photos, all videos, the near-identical photos and similar videos
+ * that could go, chats & social media, screenshots — each a count and its
+ * size, each opening its screen.
+ */
+function Analysis({ t, a, onPhotos, onVideos, onSimilar, onVideoGroups, onChats, onScreenshots }: {
+  t: Strings; a: Props['analysis'];
+  onPhotos: () => void; onVideos: () => void; onSimilar: () => void; onVideoGroups: () => void; onChats: () => void; onScreenshots: () => void;
+}) {
+  const tiles: { key: string; label: string; stat: Stat; unit: 'photos' | 'videos' | 'files'; icon: React.ComponentType<{ className?: string; strokeWidth?: number }>; hue: string; onClick: () => void }[] = [
+    { key: 'photos', label: t.statPhotos, stat: a.photos, unit: 'photos', icon: ImageIcon, hue: 'mint', onClick: onPhotos },
+    { key: 'videos', label: t.statVideos, stat: a.videos, unit: 'videos', icon: FileVideo, hue: 'sky', onClick: onVideos },
+    { key: 'similar', label: t.statSimilarPhotos, stat: a.similarPhotos, unit: 'photos', icon: Copy, hue: 'lilac', onClick: onSimilar },
+    { key: 'similarVideos', label: t.statSimilarVideos, stat: a.similarVideos, unit: 'videos', icon: Clapperboard, hue: 'cyan', onClick: onVideoGroups },
+    { key: 'chats', label: t.statChats, stat: a.chats, unit: 'files', icon: MessageCircle, hue: 'rose', onClick: onChats },
+    { key: 'screenshots', label: t.statScreenshots, stat: a.screenshots, unit: 'photos', icon: Smartphone, hue: 'sand', onClick: onScreenshots },
+  ];
+  return (
+    <section aria-labelledby="analysis-h">
+      <SectionHead id="analysis-h" title={t.analysisTitle} />
+      <div className="grid grid-cols-3 gap-[10px]">
+        {tiles.map(x => (
+          <button
+            key={x.key} type="button" onClick={() => { tapLight(); x.onClick(); }}
+            aria-label={`${x.label}: ${plural(t, x.unit, x.stat.count)}, ${bytes(t, x.stat.bytes)}`}
+            className="rounded-md card p-3 text-start press focus-visible:ring-focus flex flex-col gap-2 min-h-[118px]"
+          >
+            <IconTile icon={x.icon} hue={x.hue} />
+            <span className="mt-auto block">
+              <span className="block display text-title2 text-fg num leading-none">{num(t, x.stat.count)}</span>
+              <span className="block text-caption font-semibold text-fg mt-1 wrap-compound leading-tight">{x.label}</span>
+              <span className="block text-micro text-fg-mute num mt-0.5">{bytes(t, x.stat.bytes)}</span>
+            </span>
+          </button>
+        ))}
+      </div>
+    </section>
   );
 }
 

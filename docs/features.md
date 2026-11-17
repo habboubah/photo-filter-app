@@ -38,6 +38,11 @@ tab again scrolls to its top; Android's back button goes from *Ordnen* to
 
 ### Aufräumen [Clean up]
 - The number of photos under the title.
+- **Analyse** [Analysis] at the top: six tiles, each a count and its size and
+  each opening its screen — *Fotos* (all photos → *Monat für Monat*),
+  *Videos* (all videos, largest first), *Ähnliche Fotos* (near-identical
+  photos that could go), *Ähnliche Videos* (similar videos that could go),
+  *Chats & Social*, *Screenshots*.
 - **The clean-up card**: the space that could be freed (one big number), a
   bar split into one segment per category (sized by the space it frees, in
   the category's colour), the free space on the device (*2,4 GB von 128 GB
@@ -45,8 +50,9 @@ tab again scrolls to its top; Android's back button goes from *Ordnen* to
   1,2 GB*), *Jetzt aufräumen* [Clean up now].
 - *3 Tage in Folge aufgeräumt* [3 days in a row of cleaning up] on the card
   once the streak is two days or more.
-- **Vorschläge** [Suggestions]: *Duplikate* [Duplicates], *Fast gleiche*
-  [Near-identical], *Missglückt* [Failed shots: blurry, too dark, too
+- **Vorschläge** [Suggestions]: photos and videos apart — *Duplikate*
+  [Duplicates] (copies of photos), *Fast gleiche* [Near-identical],
+  *Ähnliche Videos* [Similar videos], *Missglückt* [Failed shots: blurry, too dark, too
   bright], *Screenshots* and (once the AI has seen photos) *Unwichtige Fotos*
   as cards, each with up to four of its own photos, its colour dot and the
   space it would free (*222 MB · 9 Fotos*); the most space first. An odd last
@@ -117,8 +123,9 @@ tab again scrolls to its top; Android's back button goes from *Ordnen* to
 ## Similar videos (*Ähnliche Videos*)
 - The same scene filmed twice within two hours — two takes, a clip and its
   longer retry — found by the on-device AI's picture of each video's poster
-  frame (not only exact copies). Listed at the end of *Duplikate* under
-  *Ähnliche Videos* and on the clean-up card; the best take is the longest
+  frame (not only exact copies). With the copies of a video they have their
+  own card and screen, *Ähnliche Videos*, apart from the photos (also in the
+  clean-up list and in *Schnell aufräumen*); the best take is the longest
   sharp one, then the larger file. The threshold is provisional
   (`src/logic/lookalike.ts`).
 

@@ -17,9 +17,11 @@ import { SortButton } from './SortButton';
  * deleting here: a tap opens one file with what can be done with it — make a
  * video smaller (a copy, the original stays until it is deleted), or delete it.
  */
-export function LargeView({ t, photos, canCompress, sort, onSort, onBack, onReview, onCompress, onDelete }: {
+export function LargeView({ t, photos, videosOnly, canCompress, sort, onSort, onBack, onReview, onCompress, onDelete }: {
   t: Strings;
   photos: Photo[];
+  /** Every video of the library (the analysis' "Videos"), not the large files: its own title, no filter. */
+  videosOnly?: boolean;
   canCompress: boolean;
   sort: SortKey;
   onSort: (key: SortKey) => void;
@@ -38,13 +40,15 @@ export function LargeView({ t, photos, canCompress, sort, onSort, onBack, onRevi
   const size = (p: Photo) => `${p.exact ? '' : '≈ '}${bytes(t, p.bytes)}`;
 
   return (
-    <Screen title={t.largeTitle} subtitle={`${plural(t, 'files', list.length)} · ${approx ? '≈ ' : ''}${bytes(t, total)}`} onBack={onBack} backLabel={t.back} info={{ label: t.aboutScreen, close: t.close, body: canCompress ? `${t.largeIntro} ${t.largeCompressNote}` : t.largeIntro }} docked={list.length > 0}
+    <Screen title={videosOnly ? t.videosTitle : t.largeTitle} subtitle={`${plural(t, 'files', list.length)} · ${approx ? '≈ ' : ''}${bytes(t, total)}`} onBack={onBack} backLabel={t.back} info={{ label: t.aboutScreen, close: t.close, body: canCompress ? `${t.largeIntro} ${t.largeCompressNote}` : t.largeIntro }} docked={list.length > 0}
       actions={<SortButton t={t} value={sort} onChange={onSort} />}>
-      <Segmented
-        label={t.largeTitle} value={filter} onChange={setFilter}
-        options={[{ value: 'all', label: t.filterAll }, { value: 'videos', label: t.filterVideos }, { value: 'photos', label: t.filterPhotos }]}
-      />
-      {list.length === 0 ? <Empty title={t.noLarge} body={t.noLargeBody} /> : (
+      {!videosOnly && (
+        <Segmented
+          label={t.largeTitle} value={filter} onChange={setFilter}
+          options={[{ value: 'all', label: t.filterAll }, { value: 'videos', label: t.filterVideos }, { value: 'photos', label: t.filterPhotos }]}
+        />
+      )}
+      {list.length === 0 ? <Empty title={videosOnly ? t.noVideos : t.noLarge} body={videosOnly ? t.noVideosBody : t.noLargeBody} /> : (
         <PhotoGrid
           ids={list.map(p => p.id)}
           label={id => { const p = byId.get(id)!; return `${when(p)}, ${size(p)}${p.video ? `, ${t.videoBadge} ${duration(p.dur ?? 0)}` : ''}`; }}
