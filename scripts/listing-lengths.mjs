@@ -61,10 +61,11 @@ for (const { id, body } of [{ id: '1', body: shared }, ...sections]) {
   }
 }
 
-// The release notes the scripts send (Play: 500 per language).
+// The release notes the scripts send (Play: 500 per language): release-notes/<version>/<language>.txt.
+// Only folders and .txt files — macOS drops a .DS_Store wherever Finder looked.
 const notesDir = path.join(root, 'release-notes');
-for (const dir of fs.readdirSync(notesDir)) {
-  for (const f of fs.readdirSync(path.join(notesDir, dir))) {
+for (const dir of fs.readdirSync(notesDir, { withFileTypes: true }).filter(d => d.isDirectory()).map(d => d.name)) {
+  for (const f of fs.readdirSync(path.join(notesDir, dir)).filter(name => name.endsWith('.txt'))) {
     report(`release-notes/${dir}/${f}`, fs.readFileSync(path.join(notesDir, dir, f), 'utf8').trim(), 500, chars);
   }
 }
