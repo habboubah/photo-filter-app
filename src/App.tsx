@@ -30,6 +30,7 @@ import { batches, findCompressible, tally } from './logic/compress';
 import { APPS_TILE_MIN, groupBySource, reviewSource } from './logic/sources';
 import { cleanParts } from './logic/smartClean';
 import { type Verdict, groupVerdict } from './logic/confidence';
+import { adjustItems, strictUtility } from './logic/ledger';
 import { streak } from './logic/streak';
 import { feedbackMail, openExternal, privacyUrl, rateUrl, systemFromAgent } from './links';
 import { devNative, isAndroid, isIos } from './platform';
@@ -130,7 +131,9 @@ export default function App() {
   const shots = useMemo(() => findScreenshots(lib.photos, kept), [lib, kept]);
   const old = useMemo(() => oldShots(shots, now), [shots, now]);
   // The on-device AI (src/logic/ai.ts): utility photos, categories, how far its pass got.
-  const utility = useMemo(() => findUtility(lib.photos, kept), [lib, kept]);
+  // A utility label the user kept often on this phone needs more to suggest a photo (src/logic/ledger.ts).
+  const strict = useMemo(() => strictUtility(state.ledger), [state.ledger]);
+  const utility = useMemo(() => findUtility(lib.photos, kept, strict), [lib, kept, strict]);
   const cats = useMemo(() => categories(lib.photos), [lib]);
   const aiSeen = useMemo(() => aiProgress(lib.photos), [lib]);
   const summary = useMemo(
@@ -139,7 +142,10 @@ export default function App() {
   );
   // Two photos' vectors' cosine (src/logic/vectors.ts): how sure the app is about a group's extra shot.
   const cos = useCallback((a: string, b: string) => store.vectors.cos(a, b), [store.vectors]);
-  const parts = useMemo(() => cleanParts(groups, blurry, old, kept, lib.byId, exposureAll, cos), [groups, blurry, old, kept, lib, exposureAll, cos]);
+  const parts = useMemo(
+    () => cleanParts(groups, blurry, old, kept, lib.byId, exposureAll, cos, state.ledger),
+    [groups, blurry, old, kept, lib, exposureAll, cos, state.ledger],
+  );
   const months = useMemo(() => buildMonths(lib.photos), [lib]);
   const doneMonths = useMemo(() => new Set(state.months), [state.months]);
   /** The share of the library gone through month by month, whole percent (for home, the months and the widget). */
@@ -254,6 +260,7 @@ export default function App() {
   const applyLater = (session: Session) => store.updateLater(laterIds(session), settledIds(session));
   const closeReview = () => {
     if (review) {
+      store.recordReview(review.session);
       store.addKept(keptAgainstSuggestion(review.session));
       applyLater(review.session);
       if (isDone(review.session)) review.onDone?.();
@@ -514,7 +521,8 @@ export default function App() {
 
   const startReview = (items: ReviewItem[], onDone?: () => void) => {
     if (!items.length) return;
-    setReview({ session: startSession(items), finished: false, onDone });
+    // How sure each suggestion is, as this phone's ledger has it (src/logic/ledger.ts).
+    setReview({ session: startSession(adjustItems(items, state.ledger)), finished: false, onDone });
     if (extras && !albumList) void PhotoLibrary.listAlbums().then(r => setAlbumList(r.albums)).catch(() => setAlbumList([]));
   };
 
@@ -595,6 +603,7 @@ export default function App() {
           onFinish={() => setReview(r => (r ? { ...r, finished: true } : r))}
           onDelete={outcome => {
             applyLater(review.session);
+            store.recordReview(review.session);
             const finish = () => { if (isDone(review.session)) review.onDone?.(); setReview(null); };
             void fileAlbums(outcome.albums).then(() => {
               if (outcome.deleteIds.length) deletePhotos(outcome.deleteIds, keptAgainstSuggestion(review.session), finish);
@@ -627,7 +636,13 @@ export default function App() {
         <GroupView
           t={t} group={group} byId={byId} kept={kept} verdicts={groupVerdicts} debug={store.debug}
           onBack={() => setGroupKey(null)}
-          onPick={id => store.setBest(group.key, id === group.suggested ? null : id)}
+          onPick={id => {
+            const chosen = lib.byId.get(id);
+            const suggested = lib.byId.get(group.suggested);
+            const withFaces = (p: Photo | undefined) => (p ? { ...p, ...store.faces.get(p.id) } : p);
+            store.setBest(group.key, id === group.suggested ? null : id,
+              id !== group.suggested && chosen && suggested ? { chosen: withFaces(chosen)!, suggested: withFaces(suggested)! } : undefined);
+          }}
           onReview={() => startReview(reviewGroup(group, kept, byId, cos))}
           onDeleteOthers={ids => deletePhotos(ids, [], () => setGroupKey(null))}
           onKeepAll={() => {
@@ -803,7 +818,7 @@ export default function App() {
       return (
         <SettingsView
           t={t} language={language} themeMode={store.themeMode} access={access} owned={store.owned} onSale={UNLOCK_ON_SALE} unlimited={unlimited} freeLeft={freeLeft(state.freeUsed)}
-          debug={store.debug} dryRunAvailable={store.dryRunAvailable} dryRun={store.dryRun}
+          debug={store.debug} dryRunAvailable={store.dryRunAvailable} dryRun={store.dryRun} ledger={state.ledger}
           reminder={store.reminder}
           onReminder={on => { void store.setReminder(on, t.reminderTitle, t.reminderBody).then(ok => { if (on && !ok) show(t.reminderDenied); }); }}
           onBack={() => setShowSettings(false)}

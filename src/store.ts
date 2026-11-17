@@ -9,6 +9,9 @@ import { PRODUCT_ID, Purchases } from './native/purchases';
 import { AppState, RECENT_ALBUMS, SCHEMA_VERSION, emptyState, normalizeState, pruneLater } from './logic/state';
 import type { TripEdits } from './logic/trips';
 import { addDay } from './logic/streak';
+import { learnPick } from './logic/best';
+import { record } from './logic/ledger';
+import type { Session } from './logic/review';
 import type { SortKey } from './logic/sort';
 import { toggled } from './logic/protect';
 import { UNLOCK_ON_SALE } from './logic/allowance';
@@ -128,11 +131,14 @@ export function useAppStore() {
     setState(s => ({ ...s, trips: { ...s.trips, ...fn(s.trips) } }));
   const recordAlbum = (key: string, album: Album) =>
     setState(s => ({ ...s, trips: { ...s.trips, albums: { ...s.trips.albums, [key]: album } } }));
-  const setBest = (groupKey: string, id: string | null) => setState(s => {
+  /** A best shot picked by hand (or the pick undone). `learn`: the user's pick and the app's own, to learn from (src/logic/best.ts). */
+  const setBest = (groupKey: string, id: string | null, learn?: { chosen: Photo; suggested: Photo }) => setState(s => {
     const best = { ...s.best };
     if (id) best[groupKey] = id; else delete best[groupKey];
-    return { ...s, best };
+    return { ...s, best, ...(learn ? { picks: learnPick(s.picks, learn.chosen, learn.suggested) } : {}) };
   });
+  /** The end of a review: what the user deleted and kept of each kind of suggestion (src/logic/ledger.ts). */
+  const recordReview = (session: Session) => setState(s => { const ledger = record(s.ledger, session); return ledger === s.ledger ? s : { ...s, ledger }; });
   const addKept = (ids: string[]) => {
     if (ids.length) setState(s => ({ ...s, kept: [...new Set([...s.kept, ...ids])] }));
   };
@@ -478,7 +484,7 @@ export function useAppStore() {
   return {
     language, setLanguage, themeMode, setThemeMode,
     debug, dryRunAvailable, dryRun, setDryRun,
-    state, stateReady, storageError, updateTrips, recordAlbum, setBest, addKept, removeKept, updateLater, pruneLaterPile, setSort, protectPhotos, protectTrip, protectAlbum, protectSimilar, albumMembers, useAlbums, markMonthDone, addFreed, markDay, countFree, resetDecisions, restoreState,
+    state, stateReady, storageError, updateTrips, recordAlbum, setBest, recordReview, addKept, removeKept, updateLater, pruneLaterPile, setSort, protectPhotos, protectTrip, protectAlbum, protectSimilar, albumMembers, useAlbums, markMonthDone, addFreed, markDay, countFree, resetDecisions, restoreState,
     reminder, setReminder,
     owned: isOwned, setOwned,
     access, refreshAccess, accessGranted,

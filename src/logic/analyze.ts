@@ -1,5 +1,5 @@
 import type { CleanupSummary, Confidence, Group, Photo, Trip } from '../types';
-import { rankDuplicates, rankGroup } from './best';
+import { rankDuplicates, rankGroup, weightsFor } from './best';
 import { blurLevel, sortBlurry } from './blur';
 import { exposureLevel } from './exposure';
 import { isProtected } from './protect';
@@ -76,7 +76,7 @@ export function buildGroups(lib: Library, raw: RawGroup[], state: AppState, face
       const ranked = p && f ? { ...p, ...f } : p;
       return ranked && !ranked.fav && guard?.has(id) ? { ...ranked, fav: true } : ranked;
     }).filter((p): p is Photo => !!p);
-    const ranked = g.kind === 'duplicate' ? rankDuplicates(photos) : g.kind === 'lookalike' ? rankLookalike(photos) : rankGroup(photos);
+    const ranked = g.kind === 'duplicate' ? rankDuplicates(photos) : g.kind === 'lookalike' ? rankLookalike(photos) : rankGroup(photos, weightsFor(state.picks));
     const suggested = ranked[0]?.id ?? g.ids[0];
     const picked = state.best[g.key];
     return { key: g.key, kind: g.kind, ids: g.ids, suggested, best: picked && g.ids.includes(picked) ? picked : suggested, ...(g.weak ? { weak: true } : {}) };

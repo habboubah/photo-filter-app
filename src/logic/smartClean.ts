@@ -2,6 +2,8 @@ import type { Group, Photo } from '../types';
 import { blurLevel } from './blur';
 import { isProtected } from './protect';
 import { type Cos, type Trust, blurryTrust, exposureTrust, groupVerdict, oneTap, screenshotTrust } from './confidence';
+import { exposureLevel } from './exposure';
+import { type Ledger, adjusted } from './ledger';
 
 /*
  * Smart Clean: everything the clean-up card counts, by kind, each kind on or
@@ -28,19 +30,24 @@ export interface CleanPart {
   check: string[];
 }
 
-/** `exposure`: the too dark and too bright photos (src/logic/exposure.ts). `cos`: the vectors' cosine (src/logic/vectors.ts). */
+/**
+ * `exposure`: the too dark and too bright photos (src/logic/exposure.ts). `cos`: the vectors' cosine
+ * (src/logic/vectors.ts). `ledger`: this phone's record of kept suggestions (src/logic/ledger.ts) — a kind
+ * the user keeps often is trusted one level less.
+ */
 export function cleanParts(
   groups: Group[], blurry: Photo[], oldShots: Photo[], kept: Set<string>, byId: Map<string, Photo>, exposure: Photo[] = [], cos?: Cos,
+  ledger: Ledger = {},
 ): CleanPart[] {
   const empty = (kind: CleanKind): CleanPart => ({ kind, ids: [], bytes: 0, check: [] });
   const parts: Record<CleanKind, CleanPart> = {
     duplicates: empty('duplicates'), similar: empty('similar'), blurry: empty('blurry'), exposure: empty('exposure'), screenshots: empty('screenshots'),
   };
   const seen = new Set<string>();
-  const add = (kind: CleanKind, p: Photo | undefined, trust: Trust) => {
+  const add = (kind: CleanKind, p: Photo | undefined, trust: Trust, key: string) => {
     if (!p || isProtected(p, kept) || seen.has(p.id)) return;
     seen.add(p.id);
-    if (!oneTap(trust)) { parts[kind].check.push(p.id); return; }
+    if (!oneTap(adjusted(ledger, key, trust))) { parts[kind].check.push(p.id); return; }
     parts[kind].ids.push(p.id);
     parts[kind].bytes += p.bytes;
   };
@@ -49,15 +56,15 @@ export function cleanParts(
     for (const id of g.ids) {
       const p = byId.get(id);
       if (id === g.best || !p || !best) continue;
-      add(g.kind === 'similar' ? 'similar' : 'duplicates', p, groupVerdict(g, p, best, cos?.(id, g.best)).trust);
+      add(g.kind === 'similar' ? 'similar' : 'duplicates', p, groupVerdict(g, p, best, cos?.(id, g.best)).trust, g.kind);
     }
   }
   for (const p of blurry) {
     const level = blurLevel(p);
-    if (level === 'high' || level === 'medium') add('blurry', p, blurryTrust(p));
+    if (level === 'high' || level === 'medium') add('blurry', p, blurryTrust(p), 'blurry');
   }
-  for (const p of exposure) add('exposure', p, exposureTrust(p));
-  for (const p of oldShots) add('screenshots', p, screenshotTrust());
+  for (const p of exposure) add('exposure', p, exposureTrust(p), exposureLevel(p) ?? 'dark');
+  for (const p of oldShots) add('screenshots', p, screenshotTrust(), 'screenshot');
   return CLEAN_KINDS.map(k => parts[k]);
 }
 
