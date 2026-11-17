@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Builds the test library: about 500 real photos and videos, as a phone would
+"""Builds the test library: about 560 real photos and videos, as a phone would
 hold them, for a full test of Bildklar on a simulator, an emulator or a test
 phone (never your own library). Writes test-photos/ (gitignored).
 
@@ -18,7 +18,10 @@ Lake Garda and the North Sea. The date and the place go into the EXIF (the file'
 for videos into the QuickTime metadata. On top come what a real library
 has: bursts of near-identical shots seconds apart, blurry ones, photos saved
 again from WhatsApp (smaller, without EXIF), one exact duplicate, screenshots,
-a shot in the pocket and one into the sun, and a lookalike video.
+a shot in the pocket and one into the sun, and a lookalike video — and, drawn
+(scripts/test_photos_drawn.py), what the AI files under "Unwichtige Fotos":
+receipts, letters, whiteboards, QR codes, photos of a screen, shaken shots,
+plus memes and 30 screenshots carrying the iPhone's "Screenshot" mark.
 
 Needs Pillow and ffmpeg. Downloads into .cache/test-photos/ once (resumable:
 run it again if a server asked to slow down). Run: npm run test-photos
@@ -37,6 +40,8 @@ from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 
 from PIL import Image, ImageDraw, ImageEnhance, ImageFilter, ImageFont, ImageOps
+
+import test_photos_drawn as drawn
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
 SOURCES = json.load(open(os.path.join(ROOT, 'scripts', 'test-photos.json'), encoding='utf-8'))
@@ -212,6 +217,16 @@ SEASONS = {
     'autumn': [(D(2024, 11, 10), D(2024, 12, 1)), (D(2025, 9, 1), D(2025, 12, 1)), (D(2026, 9, 1), D(2026, 11, 16))],
     'any': [(D(2024, 11, 10), D(2026, 11, 16))],
 }
+# Photos taken to remember something (the AI's "Unwichtige Fotos"): drawn, with seeds the
+# model files under their label (checked when they were picked), and accidental shots —
+# a real room, tilted and smeared. Memes come from chats: no EXIF, WhatsApp's names.
+UTILITY = ([('receipt', n) for n in (1, 2, 4, 5, 6, 7, 8, 9)] + [('document', n) for n in (0, 1, 2, 5, 6, 7, 11, 12)] +
+           [('whiteboard', n) for n in (0, 1, 3, 4, 5)] + [('qr_code', n) for n in (0, 1, 2, 3, 4)] +
+           [('screen_photo', n) for n in (0, 1, 2, 3, 4)])
+SHAKEN = [('eve77', 35, 30), ('eve77', -60, 45), ('eve139', -60, 45), ('eve139', 90, 35), ('eve55', -60, 45)]
+MEMES = ['pe3', 'far28', 'zoo19', 'ber14', 'foo92', 'ani34']
+
+
 # Everyday photos, one a day on a day at home in their season; places: one is picked per photo (none: no GPS).
 SPREAD = [
     ('winter', 'eve64 eve65 eve77 eve44 eve47 foo65 foo73 nat64', ['home']),
@@ -224,6 +239,9 @@ SPREAD = [
      ['home', 'hanau', 'frankfurt']),
     ('any', 'peo2 peo5 peo22 peo23 peo25 peo26 peo29 peo35 doc20 doc29 doc32 doc36 doc39 doc21', ['home', 'hanau', 'frankfurt']),
     ('any', 'doc6 doc8 doc14 doc15 doc17', []),
+    ('any', ' '.join(f'u:{k}:{n}' for k, n in UTILITY), ['home', 'home', 'hanau', 'frankfurt']),
+    ('any', ' '.join(f'a:{i}' for i in range(len(SHAKEN))), ['home']),
+    ('any', ' '.join(f'm:{i}' for i in range(len(MEMES))), []),
 ]
 
 
@@ -257,7 +275,13 @@ COPIES = {'xpe100': 20, 'ho19': 3, 'am45': 30, 'xpe106': 14, 'occ9': 5, 'foo18':
 DUPLICATE = 'pa21'  # an exact second file
 SCREENSHOTS = [D(2025, 1, 3, 20, 14), D(2025, 6, 2, 8, 2), D(2025, 9, 30, 13, 37), D(2026, 1, 22, 22, 5),
                D(2026, 5, 30, 7, 48), D(2026, 11, 12, 18, 21), D(2025, 3, 18, 21, 40), D(2025, 8, 2, 10, 15),
-               D(2025, 10, 12, 16, 5), D(2026, 3, 5, 7, 30), D(2026, 7, 21, 13, 0), D(2026, 9, 14, 19, 45)]
+               D(2025, 10, 12, 16, 5), D(2026, 3, 5, 7, 30), D(2026, 7, 21, 13, 0), D(2026, 9, 14, 19, 45),
+               D(2024, 11, 28, 9, 12), D(2024, 12, 20, 22, 41), D(2025, 1, 27, 7, 55), D(2025, 2, 19, 18, 3),
+               D(2025, 3, 30, 12, 20), D(2025, 4, 29, 20, 48), D(2025, 6, 15, 9, 31), D(2025, 7, 3, 14, 10),
+               D(2025, 8, 25, 21, 15), D(2025, 9, 9, 8, 0), D(2025, 11, 5, 19, 30), D(2025, 12, 17, 13, 45),
+               D(2026, 1, 9, 16, 20), D(2026, 2, 25, 10, 5), D(2026, 4, 14, 22, 30), D(2026, 6, 18, 8, 50),
+               D(2026, 8, 11, 17, 35), D(2026, 10, 7, 11, 25)]
+NEW_SHOTS = [drawn.chat_shot, drawn.code_shot, drawn.feed_shot, drawn.calendar_shot]
 ACCIDENTS = [('dark', D(2025, 6, 1, 14, 3)), ('bright', D(2026, 4, 25, 13, 12))]
 VIDEO_COPY = ('kittens', 26)  # the kittens video again, from WhatsApp a day later
 MAX_SECONDS = {'sailing': 45}  # one long video; the rest are cut to 30 s
@@ -321,6 +345,18 @@ def exif_for(when, gps):
         utc = when.replace(tzinfo=TZ).astimezone(timezone.utc)
         g.update({0: b'\x02\x02\x00\x00', 1: 'N' if lat >= 0 else 'S', 2: dms(lat), 3: 'E' if lon >= 0 else 'W',
                   4: dms(lon), 7: (utc.hour, utc.minute, utc.second), 29: utc.strftime('%Y:%m:%d')})
+    return exif.tobytes()
+
+
+def screenshot_exif(when):
+    """What an iPhone writes into a screenshot: its date and the UserComment "Screenshot"."""
+    exif = Image.Exif()
+    stamp = when.strftime('%Y:%m:%d %H:%M:%S')
+    exif[0x0132] = stamp
+    sub = exif.get_ifd(0x8769)
+    sub[0x9003] = sub[0x9004] = stamp
+    sub[0x9010] = sub[0x9011] = offset(when)
+    sub[0x9286] = b'ASCII\x00\x00\x00Screenshot'
     return exif.tobytes()
 
 
@@ -458,6 +494,10 @@ def plan(rnd):
             if key.startswith('v:'):
                 items.append({'kind': 'video', 'key': key[2:], 'when': t, 'gps': gps})
                 continue
+            if key[:2] in ('u:', 'a:', 'm:'):
+                kind = {'u:': 'drawn', 'a:': 'shaken', 'm:': 'meme'}[key[:2]]
+                items.append({'kind': kind, 'key': key, 'when': t, 'gps': None if kind == 'meme' else gps})
+                continue
             items.append({'kind': 'photo', 'key': key, 'when': t, 'gps': gps})
             if key in BURSTS:
                 extra, blurry = BURSTS[key]
@@ -520,7 +560,27 @@ def build():
             img.save(os.path.join(OUT, name), 'JPEG', quality=60)
         elif x['kind'] == 'screenshot':
             name = f'Screenshot_{when:%Y%m%d-%H%M%S}.png'
-            screenshot(random.Random(x['n']), x['n']).save(os.path.join(OUT, name), 'PNG', optimize=True)
+            n = x['n']
+            img = screenshot(random.Random(n), n) if n < 12 else NEW_SHOTS[n % len(NEW_SHOTS)](random.Random(n))
+            img.save(os.path.join(OUT, name), 'PNG', optimize=True, exif=screenshot_exif(when))
+        elif x['kind'] in ('drawn', 'shaken'):
+            number += 1
+            name = f'IMG_{number:04d}.JPG'
+            if x['kind'] == 'drawn':
+                _, what, seed = key.split(':')
+                img = getattr(drawn, what)(random.Random(f'{what}{seed}'))
+            else:
+                base, angle, blur = SHAKEN[int(key[2:])]
+                img = drawn.shaken(open_rgb(base), angle, blur)
+            img.save(os.path.join(OUT, name), 'JPEG', quality=90, exif=exif_for(when, gps))
+            src = ({'title': f'drawn by scripts/test_photos_drawn.py ({key})', 'store': True} if x['kind'] == 'drawn' else
+                   {**SOURCES['photos'][base], 'title': f"shaken: {SOURCES['photos'][base]['title']}"})
+        elif x['kind'] == 'meme':
+            wa += 1
+            name = f'IMG-{when:%Y%m%d}-WA{wa:04d}.jpg'
+            i = int(key[2:])
+            drawn.meme(open_rgb(MEMES[i]), random.Random(i), i).save(os.path.join(OUT, name), 'JPEG', quality=70)
+            src = {**SOURCES['photos'][MEMES[i]], 'title': f"meme from {SOURCES['photos'][MEMES[i]]['title']}"}
         elif x['kind'] == 'video':
             number += 1
             name = f'IMG_{number:04d}.MOV'

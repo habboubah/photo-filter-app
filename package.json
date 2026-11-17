@@ -42,6 +42,7 @@
     "check:ai": "node --experimental-strip-types scripts/ai-check.mjs",
     "demo-photos": "python3 scripts/demo-photos.py && node --experimental-strip-types scripts/demo-facts.mjs",
     "test-photos": "python3 scripts/test-photos.py",
+    "demo-library": "python3 scripts/demo-library.py && node --experimental-strip-types scripts/demo-library-facts.mjs",
     "test-photos:sim": "bash scripts/test-photos-push.sh ios",
     "test-photos:android": "bash scripts/test-photos-push.sh android",
     "ai:export": "python3 ml/export.py",

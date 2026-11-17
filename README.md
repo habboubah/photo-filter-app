@@ -26,7 +26,7 @@ Two sets, both made from real **CC0** photos and videos (public domain: free for
 tests, the store screenshots and the preview video; sources in
 `scripts/test-photos.json`):
 
-**1. The test library** — about 500 photos and videos (≈ 280 MB) for a simulator, an emulator
+**1. The test library** — about 560 photos and videos (≈ 300 MB) for a simulator, an emulator
 or a test phone (never your own phone):
 
 ```bash
@@ -42,15 +42,26 @@ EXIF / QuickTime data: two years at home in Hainburg — family, parties, Eid,
 Ramadan, Easter, carnival, Christmas, food, pets, the zoo and the farm — and
 13 trips (Vienna, Barcelona, Paris, the Baltic Sea, Amsterdam, Istanbul, the
 Rhine, London, Berlin, the Alps, the Black Forest, Lake Garda, the North Sea),
-with bursts, blurry shots, WhatsApp copies, a duplicate, screenshots, failed
-shots and 20 videos.
+with bursts, blurry shots, WhatsApp copies, memes, a duplicate, 30 screenshots,
+failed shots, 20 videos and ~40 unimportant photos (receipts, letters,
+whiteboards, QR codes, photos of a screen, shaken shots — drawn, so the AI
+files them under *Unwichtige Fotos*).
 `test-photos/credits.csv` lists each file's source; `store = no` (identifiable
 people, the Eiffel Tower lit at night) are for tests only. To change the story,
 edit `EVENTS` in `scripts/test-photos.py`; to add photos, add them to
 `scripts/test-photos.json` (CC0 only).
 
-**2. The web demo's photos** — what `npm run dev`, the checks, the screenshots
-and the preview video show (only photos without identifiable people):
+**2. The whole test library in the browser** — `npm run dev` shows it at
+http://localhost:3001 once it is built (`?library=demo` switches back to the
+curated demo, `?library=test` to this one again):
+
+```bash
+npm run test-photos           # once
+npm run demo-library          # copies it into src/native/demo/test-library/ (not in git), with ml/'s venv for the AI
+```
+
+**3. The curated demo's photos** — the 101 the checks, the screenshots, the preview
+video and the App Review rehearsal always use (only photos without identifiable people):
 
 ```bash
 npm run test-photos           # once, for the downloads

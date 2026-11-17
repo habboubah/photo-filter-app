@@ -47,6 +47,8 @@ const ctx = await chromium.launchPersistentContext(profile, {
 const page = ctx.pages()[0] ?? await ctx.newPage();
 const cdp = await ctx.newCDPSession(page);
 page.on('dialog', d => d.accept());
+// The curated demo, never the test library `npm run dev` may show (src/native/demo/library.ts).
+await page.addInitScript(() => { try { localStorage.setItem('bildklar-demo-library', 'demo'); } catch { /* private mode */ } });
 for (const [k, v] of Object.entries(spec.rehearsal?.localStorage ?? {})) {
   await page.addInitScript(([k, v]) => { try { if (localStorage.getItem(k) == null) localStorage.setItem(k, v); } catch { /* private mode */ } }, [k, v]);
 }

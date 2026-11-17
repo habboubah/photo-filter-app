@@ -85,7 +85,7 @@ on until `bildklar-dry-run` is `0`.
 
 For a full test on a simulator, an emulator or a test phone — never your own
 library — `npm run test-photos` builds `test-photos/` (gitignored, about
-280 MB): about 500 real photos and videos as a phone holds them. Every one
+300 MB): about 560 real photos and videos as a phone holds them. Every one
 is **CC0 1.0** (public domain, from Openverse and Wikimedia Commons), so they
 may also go into the store screenshots and the preview video; the sources are
 in `scripts/test-photos.json`, and `test-photos/credits.csv` maps each file to
@@ -114,6 +114,22 @@ npm run test-photos -- --offline   # rebuild from the cache only
 npm run test-photos:sim       # xcrun simctl addmedia into the booted simulator
 npm run test-photos:android   # adb push into DCIM/Camera, Pictures/Screenshots, WhatsApp's folders; then a media scan
 ```
+
+Not every kind of photo can be found free: `scripts/test_photos_drawn.py` draws
+the rest — receipts, letters, whiteboards, QR codes, photos of a screen (their
+seeds are the ones the AI files under *Unwichtige Fotos*, checked with the
+model), shaken shots (a real room, tilted and smeared), memes from CC0 photos,
+and screenshots of made-up apps. Screenshots carry what an iPhone writes into
+one (EXIF UserComment "Screenshot").
+
+**In the browser.** `npm run demo-library` copies the test library into
+`src/native/demo/test-library/` (not in git: 1024-px pictures, video posters,
+the facts with the app's own features and, with ml/'s venv active, the AI's
+scores). `npm run dev` then shows it instead of the curated demo;
+`?library=demo` switches back (remembered in `bildklar-demo-library`). Only the
+dev server loads it (`src/native/demo/testLibrary.ts`): production builds — the
+checks, the screenshots, the preview video — never contain it, and the App
+Review rehearsal pins the curated demo.
 
 Wikimedia Commons slows down a script after a few downloads (HTTP 429): the
 script waits and goes on, and whatever is still missing is fetched on the next run.
