@@ -250,9 +250,9 @@ tab again scrolls to its top; Android's back button goes from *Ordnen* to
   *Geburtstag*, and for parents *Baby*, *Baden*, *Schlafen*, *erste Schritte*,
   *Schnuller*, *Laternenumzug* …); tap one. Several words find photos that
   show all of them.
-- *In deinen Fotos* [In your photos]: before anything is typed, up to eight
-  cards with words your library really has, each with its best photo: first
-  up to four family words (*Baby*, *Kind*, *Familie*, *Zwillinge*,
+- *In deinen Fotos* [In your photos]: before anything is typed, up to 16
+  cards with words your library really has (of about 60), each with its best
+  photo: first up to six family words (*Baby*, *Kind*, *Familie*, *Zwillinge*,
   *Geburtstag* …), then the others with most photos (*Kassenzettel*, *Stadt*,
   *Zoo* …); no two cards with mostly the same photos. A tap searches for it. A word the library hasn't got is not offered, and a photo of an ID
   or a bank card is never a cover. Until the AI has seen the photos, plain
