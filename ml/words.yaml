@@ -49,6 +49,35 @@ concepts:
   - stroller pram | stroller, pram, buggy | Kinderwagen | عربة أطفال
   - playground | playground, swing, slide | Spielplatz, Schaukel, Rutsche | ملعب أطفال, أرجوحة, زحليقة
   - sandbox | sandbox, sandpit | Sandkasten | صندوق رمل
+  # baby and toddler moments (for parents: what they look for most)
+  - sleeping baby | sleeping, asleep, sleeping baby | Schlafen, schläft, schlafendes Baby | نوم, نائم, طفل نائم
+  - baby in a bath tub | bath, bath time, bathing | Baden, Badewanne, Babybad | استحمام, حمام الطفل, حوض استحمام
+  - baby crawling on the floor | crawling, crawl | Krabbeln | حبو, يحبو
+  - toddler taking first steps | first steps, walking | erste Schritte, Laufen lernen | أول خطوات, يمشي
+  - baby eating in a high chair | baby food, high chair, feeding | Babybrei, Brei, Hochstuhl, Füttern | طعام أطفال, كرسي طعام, إطعام
+  - baby bottle with milk | bottle, baby bottle, milk | Fläschchen, Babyflasche, Milch | رضاعة, زجاجة حليب, حليب
+  - baby in a crib | crib, cot | Babybett, Gitterbett, Kinderbett | سرير أطفال, مهد
+  - baby with a pacifier | pacifier, dummy | Schnuller | لهاية, سكاتة
+  - diapers | diaper, nappy | Windel, Windeln | حفاض, حفاضات
+  - baby in a baby carrier | baby carrier, sling | Babytrage, Tragetuch | حمالة أطفال
+  - baby in a car seat | car seat, baby seat | Kindersitz, Babyschale, Autositz | كرسي سيارة للأطفال
+  - pregnant belly | pregnancy, pregnant, baby bump | Schwangerschaft, schwanger, Babybauch | حمل, حامل, بطن الحامل
+  - ultrasound scan picture of a baby | ultrasound, sonogram | Ultraschall, Ultraschallbild | سونار, صورة سونار
+  - newborn baby in a hospital | hospital, birth | Krankenhaus, Geburt | مستشفى, ولادة
+  - tiny baby hands and feet | baby hands, baby feet, tiny hands | Babyhände, Babyfüße, Händchen | يد طفل, قدم طفل
+  - baby footprint and handprint | footprint, handprint | Fußabdruck, Handabdruck | بصمة قدم, بصمة يد
+  - smiling laughing child | smiling, laughing, smile | Lachen, Lächeln, lacht | ضحك, ابتسامة, يضحك
+  - crying child | crying, tears | Weinen, weint | بكاء, يبكي
+  - big brother or sister with a baby | siblings, brother, sister | Geschwister, Bruder, Schwester | إخوة, أخ, أخت
+  - children playing | playing, kids playing | Spielen, spielende Kinder | لعب, أطفال يلعبون
+  - child on a balance bike or scooter | balance bike, scooter, tricycle | Laufrad, Roller, Dreirad | دراجة توازن, سكوتر, دراجة ثلاثية
+  - reading a bedtime story to a child | bedtime story, reading aloud | Vorlesen, Gutenachtgeschichte | قصة قبل النوم, قراءة قصة
+  - child with face paint | face paint | Kinderschminken, geschminkt | رسم على الوجه
+  - child at the doctor | pediatrician, doctor | Kinderarzt, Arzt | طبيب أطفال, طبيب
+  - building a sandcastle on the beach | sandcastle | Sandburg | قلعة رمل
+  - children with paper lanterns at a lantern walk | lantern walk, st martin | Laternenumzug, Sankt Martin, Martinsumzug | موكب الفوانيس
+  - snowman | snowman | Schneemann | رجل الثلج
+  - baby milestone card | milestone card, month card | Meilensteinkarte, Monatskarte | بطاقة الشهر, بطاقة إنجاز
   # animals
   - dog | dog, puppy | Hund, Welpe | كلب, جرو
   - cat | cat, kitten | Katze, Kätzchen | قطة, قط

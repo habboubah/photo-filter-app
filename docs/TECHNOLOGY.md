@@ -122,7 +122,7 @@ photos, only a few written descriptions per label.
 1. **Before release, on the developer's computer** (`ml/compact.py`,
    `ml/labels.py`, `ml/words.py`): a 256 × 768 projection (`ai-assets/compact.bin`)
    is fitted that keeps about 96 % of an embedding in a third of the numbers.
-   Each label in `ml/labels.yaml` and each of the 219 search words in
+   Each label in `ml/labels.yaml` and each of the 247 search words in
    `ml/words.yaml` has a few text prompts ("a photo of a till receipt", …);
    the text encoder turns them into vectors in the same compact space, stored
    with the app (`src/logic/aiLabels.json`, `src/search/words.json`). The text
@@ -169,7 +169,7 @@ photos, only a few written descriptions per label.
   *Bitte prüfen* and why (an exact copy, blurrier, eyes closed …); quick
   clean deletes only the sure ones in one tap.
 - **Suchen** (Search): photos by what is in them, in German, English and
-  Arabic (219 concepts), and **Ähnliche Fotos** (look-alikes) of any photo.
+  Arabic (247 concepts), and **Ähnliche Fotos** (look-alikes) of any photo.
 - **Learning on the phone:** when the user keeps many of one kind of
   suggestion, the app becomes less sure of that kind; when they pick another
   best shot, it learns which signals they care about. Stored in the decisions
