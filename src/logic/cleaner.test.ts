@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Photo } from '../types';
-import { buildGroups, findBlurry, makeLibrary, summarize } from './analyze';
+import { buildGroups, findBlurry, isVideoGroup, makeLibrary, mediaTotals, summarize } from './analyze';
 import { rankDuplicates } from './best';
 import { nearHash, prng } from './fixtures';
 import { buildMonths, monthKey, onThisDay, progress } from './months';
@@ -140,7 +140,7 @@ describe('smart clean', () => {
   it('lists each kind once, never a best shot, a favourite, a kept photo or an unsure blurry one', () => {
     const parts = cleanParts(groups, [blurry, maybe], [shot], new Set(), byId);
     const by = Object.fromEntries(parts.map(p => [p.kind, p.ids]));
-    expect(by).toEqual({ duplicates: [copy.id], similar: [extra.id], blurry: [blurry.id], exposure: [], screenshots: [shot.id] });
+    expect(by).toEqual({ duplicates: [copy.id], similar: [extra.id], videos: [], blurry: [blurry.id], exposure: [], screenshots: [shot.id] });
     expect(cleanParts(groups, [blurry], [shot], new Set([extra.id, shot.id]), byId).find(p => p.kind === 'similar')!.ids).toEqual([]);
   });
 
@@ -198,5 +198,28 @@ describe('the progress figure', () => {
     expect(progress([m('2026-01', 38), m('2026-02', 62)], new Set(['2026-01']))).toBe(38);
     expect(progress([m('2026-01', 2), m('2026-02', 1)], new Set(['2026-01']))).toBe(66);
     expect(progress([m('2026-01', 999), m('2026-02', 1)], new Set(['2026-01']))).toBe(99);
+  });
+});
+
+describe('photos apart from videos', () => {
+  it('counts and cleans copies of a video with the similar videos, not with the duplicates', () => {
+    const v1: Photo = { id: 'v1', t: 1, bytes: 9_000, w: 1920, h: 1080, video: true, dur: 5000 };
+    const v2: Photo = { ...v1, id: 'v2', t: 2 };
+    const p1: Photo = { id: 'p1', t: 3, bytes: 2_000, w: 4000, h: 3000 };
+    const p2: Photo = { ...p1, id: 'p2', t: 4 };
+    const lib = makeLibrary([v1, v2, p1, p2]);
+    const groups = [
+      { key: 'dv', kind: 'duplicate' as const, ids: ['v1', 'v2'], best: 'v1', suggested: 'v1' },
+      { key: 'dp', kind: 'duplicate' as const, ids: ['p1', 'p2'], best: 'p1', suggested: 'p1' },
+    ];
+    expect(isVideoGroup(groups[0], lib.byId)).toBe(true);
+    expect(isVideoGroup(groups[1], lib.byId)).toBe(false);
+    const s = summarize(lib, groups, [], new Set());
+    expect(s.duplicates).toEqual({ count: 1, bytes: 2_000, groups: 1 });
+    expect(s.lookalike).toEqual({ count: 1, bytes: 9_000, groups: 1 });
+    const by = Object.fromEntries(cleanParts(groups, [], [], new Set(), lib.byId).map(p => [p.kind, p.ids]));
+    expect(by.duplicates).toEqual(['p2']);
+    expect(by.videos).toEqual(['v2']);
+    expect(mediaTotals(lib.photos)).toEqual({ photos: { count: 2, bytes: 4_000 }, videos: { count: 2, bytes: 18_000 } });
   });
 });

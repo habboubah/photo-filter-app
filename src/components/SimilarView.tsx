@@ -8,7 +8,7 @@ import { tapLight } from '../ui/haptics';
 /** How many groups are drawn at once; more come as the list is scrolled to its end. */
 const PAGE = 40;
 
-/** The similar (or duplicate) groups, newest first: each a strip of its photos with the one to keep marked. */
+/** The near-identical photos, the duplicates (photos) or the similar videos, newest first: each group a strip with the one to keep marked. */
 export function SimilarView({ t, kind = 'similar', groups, byId, kept, shown, onMore, onBack, onOpen }: {
   t: Strings;
   kind?: GroupKind;
@@ -21,10 +21,13 @@ export function SimilarView({ t, kind = 'similar', groups, byId, kept, shown, on
   onOpen: (key: string) => void;
 }) {
   const dup = kind === 'duplicate';
-  // On the duplicates screen the lookalike videos come last, under their own heading (src/logic/lookalike.ts).
-  const alike = dup ? groups.filter(g => g.kind === 'lookalike') : [];
-  const plain = dup ? groups.filter(g => g.kind !== 'lookalike') : groups;
-  const visible = plain.slice(0, Math.max(PAGE, shown));
+  const videos = kind === 'lookalike';
+  const visible = groups.slice(0, Math.max(PAGE, shown));
+  const words = videos
+    ? { title: t.lookalikeTitle, intro: t.lookalikeIntro, none: t.noLookalike, noneBody: t.noLookalikeBody }
+    : dup
+      ? { title: t.duplicatesTitle, intro: t.duplicatesIntro, none: t.noDuplicates, noneBody: t.noDuplicatesBody }
+      : { title: t.similarTitle, intro: t.similarIntro, none: t.noGroups, noneBody: t.noGroupsBody };
   const card = (g: Group) => {
     const extra = g.ids.filter(id => id !== g.best && !kept.has(id) && !byId.get(id)?.fav).length;
     const when = new Date(byId.get(g.ids[0])?.t ?? 0).toLocaleString(t.locale, { dateStyle: 'medium', timeStyle: 'short' });
@@ -60,18 +63,11 @@ export function SimilarView({ t, kind = 'similar', groups, byId, kept, shown, on
     );
   };
   return (
-    <Screen title={dup ? t.duplicatesTitle : t.similarTitle} subtitle={plural(t, 'groups', groups.length)} onBack={onBack} backLabel={t.back} info={{ label: t.aboutScreen, close: t.close, body: dup ? t.duplicatesIntro : t.similarIntro }}>
-      {groups.length === 0 ? <Empty title={dup ? t.noDuplicates : t.noGroups} body={dup ? t.noDuplicatesBody : t.noGroupsBody} /> : (
+    <Screen title={words.title} subtitle={plural(t, 'groups', groups.length)} onBack={onBack} backLabel={t.back} info={{ label: t.aboutScreen, close: t.close, body: words.intro }}>
+      {groups.length === 0 ? <Empty title={words.none} body={words.noneBody} /> : (
         <>
           <div className="space-y-[10px]">{visible.map(card)}</div>
-          {visible.length < plain.length && <MoreOnScroll onMore={onMore} />}
-          {alike.length > 0 && (
-            <section aria-labelledby="lookalike-h" className="space-y-[10px]">
-              <h2 id="lookalike-h" className="title-face text-title2 font-bold text-fg px-1 pt-2">{t.lookalikeTitle}</h2>
-              <p className="text-label text-fg-mute px-1 wrap-prose">{t.lookalikeIntro}</p>
-              {alike.map(card)}
-            </section>
-          )}
+          {visible.length < groups.length && <MoreOnScroll onMore={onMore} />}
         </>
       )}
     </Screen>

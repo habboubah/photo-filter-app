@@ -126,7 +126,7 @@ export interface Group {
 export interface CleanupSummary {
   similar: { count: number; bytes: number; groups: number };
   duplicates: { count: number; bytes: number; groups: number };
-  /** The extra takes of lookalike videos. */
+  /** Similar videos: the extra takes of lookalike videos and the copies of a video (`duplicates` is photos only). */
   lookalike: { count: number; bytes: number; groups: number };
   blurry: { count: number; bytes: number };
   /** Too dark or too bright (src/logic/exposure.ts), not already counted above. */
