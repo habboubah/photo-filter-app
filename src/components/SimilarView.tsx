@@ -60,10 +60,9 @@ export function SimilarView({ t, kind = 'similar', groups, byId, kept, shown, on
     );
   };
   return (
-    <Screen title={dup ? t.duplicatesTitle : t.similarTitle} subtitle={plural(t, 'groups', groups.length)} onBack={onBack} backLabel={t.back}>
+    <Screen title={dup ? t.duplicatesTitle : t.similarTitle} subtitle={plural(t, 'groups', groups.length)} onBack={onBack} backLabel={t.back} info={{ label: t.aboutScreen, close: t.close, body: dup ? t.duplicatesIntro : t.similarIntro }}>
       {groups.length === 0 ? <Empty title={dup ? t.noDuplicates : t.noGroups} body={dup ? t.noDuplicatesBody : t.noGroupsBody} /> : (
         <>
-          <p className="text-label text-fg-mute px-1 -mt-2 wrap-prose">{dup ? t.duplicatesIntro : t.similarIntro}</p>
           <div className="space-y-[10px]">{visible.map(card)}</div>
           {visible.length < plain.length && <MoreOnScroll onMore={onMore} />}
           {alike.length > 0 && (

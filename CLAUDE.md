@@ -168,6 +168,10 @@ further deleting need one one-time purchase (`com.habboubah.bildklar.unlock`, 4,
   tile. A category's hue is its dot and its segment in the `StorageBar`.
 - Motion: short and soft; transform and opacity only; all of it collapses
   under reduced motion. The review card follows the finger and flies out.
+- A screen says what it is for behind an (i) in its bar (`<Screen info>`,
+  a sheet), never in a paragraph above its content; its subtitle carries the
+  count and the size, its Dock button says what you get
+  (*Durchgehen · 6 Dateien · 585 MB*).
 - Type scale in rem (follows Dynamic Type, `dynamicType.ts`); touch targets
   44 px. No `hover:` styles.
 

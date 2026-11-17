@@ -38,9 +38,8 @@ export function LargeView({ t, photos, canCompress, sort, onSort, onBack, onRevi
   const size = (p: Photo) => `${p.exact ? '' : '≈ '}${bytes(t, p.bytes)}`;
 
   return (
-    <Screen title={t.largeTitle} subtitle={`${plural(t, 'files', list.length)} · ${approx ? '≈ ' : ''}${bytes(t, total)}`} onBack={onBack} backLabel={t.back} docked={list.length > 0}
+    <Screen title={t.largeTitle} subtitle={`${plural(t, 'files', list.length)} · ${approx ? '≈ ' : ''}${bytes(t, total)}`} onBack={onBack} backLabel={t.back} info={{ label: t.aboutScreen, close: t.close, body: t.largeIntro }} docked={list.length > 0}
       actions={<SortButton t={t} value={sort} onChange={onSort} />}>
-      <p className="text-label text-fg-mute px-1 -mt-2 wrap-prose">{t.largeIntro}</p>
       <Segmented
         label={t.largeTitle} value={filter} onChange={setFilter}
         options={[{ value: 'all', label: t.filterAll }, { value: 'videos', label: t.filterVideos }, { value: 'photos', label: t.filterPhotos }]}
@@ -66,7 +65,7 @@ export function LargeView({ t, photos, canCompress, sort, onSort, onBack, onRevi
         />
       )}
       {list.length > 0 && (
-        <Dock><Button full size="lg" onClick={() => onReview(list)}>{`${t.reviewGroup} · ${plural(t, 'files', list.length)}`}</Button></Dock>
+        <Dock><Button full size="lg" onClick={() => onReview(list)}>{`${t.reviewGroup} · ${plural(t, 'files', list.length)} · ${approx ? '≈ ' : ''}${bytes(t, total)}`}</Button></Dock>
       )}
 
       <Sheet open={!!open} title={open?.video ? t.videoBadge : t.photoBadge} closeLabel={t.close} onClose={() => setOpen(null)}>

@@ -43,7 +43,7 @@ export function FailedView({ t, blurry, dark, bright, tab: initialTab = 'blurry'
   const review = () => (tab === 'blurry' ? onReviewBlurry(list) : onReviewExposure(list, tab));
 
   return (
-    <Screen title={t.failedTitle} subtitle={`${plural(t, 'photos', list.length)} · ${bytes(t, total)}`} onBack={onBack} backLabel={t.back} docked={list.length > 0}
+    <Screen title={t.failedTitle} subtitle={`${plural(t, 'photos', list.length)} · ${bytes(t, total)}`} onBack={onBack} backLabel={t.back} info={{ label: t.aboutScreen, close: t.close, body: intro }} docked={list.length > 0}
       actions={<SortButton t={t} value={sort} onChange={onSort} />}>
       <Segmented
         label={t.failedTitle} value={tab} onChange={setTab}
@@ -53,7 +53,6 @@ export function FailedView({ t, blurry, dark, bright, tab: initialTab = 'blurry'
           { value: 'bright', label: t.failedBright },
         ]}
       />
-      <p className="text-label text-fg-mute px-1 wrap-prose">{intro}</p>
       {tab === 'blurry' && (
         <Segmented
           label={t.blurryTitle} value={filter} onChange={setFilter}
@@ -86,7 +85,7 @@ export function FailedView({ t, blurry, dark, bright, tab: initialTab = 'blurry'
         </div>
       )}
       {list.length > 0 && (
-        <Dock><Button full size="lg" onClick={review}>{t.reviewBlurry}</Button></Dock>
+        <Dock><Button full size="lg" onClick={review}>{`${t.reviewBlurry} · ${plural(t, 'photos', list.length)} · ${bytes(t, total)}`}</Button></Dock>
       )}
     </Screen>
   );

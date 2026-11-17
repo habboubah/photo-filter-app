@@ -36,10 +36,11 @@ screens used quickly and often.
 | Rescan | A bar button on home | Settings › Neu durchsuchen (and the automatic rescan on return) | — |
 | Type | Fraunces for every title | Figtree for titles and the UI; Fraunces only for the big numbers and trip names | `src/index.css` (`title-face`), `Screen.tsx`, `Sheet.tsx` |
 
-Later phases: the category and group screens (one-line subtitle, the
-explanation behind an (i)), the review (thumb bar, MB counter), the end
-screen, paywall, permission, settings; then the store screenshots, the App
-Review recording and the docs.
+Then (same day): every list screen's paragraph moved behind an (i) in its bar
+(`<Screen info>`); the Dock buttons say count and size; the review counts the
+marked space up under its progress; the end screen leads with the space it
+frees in Fraunces; the paywall shows five benefits and the price on its own,
+with "pay once" and "stays on your device" under it.
 
 ## Order
 
@@ -47,7 +48,6 @@ Review recording and the docs.
 1. Tokens and type.
 2. Tabs.
 3. *Aufräumen* and *Ordnen* — done and merged on 17 November 2026.
-4. The list screens. 5. Review and end screen. 6. Paywall, permission,
-   settings. 7. Store screenshots, App Review scenes, `CLAUDE.md`,
-   `docs/PLAN.md`, `docs/features.md`, What's New.
+4. The list screens. 5. Review and end screen. 6. Paywall. 7. Store
+   screenshots, App Review scenes, docs — all done on 17 November 2026.
 

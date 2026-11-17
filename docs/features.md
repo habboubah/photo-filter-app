@@ -220,8 +220,11 @@ tab again scrolls to its top; Android's back button goes from *Ordnen* to
 - One photo at a time, large, with the suggestion (*Vorschlag: löschen —
   fast gleich wie ein anderes Foto*). Swipe left to delete, right to keep, up
   for **Später** [Later] — or the three buttons, or the arrow keys (← → ↑).
-  Undo at the top; *Beenden* [Finish] any time.
-- At the end: *Zum Löschen markiert: 4 Fotos (13 MB)* with thumbnails and
+  Undo at the top; *Beenden* [Finish] any time. Under *12 von 40* [12 of
+  40] the space marked so far counts up in red (*− 48 MB*).
+- At the end: the space it would free as one big number (*13 MB — kannst du
+  jetzt freigeben* [you can free up now]), *Zum Löschen markiert: 4 Fotos
+  (13 MB)* with thumbnails and
   **4 Fotos löschen** [Delete 4 photos] → the system's dialog → Recently
   Deleted (iPhone) / the Trash (Android). Nothing is deleted before that.
   Needs the unlock.
@@ -236,7 +239,7 @@ tab again scrolls to its top; Android's back button goes from *Ordnen* to
   dialog (*Die Fotos werden in den Ordner verschoben*). Albums made here show
   up in Settings › Geschützt.
 - **Decide later**: photos swiped up land on a pile; the end screen says
-  *3 für später gemerkt* [3 saved for later]. Home shows *Später entscheiden (3)*
+  *3 für später gemerkt* [3 saved for later]. *Aufräumen* › *Weitermachen* shows *Später entscheiden (3)*
   [Decide later] while the pile isn't empty; it goes through the pile with no
   suggestion. A photo leaves the pile once it is kept or deleted, or when it
   is gone from the library.
@@ -254,6 +257,9 @@ tab again scrolls to its top; Android's back button goes from *Ordnen* to
   hast 3 Fotos ausgewählt – ohne Kauf gehen noch 2.*) and also offers
   *2 Fotos löschen* for the first ones selected. Albums, compression and Live
   Photo conversion get no free tries.
+- The paywall lists what the unlock adds, then the price on its own
+  (*4,99 € — Einmal zahlen – kein Abo — Alles bleibt auf deinem Gerät*),
+  then *Für 4,99 € freischalten*. No countdown, no discount.
 - *Käufe wiederherstellen* [Restore purchases] on the paywall and in Settings.
 - Family Sharing (iPhone); the purchase follows the Google account (Android).
 
@@ -315,6 +321,9 @@ tab again scrolls to its top; Android's back button goes from *Ordnen* to
   like a favourite, so it becomes the best shot.
 
 ## Everywhere
+- Each list screen explains itself behind the (i) in its bar (*Worum geht’s?*
+  [What is this?]); its button at the bottom says what you get
+  (*Durchgehen · 7 Fotos · 20 MB* [Go through · 7 photos · 20 MB]).
 - Dark mode, Larger Text (iPhone Dynamic Type; Android's font scale), VoiceOver
   / TalkBack labels on every photo and button, reduced motion.
 - Android words it Android's way (folders, the Trash, Google Play).

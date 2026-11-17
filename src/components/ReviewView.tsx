@@ -54,6 +54,8 @@ export function ReviewView({ t, session, finished, byId, debug, albums, android,
   const [title, setTitle] = useState('');
   const create = () => { const name = title.trim(); if (name) onFile(newAlbumKey(name)); setNaming(false); setTitle(''); };
   const done = finished || !item;
+  // What the photos marked so far would free: counts up as you swipe left.
+  const marked = toDelete(session).reduce((sum, id) => sum + (byId.get(id)?.bytes ?? 0), 0);
 
   // The next two photos are fetched before they are needed.
   useEffect(() => {
@@ -76,9 +78,14 @@ export function ReviewView({ t, session, finished, byId, debug, albums, android,
     <div className="min-h-screen mx-auto max-w-xl flex flex-col safe-top">
       <header className="px-[16px] min-h-[54px] grid grid-cols-[44px_minmax(0,1fr)_44px] gap-2 items-center">
         <IconButton label={t.close} icon={X} tone="bar" onClick={onClose} />
-        <p className="text-center text-label font-bold text-fg num" aria-live="polite">
-          {done ? t.reviewDoneTitle : fmt(t.reviewProgress, { i: num(t, session.index + 1), n: num(t, session.items.length) })}
-        </p>
+        <div className="text-center">
+          <p className="text-label font-bold text-fg num" aria-live="polite">
+            {done ? t.reviewDoneTitle : fmt(t.reviewProgress, { i: num(t, session.index + 1), n: num(t, session.items.length) })}
+          </p>
+          {!done && marked > 0 && (
+            <p className="text-caption font-extrabold text-neg num" aria-label={fmt(t.reviewMarked, { size: bytes(t, marked) })}>{`− ${bytes(t, marked)}`}</p>
+          )}
+        </div>
         <IconButton label={t.undo} icon={Undo2} tone="bar" onClick={onUndo} disabled={!session.history.length} className={session.history.length ? '' : 'opacity-40'} />
       </header>
       {done
@@ -267,7 +274,13 @@ function Summary({ t, session, byId, chips, android, onDelete, onClose }: {
   return (
     <main className="flex-1 flex flex-col px-6 pb-safe-8 pt-6">
       <h1 className="title-face text-title font-extrabold text-fg">{t.reviewDoneTitle}</h1>
-      <p className="text-body text-fg-mute mt-2 wrap-prose">
+      {ids.length > 0 && (
+        <div className="mt-4">
+          <p className="display text-display font-semibold text-fg num">{bytes(t, sizeOf(ids))}</p>
+          <p className="eyebrow text-fg-mute mt-1">{t.reviewDoneFree}</p>
+        </div>
+      )}
+      <p className="text-body text-fg-mute mt-3 wrap-prose">
         {!ids.length ? t.reviewNothing
           : split.photos.length ? fmt(t.reviewDoneBody, { photos: plural(t, 'photos', split.photos.length), size: bytes(t, sizeOf(split.photos)) })
             : fmt(t.reviewDoneBody, { photos: plural(t, 'videos', split.videos.length), size: bytes(t, sizeOf(split.videos)) })}
