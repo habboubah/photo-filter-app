@@ -63,7 +63,7 @@ export function Screen({ title, eyebrow, subtitle, onBack, backLabel, actions, l
           </div>
           <span
             aria-hidden="true"
-            className={`min-w-0 display text-chrome-title font-semibold text-fg text-center truncate transition-opacity duration-200 ${scrolled ? 'opacity-100' : 'opacity-0'}`}
+            className={`min-w-0 title-face text-chrome-title font-bold text-fg text-center truncate transition-opacity duration-200 ${scrolled ? 'opacity-100' : 'opacity-0'}`}
           >
             {title}
           </span>
@@ -84,7 +84,7 @@ export function Screen({ title, eyebrow, subtitle, onBack, backLabel, actions, l
         {leading}
         <div className="min-w-0 flex-1">
           {eyebrow && <p className="eyebrow text-fg-mute mb-0.5">{eyebrow}</p>}
-          <h1 className="display text-title font-extrabold text-fg wrap-compound">{title}</h1>
+          <h1 className="title-face text-title font-extrabold text-fg wrap-compound">{title}</h1>
           {subtitle && <div className="text-label font-bold text-fg-mute wrap-prose">{subtitle}</div>}
         </div>
         {trailing}
@@ -222,7 +222,7 @@ export function Empty({ emoji, title, body, action }: { emoji?: string; title: s
       {emoji
         ? <div className="emoji text-[64px] mb-4" aria-hidden="true">{emoji}</div>
         : <img src="/icon.png" alt="" className="w-[104px] h-[104px] rounded-lg mx-auto mb-5" draggable={false} />}
-      <p className="display text-heading font-bold text-fg wrap-compound">{title}</p>
+      <p className="title-face text-heading font-bold text-fg wrap-compound">{title}</p>
       {body && <p className="text-label text-fg-mute mt-2 wrap-prose max-w-xs mx-auto">{body}</p>}
       {action && <div className="mt-6 flex justify-center">{action}</div>}
     </div>

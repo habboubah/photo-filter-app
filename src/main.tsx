@@ -30,7 +30,7 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { error: unknown 
       <div className="min-h-screen bg-bg flex items-center justify-center p-6">
         <div className="max-w-sm w-full bg-surface rounded-lg p-6 text-center space-y-4">
           <img src="/icon.png" alt="" className="w-[72px] h-[72px] rounded-md mx-auto" />
-          <h1 className="display text-heading font-semibold text-fg">{t.crashTitle}</h1>
+          <h1 className="title-face text-heading font-bold text-fg">{t.crashTitle}</h1>
           <p className="text-label text-fg-mute">{t.crashBody}</p>
           <button type="button" onClick={() => window.location.reload()}
             className="w-full min-h-control bg-accent-fill text-accent-fill-ink rounded-full font-extrabold">

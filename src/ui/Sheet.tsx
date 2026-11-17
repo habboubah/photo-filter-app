@@ -85,7 +85,7 @@ export function Sheet({ open, title, closeLabel, onClose, action, children }: Pr
             >
               <X className="w-5 h-5" strokeWidth={2.4} aria-hidden="true" />
             </button>
-            <h2 className="min-w-0 display text-chrome-title font-bold text-fg text-center wrap-compound">{title}</h2>
+            <h2 className="min-w-0 title-face text-chrome-title font-bold text-fg text-center wrap-compound">{title}</h2>
             {action ? (
               <button
                 type="button" onClick={action.onClick} disabled={action.disabled}
@@ -133,7 +133,7 @@ export function Confirm({ open, title, body, confirmLabel, cancelLabel, danger, 
         transition={{ type: 'spring', duration: 0.3, bounce: 0.2 }}
         className="relative w-full max-w-sm bg-surface rounded-lg shadow-e2 p-6 text-center"
       >
-        <h2 id="confirm-title" className="display text-heading font-bold text-fg wrap-compound">{title}</h2>
+        <h2 id="confirm-title" className="title-face text-heading font-bold text-fg wrap-compound">{title}</h2>
         <p id="confirm-body" className="text-label text-fg-mute mt-2 wrap-prose">{body}</p>
         <div className="mt-6 grid gap-2">
           <button

@@ -28,7 +28,7 @@ export function PermissionView({ t, access, onAllow, onOpenSettings, onSettings 
       </div>
       <main className="flex-1 flex flex-col px-6 pb-safe-8">
         <img src="/icon.png" alt="" className="w-[88px] h-[88px] rounded-[22px] mt-6" draggable={false} />
-        <h1 className="display text-title font-semibold text-fg mt-6 wrap-compound">{asked ? t.deniedTitle : t.permTitle}</h1>
+        <h1 className="title-face text-title font-extrabold text-fg mt-6 wrap-compound">{asked ? t.deniedTitle : t.permTitle}</h1>
         <p className="text-body text-fg-mute mt-3 wrap-prose">
           {access === 'restricted' ? t.restrictedBody : asked ? t.deniedBody : t.permBody}
         </p>
