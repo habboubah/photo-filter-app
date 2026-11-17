@@ -175,6 +175,14 @@ keep, red for delete, amber for blurry. Titles and the big numbers in
 mode is a near-black slate with a light teal. Trips are cards with a 2 × 2
 mosaic of their photos; the clean-up card leads with one big number ("76 MB").
 
+**Modernised on 17 November 2026** (docs/REDESIGN.md, after looking at Gemini
+Photos, Slidebox, the swipe cleaners, CleanMyPhone / Clever Cleaner, iOS 26's
+Photos and Material 3 Expressive): home became two tabs, *Aufräumen* and
+*Ordnen*; the clean-up card shows a bar split by category instead of a dot list
+that repeated the tiles; the categories became cards with their own photos,
+ranked by the space they free; trips moved to *Ordnen* as large cover cards.
+Titles are now Figtree; Fraunces stays for the big numbers and trip names.
+
 Ahmad asked Claude on 16 November 2026 to decide most things itself, so this
 direction was picked without the usual three mockups. Two others were weighed
 and can still be tried: **"Kinderzimmer"** (rounded, pastel, playful — closer

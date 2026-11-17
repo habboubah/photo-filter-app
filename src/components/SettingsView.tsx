@@ -51,7 +51,7 @@ export function SettingsView(p: Props) {
       <section className="rounded-md card p-4 flex items-center gap-3">
         <img src="/icon.png" alt="" className="w-[56px] h-[56px] rounded-[14px]" draggable={false} />
         <div className="min-w-0">
-          <p className="display text-heading font-semibold text-fg">{t.appName}</p>
+          <p className="title-face text-heading font-bold text-fg">{t.appName}</p>
           <p className="text-caption text-fg-mute wrap-prose">{t.tagline}</p>
           <p className="text-caption text-fg-faint num">{t.version.replace('{v}', __APP_VERSION__)}</p>
         </div>

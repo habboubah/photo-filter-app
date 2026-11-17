@@ -1,4 +1,5 @@
 Neu in Bildklar 2.1:
+• Neues Design: „Aufräumen“ und „Ordnen“
 • Fotos verkleinern ohne sichtbaren Qualitätsverlust
 • Videos und Fotos in einem Durchgang – mit ähnlichen Videos
 • Beim Durchgehen in Alben sortieren und „Später entscheiden“

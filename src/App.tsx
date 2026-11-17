@@ -1,9 +1,9 @@
-import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'motion/react';
 import { App as CapacitorApp } from '@capacitor/app';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { KeepAwake } from '@capacitor-community/keep-awake';
-import { AlertTriangle, FlaskConical } from 'lucide-react';
+import { AlertTriangle, FlaskConical, Images, Sparkles } from 'lucide-react';
 import { useAppStore } from './store';
 import { bytes, fmt, percent, plural, stringsFor } from './translations';
 import type { Photo, Trip } from './types';
@@ -37,6 +37,7 @@ import { Confirm } from './ui/Sheet';
 import { notifySuccess } from './ui/haptics';
 import { PermissionView } from './components/PermissionView';
 import { HomeView } from './components/HomeView';
+import { TabBar } from './ui/TabBar';
 
 import type { FailedTab } from './components/FailedView';
 import { Progress } from './ui/Controls';
@@ -69,6 +70,7 @@ const AppsView = lazy(() => import('./components/AppsView').then(m => ({ default
 const CompressView = lazy(() => import('./components/CompressView').then(m => ({ default: m.CompressView })));
 const ProtectedView = lazy(() => import('./components/ProtectedView').then(m => ({ default: m.ProtectedView })));
 const LicencesView = lazy(() => import('./components/SettingsView').then(m => ({ default: m.LicencesView })));
+const OrganizeView = lazy(() => import('./components/OrganizeView').then(m => ({ default: m.OrganizeView })));
 
 /** `onDone`: what happens once the review was gone through to its end (a month marked as done). */
 interface Review { session: Session; finished: boolean; onDone?: () => void }
@@ -177,6 +179,17 @@ export default function App() {
 
   /* ---------------------------------------------------------- navigation */
 
+  // The root's two tabs (ui/TabBar): cleaning up and organising. Each keeps its
+  // scroll position; tapping the current tab again goes back to its top.
+  type HomeTab = 'clean' | 'organize';
+  const [tab, setTab] = useState<HomeTab>('clean');
+  const tabScroll = useRef<Record<HomeTab, number>>({ clean: 0, organize: 0 });
+  const switchTab = (next: HomeTab) => {
+    if (next === tab) { window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
+    tabScroll.current[tab] = window.scrollY;
+    setTab(next);
+  };
+
   const [showTrips, setShowTrips] = useState(false);
   const [tripKey, setTripKey] = useState<string | null>(null);
   const [showCleanup, setShowCleanup] = useState(false);
@@ -243,18 +256,25 @@ export default function App() {
   ];
   const topIndex = pushed.findIndex(([, open]) => open);
   const screen = topIndex === -1 ? 'home' : pushed[topIndex][0];
+  // The two tabs are one screen for the stack, two for the transition: switching crossfades (dir 2) instead of sliding.
+  const screenKey = screen === 'home' ? `home-${tab}` : screen;
 
-  const nav = useRef({ screen, depth: 0, dir: 0 });
+  const nav = useRef({ screen: screenKey, depth: 0, dir: 0 });
   const depth = topIndex === -1 ? 0 : pushed.filter(([, open]) => open).length;
-  if (nav.current.screen !== screen) nav.current = { screen, depth, dir: depth > nav.current.depth ? 1 : -1 };
+  if (nav.current.screen !== screenKey) {
+    const tabSwitch = screen === 'home' && nav.current.screen.startsWith('home-');
+    nav.current = { screen: screenKey, depth, dir: tabSwitch ? 2 : depth > nav.current.depth ? 1 : -1 };
+  }
   const dir = nav.current.dir;
   const rtl = t.dir === 'rtl' ? -1 : 1;
 
   useEffect(() => { window.scrollTo(0, 0); }, [screen]);
+  useLayoutEffect(() => { window.scrollTo(0, tabScroll.current[tab]); }, [tab]);
 
   useEffect(() => {
     const handle = CapacitorApp.addListener('backButton', () => {
       if (topIndex !== -1) pushed[topIndex][2]();
+      else if (tab !== 'clean') setTab('clean');
       else void CapacitorApp.minimizeApp();
     });
     return () => { void handle.then(h => h.remove()).catch(() => {}); };
@@ -756,26 +776,42 @@ export default function App() {
       );
     }
     if (!access) return <div className="min-h-screen" aria-busy="true" />;
+    if (tab === 'organize') {
+      return (
+        <OrganizeView
+          t={t} photoCount={photos ? photos.length : null} trips={trips} hasLocations={hasLocations}
+          onThisDay={{ photos: today.ids.length, years: today.years, cover: today.ids[0] }}
+          categories={cats.slice(0, 8).map(c => ({ label: c.label, count: c.photos.length, cover: c.photos[0].id }))}
+          onSettings={() => setShowSettings(true)}
+          onOnThisDay={() => startReview(reviewTrip(today.ids, groups, byId, kept))}
+          onTrips={() => setShowTrips(true)}
+          onTrip={setTripKey}
+          onCategory={setCategory}
+        />
+      );
+    }
+    const failedAll = [...blurry, ...exposureAll];
     return (
       <HomeView
-        t={t} access={access} photoCount={photos ? photos.length : null} scan={store.scan}
-        trips={trips} hasLocations={hasLocations} summary={summary}
-        groupCount={similarGroups.length} duplicateCount={dupGroups.length}
-        blurryCount={blurry.length + exposureAll.length} screenshotCount={shots.length}
-        large={{ count: large.length, bytes: large.reduce((sum, p) => sum + p.bytes, 0) }} liveCount={isAndroid() ? 0 : live.length}
-        compress={{ count: compressible.photos.length + compressible.screenshots.length, saving: compressible.saving }}
+        t={t} access={access} photoCount={photos ? photos.length : null} scan={store.scan} summary={summary}
+        found={{
+          duplicates: { items: dupGroups.length, covers: dupGroups.slice(0, 4).map(g => g.ids.find(id => id !== g.suggested) ?? g.ids[0]) },
+          similar: { items: similarGroups.length, covers: similarGroups.slice(0, 4).map(g => g.suggested) },
+          failed: { items: failedAll.length, covers: failedAll.slice(0, 4).map(x => x.id) },
+          screenshots: { items: shots.length, covers: shots.slice(0, 4).map(x => x.id) },
+          ...(aiSeen.seen > 0 ? { utility: { items: utility.length, covers: utility.slice(0, 4).map(x => x.id) } } : {}),
+        }}
+        large={{ count: large.length, bytes: large.reduce((sum, x) => sum + x.bytes, 0), cover: large[0]?.id }}
+        liveCount={isAndroid() ? 0 : live.length} liveCover={live[0]?.id}
+        compress={{ count: compressible.photos.length + compressible.screenshots.length, saving: compressible.saving, cover: (compressible.photos[0] ?? compressible.screenshots[0])?.id }}
         onCompress={() => setShowCompress(true)}
-        apps={sourcesBytes >= APPS_TILE_MIN ? { bytes: sourcesBytes } : null}
+        apps={sourcesBytes >= APPS_TILE_MIN ? { bytes: sourcesBytes, cover: sources[0]?.photos[0]?.id } : null}
         onApps={() => setShowApps(true)}
-        utility={{ show: aiSeen.seen > 0, count: utility.length, bytes: utility.reduce((sum, p) => sum + p.bytes, 0) }}
-        categories={cats.slice(0, 8).map(c => ({ label: c.label, count: c.photos.length, cover: c.photos[0].id }))}
         storage={store.storage} freedBytes={state.freed.bytes} streak={streak(state.days, now)}
         months={{ done: months.filter(m => doneMonths.has(m.key)).length, total: months.length, pct }}
-        onThisDay={{ photos: today.ids.length, years: today.years, cover: today.ids[0] }}
         later={{ count: laterPile.length, cover: laterPile[0] }}
         onLater={() => startReview(reviewLater(laterPile))}
         onSettings={() => setShowSettings(true)}
-        onRescan={store.startScan}
         onAddPhotos={addPhotos}
         onCleanup={() => setShowCleanup(true)}
         onSimilar={() => setShowSimilar(true)}
@@ -786,10 +822,6 @@ export default function App() {
         onLarge={() => setShowLarge(true)}
         onLive={() => setShowLive(true)}
         onUtility={() => setShowUtility(true)}
-        onCategory={setCategory}
-        onOnThisDay={() => startReview(reviewTrip(today.ids, groups, byId, kept))}
-        onTrips={() => setShowTrips(true)}
-        onTrip={setTripKey}
       />
     );
   };
@@ -806,13 +838,20 @@ export default function App() {
       )}
 
       <motion.div
-        key={screen}
-        initial={dir === 0 ? false : dir === 1 ? { x: `${100 * rtl}%` } : { x: `${-30 * rtl}%`, opacity: 0.6 }}
+        key={screenKey}
+        initial={dir === 0 ? false : dir === 2 ? { opacity: 0 } : dir === 1 ? { x: `${100 * rtl}%` } : { x: `${-30 * rtl}%`, opacity: 0.6 }}
         animate={{ x: 0, opacity: 1 }}
-        transition={{ duration: 0.35, ease: [0.32, 0.72, 0, 1] }}
+        transition={dir === 2 ? { duration: 0.2, ease: 'easeOut' } : { duration: 0.35, ease: [0.32, 0.72, 0, 1] }}
       >
         <Suspense fallback={<div className="min-h-screen" aria-busy="true" />}>{content()}</Suspense>
       </motion.div>
+
+      {screen === 'home' && hasAccess && (
+        <TabBar
+          label={t.tabsLabel} current={tab} onChange={switchTab}
+          tabs={[{ key: 'clean', label: t.tabClean, icon: Sparkles }, { key: 'organize', label: t.tabOrganize, icon: Images }]}
+        />
+      )}
 
       {store.dryRun && (
         <div className="fixed inset-x-0 top-0 z-40 flex justify-center pointer-events-none safe-top">

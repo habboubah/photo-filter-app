@@ -68,7 +68,7 @@ export function SimilarView({ t, kind = 'similar', groups, byId, kept, shown, on
           {visible.length < plain.length && <MoreOnScroll onMore={onMore} />}
           {alike.length > 0 && (
             <section aria-labelledby="lookalike-h" className="space-y-[10px]">
-              <h2 id="lookalike-h" className="display text-title2 font-semibold text-fg px-1 pt-2">{t.lookalikeTitle}</h2>
+              <h2 id="lookalike-h" className="title-face text-title2 font-bold text-fg px-1 pt-2">{t.lookalikeTitle}</h2>
               <p className="text-label text-fg-mute px-1 wrap-prose">{t.lookalikeIntro}</p>
               {alike.map(card)}
             </section>

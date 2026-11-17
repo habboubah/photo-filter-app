@@ -90,11 +90,26 @@ export const tripCards = w => {
   // An empty ^= or $= matches nothing in CSS, so only the non-empty side is used.
   return `main button${before ? `[aria-label^="${before}"]` : ''}${after ? `[aria-label$="${after}"]` : ''}`;
 };
+/** The "Ordnen" tab (trips, on this day, the AI's categories). */
+export async function openOrganize(page, w) {
+  await page.click(`nav button:has-text("${w.t.tabOrganize}")`);
+  await pause(page, 500);
+}
+/** Back on the "Aufräumen" tab (the categories, the clean-up card), when another tab is showing. */
+export async function openClean(page, w) {
+  const tab = page.locator(`nav button[aria-current="page"]`);
+  if (await tab.count() && !(await tab.innerText()).includes(w.t.tabClean)) {
+    await page.click(`nav button:has-text("${w.t.tabClean}")`);
+    await pause(page, 500);
+  }
+}
 export async function openTrip(page, w, place = 'Paris') {
+  if (!(await page.locator(tripCard(w, place)).count())) await openOrganize(page, w);
   await page.click(tripCard(w, place));
   await pause(page, 700);
 }
 export async function openSimilar(page, w) {
+  await openClean(page, w);
   await page.click(`button:has-text("${w.t.similarTile}")`);
   await pause(page, 600);
 }
@@ -104,10 +119,12 @@ export async function openGroup(page, w) {
   await pause(page, 800);
 }
 export async function openBlurry(page, w) {
+  await openClean(page, w);
   await page.click(`button:has-text("${w.t.failedTile}")`);
   await pause(page, 700);
 }
 export async function openCleanupReview(page, w) {
+  await openClean(page, w);
   await page.click(`button:has-text("${w.t.cleanupButton}")`);
   await pause(page, 500);
   await page.click(`button:has-text("${w.t.reviewAll}")`);
@@ -138,11 +155,12 @@ export const SCREENS = [
   },
   {
     name: '02-home', store: true,
-    marks: w => ({ cleanup: 'section[aria-labelledby="cleanup-h"]', 'trip-1': `${tripCards(w)} >> nth=0`, tiles: 'main div.grid' }),
+    marks: () => ({ cleanup: 'section[aria-labelledby="cleanup-h"]', tiles: 'main div.grid' }),
   },
   {
-    // The list of all trips once there are more than four; the demo has four, so home scrolled to them.
+    // The list of all trips once there are more than the "Ordnen" tab shows (three; the demo has four).
     name: '03-trips', store: true, run: async (page, w) => {
+      await openOrganize(page, w);
       const all = page.locator(`button:has-text("${w.t.allTrips}")`);
       if (await all.count()) await all.first().click();
       else await page.evaluate(() => document.getElementById('trips-h')?.scrollIntoView({ block: 'start' }));
@@ -236,10 +254,14 @@ export const SCREENS = [
   { name: '29-utility', run: async (page, w) => { await page.click(`button:has-text("${w.t.utilityTile}")`); await pause(page, 700); } },
   {
     name: '30-category', run: async (page, w) => {
+      await openOrganize(page, w);
       await page.click(`section[aria-labelledby="categories-h"] button >> nth=0`);
       await pause(page, 700);
     },
   },
+  // The "Ordnen" tab: on this day, the trips as cover cards, then scrolled to the AI's categories.
+  { name: '39-organize', run: openOrganize },
+  { name: '40-organize-end', run: async (page, w) => { await openOrganize(page, w); await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight)); await pause(page, 400); } },
   // Missglückt: the too dark photos (the demo's pocket shot).
   {
     name: '32-failed-dark', run: async (page, w) => {

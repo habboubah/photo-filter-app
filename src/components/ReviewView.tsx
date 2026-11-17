@@ -266,7 +266,7 @@ function Summary({ t, session, byId, chips, android, onDelete, onClose }: {
   const sizeOf = (list: string[]) => list.reduce((s, id) => s + (byId.get(id)?.bytes ?? 0), 0);
   return (
     <main className="flex-1 flex flex-col px-6 pb-safe-8 pt-6">
-      <h1 className="display text-title font-semibold text-fg">{t.reviewDoneTitle}</h1>
+      <h1 className="title-face text-title font-extrabold text-fg">{t.reviewDoneTitle}</h1>
       <p className="text-body text-fg-mute mt-2 wrap-prose">
         {!ids.length ? t.reviewNothing
           : split.photos.length ? fmt(t.reviewDoneBody, { photos: plural(t, 'photos', split.photos.length), size: bytes(t, sizeOf(split.photos)) })

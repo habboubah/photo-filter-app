@@ -3,12 +3,14 @@
 /* ============================================================================
    Bildklar design tokens — "Album": the photos are the colour
    ----------------------------------------------------------------------------
-   Bildklar's own look (16 November 2026). A photo app's screens are full of
+   Bildklar's own look (16 November 2026; modernised 17 November: Figtree
+   for the titles, Fraunces only for the big numbers and the trip names,
+   photos on every card, two tabs). A photo app's screens are full of
    other people's colours — a beach, a birthday cake, a red jacket — so the
    app itself stays quiet: a warm paper page, white cards, slate ink, and one
-   deep teal for what you tap. Titles and the big numbers are set in Fraunces,
-   a soft serif like the labels in a printed photo album; everything else is
-   Figtree. Both are bundled (src/assets/fonts, OFL): no font from a server.
+   deep teal for what you tap. The big numbers and the trip names are set in
+   Fraunces, a soft serif like the labels in a printed photo album; titles and
+   everything else in Figtree. Both are bundled (src/assets/fonts, OFL): no font from a server.
 
    Flat and calm: no gradients on fills, no blur (Android's WebView stays
    fast), no shadow on a card — only what floats (the dock's button, a toast,
@@ -212,6 +214,9 @@
 @utility pb-safe-8 { padding-bottom: calc(2rem + var(--safe-area-inset-bottom, env(safe-area-inset-bottom))); }
 /* Clears a docked button (ui/Screen Dock), which floats above the home indicator. */
 @utility pb-safe-dock { padding-bottom: calc(132px + var(--safe-area-inset-bottom, env(safe-area-inset-bottom))); }
+/* The tab bar (ui/TabBar) floats like the dock; pb-safe-tabs clears it. */
+@utility pb-tabbar { padding-bottom: calc(max(var(--safe-area-inset-bottom, env(safe-area-inset-bottom)) - 6px, 14px) + 4px); }
+@utility pb-safe-tabs { padding-bottom: calc(112px + var(--safe-area-inset-bottom, env(safe-area-inset-bottom))); }
 @utility pb-dock { padding-bottom: calc(max(var(--safe-area-inset-bottom, env(safe-area-inset-bottom)) - 6px, 14px) + 6px); }
 
 @utility scrim { background-color: var(--t-scrim); }
@@ -221,6 +226,14 @@
   font-family: var(--font-display);
   letter-spacing: -0.01em;
   font-optical-sizing: auto;
+}
+
+/* Titles, section headings and the bar's title: Figtree, drawn a little
+   tighter as it grows (the system's large titles do the same). Fraunces
+   (display) is kept for the big numbers and the trip names. */
+@utility title-face {
+  font-family: var(--font-sans);
+  letter-spacing: -0.021em;
 }
 
 /* A number read at a glance (the clean-up card, counts on tiles). */
