@@ -3,6 +3,7 @@ import type { Photo } from '../../types';
 import type { Access, PhotoLibraryPlugin, ScanState } from '../photoLibrary';
 import facts from './facts.json';
 import { AI_VERSION } from '../../logic/ai';
+import { playInBrowser } from './player';
 
 /*
  * The demo library: the PhotoLibrary plugin in a browser. 101 photos and videos —
@@ -51,7 +52,7 @@ type DemoPhoto = Photo & { vec?: string };
  * switches and is remembered. Production builds (the checks, the screenshots,
  * the preview video) never contain the test library.
  */
-let data: { facts: DemoPhoto[]; urlOf: (id: string) => string } = {
+let data: { facts: DemoPhoto[]; urlOf: (id: string) => string; clipOf?: (id: string) => string | undefined } = {
   facts: facts as DemoPhoto[],
   /** A copy the demo made (a still from a Live Photo, a smaller video) shows its original's picture. */
   urlOf: id => urls[`./photos/${id.split('-')[0]}.jpg`] ?? '',
@@ -62,7 +63,7 @@ function wantsTestLibrary() {
   return get(K.library) !== 'demo';
 }
 const ready: Promise<void> = import.meta.env.DEV && wantsTestLibrary()
-  ? import('./testLibrary').then(m => { if (m.facts.length) data = { facts: m.facts, urlOf: m.urlOf }; }).catch(() => undefined)
+  ? import('./testLibrary').then(m => { if (m.facts.length) data = { facts: m.facts, urlOf: m.urlOf, clipOf: m.clipOf }; }).catch(() => undefined)
   : Promise.resolve();
 
 const ACCESS = ['notDetermined', 'denied', 'restricted', 'limited', 'full'] as const;
@@ -166,8 +167,19 @@ export class DemoLibrary extends WebPlugin implements PhotoLibraryPlugin {
     return { done: ids.length, cancelled: false, dryRun };
   }
 
-  /** No player in a browser: the demo remembers what it was asked to play (the checks look at it). */
-  async preview({ id }: { id: string }) { set('bildklar-demo-preview', id); }
+  /**
+   * The test library's videos play in the browser (their copies in
+   * test-library/videos/); the curated demo has pictures only, so its videos
+   * can't be played. Either way the demo remembers what it was asked to play
+   * (the checks look at it).
+   */
+  async preview({ id, closeLabel }: { id: string; closeLabel?: string }) {
+    set('bildklar-demo-preview', id);
+    await ready;
+    const url = data.clipOf?.(id);
+    if (!url) throw Object.assign(new Error('The demo has no file for this video'), { code: 'PLAYBACK' });
+    await playInBrowser(url, closeLabel ?? 'Close');
+  }
 
   /** Albums the demo made while swiping (remembered like the deleted photos). */
   private madeAlbums(): { id: string; title: string; members: string[] }[] {

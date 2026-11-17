@@ -4,7 +4,8 @@ about 560 real photos and videos instead of the 101 of the curated demo.
 
 Reads test-photos/ (npm run test-photos) and writes
 src/native/demo/test-library/ (not in git): a 1024-px copy of every photo
-(a video: its poster frame) and manifest.json — when, where, what kind (a
+(a video: its poster frame, and a small H.264 copy in videos/ the browser can
+play behind the play button) and manifest.json — when, where, what kind (a
 screenshot, a WhatsApp copy, a video and its length, a Live Photo, a
 favourite), the sizes a phone would report — plus the grey copies for the
 features (.cache/test-library-grey/). With ONNX Runtime at hand (ml/'s venv)
@@ -14,6 +15,7 @@ the features with the app's own spec and writes facts.json.
 
   npm run test-photos       (once)
   npm run demo-library      (this — with ml/'s venv active for the AI — then the facts)
+  python3 scripts/demo-library.py --clips   (only the videos' playable copies)
 
 In `npm run dev` the demo shows this library when it is there; `?library=demo`
 switches back to the curated 101 photos (`?library=test` to this one again).
@@ -35,6 +37,7 @@ ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
 SRC = os.path.join(ROOT, 'test-photos')
 OUT = os.path.join(ROOT, 'src', 'native', 'demo', 'test-library')
 PHOTOS = os.path.join(OUT, 'photos')
+CLIPS = os.path.join(OUT, 'videos')
 GREY = os.path.join(ROOT, '.cache', 'test-library-grey')
 WA = 'Android/media/com.whatsapp/WhatsApp/Media/'
 
@@ -60,8 +63,31 @@ def picture(path, video):
     return ImageOps.exif_transpose(img).convert('RGB')
 
 
+def clips(rows):
+    """Each video as an H.264 MP4 of at most 720p (the .MOV files are HEVC, which a browser may not
+    play): what the demo's player shows. Made once; remade when the video changes."""
+    os.makedirs(CLIPS, exist_ok=True)
+    made = 0
+    for n, r in enumerate(rows, 1):
+        if r['kind'] not in ('video', 'video-copy'):
+            continue
+        f, out = os.path.join(SRC, r['file']), os.path.join(CLIPS, f't{n:04d}.mp4')
+        if os.path.exists(out) and os.path.getmtime(out) >= os.path.getmtime(f):
+            continue
+        tmp = out + '.part.mp4'
+        subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', f, '-map', '0:v:0', '-map', '0:a:0?',
+                        '-vf', "scale='min(1280,iw)':-2", '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '28',
+                        '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-b:a', '96k', '-movflags', '+faststart', tmp], check=True)
+        os.replace(tmp, out)
+        made += 1
+    print(f'{made} video copies made → src/native/demo/test-library/videos/')
+
+
 def main():
     rows = list(csv.DictReader(open(os.path.join(SRC, 'credits.csv'), encoding='utf-8')))
+    if '--clips' in sys.argv:
+        clips(rows)
+        return
     os.makedirs(PHOTOS, exist_ok=True)
     os.makedirs(GREY, exist_ok=True)
     manifest = []
@@ -113,6 +139,7 @@ def main():
     with open(os.path.join(OUT, 'manifest.json'), 'w') as fh:
         json.dump(manifest, fh)
     print(f'{len(manifest)} photos and videos → src/native/demo/test-library/')
+    clips(rows)
     ai(manifest)
 
 

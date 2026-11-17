@@ -124,8 +124,11 @@ one (EXIF UserComment "Screenshot").
 
 **In the browser.** `npm run demo-library` copies the test library into
 `src/native/demo/test-library/` (not in git: 1024-px pictures, video posters,
-the facts with the app's own features and, with ml/'s venv active, the AI's
-scores). `npm run dev` then shows it instead of the curated demo;
+each video as an H.264 MP4 of at most 720p for the browser's player
+(`videos/`; alone: `python3 scripts/demo-library.py --clips`), the facts with
+the app's own features and, with ml/'s venv active, the AI's scores).
+`npm run dev` then shows it instead of the curated demo — its videos play
+(`src/native/demo/player.ts`, the phones' players drawn in the browser);
 `?library=demo` switches back (remembered in `bildklar-demo-library`). Only the
 dev server loads it (`src/native/demo/testLibrary.ts`): production builds — the
 checks, the screenshots, the preview video — never contain it, and the App
