@@ -100,6 +100,78 @@ export function search(vectors: Vectors, file: WordFile, concepts: number[], all
   return hits.sort((a, b) => b.z - a.z).slice(0, SEARCH_LIMIT);
 }
 
+/* ------------------------------------------------------------ examples */
+
+/*
+ * What Suchen offers before anything is typed: the words below that this
+ * library really has, each as a card with its best photo ("Baby", "Hund" …).
+ * A word is offered when at least EXAMPLE_MIN photos reach EXAMPLE_SURE — a
+ * stricter mark than SEARCH_MIN, so a word the library hasn't got doesn't
+ * show a photo of something else. The most such photos first; the order
+ * below breaks ties (families first). PROVISIONAL (17 November 2026, the
+ * demo library): every best photo at -7.1 or above showed the word, none at
+ * -8.4 or below did.
+ */
+/** The candidates, by their concept's first English word. */
+export const EXAMPLE_WORDS = [
+  'baby', 'child', 'toddler', 'family', 'twins', 'siblings', 'birthday', 'playground', 'sleeping', 'bath',
+  'dog', 'cat', 'beach', 'snow', 'mountains', 'city', 'christmas', 'eid', 'ramadan', 'zoo',
+  'food', 'cake', 'flowers', 'sunset', 'car', 'receipt', 'document', 'qr code',
+];
+export const EXAMPLE_SURE = -7.5;
+export const EXAMPLE_MIN = 2;
+export const EXAMPLE_COUNT = 8;
+/** The words offered while the AI hasn't seen the photos yet: plain chips. */
+export const FALLBACK_WORDS = ['baby', 'dog', 'beach', 'birthday', 'snow', 'playground', 'food', 'receipt'];
+
+/** The concept whose first English word this is (-1 if none). */
+export const conceptByWord = (file: WordFile, en: string): number => file.concepts.findIndex(c => c.en[0] === en);
+
+/** One candidate scored: how many photos surely show it, and its best photos (best first, a few). */
+export interface ExampleScore { concept: number; sure: number; best: string[] }
+
+/** Scores one candidate (one pass over the vectors: the caller can spread the candidates over frames). */
+export function scoreExample(vectors: Vectors, file: WordFile, concept: number, allowed?: (id: string) => boolean): ExampleScore | null {
+  const q = query(file, concept);
+  if (!q || !vectors.size) return null;
+  const s = vectors.scores(q);
+  const sure: Hit[] = [];
+  for (let i = 0; i < s.length; i++) {
+    const z = s[i] + file.bias;
+    if (z < EXAMPLE_SURE) continue;
+    const id = vectors.ids[i];
+    if (!allowed || allowed(id)) sure.push({ id, z });
+  }
+  if (sure.length < EXAMPLE_MIN) return null;
+  sure.sort((a, b) => b.z - a.z);
+  return { concept, sure: sure.length, best: sure.slice(0, 12).map(h => h.id) };
+}
+
+export interface Example { concept: number; cover: string }
+
+/**
+ * The cards from the scored candidates (in EXAMPLE_WORDS' order): the most
+ * sure photos first, at most `limit`; each card's cover is its best photo
+ * that no card before it shows.
+ */
+export function pickExamples(scored: (ExampleScore | null)[], limit = EXAMPLE_COUNT): Example[] {
+  const ranked = scored
+    .map((s, order) => s && { ...s, order })
+    .filter((s): s is ExampleScore & { order: number } => !!s)
+    .sort((a, b) => b.sure - a.sure || a.order - b.order)
+    .slice(0, limit);
+  const used = new Set<string>();
+  return ranked.map(s => {
+    const cover = s.best.find(id => !used.has(id)) ?? s.best[0];
+    used.add(cover);
+    return { concept: s.concept, cover };
+  });
+}
+
+/** All at once (the tests; the app spreads scoreExample over frames). */
+export const examples = (vectors: Vectors, file: WordFile, allowed?: (id: string) => boolean, words = EXAMPLE_WORDS): Example[] =>
+  pickExamples(words.map(w => { const c = conceptByWord(file, w); return c < 0 ? null : scoreExample(vectors, file, c, allowed); }));
+
 /* ------------------------------------------------------- photos like this */
 
 /** "Ähnliche Fotos": at least this alike to the photo (the vectors' cosine). */

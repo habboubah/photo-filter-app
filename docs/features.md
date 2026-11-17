@@ -221,8 +221,16 @@ tab again scrolls to its top; Android's back button goes from *Ordnen* to
 ## Search (*Suchen*)
 - The magnifier on both tabs opens **Suchen** [Search]: *Was ist auf dem
   Foto?* [What is in the photo?]. As you type, it suggests words it knows —
-  219 concepts in German, English and Arabic (*Hund*, *Strand*, *Kassenzettel*,
-  *Geburtstag* …); tap one. Several words find photos that show all of them.
+  247 concepts in German, English and Arabic (*Hund*, *Strand*, *Kassenzettel*,
+  *Geburtstag*, and for parents *Baby*, *Baden*, *Schlafen*, *erste Schritte*,
+  *Schnuller*, *Laternenumzug* …); tap one. Several words find photos that
+  show all of them.
+- *In deinen Fotos* [In your photos]: before anything is typed, up to eight
+  cards with words your library really has, each with its best photo (*Baby*,
+  *Hund*, *Spielplatz* …) — the one with most photos first; a tap searches
+  for it. A word the library hasn't got is not offered, and a photo of an ID
+  or a bank card is never a cover. Until the AI has seen the photos, plain
+  examples instead (*Zum Beispiel*).
 - Found by the on-device AI from each photo's vector, best match first (at
   most 500); a grid, and *Durchgehen · 24 Fotos* [Go through] reviews them
   with no suggestion.
