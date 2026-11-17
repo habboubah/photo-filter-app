@@ -11,6 +11,7 @@ import { Sheet } from '../ui/Sheet';
 import { LARGE } from '../thumbs';
 import { sortPhotos, type SortKey } from '../logic/sort';
 import { SortButton } from './SortButton';
+import { PlayOver } from '../ui/play';
 
 /**
  * The largest photos and videos, biggest first. Nothing is suggested for
@@ -77,6 +78,7 @@ export function LargeView({ t, photos, videosOnly, canCompress, sort, onSort, on
           <div className="space-y-4">
             <div className="relative aspect-video rounded-md overflow-hidden bg-surface-2">
               <Thumb id={open.id} size={LARGE} alt={when(open)} className="!rounded-none !object-contain" />
+              <PlayOver id={open.id} />
             </div>
             <p className="text-label text-fg-mute num">
               {[when(open), size(open), open.video ? duration(open.dur ?? 0) : null].filter(Boolean).join(' · ')}

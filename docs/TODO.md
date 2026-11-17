@@ -33,6 +33,20 @@ and photos and Live Photos are hidden, deleting has no limit.
       version, Play's content rating answered again. Users from the free
       phase keep deleting without a limit; nobody loses anything.
 
+## 0c. Videos play inside the app (18 November 2026)
+
+Videos now play in the app wherever their picture is shown (docs/features.md,
+*Playing videos*). Android's player is new native code that only a phone can
+try (`npm run android:debug`):
+
+- [ ] **Android**: play a video from a review card, a large file's sheet, a
+      series of similar videos and the screenshots (a screen recording). It
+      opens full screen inside Bildklar (not in another app), a tap shows the
+      controls, Back and the round ✕ close it, the screen stays on. (The app
+      is portrait-only, so a landscape video plays letterboxed.)
+- [ ] **iPhone**: the same places; the system's player opens over the app. A
+      video that is only in iCloud says so instead of downloading it.
+
 ## 1. Before anything else
 
 - [ ] **Reserve the name.** The app is now **Bildklar** (store name *Bildklar KI:

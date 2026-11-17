@@ -88,6 +88,11 @@ the store set, the preview video and the App Review scenes follow the switch
   `PAGE` (2,000) rows; progress comes as `scanProgress` events. Thumbnails are
   files the native side writes; `<img>` loads them via `fileUrl()` (`Capacitor.convertFileSrc`).
 - **Grids are virtualised** (`PhotoGrid`). Never render a list of every photo.
+- **Videos play inside the app**: `PlayerContext` (`src/ui/play.tsx`, provided
+  in `App.tsx`) → `PhotoLibrary.preview` — iPhone AVPlayerViewController,
+  Android `VideoPlayer.kt` (a full-screen VideoView). Never hand a video to
+  another app (no `ACTION_VIEW`). A big picture of a video takes `<PlayOver>`;
+  a `PhotoGrid` without `onOpen` plays its video tiles by itself.
 - **The user's decisions** (`src/logic/state.ts`) go through `normalizeState()`
   and are saved by the native plugin as a file — not localStorage (iOS may
   clear it on a full phone). Add fields as optional; bump `SCHEMA_VERSION`

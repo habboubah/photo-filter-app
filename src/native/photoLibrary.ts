@@ -80,11 +80,14 @@ export interface PhotoLibraryPlugin {
    */
   createAlbum(options: { title: string; ids: string[]; dryRun: boolean }): Promise<{ done: number; cancelled: boolean; dryRun: boolean }>;
   /**
-   * Plays a video over the app: iPhone AVPlayerViewController (from the phone
-   * only — an iCloud-only video rejects); Android the system's player
-   * (ACTION_VIEW with a read grant).
+   * Plays a video inside the app, over it — never in another app: iPhone
+   * AVPlayerViewController (from the phone only — an iCloud-only video rejects
+   * with code `CLOUD`); Android a full-screen VideoView with the system's
+   * controls, closed with Back or its close button (`closeLabel` is that
+   * button's label for TalkBack). Android resolves when the player closes and
+   * rejects if the phone can't play the file.
    */
-  preview(options: { id: string }): Promise<void>;
+  preview(options: { id: string; closeLabel?: string }): Promise<void>;
   /** iPhone: the user's own albums (not smart albums, not shared ones). Android: every folder that holds photos or videos. */
   listAlbums(): Promise<{ albums: AlbumInfo[] }>;
   /** The photo ids in these albums / folders (asked once per load, for the protected albums only). */

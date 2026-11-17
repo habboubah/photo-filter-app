@@ -637,7 +637,8 @@ public class PhotoLibraryPlugin: CAPPlugin, CAPBridgedPlugin, PHPhotoLibraryChan
         }
     }
 
-    /// A video played over the app (the review's play button), from the phone only — never downloaded from iCloud.
+    /// A video played inside the app, over it (every play button, src/ui/play.tsx), from the phone only — never
+    /// downloaded from iCloud: an iCloud-only video rejects with code CLOUD.
     @objc func preview(_ call: CAPPluginCall) {
         guard let id = call.getString("id"), let asset = fetch([id]).firstObject, asset.mediaType == .video else {
             call.reject("No video")
@@ -649,7 +650,7 @@ public class PhotoLibraryPlugin: CAPPlugin, CAPBridgedPlugin, PHPhotoLibraryChan
         PHImageManager.default().requestAVAsset(forVideo: asset, options: options) { [weak self] avAsset, _, _ in
             DispatchQueue.main.async {
                 guard let avAsset, let presenter = self?.bridge?.viewController else {
-                    call.reject("The video is not on this iPhone")
+                    call.reject("The video is not on this iPhone", "CLOUD")
                     return
                 }
                 let player = AVPlayerViewController()
