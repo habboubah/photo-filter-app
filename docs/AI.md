@@ -110,7 +110,7 @@ drawn pictures and must be tuned on real photos (*Test set*, below).
 | Protect look-alikes | `protect.ts` `PROTECT_COS`, `PROTECT_APART_MS` | cosine ≥ 0.92, at least 1 h apart (on unless switched off) |
 
 The app's own scoring (compact int8 vector × `aiLabels.json`) on the smoke
-set, `python ml/eval.py --models int8` (17 November 2026; 1,600 COCO photos as
+set, `npm run ai:eval -- --models int8` (17 November 2026; 1,600 COCO photos as
 "other"; the threshold is where 90 % of the photos above it are that label):
 
 | Label | Pictures | AUC | Threshold at 90 % | Recall there |
@@ -171,11 +171,17 @@ the picture ignored. `faceQ` = detection score × the face crop's sharpness
 
 ## Test set (to do, Ahmad)
 
+Python for `ml/`, once: `python3 -m venv ml/.venv && ml/.venv/bin/pip install
+-r ml/requirements-light.txt` (numpy, ONNX Runtime, Pillow — enough for both
+measurements and `ai:demo`; the export and the labels need the full
+`ml/requirements.txt` with torch). `npm run ai:*` uses `ml/.venv` by itself
+(`scripts/ml.mjs`) and says what is missing.
+
 Two sets, both gitignored in `ml/testset/`, never leaving the Mac:
 
 1. **Labels**: about 400 photos in `ml/testset/real/<label>/` (one folder per
-   label, plus `other`), 25–40 per label. `python ml/eval.py --set
-   ml/testset/real`.
+   label, plus `other`), 25–40 per label. `npm run ai:eval -- --set
+   ml/testset/real --models int8`.
 2. **Groups and copies**: `ml/testset/pairs/{same,copy,different}/<name>/`
    (two photos each: two shots of one moment; a photo and its copy — edited,
    cropped, sent through WhatsApp; two different photos) and
@@ -183,7 +189,8 @@ Two sets, both gitignored in `ml/testset/`, never leaving the Mac:
    would keep). `npm run ai:eval-groups` — it embeds them (`ml/eval_groups.py`)
    and runs the app's own code (`scripts/eval-groups.mjs`): how many same
    pairs link, different pairs stay apart, copies are found, the best shot
-   is yours.
+   is yours. The first run with no pictures makes the folders and a
+   `README.txt` saying what goes where.
 
 Send Claude both tables: it sets the thresholds here and in `src/logic/`.
 

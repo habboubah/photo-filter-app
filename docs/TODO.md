@@ -230,7 +230,7 @@ Swift side has not been compiled** (no Xcode in the cloud).
 - [ ] Look at *Unwichtige Fotos* and the categories on your own library:
       any photo that should not be there? Any receipt or document missing?
 - [ ] **Label about 400 real photos** (docs/AI.md, "Test set") and run
-      `python ml/eval.py --set ml/testset/real` — the thresholds are
+      `npm run ai:eval -- --set ml/testset/real --models int8` — the thresholds are
       provisional until then.
 - [ ] Later steps of the plan, not built yet: Android's eyes-open face
       models, trip highlights, the AI pass in the background while charging,
@@ -256,6 +256,7 @@ pass again after the update (that is expected). Android's unit tests pass;
       durchgehen*)? Is anything *Sicher* that you would keep?
 - [ ] Android: the best shot in a group of people photos — does it pick the
       one with the faces sharp?
+- [ ] Python for `ml/`, once: `python3 -m venv ml/.venv && ml/.venv/bin/pip install -r ml/requirements-light.txt`.
 - [ ] **The group test set** (docs/AI.md, "Test set", 2): about 50 pairs of
       two shots of one moment, 30 copies (edited, cropped, sent through
       WhatsApp), 50 pairs of different photos taken close together, 10

@@ -66,7 +66,7 @@ video and the App Review rehearsal always use (only photos without identifiable 
 ```bash
 npm run test-photos           # once, for the downloads
 npm run demo-photos           # puts them into src/native/demo/photos/, computes their facts
-npm run ai:demo               # the AI's scores (ml/'s venv: pip install -r ml/requirements.txt)
+npm run ai:demo               # the AI's vectors (ml/.venv: pip install -r ml/requirements-light.txt)
 ```
 
 Then reload http://localhost:3001. Which photo each demo id shows is in the tables
