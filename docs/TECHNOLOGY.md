@@ -105,7 +105,7 @@ maths can't tell *what* a photo shows.
 |---|---|---|
 | **Shared image model**: what a photo shows (receipt, document, kids, pet …) | SigLIP 2 image encoder in ONNX Runtime 1.24.2, on the CPU | the same model and runtime |
 | Aesthetics score, "utility photo" flag | Apple Vision `VNCalculateImageAestheticsScoresRequest` (iOS 18+) | — |
-| Faces, open eyes (for the best shot) | Apple Vision (face capture quality, face landmarks) | — (sharpness and exposure only) |
+| Faces, open eyes (for the best shot) | Apple Vision (face capture quality, face landmarks) | YuNet face detector (OpenCV Zoo, MIT, 228 kB) in the same ONNX Runtime: faces and a face quality, no eyes |
 
 **The model:** `google/siglip2-base-patch32-256`, a vision-language model by
 Google, published under the **Apache 2.0** licence. Only its **image encoder**
@@ -119,27 +119,37 @@ the same space. A picture and a sentence that match end up close together.
 That allows **zero-shot classification**: the app needs no training on our own
 photos, only a few written descriptions per label.
 
-1. **Before release, on the developer's computer** (`ml/export.py`): each
-   label in `ml/labels.yaml` has several text prompts ("a photo of a till
-   receipt", …). The text encoder turns them into embeddings, and their mean
-   becomes the label's vector, stored in `ai-assets/vectors.bin`. The text
+1. **Before release, on the developer's computer** (`ml/compact.py`,
+   `ml/labels.py`, `ml/words.py`): a 256 × 768 projection (`ai-assets/compact.bin`)
+   is fitted that keeps about 96 % of an embedding in a third of the numbers.
+   Each label in `ml/labels.yaml` and each of the 219 search words in
+   `ml/words.yaml` has a few text prompts ("a photo of a till receipt", …);
+   the text encoder turns them into vectors in the same compact space, stored
+   with the app (`src/logic/aiLabels.json`, `src/search/words.json`). The text
    encoder is never shipped, which keeps the app smaller.
 2. **On the phone, for every photo:** the analysis image is resized to
-   256 × 256 and the image encoder produces its embedding. The app compares it
-   with the 13 label vectors and stores one score (a logit) per label in the
-   cache.
-3. **The decision is TypeScript** (`src/logic/ai.ts`), so it is tested and can
-   be tuned without touching native code:
+   256 × 256, the image encoder produces its embedding, and the phone stores
+   its **compact vector**: 256 numbers as int8 (344 characters) in the cache.
+   That is all native code does.
+3. **Every decision is TypeScript** (`src/logic/`), so it is tested and can
+   be tuned — and new labels or search words added — without touching native
+   code or analysing the photos again:
+   - each label's score is one dot product with the photo's vector;
    - a photo is **"unwichtig"** (unimportant) when its best *utility* label is
-     strong enough **and** clearly beats its best *memory* label,
-   - otherwise its **category** is its best *memory* label.
+     strong enough **and** clearly beats its best *memory* label; a photo of
+     an ID or a bank card (*sensitive*) is never suggested;
+   - otherwise its **category** is its best *memory* label;
+   - two photos are alike when their vectors are (cosine): that confirms
+     near-identical groups, finds edited copies, a photo's look-alikes, and
+     search ranks photos by a word's vector.
 
-**The 13 labels**
+**The 33 labels**
 
 | Kind | Labels |
 |---|---|
-| Utility (kept to remember information, not a moment) | receipt, document, whiteboard, screen (a photo of a screen), chat, meme, code (QR / barcode), accidental (pocket, floor, finger shots) |
-| Memory (what families keep photos for) | kids, people, pet, food, landscape |
+| Utility (kept to remember information, not a moment) | receipt, document, whiteboard, screen (a photo of a screen), chat, meme, code (QR / barcode), accidental (pocket, floor, finger shots), ticket, product, parking (a parking sign or level), map |
+| Sensitive (needed, never suggested) | idcard, bankcard |
+| Memory (what families keep photos for) | kids, baby, people, selfie, group, pet, food, birthday, playground, school, beach, snow, landscape, city, flowers, home, christmas, ramadan, sports |
 
 **What the AI powers in the app**
 
@@ -152,12 +162,25 @@ photos, only a few written descriptions per label.
   comparing the embeddings of the videos' poster frames.
 - **Borderline exposure:** the *accidental* label lets a borderline dark or
   bright photo into the list.
-- **Best shot** (iPhone): Vision's faces, open eyes and, on iOS 18+, its
-  aesthetics score join sharpness and exposure.
+- **Near-identical photos and copies:** a group needs close hashes *and*
+  alike vectors; the same scene up to 30 minutes later joins when very alike;
+  an edited or filtered copy is found by its vector.
+- **How sure:** every suggested delete says *Sicher*, *Wahrscheinlich* or
+  *Bitte prüfen* and why (an exact copy, blurrier, eyes closed …); quick
+  clean deletes only the sure ones in one tap.
+- **Suchen** (Search): photos by what is in them, in German, English and
+  Arabic (219 concepts), and **Ähnliche Fotos** (look-alikes) of any photo.
+- **Learning on the phone:** when the user keeps many of one kind of
+  suggestion, the app becomes less sure of that kind; when they pick another
+  best shot, it learns which signals they care about. Stored in the decisions
+  file, never sent.
+- **Best shot:** on the iPhone Vision's faces, open eyes and, on iOS 18+, its
+  aesthetics score join sharpness and exposure; on Android YuNet's faces and
+  their sharpness.
 
 **Safety nets.** The AI only *suggests*. A photo is never suggested when it is
 a favourite, kept in a review, protected by hand, part of a protected trip or
-album, a video, a screenshot (screenshots have their own list) or, on the
+album, alike to a protected photo, a photo of an ID or a bank card, a video, a screenshot (screenshots have their own list) or, on the
 iPhone, shows a face. Deleting still needs the user's tap and the system's
 dialog. The thresholds are deliberately strict: on the test set they flagged
 **0 of 600 ordinary photos**.

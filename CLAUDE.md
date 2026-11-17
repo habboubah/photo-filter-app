@@ -59,7 +59,7 @@ the store set, the preview video and the App Review scenes follow the switch
   `ios/scripts/add-ai.rb` / `ios/AIFeatures/Package.swift` and
   `onnxruntimeVersion` (`android/variables.gradle`). Never ML Kit, Gemini Nano,
   MediaPipe Tasks, LiteRT from Play services or a cloud model
-  (`npm run check:ai` fails on them). The model and the label vectors live once,
+  (`npm run check:ai` fails on them). The model and the projection live once,
   in `ai-assets/`; `ml/` rebuilds and measures them.
 
 ## Architecture rules
@@ -98,12 +98,27 @@ the store set, the preview video and the App Review scenes follow the switch
   give the same numbers for `fixtures/features/` (`expected.json`). Change all
   three together, bump `FEATURE_VERSION` in all three, then
   `node --experimental-strip-types scripts/feature-vectors.mjs`.
-- **The AI is a spec too.** `src/logic/ai.ts` (`LABELS`, `AI_VERSION`, the
-  thresholds), `ml/labels.yaml`, `ai-assets/vectors.json`, `ImageEmbedder.swift`
-  and `ImageEmbedder.kt` agree (`check:ai`); the native embedders must match
+- **The AI is a spec too.** Native code turns a photo into its **compact
+  vector** (the embedding × `ai-assets/compact.bin`, 256 numbers, int8 base64)
+  and stores it; everything else is TypeScript from the vectors: label scores
+  (`src/logic/aiLabels.json`), search (`src/search/words.json`), similar
+  groups, copies, look-alikes. `src/logic/ai.ts` (`LABELS`, `AI_VERSION`,
+  `LABELS_VERSION`, the thresholds), `ml/labels.yaml`, `aiLabels.json`,
+  `ai-assets/vectors.json`, `ImageEmbedder.swift` and `ImageEmbedder.kt`
+  agree (`check:ai`); the native embedders must match
   `fixtures/ai/expected.json` (`npm run test:ios:ai`, `npm run test:android`).
-  A new model or label set: `ml/export.py`, `ml/fixtures.py`, `ml/demo_ai.py`,
-  bump `AI_VERSION` everywhere. Native code stores scores; decisions are TypeScript.
+  New labels or search words: `npm run ai:labels`, bump `LABELS_VERSION` (no
+  new AI pass). A new model or projection: `ml/export.py`, `ml/compact.py`,
+  `npm run ai:labels`, `ml/fixtures.py`, `npm run ai:demo`, bump `AI_VERSION`
+  everywhere. Vectors come over the bridge apart from the facts
+  (`getVectors`, pages of 2,000) and live in one `Float32Array`
+  (`src/logic/vectors.ts`); hot loops copy imported constants into locals.
+- **How sure** (`src/logic/confidence.ts`): every finder's delete gets a
+  `Trust` (sure / likely / check) and a `Detail`; quick clean deletes only
+  `oneTap` ones. What the user keeps (`src/logic/ledger.ts`) and their
+  best-shot picks (`best.ts` `learnPick`) live in the decisions file and only
+  make the app *less* sure or reweigh the best shot — never more eager.
+  Photos of an ID or a bank card (the `sensitive` labels) are protected.
 - **The demo library** (`src/native/demo/`) is the plugins in a browser. It
   must never reach a native build: native builds use `vite build --mode native`
   (`__DEMO__` false); `scripts/perf-check.mjs` fails if a demo photo is in that bundle.
@@ -245,7 +260,9 @@ the store set, the preview video and the App Review scenes follow the switch
   **Media3 Transformer** (`media3Version`: smaller videos, on the phone),
   **ONNX Runtime** (`onnxruntimeVersion`: the on-device AI; `ai-assets/` is
   copied into `assets/ai/` at build time, the unit tests use its desktop build).
-  No Google services, no Firebase, no ML Kit.
+  Faces for the best shot: YuNet (`ai-assets/faces.onnx`, OpenCV Zoo, MIT) in
+  the same ONNX Runtime (`FaceDetector.kt`, reference `ml/faces.py`,
+  `fixtures/faces/`). No Google services, no Firebase, no ML Kit.
 - The home-screen widget: `BildklarWidget.kt` (AppWidgetProvider, layout
   `widget_bildklar.xml`), fed by `PhotoLibrary.setWidget`.
 - `SCHEDULE_EXACT_ALARM` (brought by `@capacitor/local-notifications`) is
@@ -272,7 +289,7 @@ the store set, the preview video and the App Review scenes follow the switch
 | Privacy / performance / contrast / security / store texts alone | `npm run check:privacy` / `check:perf` / `audit:contrast` / `check:security` / `check:listing` |
 | Native feature tests | `npm run test:ios` (swift test) / `npm run test:android` (gradlew) |
 | The AI: iPhone embedder test (Mac) / guardrails | `npm run test:ios:ai` / `npm run check:ai` |
-| The AI: model export / measurement / demo scores (venv: `ml/requirements.txt`) | `npm run ai:export` / `npm run ai:eval` / `npm run ai:demo` |
+| The AI: model export / labels and search words / measurement / groups on a test set / demo vectors (venv: `ml/requirements.txt`) | `npm run ai:export` / `npm run ai:labels` / `npm run ai:eval` / `npm run ai:eval-groups` / `npm run ai:demo` |
 | Build + open Xcode / Android Studio / a debug APK | `npm run build:ios` / `npm run build:android` / `npm run android:debug` |
 | Icons and splash from `assets/icon-master.png` | `node scripts/icon-assets.mjs && npm run assets:generate` |
 | The city table (GeoNames) | `npm run cities` |

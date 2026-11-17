@@ -233,9 +233,41 @@ Swift side has not been compiled** (no Xcode in the cloud).
       `python ml/eval.py --set ml/testset/real` — the thresholds are
       provisional until then.
 - [ ] Later steps of the plan, not built yet: Android's eyes-open face
-      models, smart similar groups + trip highlights, search by things, the
-      AI pass in the background while charging, the store texts and
-      screenshots for the AI.
+      models, trip highlights, the AI pass in the background while charging,
+      the store texts and screenshots for the AI.
+
+### 7b. More reliable, and search (17 November 2026, AI version 2)
+
+What changed: the phones store a compact vector per photo (no label scores);
+the app scores 33 labels from it, confirms similar groups and copies with it,
+says how sure each suggestion is, searches by words, shows look-alikes, learns
+from your reviews, and Android finds faces (YuNet). Every photo gets its AI
+pass again after the update (that is expected). Android's unit tests pass;
+**the Swift side has not been compiled.**
+
+- [ ] Xcode: `npm run build:ios`; compile errors in `ImageEmbedder.swift`,
+      `ScanStore.swift` (schema 5, `vectors`) or `PhotoLibraryPlugin.swift`
+      (`getVectors`) → send them to Claude. Then `npm run test:ios:ai`.
+- [ ] On both phones: after the AI pass, *Suchen* finds *Hund*, *Strand*,
+      *Kassenzettel* in your library? *Ähnliche Fotos zeigen* in a review?
+- [ ] Near-identical groups: any group that is not one moment, or a series
+      split in two? Duplicates: an edited copy found (*Bitte prüfen*)?
+- [ ] *Schnell aufräumen*: does it hold back the unsure photos (*Unsichere
+      durchgehen*)? Is anything *Sicher* that you would keep?
+- [ ] Android: the best shot in a group of people photos — does it pick the
+      one with the faces sharp?
+- [ ] **The group test set** (docs/AI.md, "Test set", 2): about 50 pairs of
+      two shots of one moment, 30 copies (edited, cropped, sent through
+      WhatsApp), 50 pairs of different photos taken close together, 10
+      series with the best marked. `npm run ai:eval-groups` → send Claude the
+      numbers: it sets `SIM_COS`, `DUP_COS` and the hash limits.
+- [ ] The label test set now has 33 labels: add folders for the new ones
+      (ticket, product, parking, map, idcard, bankcard, baby, selfie, …).
+- [ ] Decide: **who is in a photo** (people recognition, opt-in, on the
+      phone — Apple Photos' and Google Photos' faces are not readable by
+      apps), and whether a larger model may come as a download from the
+      store (Play Asset Delivery / On-Demand Resources). Both are in the
+      enhancement plan (project doc `claude/ai-enhancement-plan.md`).
 
 ## 8. The next ten features (plan of 17 November 2026, version 2.1.0)
 
@@ -303,7 +335,7 @@ Everything in TypeScript is tested by `npm run check`; what needs a phone:
 ## Known gaps (to decide later)
 
 - Arabic: the structure is there (RTL rules, the translation layout), the texts are not.
-- On-device AI: the core is built (section 7); the later steps of the plan are not.
+- On-device AI: the core and the reliability/search step are built (sections 7, 7b); people recognition and a downloadable model wait for a decision.
 - Videos are not part of trips or trip albums yet (Android's folders for videos
   differ from photos'); Android's motion photos are not converted.
 - Shared iCloud libraries, who is in a photo: not planned.

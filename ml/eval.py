@@ -8,7 +8,9 @@ The test set is a folder per label (ml/labels.yaml ids, plus "other" for
 ordinary photos that are none of them). Every image goes through the phone's
 own pre-processing — fitted into 512 × 512 like the scan's analysis image,
 then resized to 256 × 256 (no crop, bilinear) and normalised to [-1, 1] —
-so the scores here are the scores on the phone.
+then the phone's compact vector (ai-assets/compact.bin, int8) scored against
+src/logic/aiLabels.json exactly as the app does (src/logic/ai.ts) — so the
+scores here are the app's, in logits, the unit of its thresholds.
 
 A utility label's threshold is the lowest score at which at least 90 % of
 the photos above it really are that label (a wrong "unwichtig" costs a
@@ -26,7 +28,7 @@ import onnxruntime as ort
 from PIL import Image
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-PRECISION = {'utility': 0.90, 'memory': 0.80}
+PRECISION = {'utility': 0.90, 'sensitive': 0.80, 'memory': 0.80}
 
 
 def fit512(img):
@@ -41,8 +43,27 @@ def pixels(path, size):
     return ((x - 0.5) / 0.5).transpose(2, 0, 1)
 
 
-def scores(emb, vecs, scale, bias):
-    return 1 / (1 + np.exp(-(scale * emb @ vecs.T + bias)))
+def unpack(s):
+    import base64
+    return np.frombuffer(base64.b64decode(s), dtype=np.int8).astype(np.float32)
+
+
+def label_model():
+    """The app's label model (src/logic/aiLabels.json) and the projection (ai-assets/compact.bin)."""
+    meta = json.load(open(os.path.join(ROOT, 'ai-assets', 'vectors.json')))
+    proj = np.fromfile(os.path.join(ROOT, 'ai-assets', 'compact.bin'), dtype='<f2').astype(np.float32).reshape(meta['vecDim'], meta['dim'])
+    labels = json.load(open(os.path.join(ROOT, 'src', 'logic', 'aiLabels.json'), encoding='utf-8'))
+    rows = np.stack([unpack(l['v']) * l['k'] for l in labels['labels']])
+    return meta, proj, labels, rows
+
+
+def scores(emb, proj, rows, scale, bias):
+    """Each label's logit, the app's way: the compact vector packed to int8, unit length, times the label row."""
+    y = emb @ proj.T
+    y /= np.linalg.norm(y, axis=1, keepdims=True)
+    q = np.clip(np.round(y * (127 / np.abs(y).max(axis=1, keepdims=True))), -127, 127)
+    q /= np.linalg.norm(q, axis=1, keepdims=True)
+    return scale * q @ rows.T + bias
 
 
 def pick_threshold(s, positive, precision):
@@ -73,10 +94,9 @@ def main():
     ap.add_argument('--set', default=os.path.join(ROOT, 'ml', 'testset', 'smoke'))
     ap.add_argument('--models', default='int8,fp32')
     args = ap.parse_args()
-    meta = json.load(open(os.path.join(ROOT, 'ai-assets', 'vectors.json')))
-    vecs = np.fromfile(os.path.join(ROOT, 'ai-assets', 'vectors.bin'), dtype=np.float16).astype(np.float32).reshape(len(meta['labels']), meta['dim'])
-    ids = [l['id'] for l in meta['labels']]
-    kinds = {l['id']: l['kind'] for l in meta['labels']}
+    meta, proj, labels, rows = label_model()
+    ids = [l['id'] for l in labels['labels']]
+    kinds = {l['id']: l['kind'] for l in labels['labels']}
     files, truth = [], []
     for folder in sorted(glob.glob(os.path.join(args.set, '*'))):
         label = os.path.basename(folder)
@@ -99,7 +119,7 @@ def main():
         t0 = time.time()
         emb = np.concatenate([sess.run(None, {'pixels': batch[i:i + 16]})[0] for i in range(0, len(batch), 16)])
         ms = (time.time() - t0) * 1000 / len(files)
-        s = scores(emb, vecs, meta['scale'], meta['bias'])
+        s = scores(emb, proj, rows, labels['scale'], labels['bias'])
         rows = {}
         for j, label in enumerate(ids):
             positive = (truth == label).astype(np.float64)
@@ -109,7 +129,7 @@ def main():
             rows[label] = {
                 'n': int(positive.sum()),
                 'auc': round(auc(s[:, j], positive), 3),
-                'threshold': round(got[0], 4) if got else None,
+                'threshold': round(got[0], 2) if got else None,
                 'precision': round(got[1], 3) if got else None,
                 'recall': round(got[2], 3) if got else 0.0,
             }
@@ -128,7 +148,7 @@ def main():
             elif r['threshold'] is None:
                 cells.append(f"{r['auc']:.3f} · none reaches the precision")
             else:
-                cells.append(f"{r['auc']:.3f} · {r['threshold']:.3f} · {r['precision']:.2f} · {r['recall']:.2f}")
+                cells.append(f"{r['auc']:.3f} · {r['threshold']:.1f} · {r['precision']:.2f} · {r['recall']:.2f}")
         n_img = report['models'][names[0]]['labels'].get(label, {}).get('n', 0)
         print(f'| {label} | {kinds[label]} | {n_img} | ' + ' | '.join(cells) + ' |')
 
