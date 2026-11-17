@@ -263,6 +263,44 @@ function record() {
   if (staged || !execSync(`git tag -l v${newVersion}`, quiet).toString().trim()) run(`git tag -f v${newVersion}`);
 }
 
+// Apple refuses an upload ("Invalid Bundle … does not support the minimum OS
+// Version specified in the Info.plist") when a framework's binary needs a newer
+// iOS than its Info.plist's MinimumOSVersion says. ONNX Runtime's Swift package
+// ships a plist saying 15.1, but Xcode compiles its binary for the app's
+// deployment target. Line each plist in the archive up with its binary; the
+// export re-signs everything, so nothing else needs touching.
+function alignFrameworkMinimumOS(archive, env) {
+  const appDir = path.join(archive, 'Products/Applications/App.app');
+  const quiet = { cwd: rootDir, env, stdio: ['ignore', 'pipe', 'pipe'] };
+  const read = (plist, key) => {
+    try { return execSync(`plutil -extract ${key} raw -o - "${plist}"`, quiet).toString().trim(); } catch { return null; }
+  };
+  const parts = v => String(v).split('.').map(Number);
+  const newer = (a, b) => {
+    const [x, y] = [parts(a), parts(b)];
+    for (let i = 0; i < 3; i++) if ((x[i] || 0) !== (y[i] || 0)) return (x[i] || 0) > (y[i] || 0);
+    return false;
+  };
+  const dirs = [path.join(appDir, 'Frameworks')];
+  const plugins = path.join(appDir, 'PlugIns');
+  if (fs.existsSync(plugins)) for (const p of fs.readdirSync(plugins)) dirs.push(path.join(plugins, p, 'Frameworks'));
+  for (const dir of dirs.filter(d => fs.existsSync(d))) {
+    for (const fw of fs.readdirSync(dir).filter(f => f.endsWith('.framework'))) {
+      const plist = path.join(dir, fw, 'Info.plist');
+      if (!fs.existsSync(plist)) continue;
+      const binary = path.join(dir, fw, read(plist, 'CFBundleExecutable') || fw.replace(/\.framework$/, ''));
+      if (!fs.existsSync(binary)) continue;
+      const builds = execSync(`xcrun vtool -show-build "${binary}"`, quiet).toString();
+      const minos = [...builds.matchAll(/^\s*minos\s+([\d.]+)/gm)].map(m => m[1]).reduce((a, b) => (newer(b, a) ? b : a), '0');
+      const stated = read(plist, 'MinimumOSVersion') || '0';
+      if (minos !== '0' && newer(minos, stated)) {
+        execSync(`plutil -replace MinimumOSVersion -string ${minos} "${plist}"`, quiet);
+        console.log(`${fw}: MinimumOSVersion ${stated} -> ${minos}, what its binary was built for.`);
+      }
+    }
+  }
+}
+
 // ---- Build web once, then each store ----
 // --mode native: the build that goes into the apps, without the demo library (vite.config.ts).
 run('npx vite build --mode native');
@@ -284,6 +322,7 @@ try {
     const auth = `-allowProvisioningUpdates -authenticationKeyPath "${ascKeyPath}" -authenticationKeyID ${process.env.ASC_KEY_ID} -authenticationKeyIssuerID ${process.env.ASC_ISSUER_ID}`;
     const archive = path.join(rootDir, 'ios/build/App.xcarchive');
     run(`xcodebuild archive -project ios/App/App.xcodeproj -scheme App -configuration Release -destination 'generic/platform=iOS' -archivePath "${archive}" ${auth}`, { env });
+    alignFrameworkMinimumOS(archive, env);
     // ExportOptions.plist says destination=upload, so this step uploads.
     run(`xcodebuild -exportArchive -archivePath "${archive}" -exportOptionsPlist "${exportOptions}" -exportPath ios/build/export ${auth}`, { env });
     shipped.push('ios');
