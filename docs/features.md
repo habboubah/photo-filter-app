@@ -89,6 +89,14 @@ Every feature, as the user sees it (German labels, English in brackets).
   sharpest, else the oldest. A tap keeps another one; *Die anderen löschen*
   and *Durchgehen* as for near-identical photos.
 
+## Similar videos (*Ähnliche Videos*)
+- The same scene filmed twice within two hours — two takes, a clip and its
+  longer retry — found by the on-device AI's picture of each video's poster
+  frame (not only exact copies). Listed at the end of *Duplikate* under
+  *Ähnliche Videos* and on the clean-up card; the best take is the longest
+  sharp one, then the larger file. The threshold is provisional
+  (`src/logic/lookalike.ts`).
+
 ## Large files and videos
 - Photos and videos of 10 MB or more, biggest first (at most 300); *Alle*,
   *Videos*, *Fotos*. Each tile shows its size (≈ where the iPhone can only

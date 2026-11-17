@@ -34,7 +34,7 @@ export function cleanParts(
     parts[kind].bytes += p.bytes;
   };
   for (const g of groups) {
-    for (const id of g.ids) if (id !== g.best) add(g.kind === 'duplicate' ? 'duplicates' : 'similar', byId.get(id));
+    for (const id of g.ids) if (id !== g.best) add(g.kind === 'similar' ? 'similar' : 'duplicates', byId.get(id));
   }
   for (const p of blurry) {
     const level = blurLevel(p);

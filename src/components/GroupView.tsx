@@ -35,12 +35,12 @@ export function GroupView({ t, group, byId, kept, debug, onBack, onPick, onRevie
   const when = (id: string) => new Date(byId.get(id)?.t ?? 0).toLocaleString(t.locale, { dateStyle: 'medium', timeStyle: 'medium' });
 
   return (
-    <Screen title={group.kind === 'duplicate' ? t.duplicatesTitle : t.similarTitle} subtitle={plural(t, 'photos', group.ids.length)} onBack={onBack} backLabel={t.back} docked>
+    <Screen title={group.kind === 'duplicate' ? t.duplicatesTitle : group.kind === 'lookalike' ? t.lookalikeTitle : t.similarTitle} subtitle={plural(t, 'photos', group.ids.length)} onBack={onBack} backLabel={t.back} docked>
       <figure className="relative rounded-lg overflow-hidden card">
         <div className="aspect-[4/3]"><Thumb id={group.best} size={LARGE} alt={when(group.best)} className="!rounded-none" /></div>
         <figcaption className="absolute top-3 start-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-keep text-keep-ink text-caption font-extrabold">
           <Star className="w-3.5 h-3.5" fill="currentColor" strokeWidth={0} aria-hidden="true" />
-          {group.best !== group.suggested ? t.bestPicked : group.kind === 'duplicate' ? t.originalBadge : t.bestBadge}
+          {group.best !== group.suggested ? t.bestPicked : group.kind === 'duplicate' ? t.originalBadge : group.kind === 'lookalike' ? t.bestTakeBadge : t.bestBadge}
         </figcaption>
         {debug && best && (
           <span className="absolute bottom-3 end-3 px-2 py-1 rounded-full bg-veil text-on-color text-micro font-bold num">

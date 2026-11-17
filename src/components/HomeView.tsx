@@ -269,6 +269,7 @@ function CleanupCard({ t, summary, storage, freedBytes, streak, onOpen }: {
   }
   const lines: [string, number, string][] = [
     [t.cleanupDuplicates, summary.duplicates.count, 'rose'],
+    [t.lookalikeTitle, summary.lookalike.count, 'rose'],
     [t.cleanupSimilar, summary.similar.count, 'lilac'],
     [t.cleanupBlurry, summary.blurry.count, 'sand'],
     [t.cleanupExposure, summary.exposure.count, 'stone'],
@@ -281,7 +282,7 @@ function CleanupCard({ t, summary, storage, freedBytes, streak, onOpen }: {
       <p className="display text-display font-semibold text-fg num mt-1">{bytes(t, summary.total.bytes)}</p>
       {facts}
       <dl className="mt-4 space-y-2">
-        {lines.filter(([, n]) => n > 0).map(([label, n, hue]) => <Line key={label} label={label} value={plural(t, 'photos', n)} hue={hue} />)}
+        {lines.filter(([, n]) => n > 0).map(([label, n, hue]) => <Line key={label} label={label} value={plural(t, label === t.lookalikeTitle ? 'videos' : 'photos', n)} hue={hue} />)}
       </dl>
       <Button full size="lg" className="mt-5" onClick={onOpen}>{t.cleanupButton}</Button>
     </section>

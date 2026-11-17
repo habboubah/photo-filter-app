@@ -1,4 +1,4 @@
-import { Copy, Focus, Layers, ReceiptText, Smartphone, SunMoon } from 'lucide-react';
+import { Clapperboard, Copy, Focus, Layers, ReceiptText, Smartphone, SunMoon } from 'lucide-react';
 import type { CleanupSummary } from '../types';
 import { Strings, bytes, fmt, plural } from '../translations';
 import { Dock, Group, IconTile, Next, Row, Screen } from '../ui/Screen';
@@ -30,6 +30,15 @@ export function CleanupView({ t, summary, onBack, onDuplicates, onSimilar, onBlu
           trailing={<Next value={summary.duplicates.groups} />}
           onClick={onDuplicates}
         />
+        {summary.lookalike.count > 0 && (
+          <Row
+            label={t.lookalikeTitle}
+            sub={fmt(t.cleanupRowSub, { photos: plural(t, 'videos', summary.lookalike.count), size: bytes(t, summary.lookalike.bytes) })}
+            leading={<IconTile icon={Clapperboard} hue="rose" />}
+            trailing={<Next value={summary.lookalike.groups} />}
+            onClick={onDuplicates}
+          />
+        )}
         <Row
           label={t.cleanupSimilar}
           sub={sub(summary.similar.count, summary.similar.bytes)}

@@ -238,6 +238,12 @@ Everything in TypeScript is tested by `npm run check`; what needs a phone:
       cloud): in a month with a video tap ▶ — iPhone plays it over the app
       (close with ✕), Android opens the system player; back lands in the review.
 
+- [ ] **Lookalike videos**: once the AI has looked at your videos (schema 4),
+      check *Duplikate › Ähnliche Videos*. Then calibrate `LOOKALIKE_COSINE`
+      (0.92, provisional) on 50 of your real video pairs like the AI
+      thresholds: AUC and a precision of at least 95 % before 2.1.0 ships
+      (docs/AI.md).
+
 ## Known gaps (to decide later)
 
 - Arabic: the structure is there (RTL rules, the translation layout), the texts are not.

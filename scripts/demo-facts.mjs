@@ -29,7 +29,9 @@ const ai = fs.existsSync(aiFile) ? JSON.parse(fs.readFileSync(aiFile, 'utf8')).p
  * others don't — not the model's (the demo has no model to run).
  */
 const EDITED = new Set(['p063']);
-const SCENE = { p089: 'cake', p090: 'cake', p091: 'garda', p092: 'paris' };
+const SCENE = { p089: 'cake', p090: 'cake', p091: 'garda', p092: 'paris', p101: 'garda' };
+/** The second take of a scene: its vector a little off the first one's (cosine about 0.94). */
+const TAKE_JITTER = { p101: 3 };
 function sceneVector(name, jitter = 0) {
   let s = [...name].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 17);
   const next = () => { s = (s * 1103515245 + 12345) % 2 ** 31; return s / 2 ** 31 - 0.5; };
@@ -44,7 +46,7 @@ export function schema4(entry) {
   if (EDITED.has(entry.id)) out.edited = true;
   out.dir = entry.rec ? 'Movies/Screen recordings/' : entry.shot ? 'Pictures/Screenshots/'
     : entry.copy ? 'Android/media/com.whatsapp/WhatsApp/Media/WhatsApp Images/' : 'DCIM/Camera/';
-  if (entry.video && !entry.rec && SCENE[entry.id]) out.emb = sceneVector(SCENE[entry.id]);
+  if (entry.video && !entry.rec && SCENE[entry.id]) out.emb = sceneVector(SCENE[entry.id], TAKE_JITTER[entry.id] ?? 0);
   return out;
 }
 
@@ -58,10 +60,12 @@ const facts = process.argv[1]?.endsWith('demo-facts.mjs') ? manifest.map(entry =
   const h = Number(m[2]);
   const f = features(new Uint8Array(buf.subarray(m[0].length)), w, h);
   // A copy saved from a messenger: smaller and lighter than the camera's original.
-  const { copy, note, ...rest } = entry;
+  const { copy, note, take, ...rest } = entry;
   const scores = ai[entry.id] ? { ai: ai[entry.id] } : {};
   // A picture of a receipt or a letter: a phone photo, sized without the random source so the photos after it keep their numbers.
   if (note) return { ...rest, w: 4032, h: 3024, bytes: 2_400_000, exact: true, ...f, ...scores, ...schema4(entry) };
+  // A second take (a lookalike video): sized without the random source too.
+  if (take) return { ...rest, w: 1920, h: 1080, bytes: Math.round(entry.dur * 1920 * 1080 * 0.0004), exact: true, ...f, ...scores, ...schema4(entry) };
   // A video: about 0.4 bytes per pixel and second (what the iPhone's estimate assumes too); a Live Photo carries about 3 MB of video.
   const r = rand();
   const photo = entry.video

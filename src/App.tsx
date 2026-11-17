@@ -106,7 +106,8 @@ export default function App() {
   const exposure = useMemo(() => findExposure(lib.photos, new Set(groups.flatMap(g => g.ids)), kept), [lib, groups, kept]);
   const exposureAll = useMemo(() => [...exposure.dark, ...exposure.bright], [exposure]);
   const similarGroups = useMemo(() => groups.filter(g => g.kind === 'similar'), [groups]);
-  const dupGroups = useMemo(() => groups.filter(g => g.kind === 'duplicate'), [groups]);
+  // Exact copies and lookalike videos share the duplicates screen (the lookalikes under their own heading).
+  const dupGroups = useMemo(() => groups.filter(g => g.kind !== 'similar'), [groups]);
   // "Now" for the screenshots' age and "On this day": taken again whenever the photos change.
   const now = useMemo(() => Date.now(), [photos]); // eslint-disable-line react-hooks/exhaustive-deps
   const shots = useMemo(() => findScreenshots(lib.photos, kept), [lib, kept]);
