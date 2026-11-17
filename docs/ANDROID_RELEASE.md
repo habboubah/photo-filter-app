@@ -5,7 +5,7 @@ the way budget-app (Spartopf) has it. This is what it takes to get it onto a
 phone and into Google Play.
 
 **Where it stands (16 November 2026):** the project compiles — a debug APK and
-an R8 release build come out of it (version 0.1.0, version code 10000, package
+an R8 release build come out of it (then version 0.1.0 and version code 10000 — the app now starts at 0.0.1, version code 100 —, package
 `com.habboubah.bildklar`, minSdk 30), and the feature tests pass
 (`npm run test:android`). **It has not run on a phone yet**, and there is no
 Play Console app yet. What to try first is in [TODO.md](TODO.md).
