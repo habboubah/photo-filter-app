@@ -5,6 +5,7 @@ import type { Confidence, Photo } from '../types';
 import { Strings, bytes, fmt, num, plural } from '../translations';
 import { Decision, ReviewItem, Session, albumPlan, deleteSplit, isNewAlbum, laterIds, newAlbumKey, toDelete } from '../logic/review';
 import { duration } from '../logic/large';
+import { BigNumber } from '../ui/Controls';
 import { Button, IconButton } from '../ui/Button';
 import { Thumb } from '../ui/Photo';
 import { Sheet } from '../ui/Sheet';
@@ -106,7 +107,7 @@ export function ReviewView({ t, session, finished, byId, debug, albums, android,
                   <button
                     key={c.id} type="button" aria-pressed={on}
                     onClick={() => { tapLight(); onFile(c.id); }}
-                    className={`shrink-0 min-h-[44px] px-3.5 inline-flex items-center gap-1.5 rounded-full text-label font-bold focus-visible:ring-focus press ${on ? 'bg-accent-fill text-accent-fill-ink' : 'bg-surface text-fg'}`}
+                    className={`shrink-0 min-h-[44px] px-3.5 inline-flex items-center gap-1.5 rounded-full text-label font-semibold focus-visible:ring-focus press ${on ? 'bg-accent-fill text-accent-fill-ink sheen' : 'glass-flat text-fg'}`}
                   >
                     <FolderInput className="w-4 h-4 shrink-0" aria-hidden="true" />
                     <span className="max-w-[160px] truncate">{c.title}</span>
@@ -115,7 +116,7 @@ export function ReviewView({ t, session, finished, byId, debug, albums, android,
               })}
               <button
                 type="button" onClick={() => { tapLight(); setNaming(true); }}
-                className="shrink-0 min-h-[44px] px-3.5 inline-flex items-center gap-1.5 rounded-full text-label font-bold text-accent bg-surface-2 focus-visible:ring-focus press"
+                className="shrink-0 min-h-[44px] px-3.5 inline-flex items-center gap-1.5 rounded-full text-label font-semibold text-accent glass-flat focus-visible:ring-focus press"
               >
                 <Plus className="w-4 h-4" aria-hidden="true" />{t.newAlbum}
               </button>
@@ -242,9 +243,9 @@ function Card({ t, item, photo, debug, onDecide, onProtect, onPreview }: {
 }
 
 const ROUND_TONE = {
-  neg: 'w-[68px] h-[68px] bg-neg text-neg-ink',
-  keep: 'w-[68px] h-[68px] bg-keep text-keep-ink',
-  later: 'w-[52px] h-[52px] bg-surface text-accent',
+  neg: 'w-[70px] h-[70px] bg-neg text-neg-ink sheen',
+  keep: 'w-[70px] h-[70px] bg-keep text-keep-ink sheen',
+  later: 'w-[54px] h-[54px] glass text-accent',
 } as const;
 
 function RoundButton({ label, tone, icon: Icon, onClick }: { label: string; tone: keyof typeof ROUND_TONE; icon: typeof Check; onClick: () => void }) {
@@ -253,10 +254,10 @@ function RoundButton({ label, tone, icon: Icon, onClick }: { label: string; tone
       type="button" onClick={() => { tapLight(); onClick(); }} aria-label={label}
       className={`flex flex-col items-center gap-1.5 press focus-visible:ring-focus rounded-full`}
     >
-      <span className={`rounded-full inline-flex items-center justify-center shadow-e2 ${ROUND_TONE[tone]}`}>
+      <span className={`rounded-full inline-flex items-center justify-center ${ROUND_TONE[tone]}`}>
         <Icon className={tone === 'later' ? 'w-6 h-6' : 'w-7 h-7'} strokeWidth={2.4} aria-hidden="true" />
       </span>
-      <span className="text-caption font-bold text-fg">{label}</span>
+      <span className="text-caption font-semibold text-fg">{label}</span>
     </button>
   );
 }
@@ -274,11 +275,11 @@ function Summary({ t, session, byId, chips, android, onDelete, onClose }: {
   const sizeOf = (list: string[]) => list.reduce((s, id) => s + (byId.get(id)?.bytes ?? 0), 0);
   return (
     <main className="flex-1 flex flex-col px-6 pb-safe-8 pt-6">
-      <h1 className="title-face text-title font-extrabold text-fg">{t.reviewDoneTitle}</h1>
+      <h1 className="title-face text-title font-bold text-fg">{t.reviewDoneTitle}</h1>
       {ids.length > 0 && (
         <div className="mt-4">
-          <p className="display text-display font-semibold text-fg num">{bytes(t, sizeOf(ids))}</p>
-          <p className="eyebrow text-fg-mute mt-1">{t.reviewDoneFree}</p>
+          <p className="text-display text-fg"><BigNumber text={bytes(t, sizeOf(ids))} /></p>
+          <p className="text-label font-semibold text-fg-mute mt-1">{t.reviewDoneFree}</p>
         </div>
       )}
       <p className="text-body text-fg-mute mt-3 wrap-prose">
@@ -291,7 +292,7 @@ function Summary({ t, session, byId, chips, android, onDelete, onClose }: {
       )}
       {later > 0 && <p className="text-label text-accent font-bold num mt-1">{plural(t, 'laterSaved', later)}</p>}
       {filed > 0 && (
-        <div className="mt-4 rounded-md card p-4 space-y-1.5">
+        <div className="mt-5 rounded-md card p-4 space-y-1.5">
           <p className="text-body font-bold text-fg num">
             {[ids.length ? plural(t, 'deleteN', ids.length) : null, fmt(t.filedSummary, { photos: plural(t, 'photos', filed), albums: plural(t, 'albums', plan.length) })].filter(Boolean).join(' · ')}
           </p>
@@ -303,7 +304,7 @@ function Summary({ t, session, byId, chips, android, onDelete, onClose }: {
       )}
       {ids.length > 0 && (
         <div className="grid grid-cols-4 gap-[4px] mt-6">
-          {ids.slice(0, 12).map(id => <div key={id} className="aspect-square"><Thumb id={id} /></div>)}
+          {ids.slice(0, 12).map(id => <div key={id} className="aspect-square rounded-[10px] overflow-hidden"><Thumb id={id} className="!rounded-none" /></div>)}
         </div>
       )}
       <div className="flex-1 min-h-8" />

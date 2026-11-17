@@ -1,49 +1,44 @@
 @import "tailwindcss";
 
 /* ============================================================================
-   Bildklar design tokens — "Album": the photos are the colour
+   Bildklar design tokens — "Glass" (iOS 27, 17 November 2026)
    ----------------------------------------------------------------------------
-   Bildklar's own look (16 November 2026; modernised 17 November: Figtree
-   for the titles, Fraunces only for the big numbers and the trip names,
-   photos on every card, two tabs). A photo app's screens are full of
-   other people's colours — a beach, a birthday cake, a red jacket — so the
-   app itself stays quiet: a warm paper page, white cards, slate ink, and one
-   deep teal for what you tap. The big numbers and the trip names are set in
-   Fraunces, a soft serif like the labels in a printed photo album; titles and
-   everything else in Figtree. Both are bundled (src/assets/fonts, OFL): no font from a server.
+   The look of the system apps since iOS 26 and refined in iOS 27: the
+   content is the page — photos edge to edge, white grouped cards on the
+   cool grouped background — and the controls float above it on glass:
+   round bar buttons, the tab bar, the dock's button, sheets. One deep teal
+   for what you tap. Figtree for everything (bundled, src/assets/fonts, OFL):
+   the big numbers are Figtree too, heavy and tight.
 
-   Flat and calm: no gradients on fills, no blur (Android's WebView stays
-   fast), no shadow on a card — only what floats (the dock's button, a toast,
-   a sheet, the review card) casts one. Photos get small, soft corners.
+   Glass without blur: Android's WebView cannot afford backdrop-filter over
+   a scrolling list, so the glass is drawn — a translucent fill (iOS 27's
+   "tinted" setting, readable over any photo), a brighter specular line on
+   top, a darkened hairline edge and a soft shadow (iOS 27 added exactly
+   those two to separate glass from content). Where content meets a
+   floating bar it fades out (the scroll edge effect), never a line.
 
-   Three neutral layers per theme:
-     bg         — the page (warm paper by day, near-black slate at night).
-     surface    — a card, a sheet, a dialog, a round bar button.
-     surface-2  — a fill on either: chips, tracks, an input, an empty tile.
+   Layers per theme:
+     bg         — the page (grouped background: cool grey by day, black at night).
+     surface    — a card, a grouped list, a sheet.
+     surface-2  — a translucent fill on either: chips, tracks, an input, an empty tile.
+     glass      — the floating controls (see the `glass` utility).
 
    The accent (teal) has two tunings:
      accent       — as text on a page or card (links, ghost buttons).
-     accent-fill  — as a fill with its own ink (primary buttons).
+     accent-fill  — as a fill with its own ink (the prominent buttons).
    and beside it:
      keep  — green: "keep" in the review, the best shot's badge.
      neg   — red: "delete" in the review, destructive rows.
      warn  — amber: blurry photos.
 
    Theme: data-theme = light | dark on <html> (store.ts). A tile's tint:
-   data-hue = one of the hues below; it exposes --hue-bg and --hue-ink.
+   data-hue = one of the hues below; it exposes --hue-bg, --hue-ink and
+   --hue-solid (the squircle behind a white glyph, as in iOS Settings).
    ========================================================================== */
 
-/* Fraunces and Figtree (SIL Open Font License 1.1, src/assets/fonts/OFL.txt):
-   Latin subsets with their weight axis. An Arabic block, once it comes, falls
-   back to the system face for both. */
-@font-face {
-  font-family: "Fraunces";
-  font-style: normal;
-  font-weight: 300 900;
-  font-display: swap;
-  src: url("./assets/fonts/fraunces-latin-wght-normal.woff2") format("woff2");
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
+/* Figtree (SIL Open Font License 1.1, src/assets/fonts/OFL.txt): the Latin
+   subset with its weight axis. An Arabic block, once it comes, falls back to
+   the system face. */
 @font-face {
   font-family: "Figtree";
   font-style: normal;
@@ -55,7 +50,6 @@
 
 @theme {
   --font-sans: "Figtree", -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", Roboto, sans-serif;
-  --font-display: "Fraunces", "Iowan Old Style", "Palatino", Georgia, serif;
 
   --color-bg:        var(--t-bg);
   --color-surface:   var(--t-surface);
@@ -80,22 +74,26 @@
   --color-warn:     var(--t-warn);
   --color-warn-dim: var(--t-warn-dim);
 
-  /* White ink on a saturated fill (the swipe stamps, a badge on a photo), in both themes. */
+  /* White ink on a saturated fill or a photo, in both themes. */
   --color-on-color: #FFFFFF;
-  /* The dark veil under text laid on a photo. */
-  --color-veil: rgb(10 14 16 / 0.55);
+  /* The dark veil under a chip laid on a photo. */
+  --color-veil: rgb(0 0 0 / 0.5);
+  /* The shade at the foot of a photo card, under its white title. */
+  --color-shade: rgb(0 0 0 / 0.74);
 
-  --radius-xs: 8px;
-  --radius-sm: 12px;
-  --radius-md: 20px;
-  --radius-lg: 28px;
+  /* Concentric corners: a photo inside a card is the card's radius minus its inset. */
+  --radius-xs: 10px;
+  --radius-sm: 14px;
+  --radius-md: 24px;
+  --radius-lg: 32px;
+  --radius-xl: 38px;
 
-  --shadow-e2: 0 10px 24px -10px var(--t-shadow-2), 0 2px 6px var(--t-shadow-1);
-  --shadow-e3: 0 -12px 44px var(--t-shadow-2);
+  --shadow-e2: 0 10px 30px -8px var(--t-shadow-2), 0 1px 3px var(--t-shadow-1);
+  --shadow-e3: 0 -10px 50px var(--t-shadow-2);
 
   /* Type scale in rem so it follows Dynamic Type (dynamicType.ts): micro 11 ·
      caption 13 · label 15 · body 17 · heading 20 · title2 22 · title 34 ·
-     display (the clean-up card's number). */
+     display (the big number on Aufräumen and the end screen). */
   --text-micro: 0.6875rem;   --text-micro--line-height: 0.8125rem;
   --text-caption: 0.8125rem; --text-caption--line-height: 1.125rem;
   --text-label: 0.9375rem;   --text-label--line-height: 1.25rem;
@@ -103,7 +101,7 @@
   --text-heading: 1.25rem;   --text-heading--line-height: 1.5625rem;
   --text-title2: 1.375rem;   --text-title2--line-height: 1.75rem;
   --text-title: 2.125rem;    --text-title--line-height: 2.5rem;
-  --text-display: clamp(40px, 13vw, 56px);   --text-display--line-height: 1.02;
+  --text-display: clamp(48px, 15vw, 68px);   --text-display--line-height: 1;
 
   --spacing-tap: 44px;
 
@@ -112,95 +110,106 @@
 }
 
 @theme inline {
-  --color-hue-bg:  var(--hue-bg, var(--t-surface-2));
-  --color-hue-ink: var(--hue-ink, var(--t-fg));
+  --color-hue-bg:    var(--hue-bg, var(--t-surface-2));
+  --color-hue-ink:   var(--hue-ink, var(--t-fg));
+  --color-hue-solid: var(--hue-solid, var(--t-fg-mute));
 }
 
 /* ============ Day ========================================================= */
 :root,
 [data-theme="light"] {
-  --t-bg:        #F7F3EC;
+  --t-bg:        #F2F2F7;
   --t-surface:   #FFFFFF;
-  --t-surface-2: #EEE8DD;
-  --t-hairline:  #E7E0D3;
+  --t-surface-2: rgb(118 118 128 / 0.12);
+  --t-hairline:  rgb(60 60 67 / 0.14);
 
-  --t-fg:        #1D2427;
-  --t-fg-mute:   #5A6266;
-  --t-fg-faint:  #949A9C;
+  --t-fg:        #0D0D10;
+  --t-fg-mute:   #5D5D66;
+  --t-fg-faint:  #A6A6AE;
 
-  --t-accent:          #1A5E59;
-  --t-accent-dim:      rgb(26 110 104 / 0.10);
-  --t-accent-fill:     #1C6B65;
+  --t-accent:          #006B63;
+  --t-accent-dim:      rgb(0 128 118 / 0.12);
+  --t-accent-fill:     #00776D;
   --t-accent-fill-ink: #FFFFFF;
 
-  --t-keep:     #1E6940;
-  --t-keep-dim: rgb(30 105 64 / 0.12);
+  --t-keep:     #1A7638;
+  --t-keep-dim: rgb(52 199 89 / 0.16);
   --t-keep-ink: #FFFFFF;
-  --t-neg:      #B42318;
-  --t-neg-dim:  rgb(180 35 24 / 0.10);
+  --t-neg:      #C8102E;
+  --t-neg-dim:  rgb(255 59 48 / 0.12);
   --t-neg-ink:  #FFFFFF;
-  --t-warn:     #8A5300;
-  --t-warn-dim: rgb(214 140 30 / 0.16);
+  --t-warn:     #8F5200;
+  --t-warn-dim: rgb(255 159 10 / 0.18);
 
-  --t-scrim:    rgb(20 26 28 / 0.42);
-  --t-shadow-1: rgb(20 26 28 / 0.08);
-  --t-shadow-2: rgb(20 26 28 / 0.26);
+  --t-glass:       rgb(255 255 255 / 0.82);
+  --t-glass-sheen: rgb(255 255 255 / 0.55);
+  --t-glass-hi:    rgb(255 255 255 / 0.95);
+  --t-glass-edge:  rgb(0 0 0 / 0.09);
 
-  --t-sky-bg: #DCEBF5;      --t-sky-ink: #184F73;
-  --t-sand-bg: #F2E6CF;     --t-sand-ink: #6B4E17;
-  --t-mint-bg: #D8EEE6;     --t-mint-ink: #1C5C48;
-  --t-rose-bg: #F6DEDC;     --t-rose-ink: #8A2C24;
-  --t-lilac-bg: #E6E1F3;    --t-lilac-ink: #4B3B85;
-  --t-stone-bg: #E8E6E1;    --t-stone-ink: #4A4E4F;
+  --t-scrim:    rgb(0 0 0 / 0.32);
+  --t-shadow-1: rgb(0 0 0 / 0.06);
+  --t-shadow-2: rgb(0 0 0 / 0.20);
+
+  --t-sky-bg: #DDEBFF;      --t-sky-ink: #0A4E9E;      --t-sky-solid: #0A72E8;
+  --t-sand-bg: #FFEBD2;     --t-sand-ink: #6E4300;     --t-sand-solid: #D46C00;
+  --t-mint-bg: #D4F1E6;     --t-mint-ink: #0B5843;     --t-mint-solid: #0C9A77;
+  --t-rose-bg: #FFE1E3;     --t-rose-ink: #981A2A;     --t-rose-solid: #E8384A;
+  --t-lilac-bg: #E9E4FF;    --t-lilac-ink: #4730A3;    --t-lilac-solid: #6A4DE3;
+  --t-stone-bg: #E9E9EE;    --t-stone-ink: #46464D;    --t-stone-solid: #85858C;
 
   color-scheme: light;
 }
 
 /* ============ Night ======================================================= */
 [data-theme="dark"] {
-  --t-bg:        #121617;
-  --t-surface:   #1C2123;
-  --t-surface-2: #283033;
-  --t-hairline:  #2C3437;
+  --t-bg:        #000000;
+  --t-surface:   #1C1C1E;
+  --t-surface-2: rgb(118 118 128 / 0.24);
+  --t-hairline:  rgb(84 84 88 / 0.55);
 
-  --t-fg:        #EEF1EF;
-  --t-fg-mute:   #A8B0B2;
-  --t-fg-faint:  #6E777A;
+  --t-fg:        #FFFFFF;
+  --t-fg-mute:   #A3A3AA;
+  --t-fg-faint:  #6A6A71;
 
-  --t-accent:          #7FD3C8;
-  --t-accent-dim:      rgb(127 211 200 / 0.14);
-  --t-accent-fill:     #7FD3C8;
-  --t-accent-fill-ink: #0C2826;
+  --t-accent:          #52D6C4;
+  --t-accent-dim:      rgb(82 214 196 / 0.16);
+  --t-accent-fill:     #52D6C4;
+  --t-accent-fill-ink: #00241F;
 
-  --t-keep:     #7DD6A0;
-  --t-keep-dim: rgb(125 214 160 / 0.16);
-  --t-keep-ink: #0B2A18;
-  --t-neg:      #FF8A80;
-  --t-neg-dim:  rgb(255 138 128 / 0.16);
-  --t-neg-ink:  #3A0A06;
-  --t-warn:     #F2C46D;
-  --t-warn-dim: rgb(242 196 109 / 0.16);
+  --t-keep:     #4CD683;
+  --t-keep-dim: rgb(76 214 131 / 0.16);
+  --t-keep-ink: #04290F;
+  --t-neg:      #FF6B61;
+  --t-neg-dim:  rgb(255 107 97 / 0.16);
+  --t-neg-ink:  #3A0805;
+  --t-warn:     #FFC24D;
+  --t-warn-dim: rgb(255 194 77 / 0.16);
+
+  --t-glass:       rgb(40 40 44 / 0.84);
+  --t-glass-sheen: rgb(255 255 255 / 0.10);
+  --t-glass-hi:    rgb(255 255 255 / 0.18);
+  --t-glass-edge:  rgb(255 255 255 / 0.10);
 
   --t-scrim:    rgb(0 0 0 / 0.6);
-  --t-shadow-1: rgb(0 0 0 / 0.3);
-  --t-shadow-2: rgb(0 0 0 / 0.55);
+  --t-shadow-1: rgb(0 0 0 / 0.4);
+  --t-shadow-2: rgb(0 0 0 / 0.7);
 
-  --t-sky-bg: #1A2C38;      --t-sky-ink: #9FD0F0;
-  --t-sand-bg: #332B1C;     --t-sand-ink: #EBD2A0;
-  --t-mint-bg: #183129;     --t-mint-ink: #9EDFC6;
-  --t-rose-bg: #3A2221;     --t-rose-ink: #FFB4AB;
-  --t-lilac-bg: #29243A;    --t-lilac-ink: #CBBEFA;
-  --t-stone-bg: #2A2E30;    --t-stone-ink: #D0D4D5;
+  --t-sky-bg: #0F2944;      --t-sky-ink: #9ECCFF;      --t-sky-solid: #0A74E6;
+  --t-sand-bg: #39270E;     --t-sand-ink: #FFD08C;     --t-sand-solid: #C86600;
+  --t-mint-bg: #0D3127;     --t-mint-ink: #8EE5C6;     --t-mint-solid: #0B8F6E;
+  --t-rose-bg: #3C1418;     --t-rose-ink: #FFAEB5;     --t-rose-solid: #DE3445;
+  --t-lilac-bg: #231A46;    --t-lilac-ink: #C8BBFF;    --t-lilac-solid: #6C50E4;
+  --t-stone-bg: #2C2C2E;    --t-stone-ink: #D2D2D7;    --t-stone-solid: #6E6E75;
 
   color-scheme: dark;
 }
 
-[data-hue="sky"]   { --hue-bg: var(--t-sky-bg);   --hue-ink: var(--t-sky-ink); }
-[data-hue="sand"]  { --hue-bg: var(--t-sand-bg);  --hue-ink: var(--t-sand-ink); }
-[data-hue="mint"]  { --hue-bg: var(--t-mint-bg);  --hue-ink: var(--t-mint-ink); }
-[data-hue="rose"]  { --hue-bg: var(--t-rose-bg);  --hue-ink: var(--t-rose-ink); }
-[data-hue="lilac"] { --hue-bg: var(--t-lilac-bg); --hue-ink: var(--t-lilac-ink); }
-[data-hue="stone"] { --hue-bg: var(--t-stone-bg); --hue-ink: var(--t-stone-ink); }
+[data-hue="sky"]   { --hue-bg: var(--t-sky-bg);   --hue-ink: var(--t-sky-ink);   --hue-solid: var(--t-sky-solid); }
+[data-hue="sand"]  { --hue-bg: var(--t-sand-bg);  --hue-ink: var(--t-sand-ink);  --hue-solid: var(--t-sand-solid); }
+[data-hue="mint"]  { --hue-bg: var(--t-mint-bg);  --hue-ink: var(--t-mint-ink);  --hue-solid: var(--t-mint-solid); }
+[data-hue="rose"]  { --hue-bg: var(--t-rose-bg);  --hue-ink: var(--t-rose-ink);  --hue-solid: var(--t-rose-solid); }
+[data-hue="lilac"] { --hue-bg: var(--t-lilac-bg); --hue-ink: var(--t-lilac-ink); --hue-solid: var(--t-lilac-solid); }
+[data-hue="stone"] { --hue-bg: var(--t-stone-bg); --hue-ink: var(--t-stone-ink); --hue-solid: var(--t-stone-solid); }
 
 /* ============ Utilities =================================================== */
 
@@ -213,7 +222,7 @@
 
 @utility pb-safe-8 { padding-bottom: calc(2rem + var(--safe-area-inset-bottom, env(safe-area-inset-bottom))); }
 /* Clears a docked button (ui/Screen Dock), which floats above the home indicator. */
-@utility pb-safe-dock { padding-bottom: calc(132px + var(--safe-area-inset-bottom, env(safe-area-inset-bottom))); }
+@utility pb-safe-dock { padding-bottom: calc(176px + var(--safe-area-inset-bottom, env(safe-area-inset-bottom))); }
 /* The tab bar (ui/TabBar) floats like the dock; pb-safe-tabs clears it. */
 @utility pb-tabbar { padding-bottom: calc(max(var(--safe-area-inset-bottom, env(safe-area-inset-bottom)) - 6px, 14px) + 4px); }
 @utility pb-safe-tabs { padding-bottom: calc(112px + var(--safe-area-inset-bottom, env(safe-area-inset-bottom))); }
@@ -221,19 +230,19 @@
 
 @utility scrim { background-color: var(--t-scrim); }
 
-/* Titles and the big numbers: Fraunces, a little tighter at large sizes. */
+/* The big numbers (the space to free, the end screen, trip names on their
+   covers): Figtree, heavy and drawn tight, as the system's large numerals. */
 @utility display {
-  font-family: var(--font-display);
-  letter-spacing: -0.01em;
-  font-optical-sizing: auto;
+  font-family: var(--font-sans);
+  font-weight: 800;
+  letter-spacing: -0.035em;
 }
 
 /* Titles, section headings and the bar's title: Figtree, drawn a little
-   tighter as it grows (the system's large titles do the same). Fraunces
-   (display) is kept for the big numbers and the trip names. */
+   tighter as it grows (the system's large titles do the same). */
 @utility title-face {
   font-family: var(--font-sans);
-  letter-spacing: -0.021em;
+  letter-spacing: -0.022em;
 }
 
 /* A number read at a glance (the clean-up card, counts on tiles). */
@@ -241,19 +250,46 @@
   font-variant-numeric: tabular-nums lining-nums;
 }
 
-/* The small label over a group. Sentence case. */
+/* The small label over a group (as a grouped list's header). Sentence case. */
 @utility eyebrow {
-  font-size: clamp(12px, 0.8125rem, 17px);
+  font-size: clamp(13px, 0.875rem, 18px);
   line-height: 1.3;
-  font-weight: 700;
-  letter-spacing: 0.01em;
+  font-weight: 600;
+  letter-spacing: -0.005em;
 }
 
+/* The scroll edge effect: where content meets a floating bar it fades into
+   the page — under the dock and the tab bar, and behind the top bar once
+   the page has scrolled (iOS 27's uniform toolbar, drawn without blur). */
 @utility dock-fade {
-  background: linear-gradient(to bottom, transparent, var(--t-bg) 40%);
+  background: linear-gradient(to bottom, transparent, var(--t-bg) 55%);
 }
 @utility edge-fade-top {
-  background: linear-gradient(to bottom, var(--t-bg), transparent);
+  background: linear-gradient(to bottom, var(--t-bg) 0%, var(--t-bg) 58%, transparent 100%);
+}
+
+/* Glass: what floats above the content (bar buttons, the tab bar, a chip on a
+   photo). A translucent fill, a sheen from the top, a bright specular line,
+   a darkened hairline edge and a soft shadow — no backdrop blur. */
+@utility glass {
+  background-color: var(--t-glass);
+  background-image: linear-gradient(to bottom, var(--t-glass-sheen), transparent 58%);
+  box-shadow: inset 0 1px 0 var(--t-glass-hi), inset 0 0 0 0.5px var(--t-glass-edge), var(--shadow-e2);
+}
+/* The same material inside a card or a sheet: no shadow of its own. */
+@utility glass-flat {
+  background-color: var(--t-surface-2);
+  box-shadow: inset 0 0.5px 0 var(--t-glass-hi), inset 0 0 0 0.5px var(--t-glass-edge);
+}
+/* A prominent (tinted) glass button: the accent fill with the glass's sheen and edges on top. */
+@utility sheen {
+  background-image: linear-gradient(to bottom, rgb(255 255 255 / 0.24), rgb(255 255 255 / 0) 56%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.32), inset 0 0 0 0.5px rgb(0 0 0 / 0.10), 0 8px 22px -10px var(--t-shadow-2);
+}
+/* The shade at the foot of a photo card, under its title. */
+@utility photo-shade {
+  background: linear-gradient(to bottom, transparent 34%, rgb(0 0 0 / 0.28) 58%, var(--color-shade) 100%);
+  & + * { text-shadow: 0 1px 8px rgb(0 0 0 / 0.35); }
 }
 
 @utility card {
@@ -267,7 +303,7 @@
 
 /* A photo tile: soft corners, the empty tint while it loads. */
 @utility photo {
-  border-radius: var(--radius-xs);
+  border-radius: 6px;
   background: var(--t-surface-2);
   object-fit: cover;
 }

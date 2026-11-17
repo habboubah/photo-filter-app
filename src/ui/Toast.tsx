@@ -41,14 +41,14 @@ export function Toast({ toast, onDone, raised }: { toast: ToastState | null; onD
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 8, scale: 0.98, transition: { duration: 0.15 } }}
             transition={{ type: 'spring', duration: 0.3, bounce: 0.15 }}
-            className="pointer-events-auto flex items-center gap-2 bg-fg text-bg rounded-full ps-5 pe-2 py-1.5 shadow-e2 max-w-full"
+            className="pointer-events-auto flex items-center gap-2 glass text-fg rounded-full ps-5 pe-1.5 py-1.5 max-w-full"
           >
-            <span className="text-label font-bold py-2 min-w-0 wrap-compound">{toast.label}</span>
+            <span className="text-label font-semibold py-2 min-w-0 wrap-compound">{toast.label}</span>
             {toast.action ? (
               <button
                 type="button"
                 onClick={() => { toast.action?.run(); onDone(); }}
-                className="shrink-0 min-h-[40px] px-4 rounded-full bg-bg text-fg font-extrabold text-label active:scale-[0.96] transition-transform focus-visible:ring-focus"
+                className="shrink-0 min-h-[40px] px-4 rounded-full bg-accent-fill text-accent-fill-ink sheen font-bold text-label active:scale-[0.96] transition-transform focus-visible:ring-focus"
               >
                 {toast.action.label}
               </button>

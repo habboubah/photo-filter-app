@@ -74,12 +74,12 @@ export function TripView(p: Props) {
       <PhotoGrid ids={trip.ids} label={dateLabel} />
 
       <Dock>
-        <div className="flex gap-2">
+        <div className="grid gap-1">
           {trip.album || !p.onCreateAlbum
             ? <Button full size="lg" onClick={p.onReview}>{t.reviewTrip}</Button>
             : <>
-                <Button size="lg" variant="secondary" onClick={p.onReview} aria-label={t.reviewTrip}>{t.reviewGroup}</Button>
                 <Button full size="lg" icon={AlbumIcon} onClick={p.onCreateAlbum}>{t.createAlbum}</Button>
+                <Button full variant="ghost" onClick={p.onReview} aria-label={t.reviewTrip}>{t.reviewGroup}</Button>
               </>}
         </div>
       </Dock>

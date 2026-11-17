@@ -75,7 +75,7 @@ export function PaywallSheet({ t, open, free, onClose, onOwned, toast }: {
       <ul className="mt-5 space-y-3">
         {points.map(text => (
           <li key={text} className="flex items-center gap-3">
-            <span className="w-7 h-7 rounded-full bg-keep-dim text-keep inline-flex items-center justify-center shrink-0" aria-hidden="true">
+            <span className="w-7 h-7 rounded-full bg-keep text-keep-ink sheen !shadow-none inline-flex items-center justify-center shrink-0" aria-hidden="true">
               <Check className="w-4 h-4" strokeWidth={3} />
             </span>
             <span className="text-body text-fg wrap-prose">{text}</span>
@@ -83,7 +83,7 @@ export function PaywallSheet({ t, open, free, onClose, onOwned, toast }: {
         ))}
       </ul>
       <div className="mt-6 rounded-md bg-surface-2 px-5 py-4 text-center">
-        <p className="display text-title font-semibold text-fg num">{product ? product.price : '–'}</p>
+        <p className="display text-title text-fg num">{product ? product.price : '–'}</p>
         <p className="text-label font-bold text-fg mt-0.5">{t.paywallOnce}</p>
         <p className="text-caption text-fg-mute mt-0.5 wrap-prose">{t.paywallPrivate}</p>
       </div>

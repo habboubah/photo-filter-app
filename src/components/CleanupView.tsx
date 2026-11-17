@@ -80,9 +80,9 @@ export function CleanupView({ t, summary, onBack, onDuplicates, onSimilar, onBlu
       </Group>
       {summary.total.count > 0 && (
         <Dock>
-          <div className="flex gap-2">
-            <Button size="lg" variant="secondary" onClick={onReviewAll}>{t.reviewAll}</Button>
+          <div className="grid gap-1">
             <Button full size="lg" onClick={onQuickClean}>{t.quickClean}</Button>
+            <Button full variant="ghost" onClick={onReviewAll}>{t.reviewAll}</Button>
           </div>
         </Dock>
       )}

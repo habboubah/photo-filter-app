@@ -31,8 +31,9 @@ export function SwitchRow({ label, sub, checked, onChange }: { label: string; su
         onChange={e => { tapLight(); onChange(e.target.checked); }}
         className="peer sr-only"
       />
-      <span aria-hidden="true" className={`shrink-0 w-[51px] h-[31px] rounded-full p-[2px] transition-colors peer-focus-visible:ring-focus ${checked ? 'bg-keep' : 'bg-surface-2'}`}>
-        <span className={`block w-[27px] h-[27px] rounded-full bg-on-color shadow-e2 transition-transform ${checked ? 'translate-x-[20px] rtl:-translate-x-[20px]' : ''}`} />
+      {/* iOS 26's switch: a wider track and a pill-shaped knob. */}
+      <span aria-hidden="true" className={`shrink-0 w-[60px] h-[30px] rounded-full p-[2px] transition-colors peer-focus-visible:ring-focus ${checked ? 'bg-keep' : 'bg-surface-2'}`}>
+        <span className={`block w-[38px] h-[26px] rounded-full bg-on-color shadow-e2 transition-transform duration-300 ease-[var(--ease-spring)] ${checked ? 'translate-x-[18px] rtl:-translate-x-[18px]' : ''}`} />
       </span>
     </label>
   );
@@ -51,7 +52,7 @@ export function Segmented<V extends string>({ value, options, onChange, label }:
         <button
           key={o.value} type="button" role="radio" aria-checked={o.value === value}
           onClick={() => { tapLight(); onChange(o.value); }}
-          className={`flex-1 min-h-[36px] px-3 rounded-full text-label font-bold transition-colors focus-visible:ring-focus ${
+          className={`flex-1 min-h-[36px] px-3 rounded-full text-label font-semibold transition-colors focus-visible:ring-focus ${
             o.value === value ? 'bg-surface text-fg shadow-e2' : 'text-fg-mute'}`}
         >
           {o.label}
@@ -86,7 +87,7 @@ export function SortMenu<V extends string>({ label, value, options, onChange }: 
 }) {
   const current = options.find(o => o.value === value)?.label ?? '';
   return (
-    <label className="relative h-tap w-tap shrink-0 inline-flex items-center justify-center rounded-full bg-surface text-fg press focus-within:ring-focus">
+    <label className="relative h-tap w-tap shrink-0 inline-flex items-center justify-center rounded-full glass text-fg press focus-within:ring-focus">
       <ArrowDownUp className="w-[20px] h-[20px]" strokeWidth={2.1} aria-hidden="true" />
       {/* 17px: WebKit zooms the page into a focused control under 16px. */}
       <select
@@ -98,5 +99,20 @@ export function SortMenu<V extends string>({ label, value, options, onChange }: 
         {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
       </select>
     </label>
+  );
+}
+
+/**
+ * A size read at a glance ("388 MB"): the number large and heavy, the unit
+ * beside it smaller and quieter, as the system's storage figures. Splits at
+ * the last space, so it works for every locale `bytes()` writes.
+ */
+export function BigNumber({ text, className = '' }: { text: string; className?: string }) {
+  const at = text.lastIndexOf(' ');
+  const [n, unit] = at > 0 ? [text.slice(0, at), text.slice(at + 1)] : [text, ''];
+  return (
+    <span className={`display num ${className}`}>
+      {n}{unit && <span className="text-[0.42em] font-bold tracking-normal text-fg-mute ms-[0.18em]">{unit}</span>}
+    </span>
   );
 }

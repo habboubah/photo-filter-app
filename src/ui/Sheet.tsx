@@ -64,11 +64,11 @@ export function Sheet({ open, title, closeLabel, onClose, action, children }: Pr
         dragConstraints={{ top: 0, bottom: 0 }}
         dragElastic={{ top: 0, bottom: 0.6 }}
         onDragEnd={(_, info) => { if (info.offset.y > 120 || info.velocity.y > 600) onClose(); }}
-        className="relative bg-surface w-full max-w-lg rounded-t-lg sm:rounded-lg shadow-e3 max-h-[92%] overflow-y-auto overscroll-contain"
+        className="relative bg-surface w-[calc(100%-16px)] max-w-lg mb-[max(8px,var(--safe-area-inset-bottom,env(safe-area-inset-bottom)))] rounded-xl shadow-e3 max-h-[calc(92%-8px)] overflow-y-auto overscroll-contain"
       >
         <div className="sticky top-0 z-10 bg-surface">
           <div className="flex justify-center pt-2 pb-1 cursor-grab touch-none" onPointerDown={e => dragControls.start(e)}>
-            <div className="h-[5px] w-9 rounded-full bg-fg-faint/40" aria-hidden="true" />
+            <div className="h-[5px] w-9 rounded-full bg-fg-faint/50" aria-hidden="true" />
           </div>
           {/* The sheet's toolbar: close on a round tinted button, the
               confirming action filled in the accent; their words stay for
@@ -81,25 +81,25 @@ export function Sheet({ open, title, closeLabel, onClose, action, children }: Pr
               type="button" onClick={onClose}
               onMouseDown={e => e.preventDefault()}
               aria-label={closeLabel} title={closeLabel}
-              className="h-tap w-tap rounded-full bg-surface-2 text-fg inline-flex items-center justify-center press focus-visible:ring-focus"
+              className="h-tap w-tap rounded-full glass-flat text-fg inline-flex items-center justify-center press focus-visible:ring-focus"
             >
               <X className="w-5 h-5" strokeWidth={2.4} aria-hidden="true" />
             </button>
-            <h2 className="min-w-0 title-face text-chrome-title font-bold text-fg text-center wrap-compound">{title}</h2>
+            <h2 className="min-w-0 title-face text-chrome-title font-semibold text-fg text-center wrap-compound">{title}</h2>
             {action ? (
               <button
                 type="button" onClick={action.onClick} disabled={action.disabled}
                 onMouseDown={e => e.preventDefault()}
                 aria-label={action.label} title={action.label}
                 className={`h-tap w-tap rounded-full inline-flex items-center justify-center press focus-visible:ring-focus ${
-                  action.disabled ? 'bg-surface-2 text-fg-faint' : 'bg-accent-fill text-accent-fill-ink'}`}
+                  action.disabled ? 'bg-surface-2 text-fg-faint' : 'bg-accent-fill text-accent-fill-ink sheen'}`}
               >
                 <Check className="w-5 h-5" strokeWidth={2.8} aria-hidden="true" />
               </button>
             ) : <span aria-hidden="true" />}
           </div>
         </div>
-        <div className="px-5 pt-2 pb-safe-8 [--card:var(--t-bg)]">{children}</div>
+        <div className="px-5 pt-2 pb-8 [--card:var(--t-bg)]">{children}</div>
       </motion.div>
     </div>,
     document.body,
@@ -131,21 +131,21 @@ export function Confirm({ open, title, body, confirmLabel, cancelLabel, danger, 
         role="alertdialog" aria-modal="true" aria-labelledby="confirm-title" aria-describedby="confirm-body"
         initial={{ opacity: 0, scale: 0.94 }} animate={{ opacity: 1, scale: 1 }}
         transition={{ type: 'spring', duration: 0.3, bounce: 0.2 }}
-        className="relative w-full max-w-sm bg-surface rounded-lg shadow-e2 p-6 text-center"
+        className="relative w-full max-w-sm bg-surface rounded-xl shadow-e2 p-6 text-center"
       >
         <h2 id="confirm-title" className="title-face text-heading font-bold text-fg wrap-compound">{title}</h2>
         <p id="confirm-body" className="text-label text-fg-mute mt-2 wrap-prose">{body}</p>
         <div className="mt-6 grid gap-2">
           <button
             type="button" onClick={onConfirm}
-            className={`min-h-control rounded-full font-extrabold text-body press focus-visible:ring-focus ${
-              danger ? 'bg-neg text-surface' : 'bg-accent-fill text-accent-fill-ink'}`}
+            className={`min-h-[50px] rounded-full font-bold text-body press focus-visible:ring-focus sheen ${
+              danger ? 'bg-neg text-neg-ink' : 'bg-accent-fill text-accent-fill-ink'}`}
           >
             {confirmLabel}
           </button>
           <button
             type="button" onClick={onCancel}
-            className="min-h-control rounded-full font-extrabold text-body text-fg bg-surface-2 press focus-visible:ring-focus"
+            className="min-h-[50px] rounded-full font-bold text-body text-fg glass-flat press focus-visible:ring-focus"
           >
             {cancelLabel}
           </button>

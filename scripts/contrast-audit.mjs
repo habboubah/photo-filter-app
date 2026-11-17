@@ -1,13 +1,15 @@
 #!/usr/bin/env node
 /**
- * Contrast audit for the colour tokens in src/index.css ("Album").
+ * Contrast audit for the colour tokens in src/index.css ("Glass", iOS 27).
  *
  * In both themes it checks where text and glyphs meet a fill: the inks on
  * the page, on a card and on a fill; the accent as text on each of them and
  * on its own tint; the ink on the accent fill; keep (green), delete (red) and
  * blurry (amber) as text on their tints and as fills with their own ink; the
- * toast. For every tile hue it checks the hue's ink and plain text on its
- * tile and the hue's ink on a card (a settings icon tile sits there).
+ * toast; the inks on the glass of the floating bars (over the page and over a
+ * dark photo). For every tile hue it checks the hue's ink and plain text on
+ * its tile, the hue's ink on a card, and the white glyph on the hue's solid
+ * squircle (a settings icon tile).
  *
  * Text needs 4.5:1, icons 3:1 (WCAG 2.2 AA). `fg-faint` is not checked: it is
  * for placeholders and decoration only (CLAUDE.md, Accessibility). Values are
@@ -95,16 +97,25 @@ function audit(label, scope, list) {
   rows.push({ label, worst, bad, results });
 }
 
+const darkPhoto = parse('#202020');
+const lightPhoto = parse('#d8d8d8');
+
 for (const theme of ['light', 'dark']) {
   const scope = { ...tokens, ...themes[theme] };
   audit(`inks · ${theme}`, scope, c => {
     const bg = c('--t-bg');
     const surface = c('--t-surface');
-    const fill = c('--t-surface-2');
+    const fill = over(c('--t-surface-2'), surface);
+    const fillOnPage = over(c('--t-surface-2'), bg);
+    // The glass of a floating bar: its fill over the page, and over the darkest / lightest photo it may float on.
+    const glassPage = over(c('--t-glass'), bg);
+    const glassDark = over(c('--t-glass'), darkPhoto);
+    const glassLight = over(c('--t-glass'), lightPhoto);
     return [
       ['text on page', c('--t-fg'), bg, TEXT],
       ['text on card', c('--t-fg'), surface, TEXT],
       ['text on fill', c('--t-fg'), fill, TEXT],
+      ['text on a fill on the page', c('--t-fg'), fillOnPage, TEXT],
       ['mute text on page', c('--t-fg-mute'), bg, TEXT],
       ['mute text on card', c('--t-fg-mute'), surface, TEXT],
       ['mute text on fill', c('--t-fg-mute'), fill, TEXT],
@@ -126,8 +137,13 @@ for (const theme of ['light', 'dark']) {
       ['blurry text on its tint', c('--t-warn'), over(c('--t-warn-dim'), bg), TEXT],
       ['blurry dot on a card', c('--t-warn'), surface, ICON],
       ['white on the photo veil', c('--color-on-color'), over(c('--color-veil'), parse('#9a9a9a')), TEXT],
-      // A toast is the page turned inside out: the page colour as ink on the ink colour.
-      ['toast text', bg, c('--t-fg'), TEXT],
+      ['white on a photo card\'s shade', c('--color-on-color'), over(c('--color-shade'), lightPhoto), TEXT],
+      ['text on glass (page)', c('--t-fg'), glassPage, TEXT],
+      ['text on glass (dark photo)', c('--t-fg'), glassDark, TEXT],
+      ['text on glass (light photo)', c('--t-fg'), glassLight, TEXT],
+      ['mute text on glass (page)', c('--t-fg-mute'), glassPage, TEXT],
+      ['accent on glass (page)', c('--t-accent'), glassPage, TEXT],
+      ['accent icon on glass (dark photo)', c('--t-accent'), glassDark, ICON],
     ];
   });
   audit(`hues · ${theme}`, scope, c =>
@@ -135,6 +151,7 @@ for (const theme of ['light', 'dark']) {
       [`${h} ink on its tile`, c(`--t-${h}-ink`), c(`--t-${h}-bg`), TEXT],
       [`text on ${h} tile`, c('--t-fg'), c(`--t-${h}-bg`), TEXT],
       [`${h} ink on a card`, c(`--t-${h}-ink`), c('--t-surface'), TEXT],
+      [`white glyph on ${h} squircle`, c('--color-on-color'), c(`--t-${h}-solid`), ICON],
     ]));
 }
 
