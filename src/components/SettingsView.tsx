@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { BadgeCheck, FileText, FlaskConical, Globe, Images, Mail, Moon, RotateCcw, ShieldCheck, Star, Unlock } from 'lucide-react';
 import type { ThemeMode } from '../types';
 import type { Access } from '../native/photoLibrary';
-import { Language, Strings, languageNames, languages, plural } from '../translations';
+import { Language, Strings, fmt, languageNames, languages, num, percent, plural } from '../translations';
+import type { Ledger } from '../logic/ledger';
 import { Away, Group, IconTile, MenuRow, Next, Row, Screen } from '../ui/Screen';
 import { Confirm } from '../ui/Sheet';
 import { SwitchRow } from '../ui/Controls';
@@ -23,6 +24,8 @@ interface Props {
   /** The dry run switch is shown (debug builds, or release while DRY_RUN_IN_RELEASE is on). */
   dryRunAvailable: boolean;
   dryRun: boolean;
+  /** This phone's record of deleted and kept suggestions (src/logic/ledger.ts), shown where the dry run is (testers' builds). */
+  ledger?: Ledger;
   reminder: boolean;
   onReminder: (on: boolean) => void;
   onBack: () => void;
@@ -93,6 +96,17 @@ export function SettingsView(p: Props) {
             <span className="ps-[16px] pt-[14px]"><IconTile icon={FlaskConical} hue="sand" /></span>
             <div className="flex-1"><SwitchRow label={t.dryRun} sub={t.dryRunSub} checked={p.dryRun} onChange={p.onDryRun} /></div>
           </div>
+        </Group>
+      )}
+
+      {p.dryRunAvailable && p.ledger && Object.keys(p.ledger).length > 0 && (
+        <Group title={t.ledgerTitle} footer={t.ledgerHint}>
+          {Object.entries(p.ledger).sort((a, b) => (b[1].del + b[1].keep) - (a[1].del + a[1].keep)).map(([key, v]) => (
+            <Row
+              key={key} label={key}
+              sub={fmt(t.ledgerRow, { del: num(t, v.del), keep: num(t, v.keep), pct: percent(t, Math.round((100 * v.del) / Math.max(1, v.del + v.keep))) })}
+            />
+          ))}
         </Group>
       )}
 

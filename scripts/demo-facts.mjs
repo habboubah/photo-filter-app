@@ -3,8 +3,9 @@
 // features computed by the app's own spec (src/logic/features.ts) from the
 // grey copy — exactly what the native scan would report. Sizes are made up in
 // the range of real phone photos, so the clean-up card shows realistic numbers.
-// The AI's label scores come from ai.json (ml/demo_ai.py runs the real model
-// over the demo photos — the same numbers a phone would store).
+// Each photo's compact vector comes from ai.json (ml/demo_ai.py runs the real
+// model over the demo photos — the vector a phone would store; the app scores
+// the labels and searches from it, docs/AI.md).
 //   npm run demo-photos
 import fs from 'fs';
 import path from 'path';
@@ -67,7 +68,7 @@ const facts = process.argv[1]?.endsWith('demo-facts.mjs') ? manifest.map(entry =
   const f = features(new Uint8Array(buf.subarray(m[0].length)), w, h);
   // A copy saved from a messenger: smaller and lighter than the camera's original.
   const { copy, note, take, ...rest } = entry;
-  const scores = ai[entry.id] ? { ai: ai[entry.id] } : {};
+  const scores = ai[entry.id] ? { vec: ai[entry.id] } : {};
   // A picture of a receipt or a letter: a phone photo, sized without the random source so the photos after it keep their numbers.
   if (note) return { ...rest, w: 4032, h: 3024, bytes: 2_400_000, exact: true, ...f, ...scores, ...schema4(entry) };
   // A second take (a lookalike video): sized without the random source too.

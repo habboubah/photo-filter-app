@@ -47,6 +47,8 @@
     "test-photos:android": "bash scripts/test-photos-push.sh android",
     "ai:export": "python3 ml/export.py",
     "ai:eval": "python3 ml/eval.py",
+    "ai:eval-groups": "python3 ml/eval_groups.py && node scripts/eval-groups.mjs",
+    "ai:labels": "python3 ml/labels.py && python3 ml/words.py",
     "ai:demo": "cd ml && python3 demo_ai.py && cd .. && node --experimental-strip-types scripts/demo-facts.mjs"
   },
   "dependencies": {

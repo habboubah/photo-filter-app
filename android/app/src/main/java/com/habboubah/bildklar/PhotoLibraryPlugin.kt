@@ -448,12 +448,13 @@ class PhotoLibraryPlugin : Plugin() {
                 if (cancelled.get()) break
                 val video = isVideo(id)
                 val result = try {
-                    // A video's thumbnail is its poster frame: only its embedding is kept (lookalike videos), no labels.
+                    // A video's thumbnail is its poster frame: its vector, and the full embedding for lookalike videos.
                     val bmp = context.contentResolver.loadThumbnail(contentUri(id), Size(FeatureMath.LONG_SIDE, FeatureMath.LONG_SIDE), null)
                     val fitted = fit(bmp)
                     try {
-                        if (video) ScanStore.AIResult(id, null, ImageEmbedder.packed(model.embed(fitted)))
-                        else ScanStore.AIResult(id, model.scores(fitted))
+                        val emb = model.embed(fitted)
+                        val vec = ImageEmbedder.packed(model.compact(emb))
+                        if (video) ScanStore.AIResult(id, vec, ImageEmbedder.packed(emb)) else ScanStore.AIResult(id, vec)
                     } finally {
                         if (fitted !== bmp) fitted.recycle()
                         bmp.recycle()
@@ -490,10 +491,69 @@ class PhotoLibraryPlugin : Plugin() {
         }
     }
 
-    /** Faces and eyes are the iPhone's (Vision); Android ranks by sharpness and exposure only (no ML Kit: it reports to Google). */
+    /** The compact vectors of these photos (src/logic/vectors.ts asks for the ones it lacks, PAGE at a time). */
+    @PluginMethod
+    fun getVectors(call: PluginCall) {
+        val ids = call.getArray("ids")?.toList<String>()?.take(5000) ?: emptyList()
+        io.execute {
+            try {
+                call.resolve(JSObject().put("rows", store.vectors(ids)))
+            } catch (e: Exception) {
+                call.reject("Could not read the cache", e)
+            }
+        }
+    }
+
+    private var faceDetector: FaceDetector? = null
+    private var faceDetectorTried = false
+
+    /**
+     * Faces for a few photos (a similar group), cached: YuNet in ONNX Runtime (FaceDetector — never ML Kit, it
+     * reports to Google). How many faces and how sharp the best one is; Android has no open-eyes score.
+     */
     @PluginMethod
     fun scoreFaces(call: PluginCall) {
-        call.resolve(JSObject().put("rows", JSArray()))
+        val ids = call.getArray("ids")?.toList<String>()?.take(60) ?: emptyList()
+        io.execute {
+            try {
+                val known = store.faces(ids)
+                val missing = ids.filter { it !in known && !isVideo(it) }
+                val fresh = ArrayList<Triple<String, Int, Double?>>()
+                if (missing.isNotEmpty()) {
+                    val detector = faceDetector ?: if (faceDetectorTried) null else {
+                        faceDetectorTried = true
+                        try {
+                            val installed = context.packageManager.getPackageInfo(context.packageName, 0).lastUpdateTime
+                            FaceDetector(File(ImageEmbedder.assetsDir(context, installed), "faces.onnx")).also { faceDetector = it }
+                        } catch (_: Throwable) { null }
+                    }
+                    if (detector != null) for (id in missing) {
+                        try {
+                            val bmp = context.contentResolver.loadThumbnail(contentUri(id), Size(FaceDetector.SIZE, FaceDetector.SIZE), null)
+                            val (w, h) = FeatureMath.fitSize(bmp.width, bmp.height, FaceDetector.SIZE)
+                            val fitted = if (w == bmp.width && h == bmp.height) bmp else Bitmap.createScaledBitmap(bmp, w, h, true)
+                            try {
+                                val (faces, grey) = detector.detect(fitted)
+                                val (n, q) = FaceDetector.quality(faces, grey, fitted.width, fitted.height)
+                                fresh.add(Triple(id, n, q))
+                            } finally {
+                                if (fitted !== bmp) fitted.recycle()
+                                bmp.recycle()
+                            }
+                        } catch (_: Exception) { /* gone, or no local copy: ranked without faces */ }
+                    }
+                    store.storeFaces(fresh)
+                }
+                val rows = JSArray()
+                for (id in ids) {
+                    known[id]?.let { rows.put(it) }
+                        ?: fresh.firstOrNull { it.first == id }?.let { (_, n, q) -> rows.put(JSObject().put("id", id).put("faces", n).apply { if (q != null) put("faceQ", q) }) }
+                }
+                call.resolve(JSObject().put("rows", rows))
+            } catch (e: Exception) {
+                call.reject("Could not score faces", e)
+            }
+        }
     }
 
     /* --------------------------------------------------------- thumbnails */

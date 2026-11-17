@@ -48,12 +48,18 @@ export interface Photo {
   faceQ?: number;
   eyes?: number;
   /**
-   * The on-device AI (docs/AI.md): each label's score from the shared image
-   * model, as logit × 10 rounded, in src/logic/ai.ts LABELS order. Missing
-   * until the scan's AI pass reached the photo, and for videos and photos
+   * The on-device AI (docs/AI.md): each label's score, as logit × 10 rounded,
+   * in src/logic/ai.ts LABELS order — worked out by the app from the photo's
+   * compact vector (src/logic/ai.ts scoreLabels), not sent by the phone.
+   * Missing until the scan's AI pass reached the photo, and for photos
    * without a local copy.
    */
-  ai?: number[];
+  ai?: ArrayLike<number>;
+  /**
+   * The AI version of the photo's compact vector (src/logic/vectors.ts), when
+   * the phone has one: the vector itself is fetched apart (PhotoLibrary.getVectors).
+   */
+  vv?: number;
   /** iPhone with iOS 18+: Vision's aesthetics score (−1 … 1) and its "utility photo" flag. */
   aes?: number;
   util?: boolean;
@@ -121,6 +127,8 @@ export interface Group {
   best: string;
   /** The one the app would keep. */
   suggested: string;
+  /** A duplicate group held together by a copy only the AI's vectors confirmed (src/logic/similar.ts): one to check. */
+  weak?: boolean;
 }
 
 export interface CleanupSummary {

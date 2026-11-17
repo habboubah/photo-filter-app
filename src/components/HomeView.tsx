@@ -1,5 +1,5 @@
 import type React from 'react';
-import { Aperture, CalendarDays, Check, CircleCheck, Clapperboard, Clock, Copy, FileVideo, Image as ImageIcon, ImagePlus, MessageCircle, Minimize2, RefreshCw, ScanSearch, Settings, Shield, Smartphone, Sparkles } from 'lucide-react';
+import { Aperture, CalendarDays, Check, CircleCheck, Clapperboard, Clock, Copy, FileVideo, Image as ImageIcon, ImagePlus, MessageCircle, Minimize2, RefreshCw, ScanSearch, Search, Settings, Shield, Smartphone, Sparkles } from 'lucide-react';
 import type { CleanupSummary, Storage } from '../types';
 import type { Access } from '../native/photoLibrary';
 import type { ScanView } from '../store';
@@ -50,6 +50,8 @@ interface Props {
   onProtected: () => void;
   onRescan: () => void;
   onSettings: () => void;
+  /** Suchen (src/components/SearchView.tsx): find photos by words, then go through them. */
+  onSearch?: () => void;
   onAddPhotos: () => void;
   onCleanup: () => void;
   onSimilar: () => void;
@@ -128,7 +130,10 @@ export function HomeView(p: Props) {
       title={t.tabClean}
       subtitle={subtitle}
       tabbed
-      actions={<IconButton label={t.settings} icon={Settings} tone="bar" onClick={p.onSettings} />}
+      actions={<>
+        {p.onSearch && <IconButton label={t.searchOpen} icon={Search} tone="bar" onClick={p.onSearch} />}
+        <IconButton label={t.settings} icon={Settings} tone="bar" onClick={p.onSettings} />
+      </>}
     >
       {p.access === 'limited' && (
         <section className="rounded-md card p-4">

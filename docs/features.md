@@ -34,7 +34,8 @@ Every feature, as the user sees it (German labels, English in brackets).
 The root has two tabs in a floating bar at the bottom: **Aufräumen** [Clean up]
 and **Ordnen** [Organise]. Each keeps its scroll position; tapping the current
 tab again scrolls to its top; Android's back button goes from *Ordnen* to
-*Aufräumen* first. Settings is the round button at the top right of both.
+*Aufräumen* first. Settings is the round button at the top right of both;
+**Suchen** [Search], the magnifier beside it.
 
 ### Aufräumen [Clean up]
 - The number of photos under the title.
@@ -99,7 +100,13 @@ tab again scrolls to its top; Android's back button goes from *Ordnen* to
 - *Durchgehen* [Go through]: a review of the whole trip (see Review).
 
 ## Near-identical photos
-- Photos taken within three minutes that look almost the same form a group.
+- Photos taken within three minutes that look almost the same form a group:
+  their fingerprints are close (at most 10 of 64 bits apart) **and** the
+  on-device AI sees the same picture (their vectors alike, docs/AI.md). A
+  photo of the same scene up to 30 minutes later joins when it is very
+  alike. In a group of three or more, a photo far from the group's middle
+  leaves it — so a series that drifts doesn't become one group. Without the
+  AI's vectors yet (the first scan) the fingerprints alone decide.
   The list shows each group's photos with the suggested best one starred and
   how many could go.
 - **A group**: the best one large, the series under it. A tap on another photo
@@ -110,7 +117,12 @@ tab again scrolls to its top; Android's back button goes from *Ordnen* to
   a new copy joining it later opens it again; *Von vorn anfangen* brings it
   back).
 - **The best shot**: the sharpest, well exposed one; on the iPhone also the
-  best face and open eyes. A favourite always wins.
+  best face and open eyes, on Android the best faces (the YuNet face
+  detector, on the phone). A favourite always wins. **It learns**: after ten
+  times you picked another best shot, the app weighs what your picks were
+  better at (sharpness, light, faces, eyes) more — stored on the phone only.
+- Each photo that could go carries a small chip with its reason
+  (*Unschärfer* [Blurrier], *Kopie* [Copy], *Serie* [Burst]) — see *How sure*.
 
 ## Duplicates
 - The same picture again, however much later: a photo saved again from a
@@ -118,9 +130,14 @@ tab again scrolls to its top; Android's back button goes from *Ordnen* to
   same shape and the same light (brightness and contrast); flat pictures
   (sky, a wall, a dark pocket shot) never count. A burst and its later copy
   form one group.
+- **Edited copies**: a copy that was cropped a little, filtered or brightened
+  (at most 4 bits apart, the same shape) counts when the AI's vectors say it
+  is the same picture — always marked *Bitte prüfen* [Please check]. A
+  strongly cropped copy is not found yet.
 - Listed like the near-identical groups, with the copy to keep marked
-  *Original*: a favourite, else the one with the most pixels, else the
-  sharpest, else the oldest. A tap keeps another one; *Die anderen löschen*,
+  *Original*: a favourite, else the edited one (iPhone: edits made in
+  Photos), else the one with a place, else the one with the most pixels, else
+  the sharpest, else the oldest. A tap keeps another one; *Die anderen löschen*,
   *Durchgehen* and *Alle behalten* as for near-identical photos.
 
 ## Similar videos (*Ähnliche Videos*)
@@ -183,12 +200,58 @@ tab again scrolls to its top; Android's back button goes from *Ordnen* to
   codes and accidental shots, found by the AI on the phone (SigLIP 2, docs/AI.md).
   Chips filter by kind (*Kassenzettel · 2*); *Durchgehen* reviews them, each
   suggested for deleting with its reason (*KI: Kassenzettel*).
+- What the AI looks for (33 labels, docs/AI.md): receipts, documents,
+  whiteboards, photos of a screen, saved chats, memes, QR and barcodes,
+  accidental shots, tickets, product photos (taken while shopping), parking
+  signs and maps are *unwichtig*; kids, babies, people, selfies, groups,
+  pets, food, birthdays, playgrounds, school, beach, snow, landscapes,
+  cities, flowers, home, Christmas, Ramadan and sports are memories and keep
+  a photo out.
 - Never among them: favourites, screenshots (they have their own list),
-  videos, photos with a face (iPhone), photos kept in a review. The clean-up
+  videos, photos with a face (iPhone), photos kept in a review, and **photos
+  of an ID or a bank card** (the AI's *sensitive* labels) — those are
+  protected: people need them. The clean-up
   card counts them once (*Unwichtige Fotos (KI)*), after duplicates,
   near-identical and blurry photos.
-- *Auf deinen Fotos* [On your photos]: a row of categories (kids, people,
-  pets, food, landscapes) with a cover and a count; a tap shows the photos.
+- *Auf deinen Fotos* [On your photos]: a row of the memory categories with
+  a cover and a count; a tap shows the photos.
+
+## Search (*Suchen*)
+- The magnifier on both tabs opens **Suchen** [Search]: *Was ist auf dem
+  Foto?* [What is in the photo?]. As you type, it suggests words it knows —
+  219 concepts in German, English and Arabic (*Hund*, *Strand*, *Kassenzettel*,
+  *Geburtstag* …); tap one. Several words find photos that show all of them.
+- Found by the on-device AI from each photo's vector, best match first (at
+  most 500); a grid, and *Durchgehen · 24 Fotos* [Go through] reviews them
+  with no suggestion.
+- Ready once the AI has seen the photos (*42 % sind schon fertig*). An
+  unknown word says so. Nothing is sent anywhere.
+
+## Similar photos of one photo (*Ähnliche Fotos*)
+- In a review, the button *Ähnliche Fotos zeigen* [Show similar photos] opens
+  every photo like this one, from any year: the same document photographed
+  twice, the same view on every holiday. *Durchgehen* reviews them.
+
+## How sure (*Sicher, wahrscheinlich, prüfen*)
+- Every photo suggested for deleting says how sure Bildklar is, on the photo
+  in the review and on a group's tiles, with one reason:
+  - **Sicher** [Sure]: an exact copy, a smaller copy of a photo that stays, a
+    burst frame nobody picked.
+  - **Wahrscheinlich** [Likely]: near-identical to the best shot and blurrier
+    (*Unschärfer als das beste*), eyes closed (*Augen zu*), worse light
+    (*Schlechteres Licht*) or nearly the same (*Fast gleich wie das beste*); a
+    clearly blurry photo; an old screenshot; a clear utility photo.
+  - **Bitte prüfen** [Please check]: everything less sure — an edited copy,
+    similar videos, a photo just over a bar.
+- **Schnell aufräumen** takes only *Sicher* and *Wahrscheinlich* photos;
+  the rest are offered as their own review: *Dazu 6 Fotos, bei denen Bildklar
+  nicht sicher ist* … *Unsichere durchgehen* [Go through the unsure ones].
+- **It learns** what you keep: per kind of suggestion (near-identical,
+  blurry, each AI label …) the phone counts what you deleted and kept in
+  reviews. After ten, when you kept 30 % or more, that kind becomes one level
+  less sure (50 %: two), and an AI label needs a higher score. Testers see
+  the table in Settings (*Treffsicherheit auf diesem Handy*). Stays on the
+  phone; *Von vorn anfangen* forgets it.
 
 ## Month by month
 - The header shows the same figure: *38 % durchgesehen · 7 von 18 Monaten* and the bar.
@@ -322,7 +385,7 @@ tab again scrolls to its top; Android's back button goes from *Ordnen* to
   also AndroidX, Media3, Kotlin), a tap shows its full licence text.
 - *Von vorn anfangen* [Start over] (*Deine Fotos bleiben, wie sie sind*; with
   undo): Bildklar forgets every decision — kept, protected and decide-later
-  photos, best-shot picks, trip edits, the months marked as done, the sort
+  photos, best-shot picks and what it learnt from them and from your reviews, trip edits, the months marked as done, the sort
   orders — so everything is suggested again. The photos and albums, the
   purchase and the "freed so far" count stay.
 
@@ -352,6 +415,11 @@ tab again scrolls to its top; Android's back button goes from *Ordnen* to
   *Schützen* [Protect] in the review: kept and protected for good); every photo
   of a trip marked *⋯ › Nie vorschlagen* [Never suggest]; and every photo of the
   albums (iPhone) / folders (Android) switched on in *Aufräumen › Geschützt*.
+- **Ähnliche Fotos mitschützen** [Protect similar photos too] (on unless
+  switched off): a photo very like a protected one — the same document, the
+  same scene at another time, at least an hour apart — is not suggested
+  either (*Schützt gerade 12 Fotos*). The other shots of the same series
+  still are, so a protected photo doesn't block its own near-identical group.
 - *Aufräumen* › Geschützt (its last rows) lists the albums / folders with a switch each, the
   protected trips and the photos protected by hand; each protection is lifted
   with a tap.

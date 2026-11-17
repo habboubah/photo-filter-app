@@ -17,18 +17,20 @@ import { folderName } from './logic/naming';
 import { addMerge, addSplit, removeMerge, removeSplits, setIgnored, setName } from './logic/trips';
 import {
   Decision, ReviewItem, Session, decide, fileTo, isDone, isNewAlbum, keptAgainstSuggestion, laterIds, reviewBlurry, reviewCleanup, reviewGroup,
-  reviewExposure, reviewLarge, reviewLater, reviewScreenshots, reviewTrip, reviewUtility, settledIds, startSession, undo,
+  reviewExposure, reviewFound, reviewLarge, reviewLater, reviewScreenshots, reviewTrip, reviewUtility, settledIds, startSession, undo,
 } from './logic/review';
-import { aiProgress, categories, findUtility, type MemoryLabel } from './logic/ai';
+import { aiProgress, categories, findSensitive, findUtility, type MemoryLabel } from './logic/ai';
 import { findScreenshots, isOldShot, oldShots } from './logic/screenshots';
 import { findLarge, findLive } from './logic/large';
 import { buildMonths, onThisDay, progress } from './logic/months';
 import { findExposure } from './logic/exposure';
 import { sortFor, type SortScreen } from './logic/sort';
-import { protectedIds } from './logic/protect';
+import { likeProtected, protectedIds } from './logic/protect';
 import { batches, findCompressible, tally } from './logic/compress';
 import { APPS_TILE_MIN, groupBySource, reviewSource } from './logic/sources';
 import { cleanParts } from './logic/smartClean';
+import { type Verdict, groupVerdict } from './logic/confidence';
+import { adjustItems, strictUtility } from './logic/ledger';
 import { streak } from './logic/streak';
 import { feedbackMail, openExternal, privacyUrl, rateUrl, systemFromAgent } from './links';
 import { devNative, isAndroid, isIos } from './platform';
@@ -72,6 +74,8 @@ const ProtectedView = lazy(() => import('./components/ProtectedView').then(m => 
 const LicencesView = lazy(() => import('./components/LicencesView').then(m => ({ default: m.LicencesView })));
 const LicenceView = lazy(() => import('./components/LicencesView').then(m => ({ default: m.LicenceView })));
 const OrganizeView = lazy(() => import('./components/OrganizeView').then(m => ({ default: m.OrganizeView })));
+const SearchView = lazy(() => import('./components/SearchView').then(m => ({ default: m.SearchView })));
+const LikeView = lazy(() => import('./components/LikeView').then(m => ({ default: m.LikeView })));
 
 /** `onDone`: what happens once the review was gone through to its end (a month marked as done). */
 interface Review { session: Session; finished: boolean; onDone?: () => void }
@@ -90,7 +94,7 @@ export default function App() {
   }, [photos, cities]);
 
   const lib = useMemo(() => makeLibrary(photos ?? []), [photos]);
-  const detection = useMemo(() => detect(lib), [lib]);
+  const detection = useMemo(() => detect(lib, store.vectors), [lib, store.vectors]);
   const trips = useMemo(
     () => buildTrips(lib, detection.trips, state, cities, language, t.locale),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -98,10 +102,17 @@ export default function App() {
   );
   // Every photo never to be suggested but the favourites (src/logic/protect.ts): kept in a review,
   // protected by hand, in a protected trip or album. Every finder below takes it as `kept`.
+  // Photos of identity documents and bank cards (src/logic/ai.ts sensitiveLabel) are protected too,
+  // and — unless switched off — photos very like one protected by hand (src/logic/protect.ts likeProtected).
+  const sensitive = useMemo(() => findSensitive(lib.photos), [lib]);
+  const alike = useMemo(
+    () => (state.protect.similar ? likeProtected(store.vectors, state.protect.ids, id => lib.byId.get(id)?.t) : new Set<string>()),
+    [state.protect.similar, state.protect.ids, store.vectors, lib],
+  );
   const kept = useMemo(() => {
     const tripIds = new Map(trips.map(x => [x.key, x.ids]));
-    return protectedIds(state.kept, state.protect, key => tripIds.get(key), store.albumMembers);
-  }, [state.kept, state.protect, trips, store.albumMembers]);
+    return protectedIds(state.kept, state.protect, key => tripIds.get(key), [...store.albumMembers, ...sensitive, ...alike]);
+  }, [state.kept, state.protect, trips, store.albumMembers, sensitive, alike]);
   // Settled groups (every photo but the one to keep is kept — "Alle behalten") are not shown again (openGroups).
   const groups = useMemo(
     () => openGroups(buildGroups(lib, detection.groups, state, store.faces, kept), kept),
@@ -124,14 +135,21 @@ export default function App() {
   const shots = useMemo(() => findScreenshots(lib.photos, kept), [lib, kept]);
   const old = useMemo(() => oldShots(shots, now), [shots, now]);
   // The on-device AI (src/logic/ai.ts): utility photos, categories, how far its pass got.
-  const utility = useMemo(() => findUtility(lib.photos, kept), [lib, kept]);
+  // A utility label the user kept often on this phone needs more to suggest a photo (src/logic/ledger.ts).
+  const strict = useMemo(() => strictUtility(state.ledger), [state.ledger]);
+  const utility = useMemo(() => findUtility(lib.photos, kept, strict), [lib, kept, strict]);
   const cats = useMemo(() => categories(lib.photos), [lib]);
   const aiSeen = useMemo(() => aiProgress(lib.photos), [lib]);
   const summary = useMemo(
     () => (photos ? summarize(lib, groups, blurry, kept, old, utility, exposureAll) : null),
     [photos, lib, groups, blurry, kept, old, utility, exposureAll],
   );
-  const parts = useMemo(() => cleanParts(groups, blurry, old, kept, lib.byId, exposureAll), [groups, blurry, old, kept, lib, exposureAll]);
+  // Two photos' vectors' cosine (src/logic/vectors.ts): how sure the app is about a group's extra shot.
+  const cos = useCallback((a: string, b: string) => store.vectors.cos(a, b), [store.vectors]);
+  const parts = useMemo(
+    () => cleanParts(groups, blurry, old, kept, lib.byId, exposureAll, cos, state.ledger),
+    [groups, blurry, old, kept, lib, exposureAll, cos, state.ledger],
+  );
   const months = useMemo(() => buildMonths(lib.photos), [lib]);
   const doneMonths = useMemo(() => new Set(state.months), [state.months]);
   /** The share of the library gone through month by month, whole percent (for home, the months and the widget). */
@@ -226,14 +244,30 @@ export default function App() {
   const [licence, setLicence] = useState<string | null>(null);
   const [showProtected, setShowProtected] = useState(false);
   const [review, setReview] = useState<Review | null>(null);
+  const [showSearch, setShowSearch] = useState(false);
+  /** The photo whose look-alikes are shown (Ähnliche Fotos), over a review or the search. */
+  const [likeId, setLikeId] = useState<string | null>(null);
 
   const trip = tripKey ? trips.find(x => x.key === tripKey) ?? null : null;
   const group = groupKey ? groups.find(g => g.key === groupKey) ?? null : null;
+  // The open group's other photos against its best one (with the iPhone's face scores laid on): their tiles' reasons.
+  const groupVerdicts = useMemo(() => {
+    const out = new Map<string, Verdict>();
+    if (!group) return out;
+    const withFaces = (id: string) => { const p = lib.byId.get(id); const f = store.faces.get(id); return p && f ? { ...p, ...f } : p; };
+    const best = withFaces(group.best);
+    for (const id of group.ids) {
+      const p = withFaces(id);
+      if (p && best && id !== group.best) out.set(id, groupVerdict(group, p, best, cos(id, group.best)));
+    }
+    return out;
+  }, [group, lib, store.faces, cos]);
 
   /** The decide-later pile after a review: what was put off joins it, what was decided leaves it. */
   const applyLater = (session: Session) => store.updateLater(laterIds(session), settledIds(session));
   const closeReview = () => {
     if (review) {
+      store.recordReview(review.session);
       store.addKept(keptAgainstSuggestion(review.session));
       applyLater(review.session);
       if (isDone(review.session)) review.onDone?.();
@@ -244,6 +278,7 @@ export default function App() {
   // Screens pushed over Home, the deepest first. Every pushed screen must be
   // here: it drives the hardware back, the scroll reset and the slide.
   const pushed: [string, boolean, () => void][] = [
+    ['like', !!likeId, () => setLikeId(null)],
     ['review', !!review, closeReview],
     ['licence', !!licence, () => setLicence(null)],
     ['licences', showLicences, () => setShowLicences(false)],
@@ -266,6 +301,7 @@ export default function App() {
     ['category', !!category, () => setCategory(null)],
     ['months', showMonths, () => setShowMonths(false)],
     ['trips', showTrips, () => setShowTrips(false)],
+    ['search', showSearch, () => setShowSearch(false)],
     ['settings', showSettings, () => setShowSettings(false)],
   ];
   const topIndex = pushed.findIndex(([, open]) => open);
@@ -494,7 +530,8 @@ export default function App() {
 
   const startReview = (items: ReviewItem[], onDone?: () => void) => {
     if (!items.length) return;
-    setReview({ session: startSession(items), finished: false, onDone });
+    // How sure each suggestion is, as this phone's ledger has it (src/logic/ledger.ts).
+    setReview({ session: startSession(adjustItems(items, state.ledger)), finished: false, onDone });
     if (extras && !albumList) void PhotoLibrary.listAlbums().then(r => setAlbumList(r.albums)).catch(() => setAlbumList([]));
   };
 
@@ -534,7 +571,7 @@ export default function App() {
   const isOld = (p: Photo) => isOldShot(p, now);
   const openMonth = (key: string) => {
     const m = months.find(x => x.key === key);
-    if (m) startReview(reviewTrip(m.ids, groups, lib.byId, kept, isOld), () => { store.markMonthDone(key); store.markDay(); });
+    if (m) startReview(reviewTrip(m.ids, groups, lib.byId, kept, isOld, cos), () => { store.markMonthDone(key); store.markDay(); });
   };
   const onDecide = (d: Decision) => setReview(r => (r ? { ...r, session: decide(r.session, d) } : r));
   const onUndo = () => setReview(r => (r ? { ...r, session: undo(r.session), finished: false } : r));
@@ -555,6 +592,15 @@ export default function App() {
   };
 
   const content = () => {
+    if (likeId) {
+      return (
+        <LikeView
+          t={t} id={likeId} vectors={store.vectors} byId={byId}
+          onBack={() => setLikeId(null)} onOpen={setLikeId}
+          onReview={ids => { setLikeId(null); startReview(reviewFound(ids)); }}
+        />
+      );
+    }
     if (review) {
       return (
         <ReviewView
@@ -562,9 +608,11 @@ export default function App() {
           onDecide={onDecide} onUndo={onUndo} albums={chips} android={isAndroid()} onFile={extras ? onFile : undefined}
           onProtect={id => { store.protectPhotos([id], true); onDecide('keep'); show(t.protected); }}
           onPreview={id => { void PhotoLibrary.preview({ id }).catch(() => show(t.previewFailed)); }}
+          onLike={id => { if (store.vectors.has(id)) setLikeId(id); else show(t.likeNone); }}
           onFinish={() => setReview(r => (r ? { ...r, finished: true } : r))}
           onDelete={outcome => {
             applyLater(review.session);
+            store.recordReview(review.session);
             const finish = () => { if (isDone(review.session)) review.onDone?.(); setReview(null); };
             void fileAlbums(outcome.albums).then(() => {
               if (outcome.deleteIds.length) deletePhotos(outcome.deleteIds, keptAgainstSuggestion(review.session), finish);
@@ -584,6 +632,7 @@ export default function App() {
           trips={trips.filter(x => state.protect.trips.includes(x.key)).map(x => ({ key: x.key, title: x.title, count: x.ids.length }))}
           photos={state.protect.ids.filter(id => byId.has(id))}
           photoDate={id => new Date(byId.get(id)?.t ?? 0).toLocaleString(t.locale, { dateStyle: 'medium', timeStyle: 'short' })}
+          similar={state.protect.similar} similarCount={alike.size} onSimilar={store.protectSimilar}
           onAlbum={store.protectAlbum}
           onTrip={key => store.protectTrip(key, false)}
           onPhoto={id => store.protectPhotos([id], false)}
@@ -594,10 +643,16 @@ export default function App() {
     if (group) {
       return (
         <GroupView
-          t={t} group={group} byId={byId} kept={kept} debug={store.debug}
+          t={t} group={group} byId={byId} kept={kept} verdicts={groupVerdicts} debug={store.debug}
           onBack={() => setGroupKey(null)}
-          onPick={id => store.setBest(group.key, id === group.suggested ? null : id)}
-          onReview={() => startReview(reviewGroup(group, kept, byId))}
+          onPick={id => {
+            const chosen = lib.byId.get(id);
+            const suggested = lib.byId.get(group.suggested);
+            const withFaces = (p: Photo | undefined) => (p ? { ...p, ...store.faces.get(p.id) } : p);
+            store.setBest(group.key, id === group.suggested ? null : id,
+              id !== group.suggested && chosen && suggested ? { chosen: withFaces(chosen)!, suggested: withFaces(suggested)! } : undefined);
+          }}
+          onReview={() => startReview(reviewGroup(group, kept, byId, cos))}
           onDeleteOthers={ids => deletePhotos(ids, [], () => setGroupKey(null))}
           onKeepAll={() => {
             const ids = group.ids.filter(id => !state.kept.includes(id));
@@ -618,7 +673,7 @@ export default function App() {
           isSplit={!!state.trips.splits[base]}
           onBack={() => setTripKey(null)}
           onCreateAlbum={extras ? () => needUnlock(() => setAlbumFor(trip)) : undefined}
-          onReview={() => startReview(reviewTrip(trip.ids, groups, byId, kept))}
+          onReview={() => startReview(reviewTrip(trip.ids, groups, byId, kept, undefined, cos))}
           onRename={name => store.updateTrips(e => setName(e, trip.key, name))}
           onSplit={at => { store.updateTrips(e => addSplit(e, trip.key, at)); show(t.tripSplit); }}
           onMerge={other => {
@@ -693,7 +748,7 @@ export default function App() {
           t={t} parts={parts} storage={store.storage}
           onBack={() => setShowQuickClean(false)}
           onReview={ids => {
-            const reasons = new Map(reviewCleanup(groups, cleanupBlurry(blurry, kept), kept, byId, old, [], exposureAll).map(i => [i.id, i]));
+            const reasons = new Map(reviewCleanup(groups, cleanupBlurry(blurry, kept), kept, byId, old, [], exposureAll, cos).map(i => [i.id, i]));
             startReview(ids.map(id => reasons.get(id)).filter((i): i is ReviewItem => !!i));
           }}
           onDelete={ids => deletePhotos(ids, [], () => setShowQuickClean(false))}
@@ -761,7 +816,7 @@ export default function App() {
           onExposure={() => openFailed(exposure.dark.length ? 'dark' : 'bright')}
           onScreenshots={() => setShowScreenshots(true)}
           onUtility={() => setShowUtility(true)}
-          onReviewAll={() => startReview(reviewCleanup(groups, cleanupBlurry(blurry, kept), kept, byId, old, utility, exposureAll))}
+          onReviewAll={() => startReview(reviewCleanup(groups, cleanupBlurry(blurry, kept), kept, byId, old, utility, exposureAll, cos))}
           onQuickClean={() => setShowQuickClean(true)}
         />
       );
@@ -779,12 +834,21 @@ export default function App() {
         />
       );
     }
+    if (showSearch) {
+      return (
+        <SearchView
+          t={t} lang={language} vectors={store.vectors} byId={byId} aiSeen={aiSeen}
+          onBack={() => setShowSearch(false)} onOpen={setLikeId}
+          onReview={ids => startReview(reviewFound(ids))}
+        />
+      );
+    }
     if (showTrips) return <TripsView t={t} trips={trips} onBack={() => setShowTrips(false)} onOpen={setTripKey} />;
     if (showSettings) {
       return (
         <SettingsView
           t={t} language={language} themeMode={store.themeMode} access={access} owned={store.owned} onSale={UNLOCK_ON_SALE} unlimited={unlimited} freeLeft={freeLeft(state.freeUsed)}
-          debug={store.debug} dryRunAvailable={store.dryRunAvailable} dryRun={store.dryRun}
+          debug={store.debug} dryRunAvailable={store.dryRunAvailable} dryRun={store.dryRun} ledger={state.ledger}
           reminder={store.reminder}
           onReminder={on => { void store.setReminder(on, t.reminderTitle, t.reminderBody).then(ok => { if (on && !ok) show(t.reminderDenied); }); }}
           onBack={() => setShowSettings(false)}
@@ -825,7 +889,8 @@ export default function App() {
           onThisDay={{ photos: today.ids.length, years: today.years, cover: today.ids[0] }}
           categories={cats.slice(0, 8).map(c => ({ label: c.label, count: c.photos.length, cover: c.photos[0].id }))}
           onSettings={() => setShowSettings(true)}
-          onOnThisDay={() => startReview(reviewTrip(today.ids, groups, byId, kept))}
+          onSearch={() => setShowSearch(true)}
+          onOnThisDay={() => startReview(reviewTrip(today.ids, groups, byId, kept, undefined, cos))}
           onTrips={() => setShowTrips(true)}
           onTrip={setTripKey}
           onCategory={setCategory}
@@ -858,6 +923,7 @@ export default function App() {
         onProtected={() => setShowProtected(true)}
         onRescan={() => store.startScan()}
         onSettings={() => setShowSettings(true)}
+        onSearch={aiSeen.seen > 0 ? () => setShowSearch(true) : undefined}
         onAddPhotos={addPhotos}
         onCleanup={() => setShowCleanup(true)}
         onSimilar={() => setShowSimilar(true)}
@@ -974,7 +1040,7 @@ export default function App() {
         </div>
       </Sheet>
 
-      <Toast toast={toast} onDone={hide} raised={['trip', 'group', 'blurry', 'screenshots', 'utility', 'quickClean', 'large', 'live', 'compress', 'cleanup', 'review'].includes(screen)} />
+      <Toast toast={toast} onDone={hide} raised={['trip', 'group', 'blurry', 'screenshots', 'utility', 'quickClean', 'large', 'live', 'compress', 'cleanup', 'review', 'search', 'like'].includes(screen)} />
     </div>
   );
 }

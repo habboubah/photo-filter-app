@@ -19,12 +19,24 @@ import { root } from './lib/shots.mjs';
  * The main chunk's gzip size (level 9) when this was recorded. Raise it only
  * with a line here saying what made it grow.
  *   - November 2026: 146 kB — React, Motion, Capacitor, the screens and the logic.
+ *   - 17 November 2026: 162 kB — Arabic's plural rules and the chat groups (158 kB), then the AI's
+ *     version 2: the compact vectors and the label scoring, two-signal groups, how sure each
+ *     suggestion is, search's entry points, protecting look-alikes, and their strings in German and
+ *     English. The search vocabulary (67 kB) is a chunk of its own, loaded with the search screen.
  */
-const BUNDLE_GZIP_BASELINE = 146_000;
+const BUNDLE_GZIP_BASELINE = 162_000;
 const BUNDLE_GROWTH = 1.10;
-/** 50,000 photos (about 62,000 with bursts and screenshots), on a desktop. Measured 16 November 2026: ~300 ms. */
+/**
+ * 50,000 photos (about 62,000 with bursts and screenshots), on a desktop. Measured 16 November 2026: ~300 ms;
+ * 17 November 2026, with the AI's vectors (similar groups confirmed by them, 33 labels): see the two lines below.
+ */
 const ANALYSIS_BUDGET_MS = 1500;
 const EDIT_BUDGET_MS = 400;
+/**
+ * Every photo's label scores from its vector (src/logic/ai.ts scoreLabels), once per launch when the vectors
+ * arrive — in slices, so the screen stays responsive (src/store.ts). Measured 17 November 2026: ~650 ms.
+ */
+const LABELS_BUDGET_MS = 1500;
 const PHOTOS = 50_000;
 
 let failures = 0;
@@ -55,14 +67,17 @@ try {
   const geo = await vite.ssrLoadModule('/src/logic/geo.ts');
   const st = await vite.ssrLoadModule('/src/logic/state.ts');
   const ai = await vite.ssrLoadModule('/src/logic/ai.ts');
+  const vec = await vite.ssrLoadModule('/src/logic/vectors.ts');
   const tr = await vite.ssrLoadModule('/src/logic/trips.ts');
   const { photos } = fixtures.fakeLibrary(PHOTOS, 1);
   const cities = new geo.CityIndex(geo.parseCities(fs.readFileSync(path.join(root, 'src/data/cities.tsv'), 'utf8')));
   const state = st.emptyState();
+  // As on a phone after the AI's pass: every photo with a vector (made up, following its hash).
+  const vectors = vec.Vectors.of(fixtures.fakeVectors(photos, 1));
   const run = () => {
     const t0 = performance.now();
     const lib = a.makeLibrary(photos);
-    const det = a.detect(lib);
+    const det = a.detect(lib, vectors);
     const trips = a.buildTrips(lib, det.trips, state, cities, 'de', 'de-DE');
     const groups = a.buildGroups(lib, det.groups, state);
     const blurry = a.findBlurry(lib, groups);
@@ -75,6 +90,13 @@ try {
   const r = run();
   report(r.ms <= ANALYSIS_BUDGET_MS,
     `${r.lib.photos.length.toLocaleString('en')} photos → ${r.trips.length} trips, ${r.groups.length} similar groups, ${r.blurry.length} blurry, ${r.utility.length} utility, ${r.cats.length} categories in ${Math.round(r.ms)} ms (budget ${ANALYSIS_BUDGET_MS} ms)`);
+  // The labels' scores for every vector: once per load of the vectors (only new ones after that).
+  const labelFile = JSON.parse(fs.readFileSync(path.join(root, 'src/logic/aiLabels.json'), 'utf8'));
+  const model = ai.labelModel(labelFile);
+  const tl = performance.now();
+  ai.scoreLabels(vectors, model);
+  const labelMs = performance.now() - tl;
+  report(labelMs <= LABELS_BUDGET_MS, `${vectors.size.toLocaleString('en')} vectors scored for ${ai.LABELS.length} labels in ${Math.round(labelMs)} ms (budget ${LABELS_BUDGET_MS} ms)`);
   const t0 = performance.now();
   const edited = { ...state, trips: { ...tr.setName(state.trips, r.trips[0].key, 'Umbenannt'), albums: {} } };
   a.buildTrips(r.lib, r.det.trips, edited, cities, 'de', 'de-DE');

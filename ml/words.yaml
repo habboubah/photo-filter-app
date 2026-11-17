@@ -1,0 +1,238 @@
+# The search vocabulary (Suche, docs/features.md): what the app can find by a
+# word, without a text model on the phone. Each concept has an English prompt
+# (what SigLIP 2 sees, lower case) and the words people type for it in each of
+# the app's languages. ml/words.py turns it into src/search/words.json.
+#
+#   prompt | English words | German words | Arabic words   (words: comma-separated)
+concepts:
+  # people and family
+  - baby | baby, newborn, infant | Baby, Neugeborenes, Säugling | طفل رضيع, رضيع, مولود
+  - child | child, kid, kids, children | Kind, Kinder | طفل, أطفال
+  - toddler | toddler | Kleinkind | طفل صغير
+  - boy | boy | Junge | ولد
+  - girl | girl | Mädchen | بنت, فتاة
+  - twins | twins | Zwillinge | توأم
+  - mother with a baby | mother, mom, mum | Mutter, Mama | أم, ماما
+  - father with a child | father, dad | Vater, Papa | أب, بابا
+  - grandparents with grandchildren | grandparents, grandma, grandpa | Großeltern, Oma, Opa | جد, جدة, أجداد
+  - family photo | family | Familie | عائلة
+  - group of friends | friends, group | Freunde, Gruppe | أصدقاء, مجموعة
+  - selfie | selfie | Selfie | سيلفي
+  - portrait of a person | portrait, person, face | Porträt, Person, Gesicht | صورة شخصية, شخص, وجه
+  - couple | couple | Paar, Pärchen | زوجان
+  - wedding | wedding, bride | Hochzeit, Braut | زفاف, عرس, عروس
+  - crowd of people | crowd | Menschenmenge | حشد
+  # celebrations
+  - birthday cake with candles | birthday, cake | Geburtstag, Torte, Kuchen | عيد ميلاد, كعكة, كيك
+  - birthday party with balloons | party, balloons | Party, Feier, Luftballons | حفلة, بالونات
+  - gifts and presents | gift, present, presents | Geschenk, Geschenke | هدية, هدايا
+  - christmas tree | christmas, christmas tree | Weihnachten, Weihnachtsbaum | عيد الميلاد, شجرة الميلاد
+  - christmas market | christmas market | Weihnachtsmarkt | سوق عيد الميلاد
+  - ramadan lanterns | ramadan, lantern | Ramadan, Laterne | رمضان, فانوس
+  - eid celebration | eid | Eid, Zuckerfest, Opferfest | عيد, عيد الفطر, عيد الأضحى
+  - iftar dinner table | iftar | Iftar, Fastenbrechen | إفطار
+  - easter eggs | easter | Ostern, Ostereier | عيد الفصح, بيض ملون
+  - halloween costume | halloween, costume | Halloween, Kostüm | هالوين, زي تنكري
+  - carnival costume parade | carnival | Karneval, Fasching, Fastnacht | كرنفال
+  - fireworks | fireworks, new year | Feuerwerk, Silvester | ألعاب نارية, رأس السنة
+  - graduation ceremony | graduation | Abschlussfeier, Abschluss | تخرج
+  - first day of school with a school cone | first day of school, school cone | Einschulung, Schultüte | أول يوم مدرسة
+  - concert on a stage | concert, stage | Konzert, Bühne | حفلة موسيقية, مسرح
+  # school and kids' things
+  - school | school, classroom | Schule, Klassenzimmer | مدرسة, صف
+  - kindergarten | kindergarten, daycare | Kindergarten, Kita | روضة, حضانة
+  - child's drawing | drawing, kids drawing | Kinderzeichnung, Zeichnung, Bild gemalt | رسمة, رسم أطفال
+  - homework worksheet | homework, worksheet | Hausaufgaben, Arbeitsblatt | واجب, ورقة عمل
+  - toys | toys, toy | Spielzeug | ألعاب, لعبة
+  - lego bricks | lego | Lego | ليغو
+  - stuffed animal teddy bear | teddy, teddy bear, stuffed animal | Teddy, Kuscheltier | دبدوب, دمية
+  - stroller pram | stroller, pram, buggy | Kinderwagen | عربة أطفال
+  - playground | playground, swing, slide | Spielplatz, Schaukel, Rutsche | ملعب أطفال, أرجوحة, زحليقة
+  - sandbox | sandbox, sandpit | Sandkasten | صندوق رمل
+  # animals
+  - dog | dog, puppy | Hund, Welpe | كلب, جرو
+  - cat | cat, kitten | Katze, Kätzchen | قطة, قط
+  - bird | bird | Vogel | طائر, عصفور
+  - horse | horse, pony | Pferd, Pony | حصان, مهر
+  - fish in an aquarium | fish, aquarium | Fisch, Aquarium | سمك, حوض سمك
+  - rabbit | rabbit, bunny | Hase, Kaninchen | أرنب
+  - zoo animals | zoo | Zoo, Tierpark | حديقة حيوانات
+  - farm animals cows | farm, cow | Bauernhof, Kuh | مزرعة, بقرة
+  - sheep | sheep | Schaf | خروف
+  - duck | duck | Ente | بطة
+  - elephant | elephant | Elefant | فيل
+  - giraffe | giraffe | Giraffe | زرافة
+  - butterfly | butterfly | Schmetterling | فراشة
+  # food and drink
+  - food on a plate | food, meal, dish | Essen, Mahlzeit, Gericht | طعام, أكل, وجبة
+  - breakfast | breakfast | Frühstück | فطور
+  - pizza | pizza | Pizza | بيتزا
+  - burger and fries | burger, fries | Burger, Pommes | برغر, بطاطا مقلية
+  - pasta | pasta, spaghetti | Nudeln, Spaghetti, Pasta | معكرونة, سباغيتي
+  - salad | salad | Salat | سلطة
+  - soup | soup | Suppe | شوربة
+  - ice cream | ice cream | Eis, Eiscreme | آيس كريم, بوظة
+  - fruit | fruit | Obst, Früchte | فواكه
+  - vegetables | vegetables | Gemüse | خضار
+  - bread | bread, bakery | Brot, Bäckerei | خبز, مخبز
+  - coffee | coffee | Kaffee | قهوة
+  - tea | tea | Tee | شاي
+  - cocktail drinks | drinks, cocktail | Getränke, Cocktail | مشروبات, كوكتيل
+  - barbecue grill | barbecue, bbq, grill | Grillen, Grill | شواء, مشاوي
+  - sushi | sushi | Sushi | سوشي
+  - kebab doner | kebab, doner | Döner, Kebab | كباب, شاورما
+  - dates fruit | dates | Datteln | تمر
+  - sweets and desserts | dessert, sweets | Nachtisch, Süßigkeiten, Dessert | حلويات, حلوى
+  - cooking in the kitchen | cooking | Kochen | طبخ
+  - restaurant | restaurant | Restaurant | مطعم
+  # places and nature
+  - beach | beach, sand | Strand, Sand | شاطئ, رمل
+  - sea and ocean | sea, ocean | Meer, Ozean | بحر, محيط
+  - lake | lake | See | بحيرة
+  - river | river | Fluss | نهر
+  - mountains | mountains, mountain | Berge, Berg | جبال, جبل
+  - forest | forest, woods | Wald | غابة
+  - park | park | Park | حديقة, منتزه
+  - garden | garden | Garten | حديقة منزل, بستان
+  - flowers | flowers, flower | Blumen, Blume | زهور, ورد
+  - tree | tree, trees | Baum, Bäume | شجرة, أشجار
+  - field and meadow | field, meadow | Feld, Wiese | حقل, مرج
+  - desert | desert | Wüste | صحراء
+  - waterfall | waterfall | Wasserfall | شلال
+  - sunset | sunset | Sonnenuntergang | غروب
+  - sunrise | sunrise | Sonnenaufgang | شروق
+  - sky with clouds | sky, clouds | Himmel, Wolken | سماء, غيوم
+  - rainbow | rainbow | Regenbogen | قوس قزح
+  - snow | snow, winter | Schnee, Winter | ثلج, شتاء
+  - rain | rain | Regen | مطر
+  - autumn leaves | autumn, fall leaves | Herbst, Herbstlaub | خريف
+  - night | night | Nacht | ليل
+  - city street | city, street | Stadt, Straße | مدينة, شارع
+  - old town | old town | Altstadt | بلدة قديمة
+  - skyline | skyline, skyscraper | Skyline, Hochhaus | ناطحة سحاب, أفق المدينة
+  - church | church, cathedral | Kirche, Dom | كنيسة, كاتدرائية
+  - mosque | mosque | Moschee | مسجد, جامع
+  - castle | castle | Burg, Schloss | قلعة, قصر
+  - bridge | bridge | Brücke | جسر
+  - tower | tower | Turm | برج
+  - eiffel tower | eiffel tower, paris | Eiffelturm, Paris | برج إيفل, باريس
+  - museum | museum | Museum | متحف
+  - statue | statue, monument | Statue, Denkmal | تمثال, نصب
+  - harbour with boats | harbour, harbor, port | Hafen | ميناء
+  - airport | airport | Flughafen | مطار
+  - train station | train station | Bahnhof | محطة قطار
+  - hotel room | hotel | Hotel, Hotelzimmer | فندق
+  - swimming pool | pool, swimming pool | Pool, Schwimmbad | مسبح
+  - camping tent | camping, tent | Camping, Zelt | تخييم, خيمة
+  - shop and store | shop, store, shopping | Laden, Geschäft, Einkaufen | متجر, محل, تسوق
+  - supermarket | supermarket | Supermarkt | سوبرماركت
+  - market stall | market | Markt | سوق
+  - amusement park | amusement park, fair | Freizeitpark, Kirmes, Rummel | مدينة ملاهي
+  - stadium | stadium | Stadion | ملعب, استاد
+  # home
+  - living room | living room, sofa | Wohnzimmer, Sofa | غرفة جلوس, كنبة
+  - kitchen | kitchen | Küche | مطبخ
+  - bedroom | bedroom, bed | Schlafzimmer, Bett | غرفة نوم, سرير
+  - bathroom | bathroom | Badezimmer, Bad | حمام
+  - children's room | kids room, nursery | Kinderzimmer | غرفة أطفال
+  - house exterior | house, home | Haus, Zuhause | بيت, منزل
+  - apartment building | apartment, flat | Wohnung, Wohnhaus | شقة, عمارة
+  - balcony | balcony | Balkon | شرفة, بلكونة
+  - furniture | furniture, table, chair | Möbel, Tisch, Stuhl | أثاث, طاولة, كرسي
+  - plants indoors | houseplant, plant | Pflanze, Zimmerpflanze | نبتة, نبات
+  - renovation construction | renovation, construction, building site | Renovierung, Baustelle | ترميم, ورشة بناء
+  - moving boxes | moving, boxes | Umzug, Kartons | انتقال, كراتين
+  # transport
+  - car | car | Auto | سيارة
+  - bicycle | bicycle, bike | Fahrrad | دراجة
+  - motorbike | motorbike, motorcycle | Motorrad | دراجة نارية
+  - bus | bus | Bus | حافلة, باص
+  - train | train | Zug | قطار
+  - airplane | airplane, plane, flight | Flugzeug, Flug | طائرة, رحلة طيران
+  - view from an airplane window | airplane window | Flugzeugfenster | نافذة طائرة
+  - boat | boat, ship | Boot, Schiff | قارب, سفينة
+  - tram | tram | Straßenbahn | ترام
+  - traffic jam on a road | traffic, road, highway | Stau, Straße, Autobahn | زحمة, طريق, أوتوستراد
+  - car dashboard warning light | dashboard, warning light | Armaturenbrett, Warnleuchte | لوحة السيارة
+  - car damage dent | car damage, accident | Autoschaden, Unfall, Delle | ضرر السيارة, حادث
+  # sports and activities
+  - football soccer | football, soccer | Fußball | كرة قدم
+  - swimming | swimming | Schwimmen | سباحة
+  - cycling | cycling | Radfahren | ركوب الدراجة
+  - running | running, jogging | Laufen, Joggen | جري, ركض
+  - gym workout | gym, fitness, workout | Fitnessstudio, Training, Fitness | جيم, صالة رياضية, تمارين
+  - hiking | hiking | Wandern | مشي, تنزه
+  - skiing | skiing, ski | Skifahren, Ski | تزلج
+  - sledding | sledding, sledge | Schlitten, Rodeln | زلاجة
+  - ice skating | ice skating | Schlittschuh | تزلج على الجليد
+  - basketball | basketball | Basketball | كرة سلة
+  - tennis | tennis | Tennis | تنس
+  - dancing | dancing, dance | Tanzen, Tanz | رقص
+  - music instrument | music, guitar, piano | Musik, Gitarre, Klavier | موسيقى, غيتار, بيانو
+  - reading a book | book, reading | Buch, Lesen | كتاب, قراءة
+  - video games | video games, gaming | Videospiele, Zocken | ألعاب فيديو
+  - painting and crafts | crafts, painting | Basteln, Malen | أشغال يدوية, تلوين
+  # utility and documents
+  - receipt | receipt, bill | Kassenzettel, Quittung, Beleg, Rechnung | إيصال, فاتورة
+  - document | document, letter, paper | Dokument, Brief, Papier, Schreiben | مستند, رسالة, ورقة
+  - invoice | invoice | Rechnung | فاتورة
+  - contract | contract | Vertrag | عقد
+  - form | form | Formular, Antrag | استمارة, نموذج
+  - passport | passport | Reisepass, Pass | جواز سفر
+  - identity card | id card, identity card | Ausweis, Personalausweis | هوية, بطاقة شخصية
+  - driving licence | driving licence, driver license | Führerschein | رخصة قيادة
+  - bank card | bank card, credit card | Bankkarte, Kreditkarte, EC-Karte | بطاقة بنكية, بطاقة ائتمان
+  - boarding pass | boarding pass | Bordkarte | بطاقة صعود
+  - ticket | ticket, tickets | Ticket, Fahrkarte, Eintrittskarte | تذكرة, تذاكر
+  - parking ticket | parking ticket | Parkschein, Parkticket | تذكرة موقف
+  - parking garage sign | parking, car park | Parkhaus, Parkplatz | موقف سيارات, باركينغ
+  - qr code | qr code, barcode | QR-Code, Barcode, Strichcode | رمز QR, باركود
+  - whiteboard | whiteboard, blackboard | Whiteboard, Tafel | سبورة, لوح
+  - presentation slide | slide, presentation | Folie, Präsentation | شريحة, عرض تقديمي
+  - handwritten notes | notes, handwriting | Notizen, Handschrift, Zettel | ملاحظات, خط يد
+  - screenshot of a chat | chat, whatsapp, messages | Chat, WhatsApp, Nachrichten | محادثة, واتساب, رسائل
+  - screenshot of a website | website, screenshot | Webseite, Screenshot, Bildschirmfoto | موقع, لقطة شاشة
+  - photo of a computer screen | computer screen, monitor, laptop | Bildschirm, Monitor, Laptop | شاشة كمبيوتر, لابتوب
+  - tv screen | tv, television | Fernseher, TV | تلفاز, تلفزيون
+  - meme | meme | Meme | ميم
+  - map | map, directions | Karte, Stadtplan, Route | خريطة, اتجاهات
+  - timetable | timetable, schedule | Fahrplan, Stundenplan | جدول, جدول مواعيد
+  - opening hours sign | opening hours | Öffnungszeiten | ساعات العمل
+  - price tag | price, price tag | Preis, Preisschild | سعر, بطاقة سعر
+  - product in a store | product | Produkt, Artikel | منتج
+  - package and parcel | parcel, package, delivery | Paket, Lieferung | طرد, شحنة
+  - medicine package | medicine, pills | Medikament, Tabletten | دواء, حبوب
+  - recipe | recipe | Rezept, Kochrezept | وصفة
+  - book page | page, book page | Buchseite, Seite | صفحة كتاب
+  - newspaper | newspaper | Zeitung | جريدة
+  - calendar | calendar | Kalender | تقويم
+  - certificate | certificate, diploma | Zeugnis, Urkunde, Zertifikat | شهادة
+  - x-ray image | x-ray | Röntgenbild | صورة أشعة
+  - floor plan | floor plan | Grundriss | مخطط
+  - serial number label | serial number, label, sticker | Seriennummer, Typenschild, Aufkleber | رقم تسلسلي, ملصق
+  - wifi password | wifi, password | WLAN, Passwort | واي فاي, كلمة السر
+  - shopping list | shopping list | Einkaufsliste | قائمة تسوق
+  - accidental photo of the floor | accidental, pocket, floor | aus Versehen, Hosentasche, Boden | صورة بالخطأ, جيب, أرض
+  - black photo | black, dark | schwarz, dunkel | أسود, مظلم
+  - blurry photo | blurry, blurred | unscharf, verschwommen | ضبابية, مشوشة
+  # objects and clothes
+  - phone | phone, smartphone | Handy, Smartphone | هاتف, جوال
+  - shoes | shoes | Schuhe | أحذية, حذاء
+  - clothes | clothes, outfit, dress | Kleidung, Outfit, Kleid | ملابس, فستان
+  - glasses | glasses | Brille | نظارة
+  - watch | watch | Uhr | ساعة
+  - jewellery ring | jewellery, jewelry, ring | Schmuck, Ring | مجوهرات, خاتم
+  - bag | bag, handbag | Tasche, Handtasche | حقيبة, شنطة
+  - furniture shop ikea | ikea | IKEA | ايكيا
+  - tools | tools, drill | Werkzeug, Bohrmaschine | أدوات, مثقاب
+  - cake | cake | Kuchen | كعكة
+  - candles | candles | Kerzen | شموع
+  - umbrella | umbrella | Regenschirm | مظلة
+  - sunglasses | sunglasses | Sonnenbrille | نظارة شمسية
+  - hat | hat | Hut, Mütze | قبعة
+  # photo kinds
+  - black and white photo | black and white | schwarzweiß | أبيض وأسود
+  - old printed photo | old photo, printed photo | altes Foto, Papierfoto | صورة قديمة
+  - drawing or illustration | illustration, cartoon | Illustration, Zeichentrick | رسم توضيحي, كرتون
+  - close-up macro | close-up, macro | Nahaufnahme, Makro | صورة مقربة
+  - food menu | menu | Speisekarte, Menü | قائمة طعام

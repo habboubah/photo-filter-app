@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { animate, motion, useMotionValue, useReducedMotion, useTransform } from 'motion/react';
-import { Check, Clock, FolderInput, Play, Plus, Shield, Trash2, Undo2, X } from 'lucide-react';
+import { Check, Clock, FolderInput, Images, Play, Plus, Shield, Trash2, Undo2, X } from 'lucide-react';
 import type { Confidence, Photo } from '../types';
 import { Strings, bytes, fmt, num, plural } from '../translations';
 import { Decision, ReviewItem, Session, albumPlan, deleteSplit, isNewAlbum, laterIds, newAlbumKey, toDelete } from '../logic/review';
+import type { Detail, Trust } from '../logic/confidence';
 import { duration } from '../logic/large';
 import { BigNumber } from '../ui/Controls';
 import { Button, IconButton } from '../ui/Button';
@@ -25,7 +26,7 @@ const THRESHOLD = 110;
 /** What the end screen writes: the photos marked for deleting, and the photos filed into albums (Session.albums). */
 export interface ReviewOutcome { deleteIds: string[]; albums: { album: string; ids: string[] }[] }
 
-export function ReviewView({ t, session, finished, byId, debug, albums, android, onDecide, onFile, onProtect, onPreview, onUndo, onFinish, onDelete, onClose }: {
+export function ReviewView({ t, session, finished, byId, debug, albums, android, onDecide, onFile, onProtect, onPreview, onLike, onUndo, onFinish, onDelete, onClose }: {
   t: Strings;
   session: Session;
   finished: boolean;
@@ -43,6 +44,8 @@ export function ReviewView({ t, session, finished, byId, debug, albums, android,
   onProtect: (id: string) => void;
   /** A video: played in the system's player over the app. */
   onPreview: (id: string) => void;
+  /** The photos like this one (src/logic/search.ts likeThis); absent for a photo without the AI's vector. */
+  onLike?: (id: string) => void;
   onUndo: () => void;
   onFinish: () => void;
   onDelete: (outcome: ReviewOutcome) => void;
@@ -99,7 +102,10 @@ export function ReviewView({ t, session, finished, byId, debug, albums, android,
                 <div className="h-full bg-accent-fill rounded-full transition-[width] duration-300" style={{ width: `${(session.index / session.items.length) * 100}%` }} />
               </div>
             </div>
-            <Card key={item.id} t={t} item={item} photo={byId.get(item.id)} debug={debug} onDecide={onDecide} onProtect={() => onProtect(item.id)} onPreview={() => onPreview(item.id)} />
+            <Card
+              key={item.id} t={t} item={item} photo={byId.get(item.id)} debug={debug} onDecide={onDecide} onProtect={() => onProtect(item.id)} onPreview={() => onPreview(item.id)}
+              onLike={onLike ? () => onLike(item.id) : undefined}
+            />
             {onFile && <div role="group" aria-label={t.fileIntoAlbum} className="flex gap-2 overflow-x-auto px-[16px] pt-3 pb-1">
               {chips.map(c => {
                 const on = session.albums[item.id] === c.id;
@@ -142,8 +148,8 @@ export function ReviewView({ t, session, finished, byId, debug, albums, android,
   );
 }
 
-function Card({ t, item, photo, debug, onDecide, onProtect, onPreview }: {
-  t: Strings; item: ReviewItem; photo?: Photo; debug: boolean; onDecide: (d: Decision) => void; onProtect: () => void; onPreview: () => void;
+function Card({ t, item, photo, debug, onDecide, onProtect, onPreview, onLike }: {
+  t: Strings; item: ReviewItem; photo?: Photo; debug: boolean; onDecide: (d: Decision) => void; onProtect: () => void; onPreview: () => void; onLike?: () => void;
 }) {
   const reduce = useReducedMotion();
   const x = useMotionValue(0);
@@ -159,10 +165,17 @@ function Card({ t, item, photo, debug, onDecide, onProtect, onPreview }: {
     utility: item.label ? fmt(t.reasonUtility, { label: t[`aiLabel_${item.label}`] }) : '',
     large: photo ? bytes(t, photo.bytes) : '', trip: '', later: t.reasonLater, dark: t.reasonDark, bright: t.reasonBright,
     video: photo ? `${duration(photo.dur ?? 0)} · ${bytes(t, photo.bytes)}` : '',
-    lookalike: t.reasonLookalike, bestTake: t.reasonBestTake, app: t.reasonApp,
+    lookalike: t.reasonLookalike, bestTake: t.reasonBestTake, app: t.reasonApp, found: '',
   };
+  const details: Record<Detail, string> = {
+    exactCopy: t.detailExactCopy, smallerCopy: t.detailSmallerCopy, alteredCopy: t.detailAlteredCopy, burstExtra: t.detailBurstExtra,
+    blurrier: t.detailBlurrier, eyesClosed: t.detailEyesClosed, worseLight: t.detailWorseLight, nearlySame: t.detailNearlySame,
+  };
+  const trusts: Record<Trust, string> = { sure: t.trustSure, likely: t.trustLikely, check: t.trustCheck };
   const chip = item.suggest === 'delete' ? t.suggestDelete : item.suggest === 'keep' ? t.suggestKeep : '';
-  const reason = reasons[item.reason];
+  // A group's extra shot says what is worse about it (blurrier, eyes closed, a smaller copy …), else why it was suggested.
+  const reason = item.suggest === 'delete' && item.detail ? details[item.detail] : reasons[item.reason];
+  const trust = item.suggest === 'delete' && item.trust ? trusts[item.trust] : '';
   const when = photo ? new Date(photo.t).toLocaleString(t.locale, { dateStyle: 'medium', timeStyle: 'short' }) : '';
 
   const fling = (d: Decision) => {
@@ -205,7 +218,7 @@ function Card({ t, item, photo, debug, onDecide, onProtect, onPreview }: {
         }}
         className="relative flex-1 min-h-[300px] rounded-lg overflow-hidden bg-surface shadow-e2 touch-none cursor-grab active:cursor-grabbing"
         role="img"
-        aria-label={[when, chip, reason].filter(Boolean).join('. ')}
+        aria-label={[when, chip, trust, reason].filter(Boolean).join('. ')}
       >
         <div className="absolute inset-0"><Thumb id={item.id} size={LARGE} className="!rounded-none !object-contain bg-surface-2" /></div>
         <motion.span style={{ opacity: delOpacity }} className="absolute top-6 right-6 px-4 py-2 rounded-[12px] border-[3px] border-neg bg-surface text-neg text-heading font-extrabold rotate-[8deg]" aria-hidden="true">
@@ -218,6 +231,22 @@ function Card({ t, item, photo, debug, onDecide, onProtect, onPreview }: {
           {t.keep}
         </motion.span>
         <span className="absolute bottom-3 start-3 px-2.5 py-1 rounded-full bg-veil text-on-color text-caption font-bold">{when}</span>
+        {onLike && !photo?.video && (
+          <button
+            type="button" aria-label={t.likeOpen}
+            onPointerDownCapture={e => e.stopPropagation()}
+            onClick={() => { tapLight(); onLike(); }}
+            className="absolute top-3 start-3 w-11 h-11 rounded-full glass text-fg inline-flex items-center justify-center press focus-visible:ring-focus"
+          >
+            <Images className="w-5 h-5" aria-hidden="true" />
+          </button>
+        )}
+        {trust && (
+          <span className="absolute bottom-3 end-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-veil text-on-color text-caption font-bold">
+            <span className={`w-2 h-2 rounded-full ${item.trust === 'check' ? 'bg-warn' : item.trust === 'sure' ? 'bg-keep' : 'bg-on-color'}`} aria-hidden="true" />
+            {trust}
+          </span>
+        )}
         {photo?.video && (
           <span className="absolute top-3 start-1/2 -translate-x-1/2 inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-veil text-on-color text-caption font-bold num">
             <Play className="w-3.5 h-3.5" fill="currentColor" strokeWidth={0} aria-hidden="true" />{t.videoBadge} · {duration(photo.dur ?? 0)}
@@ -234,7 +263,7 @@ function Card({ t, item, photo, debug, onDecide, onProtect, onPreview }: {
           </button>
         )}
         {debug && photo && (
-          <span className="absolute bottom-3 end-3 px-2 py-1 rounded-full bg-veil text-on-color text-micro font-bold num">
+          <span className="absolute top-3 end-3 px-2 py-1 rounded-full bg-veil text-on-color text-micro font-bold num">
             {fmt(t.sharpnessDebug, { s: photo.sharp ?? '–', c: photo.contrast ?? '–' })}
           </span>
         )}

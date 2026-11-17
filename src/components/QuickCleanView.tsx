@@ -1,16 +1,18 @@
 import { useState } from 'react';
 import type { Storage } from '../types';
-import { Strings, bytes, fmt, plural } from '../translations';
-import { CleanKind, CleanPart, selection } from '../logic/smartClean';
-import { Dock, Group, Screen } from '../ui/Screen';
+import { Strings, bytes, fmt, num, plural } from '../translations';
+import { CleanKind, CleanPart, selection, toCheck } from '../logic/smartClean';
+import { Dock, Group, Next, Row, Screen } from '../ui/Screen';
 import { Button } from '../ui/Button';
 import { SwitchRow } from '../ui/Controls';
 
 /**
  * Quick clean (the plan's "Smart Clean"): each kind the clean-up card counts
  * with a switch, all on, then one system dialog for everything switched on —
- * or a review of the same photos first. Nothing is deleted without the
- * system's own dialog (CLAUDE.md, Safety rules).
+ * or a review of the same photos first. Only what the app is sure about goes
+ * in one tap (src/logic/confidence.ts); the photos to check are offered as a
+ * review of their own. Nothing is deleted without the system's own dialog
+ * (CLAUDE.md, Safety rules).
  */
 export function QuickCleanView({ t, parts, storage, onBack, onReview, onDelete }: {
   t: Strings;
@@ -20,9 +22,10 @@ export function QuickCleanView({ t, parts, storage, onBack, onReview, onDelete }
   onReview: (ids: string[]) => void;
   onDelete: (ids: string[]) => void;
 }) {
-  const present = parts.filter(p => p.ids.length > 0);
+  const present = parts.filter(p => p.ids.length > 0 || p.check.length > 0);
   const [on, setOn] = useState<Set<CleanKind>>(() => new Set(present.map(p => p.kind)));
   const chosen = selection(parts, on);
+  const unsure = toCheck(parts, on);
   const label: Record<CleanKind, string> = {
     duplicates: t.cleanupDuplicates, similar: t.cleanupSimilar, videos: t.lookalikeTitle, blurry: t.cleanupBlurry, exposure: t.cleanupExposure, screenshots: t.cleanupScreenshots,
   };
@@ -45,6 +48,11 @@ export function QuickCleanView({ t, parts, storage, onBack, onReview, onDelete }
           />
         ))}
       </Group>
+      {unsure.length > 0 && (
+        <Group footer={fmt(t.quickCleanCheck, { photos: plural(t, 'photos', unsure.length) })}>
+          <Row label={t.quickCleanCheckReview} trailing={<Next value={num(t, unsure.length)} />} onClick={() => onReview(unsure)} />
+        </Group>
+      )}
       <Dock>
         <div className="grid gap-1">
           <Button full size="lg" variant="danger" disabled={!chosen.ids.length} onClick={() => onDelete(chosen.ids)}>

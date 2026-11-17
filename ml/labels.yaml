@@ -5,12 +5,20 @@
 # kind: utility = something taken to remember a piece of information, not a
 #       moment (a receipt, a whiteboard, a meme someone sent). These feed the
 #       "Unwichtige Fotos" card — never deleted on their own, only suggested.
-#       memory = what a family keeps photos for. These feed the category row
+#       sensitive = a photo of an identity document or a bank card: never
+#       suggested, never shown as a category (it is kept for a reason).
+#       memory = what a family keeps photos for. These feed the categories
 #       and protect a photo from being suggested as "unwichtig".
 #
+# Since AI version 2 the labels live apart from the model: the phone stores
+# each photo's compact embedding and the app scores the labels itself
+# (src/logic/aiLabels.json, built by ml/labels.py). A new or changed label
+# needs no new scan — only `python ml/labels.py` and LABELS_VERSION.
+#
 # prompts: English, lower case (SigLIP 2 was trained on lower-cased text). A
-# photo's score for a label is the best of its prompts. More prompts per label
+# photo's score for a label comes from the mean of its prompts. More prompts per label
 # help; keep each one a plain description of what is in the picture.
+# The label's vector is the mean of its prompts' vectors.
 labels:
   - id: receipt
     kind: utility
@@ -26,7 +34,6 @@ labels:
       - a photo of a letter on paper
       - a page of text photographed with a phone
       - a photo of a form or an invoice
-      - a photo of an id card or a ticket
   - id: whiteboard
     kind: utility
     prompts:
@@ -69,20 +76,80 @@ labels:
       - a blurry photo taken inside a pocket
       - a photo of a finger covering the lens
       - an accidental photo of the ceiling
+  - id: ticket
+    kind: utility
+    prompts:
+      - a photo of a boarding pass
+      - a photo of a train ticket
+      - a photo of a parking ticket
+      - a photo of a concert ticket
+      - a photo of an entrance ticket
+  - id: product
+    kind: utility
+    prompts:
+      - a photo of a product on a shop shelf
+      - a photo of a price tag in a store
+      - a photo of a product box to buy later
+      - a photo of a label on a package
+  - id: parking
+    kind: utility
+    prompts:
+      - a photo of a parking garage level sign
+      - a photo of a parking space number
+      - a photo of a sign in a car park to remember where the car is
+  - id: map
+    kind: utility
+    prompts:
+      - a photo of a map
+      - a screenshot of directions on a map
+      - a photo of a timetable at a bus stop
+      - a photo of an information sign with opening hours
+  - id: idcard
+    kind: sensitive
+    prompts:
+      - a photo of a passport
+      - a photo of an identity card
+      - a photo of a driving licence
+      - a photo of a residence permit card
+  - id: bankcard
+    kind: sensitive
+    prompts:
+      - a photo of a credit card
+      - a photo of a bank card
+      - a photo of a debit card on a table
   - id: kids
     kind: memory
     prompts:
       - a photo of a child
-      - a photo of a baby
       - children playing
       - a family photo with kids
+      - a toddler smiling
+  - id: baby
+    kind: memory
+    prompts:
+      - a photo of a newborn baby
+      - a baby sleeping
+      - a baby in a crib
+      - a baby being held by a parent
   - id: people
     kind: memory
     prompts:
       - a photo of people
       - a portrait of a person
       - a group of friends
+      - people smiling at the camera
+  - id: selfie
+    kind: memory
+    prompts:
       - a selfie
+      - a selfie of two people
+      - a close-up selfie taken with a front camera
+  - id: group
+    kind: memory
+    prompts:
+      - a group photo of a family
+      - a large group of people posing for a photo
+      - a family gathering
   - id: pet
     kind: memory
     prompts:
@@ -94,13 +161,83 @@ labels:
     prompts:
       - a photo of food on a plate
       - a photo of a meal
-      - a birthday cake
       - a photo of a dish in a restaurant
+      - a family dinner table
+  - id: birthday
+    kind: memory
+    prompts:
+      - a birthday cake with candles
+      - a birthday party
+      - children at a birthday party with balloons
+  - id: playground
+    kind: memory
+    prompts:
+      - a child on a playground
+      - a child on a swing
+      - a child on a slide at a playground
+  - id: school
+    kind: memory
+    prompts:
+      - a child on the first day of school
+      - children in a kindergarten
+      - a school performance on a stage
+      - a child with a school bag
+  - id: beach
+    kind: memory
+    prompts:
+      - a photo of the beach and the sea
+      - people on a sandy beach
+      - children playing in the sand at the beach
+  - id: snow
+    kind: memory
+    prompts:
+      - a snowy landscape
+      - children playing in the snow
+      - a snowman
+      - skiing in the mountains
   - id: landscape
     kind: memory
     prompts:
       - a landscape photo
-      - a photo of the beach and the sea
       - a photo of mountains
-      - a photo of a city skyline
+      - a lake in nature
       - a sunset
+  - id: city
+    kind: memory
+    prompts:
+      - a photo of a city street
+      - a famous building in a city
+      - a city skyline
+      - an old town square
+  - id: flowers
+    kind: memory
+    prompts:
+      - a photo of flowers
+      - a garden in bloom
+      - a close-up of a flower
+  - id: home
+    kind: memory
+    prompts:
+      - a living room at home
+      - a cozy room interior
+      - a kitchen at home
+  - id: christmas
+    kind: memory
+    prompts:
+      - a christmas tree with lights
+      - christmas presents under a tree
+      - a christmas market
+  - id: ramadan
+    kind: memory
+    prompts:
+      - ramadan lanterns and decorations
+      - an eid celebration with family
+      - a table set for iftar
+      - eid sweets and decorations
+  - id: sports
+    kind: memory
+    prompts:
+      - a child playing football
+      - a sports match
+      - people swimming in a pool
+      - a child riding a bicycle

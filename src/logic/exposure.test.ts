@@ -62,7 +62,10 @@ describe('too dark and too bright photos', () => {
     expect(s.total.count).toBe(2);
     const items = reviewCleanup(groups, blurry, new Set(), lib.byId, [], [], exp.dark);
     expect(items.map(i => [i.id, i.reason])).toEqual([[blur.id, 'blurry'], [dark.id, 'dark']]);
-    expect(cleanParts(groups, blurry, [], new Set(), lib.byId, exp.dark).find(p => p.kind === 'exposure')?.ids).toEqual([dark.id]);
+    // A dark photo the AI did not call an accidental shot is one to check: not deleted in one tap.
+    const part = cleanParts(groups, blurry, [], new Set(), lib.byId, exp.dark).find(p => p.kind === 'exposure');
+    expect(part?.ids).toEqual([]);
+    expect(part?.check).toEqual([dark.id]);
   });
 
   it('suggests deleting them in a month or a trip', () => {

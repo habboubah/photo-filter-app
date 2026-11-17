@@ -187,6 +187,10 @@ Not shown for the first version. From version 2 on, `npm run release` reads
 `release-notes/<version>/<language>.txt` (or `release-notes/default/`).
 Version 2.1.0: `release-notes/2.1.0/` (the ten features of the plan of
 17 November 2026).
+Version 2.2.0: `release-notes/2.2.0/` (the AI made more reliable: how sure
+each suggestion is, quick clean with the sure ones only, better near-identical
+groups and edited copies, search, similar photos, IDs and bank cards
+protected). If these ship in an earlier version, move the lines there.
 
 ### 2.5 App Review information
 

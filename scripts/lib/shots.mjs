@@ -316,6 +316,38 @@ export const SCREENS = [
       await pause(page, 600);
     },
   },
+  // Suchen: the vocabulary's examples, then "Strand" picked and its results (the AI's vectors of the demo photos).
+  {
+    name: '41-search', run: async (page, w) => {
+      await openOrganize(page, w);
+      await page.click(`button${aria(w.t.searchOpen)}`);
+      await pause(page, 700);
+    },
+  },
+  {
+    name: '42-search-results', run: async (page, w) => {
+      await openOrganize(page, w);
+      await page.click(`button${aria(w.t.searchOpen)}`);
+      await pause(page, 600);
+      await page.fill('input', w.lang === 'de' ? 'stadt' : w.lang === 'ar' ? 'مدينة' : 'city');
+      await pause(page, 300);
+      await page.keyboard.press('Enter');
+      await pause(page, 900);
+    },
+  },
+  // Ähnliche Fotos: a search result's look-alikes.
+  {
+    name: '43-like', run: async (page, w) => {
+      await openOrganize(page, w);
+      await page.click(`button${aria(w.t.searchOpen)}`);
+      await pause(page, 600);
+      await page.fill('input', w.lang === 'de' ? 'stadt' : w.lang === 'ar' ? 'مدينة' : 'city');
+      await page.keyboard.press('Enter');
+      await pause(page, 900);
+      await page.locator('main button[style*="position: absolute"]').first().click();
+      await pause(page, 900);
+    },
+  },
   // Ähnliche Videos: the demo's two takes at Lake Garda and a copied video — their own screen, apart from the photos.
   {
     name: '35-lookalike', run: async (page, w) => {

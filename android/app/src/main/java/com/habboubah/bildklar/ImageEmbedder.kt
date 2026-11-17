@@ -16,11 +16,12 @@ import java.nio.FloatBuffer
  * (fixtures/ai/expected.json, ImageEmbedderTest).
  *
  * SigLIP 2's image encoder (ai-assets/image.onnx, Apache 2.0) runs in ONNX
- * Runtime on the CPU. A photo becomes a 768-number embedding; each label's
- * score is `scale · dot(embedding, label) + bias` — stored × 10, rounded, in
- * label order (src/types.ts Photo.ai). Nothing leaves the phone: ONNX Runtime
- * is a library inside the app, the model and the label vectors ship in the
- * APK's assets/ai/ (copied from the repository's ai-assets/ at build time).
+ * Runtime on the CPU. A photo becomes a 768-number embedding, and that becomes
+ * the 256-number compact vector the scan stores (ai-assets/compact.bin, a
+ * fixed projection): the app scores its labels, finds look-alikes and
+ * searches from it (src/logic/vectors.ts). Nothing leaves the phone: ONNX
+ * Runtime is a library inside the app, the model and the projection ship in
+ * the APK's assets/ai/ (copied from the repository's ai-assets/ at build time).
  *
  * Not thread-safe: the plugin uses one instance from its scan thread.
  */
@@ -28,16 +29,17 @@ class ImageEmbedder(directory: File) : AutoCloseable {
 
     companion object {
         /** Bump with src/logic/ai.ts AI_VERSION, vectors.json and ImageEmbedder.swift: every photo gets its AI pass again. */
-        const val AI_VERSION = 1
+        const val AI_VERSION = 2
         private const val ASSETS = "ai"
-        private val FILES = listOf("image.onnx", "vectors.bin", "vectors.json")
+        private val FILES = listOf("image.onnx", "compact.bin", "vectors.json", "faces.onnx")
 
         /**
-         * The model from the APK. ONNX Runtime opens a file by path (reading 76 MB into
-         * memory instead would double what the model costs), so the assets are copied to
-         * the app's files once per app version.
+         * The AI's files from the APK, in the app's files. ONNX Runtime opens a model by path
+         * (reading 76 MB into memory instead would double what the model costs), so the assets
+         * are copied there once per app version. The face detector (FaceDetector) uses the same folder.
          */
-        fun fromAssets(context: Context, appVersion: Long): ImageEmbedder {
+        @Synchronized
+        fun assetsDir(context: Context, appVersion: Long): File {
             val dir = File(context.filesDir, "ai")
             val stamp = File(dir, "version")
             if (!stamp.exists() || stamp.readText() != "$appVersion") {
@@ -49,22 +51,26 @@ class ImageEmbedder(directory: File) : AutoCloseable {
                 }
                 stamp.writeText("$appVersion")
             }
-            return ImageEmbedder(dir)
+            return dir
         }
 
-        /** ARGB pixels (row-major, `size` × `size`) → [3, size, size], (x / 255 − 0.5) / 0.5. */
+        /** The model from the APK (see assetsDir). */
+        fun fromAssets(context: Context, appVersion: Long): ImageEmbedder = ImageEmbedder(assetsDir(context, appVersion))
+
         /**
-         * An embedding as int8 values in base64 (768 bytes → 1,024 characters), each vector scaled by its
-         * own largest value — the cosine between two vectors does not notice. Matches ImageEmbedder.swift `packed`.
+         * A vector as int8 values in base64 (768 bytes → 1,024 characters; a compact vector 256 → 344), each
+         * scaled by its own largest value — the cosine between two vectors does not notice. Matches
+         * ImageEmbedder.swift `packed` and ml/compactlib.py `pack`.
          */
         fun packed(e: FloatArray): String {
             var top = 0f
             for (x in e) top = maxOf(top, kotlin.math.abs(x))
             val k = if (top > 0f) 127f / top else 0f
-            val bytes = ByteArray(e.size) { i -> Math.round(e[i] * k).coerceIn(-128, 127).toByte() }
-            return android.util.Base64.encodeToString(bytes, android.util.Base64.NO_WRAP)
+            val bytes = ByteArray(e.size) { i -> Math.round(e[i] * k).coerceIn(-127, 127).toByte() }
+            return java.util.Base64.getEncoder().encodeToString(bytes)
         }
 
+        /** ARGB pixels (row-major, `size` × `size`) → [3, size, size], (x / 255 − 0.5) / 0.5. */
         fun normalise(argb: IntArray, size: Int): FloatArray {
             val plane = size * size
             val out = FloatArray(3 * plane)
@@ -109,11 +115,9 @@ class ImageEmbedder(directory: File) : AutoCloseable {
 
     val size: Int
     val dim: Int
-    val labelCount: Int
-    private val scale: Float
-    private val bias: Float
-    /** labelCount × dim, row-major. */
-    private val vectors: FloatArray
+    val vecDim: Int
+    /** vecDim × dim, row-major. */
+    private val projection: FloatArray
     private val env: OrtEnvironment = OrtEnvironment.getEnvironment()
     private val session: OrtSession
 
@@ -122,11 +126,9 @@ class ImageEmbedder(directory: File) : AutoCloseable {
         require(number(meta, "aiVersion").toInt() == AI_VERSION) { "vectors.json does not match this build" }
         size = number(meta, "size").toInt()
         dim = number(meta, "dim").toInt()
-        labelCount = Regex("\"kind\"").findAll(meta).count()
-        scale = number(meta, "scale").toFloat()
-        bias = number(meta, "bias").toFloat()
-        vectors = halfFloats(File(directory, "vectors.bin").readBytes())
-        require(vectors.size == labelCount * dim) { "vectors.bin has the wrong size" }
+        vecDim = number(meta, "vecDim").toInt()
+        projection = halfFloats(File(directory, "compact.bin").readBytes())
+        require(projection.size == vecDim * dim) { "compact.bin has the wrong size" }
         val options = OrtSession.SessionOptions().apply {
             setIntraOpNumThreads(2)
             setOptimizationLevel(OrtSession.SessionOptions.OptLevel.ALL_OPT)
@@ -152,19 +154,24 @@ class ImageEmbedder(directory: File) : AutoCloseable {
             }
         }
 
-    /** Each label's logit for an embedding. */
-    fun logits(embedding: FloatArray): FloatArray = FloatArray(labelCount) { l ->
-        var dot = 0f
-        val row = l * dim
-        for (i in 0 until dim) dot += embedding[i] * vectors[row + i]
-        scale * dot + bias
+    /** The compact vector of an embedding: the projection, L2-normalised (ml/compactlib.py `compact`). */
+    fun compact(embedding: FloatArray): FloatArray {
+        val out = FloatArray(vecDim)
+        var norm = 0f
+        for (r in 0 until vecDim) {
+            var dot = 0f
+            val row = r * dim
+            for (i in 0 until dim) dot += embedding[i] * projection[row + i]
+            out[r] = dot
+            norm += dot * dot
+        }
+        val k = if (norm > 0f) 1f / kotlin.math.sqrt(norm) else 0f
+        for (r in 0 until vecDim) out[r] *= k
+        return out
     }
 
-    /** What the scan stores for a picture: the logits × 10, rounded (Photo.ai). */
     /** The picture's embedding (a video's poster frame: lookalike videos, src/logic/lookalike.ts). */
     fun embed(bmp: Bitmap): FloatArray = embedding(pixels(bmp))
-
-    fun scores(bmp: Bitmap): IntArray = logits(embedding(pixels(bmp))).let { z -> IntArray(z.size) { Math.round(z[it] * 10) } }
 
     override fun close() {
         session.close()

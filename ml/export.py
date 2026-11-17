@@ -5,13 +5,12 @@ Builds the files the apps ship in ai-assets/ (docs/AI.md):
                 in 4 bits (blocks of 32, ONNX Runtime's MatMulNBits; the
                 rest stays float — see docs/AI.md for why not int8), input pixels [n, 3, 256, 256] float32 already
                 normalised (x / 255 - 0.5) / 0.5, output [n, 768] L2-normalised
-  vectors.bin   one float16 row of 768 per label (ml/labels.yaml order): the
-                mean of the label's prompt embeddings, L2-normalised
-  vectors.json  model name, AI_VERSION, input size, the sigmoid's scale and
-                bias, the labels (id, kind)
+  vectors.json  model name, AI_VERSION, input size, the embedding's size
+                (and vecDim, kept from ml/compact.py)
 
-A photo's score for a label (computed on the phone) is
-  sigmoid(scale * dot(image, label) + bias), shown as a whole percent.
+After a new model: python ml/compact.py (ai-assets/compact.bin, the phone's
+compact vector), then npm run ai:labels (the labels and the search words the
+app scores from those vectors), npm run ai:demo and python ml/fixtures.py.
 
 Usage (in a venv with ml/requirements.txt):
   python ml/export.py                   # SigLIP 2 base/32 (the default)
@@ -27,7 +26,6 @@ import shutil
 
 import numpy as np
 import torch
-import yaml
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, 'ai-assets')
@@ -35,7 +33,7 @@ WORK = os.path.join(ROOT, 'ml', 'build')
 MODEL = 'google/siglip2-base-patch32-256'
 SIZE = 256
 # Bump with src/logic/ai.ts AI_VERSION and the native AI_VERSION: every photo gets its AI pass again.
-AI_VERSION = 1
+AI_VERSION = 2
 
 
 class ImageEncoder(torch.nn.Module):
@@ -48,25 +46,6 @@ class ImageEncoder(torch.nn.Module):
     def forward(self, pixel_values):
         pooled = self.vision(pixel_values=pixel_values).pooler_output
         return torch.nn.functional.normalize(pooled, dim=-1)
-
-
-def load_labels():
-    with open(os.path.join(ROOT, 'ml', 'labels.yaml'), encoding='utf-8') as f:
-        return yaml.safe_load(f)['labels']
-
-
-def text_vectors(model, processor, labels):
-    rows = []
-    for label in labels:
-        prompts = [p.lower() for p in label['prompts']]
-        inputs = processor(text=prompts, padding='max_length', max_length=64, return_tensors='pt')
-        with torch.no_grad():
-            emb = model.get_text_features(input_ids=inputs['input_ids'])
-        if not torch.is_tensor(emb):
-            emb = emb.pooler_output
-        emb = torch.nn.functional.normalize(emb, dim=-1).mean(dim=0)
-        rows.append(torch.nn.functional.normalize(emb, dim=-1).numpy())
-    return np.stack(rows).astype(np.float32)
 
 
 def main():
@@ -101,25 +80,16 @@ def main():
     if not args.keep_float:
         os.remove(fp32)
 
-    labels = load_labels()
-    vecs = text_vectors(model, processor, labels)
-    vecs.astype(np.float16).tofile(os.path.join(OUT, 'vectors.bin'))
-    scale = float(model.logit_scale.exp().item())
-    bias = float(model.logit_bias.item())
-    meta = {
-        'model': MODEL,
-        'aiVersion': AI_VERSION,
-        'size': SIZE,
-        'dim': int(vecs.shape[1]),
-        'scale': round(scale, 6),
-        'bias': round(bias, 6),
-        'labels': [{'id': l['id'], 'kind': l['kind']} for l in labels],
-    }
-    with open(os.path.join(OUT, 'vectors.json'), 'w', encoding='utf-8') as f:
+    path = os.path.join(OUT, 'vectors.json')
+    old = json.load(open(path, encoding='utf-8')) if os.path.exists(path) else {}
+    meta = {'model': MODEL, 'aiVersion': AI_VERSION, 'size': SIZE, 'dim': 768}
+    if 'vecDim' in old:
+        meta['vecDim'] = old['vecDim']
+    with open(path, 'w', encoding='utf-8') as f:
         json.dump(meta, f, indent=2)
         f.write('\n')
     shutil.copy(os.path.join(ROOT, 'ml', 'LICENSES.md'), os.path.join(OUT, 'LICENSES.md'))
-    print(f'image.onnx {os.path.getsize(packed) / 1e6:.1f} MB · {len(labels)} labels · scale {scale:.3f} bias {bias:.3f}')
+    print(f'image.onnx {os.path.getsize(packed) / 1e6:.1f} MB · now python ml/compact.py and npm run ai:labels')
 
 
 if __name__ == '__main__':

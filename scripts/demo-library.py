@@ -8,8 +8,8 @@ src/native/demo/test-library/ (not in git): a 1024-px copy of every photo
 screenshot, a WhatsApp copy, a video and its length, a Live Photo, a
 favourite), the sizes a phone would report — plus the grey copies for the
 features (.cache/test-library-grey/). With ONNX Runtime at hand (ml/'s venv)
-it also runs the on-device AI over them: ai.json (each photo's label scores,
-each video's poster embedding). scripts/demo-library-facts.mjs then computes
+it also runs the on-device AI over them: ai.json (each photo's compact vector,
+as a phone stores it; each video's poster embedding). scripts/demo-library-facts.mjs then computes
 the features with the app's own spec and writes facts.json.
 
   npm run test-photos       (once)
@@ -122,14 +122,17 @@ def ai(manifest):
         import onnxruntime as ort
         sys.path.insert(0, os.path.join(ROOT, 'ml'))
         from eval import pixels
+        from compactlib import compact, load_projection, pack
     except ImportError:
         print('No ONNX Runtime here: the AI step is left out (activate ml/\'s venv and run again).')
         return
     meta = json.load(open(os.path.join(ROOT, 'ai-assets', 'vectors.json')))
-    vecs = np.fromfile(os.path.join(ROOT, 'ai-assets', 'vectors.bin'), dtype=np.float16).astype(np.float32).reshape(len(meta['labels']), meta['dim'])
+    proj = load_projection()
     sess = ort.InferenceSession(os.path.join(ROOT, 'ai-assets', 'image.onnx'), providers=['CPUExecutionProvider'])
     path = os.path.join(OUT, 'ai.json')
     old = json.load(open(path)) if os.path.exists(path) else {}
+    if old.get('aiVersion') != meta['aiVersion']:
+        old = {}
     out = {'aiVersion': meta['aiVersion'], 'photos': {}, 'emb': {}}
     for e in manifest:
         pid = e['id']
@@ -146,11 +149,11 @@ def ai(manifest):
                 v = np.round(emb / np.abs(emb).max() * 127).astype(np.int8)
                 out['emb'][pid] = base64.b64encode(v.tobytes()).decode()
             else:
-                out['photos'][pid] = [int(round(float(z) * 10)) for z in meta['scale'] * emb @ vecs.T + meta['bias']]
+                out['photos'][pid] = pack(compact(emb, proj))
         out.setdefault('keys', {})[pid] = key
     with open(path, 'w') as fh:
         json.dump(out, fh, separators=(',', ':'))
-    print(f"{len(out['photos'])} photos scored, {len(out['emb'])} video posters embedded → ai.json")
+    print(f"{len(out['photos'])} photo vectors, {len(out['emb'])} video posters embedded → ai.json")
 
 
 if __name__ == '__main__':

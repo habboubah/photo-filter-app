@@ -1,12 +1,17 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { App as CapacitorApp } from '@capacitor/app';
 import type { Album, Photo, Storage, ThemeMode } from './types';
 import translations, { DEFAULT_LANGUAGE, isLanguage, Language, loadLanguage } from './translations';
-import { Access, PhotoLibrary, ScanProgress, loadAllFacts } from './native/photoLibrary';
+import { Access, PAGE, PhotoLibrary, ScanProgress, loadAllFacts } from './native/photoLibrary';
+import { Vectors } from './logic/vectors';
+import { AI_VERSION, LABELS, type LabelModel, labelModel, scoreInto, scoreLabels, withScores } from './logic/ai';
 import { PRODUCT_ID, Purchases } from './native/purchases';
 import { AppState, RECENT_ALBUMS, SCHEMA_VERSION, emptyState, normalizeState, pruneLater } from './logic/state';
 import type { TripEdits } from './logic/trips';
 import { addDay } from './logic/streak';
+import { learnPick } from './logic/best';
+import { record } from './logic/ledger';
+import type { Session } from './logic/review';
 import type { SortKey } from './logic/sort';
 import { toggled } from './logic/protect';
 import { UNLOCK_ON_SALE } from './logic/allowance';
@@ -24,7 +29,9 @@ import { LocalNotifications } from '@capacitor/local-notifications';
  *   SQLite (PhotoLibrary getState/setState) — localStorage on the web —
  *   debounced, and only after they were read, so a slow first read can never
  *   be overwritten by the empty default.
- * - The photo facts come from the native scan cache, page by page.
+ * - The photo facts come from the native scan cache, page by page; the
+ *   photos' compact vectors (src/logic/vectors.ts) come apart, once each, and
+ *   the label scores the app works out from them are laid onto the photos.
  */
 
 export const KEY_PREFIX = 'bildklar-';
@@ -57,6 +64,9 @@ export interface ScanView extends ScanProgress {
 /** During the AI's pass (16 photos per progress event), the facts are read again every this many photos. */
 const AI_RELOAD_EVERY = 480;
 const AI_BATCH = 16;
+
+/** Photos whose label scores are worked out between two pauses (src/logic/ai.ts scoreInto). */
+const SCORE_SLICE = 2000;
 
 /** A rescan when the app comes back after this long. */
 const RESCAN_AFTER_MS = 2 * 60_000;
@@ -121,11 +131,14 @@ export function useAppStore() {
     setState(s => ({ ...s, trips: { ...s.trips, ...fn(s.trips) } }));
   const recordAlbum = (key: string, album: Album) =>
     setState(s => ({ ...s, trips: { ...s.trips, albums: { ...s.trips.albums, [key]: album } } }));
-  const setBest = (groupKey: string, id: string | null) => setState(s => {
+  /** A best shot picked by hand (or the pick undone). `learn`: the user's pick and the app's own, to learn from (src/logic/best.ts). */
+  const setBest = (groupKey: string, id: string | null, learn?: { chosen: Photo; suggested: Photo }) => setState(s => {
     const best = { ...s.best };
     if (id) best[groupKey] = id; else delete best[groupKey];
-    return { ...s, best };
+    return { ...s, best, ...(learn ? { picks: learnPick(s.picks, learn.chosen, learn.suggested) } : {}) };
   });
+  /** The end of a review: what the user deleted and kept of each kind of suggestion (src/logic/ledger.ts). */
+  const recordReview = (session: Session) => setState(s => { const ledger = record(s.ledger, session); return ledger === s.ledger ? s : { ...s, ledger }; });
   const addKept = (ids: string[]) => {
     if (ids.length) setState(s => ({ ...s, kept: [...new Set([...s.kept, ...ids])] }));
   };
@@ -165,6 +178,8 @@ export function useAppStore() {
     const albums = toggled(s.protect.albums, [id], on);
     return albums === s.protect.albums ? s : { ...s, protect: { ...s.protect, albums } };
   });
+  /** "Ähnliche mitschützen" on or off (src/logic/protect.ts likeProtected). */
+  const protectSimilar = (on: boolean) => setState(s => (s.protect.similar === on ? s : { ...s, protect: { ...s.protect, similar: on } }));
   /** Albums just used while swiping: first in the chips next time. */
   const useAlbums = (ids: string[]) => {
     if (!ids.length) return;
@@ -214,11 +229,63 @@ export function useAppStore() {
   /* ----------------------------------------------------- photos and scan */
 
   const [access, setAccess] = useState<Access | null>(null);
-  const [photos, setPhotos] = useState<Photo[] | null>(null);
+  /** The facts as the phone reports them; `photos` (below) are these with the label scores laid on. */
+  const [facts, setPhotos] = useState<Photo[] | null>(null);
   const [scan, setScan] = useState<ScanView>({ running: false, phase: 'list', done: 0, total: 0, lastScanAt: 0 });
   const [faces, setFaces] = useState<Map<string, Partial<Photo>>>(() => new Map());
   const [storage, setStorage] = useState<Storage | null>(null);
   const loading = useRef(false);
+
+  /* ------------------------------------------- the AI's vectors and labels */
+
+  // The compact vectors the app lacks are fetched once each (PAGE per call) after every load of the facts.
+  const [vectors, setVectors] = useState<Vectors>(() => Vectors.empty());
+  const vectorsRef = useRef(vectors);
+  vectorsRef.current = vectors;
+  const fetchingVectors = useRef(false);
+  useEffect(() => {
+    if (!facts || fetchingVectors.current) return;
+    const missing = facts.filter(p => p.vv === AI_VERSION && !vectorsRef.current.has(p.id)).map(p => p.id);
+    if (!missing.length) return;
+    fetchingVectors.current = true;
+    void (async () => {
+      let next = vectorsRef.current;
+      try {
+        for (let i = 0; i < missing.length; i += PAGE) {
+          const { rows } = await PhotoLibrary.getVectors({ ids: missing.slice(i, i + PAGE) });
+          next = next.with(rows);
+        }
+      } catch { /* an older native build: no vectors, the app works without them */ }
+      fetchingVectors.current = false;
+      setVectors(next);
+    })();
+  }, [facts]);
+  // The labels' vectors (src/logic/aiLabels.json) load apart from the main bundle.
+  const [labels, setLabels] = useState<LabelModel | null>(null);
+  useEffect(() => {
+    void import('./logic/aiLabels.json').then(m => setLabels(labelModel(m.default))).catch(() => setLabels(null));
+  }, []);
+  // Each photo's label scores, worked out once per vector (only the new ones when more arrive), in
+  // slices of SCORE_SLICE photos with a pause between, so 50,000 of them never freeze the screen.
+  const [scores, setScores] = useState<Int16Array | null>(null);
+  const scoresRef = useRef<Int16Array | undefined>(undefined);
+  useEffect(() => {
+    if (!labels || !vectors.size) return;
+    let alive = true;
+    void (async () => {
+      const prev = scoresRef.current;
+      const out = scoreLabels(vectors, labels, prev, 0, 0);
+      for (let from = prev ? Math.min(prev.length / LABELS.length, vectors.size) : 0; from < vectors.size; from += SCORE_SLICE) {
+        scoreInto(out, vectors, labels, from, Math.min(vectors.size, from + SCORE_SLICE));
+        await new Promise(r => window.setTimeout(r, 0));
+        if (!alive) return;
+      }
+      scoresRef.current = out;
+      setScores(out);
+    })();
+    return () => { alive = false; };
+  }, [vectors, labels]);
+  const photos = useMemo(() => (facts && scores ? withScores(facts, vectors, scores) : facts), [facts, vectors, scores]);
 
   /** Free and total space on the phone; asked again after deleting and when the app comes back. */
   const refreshStorage = useCallback(() => {
@@ -348,7 +415,7 @@ export function useAppStore() {
     return () => { alive = false; };
   }, [photos]);
 
-  /** iPhone: face scores for a similar group, worked out on demand and laid over the photos for ranking. */
+  /** Face scores for a similar group (iPhone: Vision; Android: YuNet), worked out on demand and laid over the photos for ranking. */
   const scoreFaces = useCallback(async (ids: string[]) => {
     const missing = ids.filter(id => !faces.has(id));
     if (!missing.length) return;
@@ -360,7 +427,7 @@ export function useAppStore() {
         for (const r of rows) next.set(r.id, { faces: r.faces, faceQ: r.faceQ, eyes: r.eyes });
         return next;
       });
-    } catch { /* Android, or the photo is gone: rank without faces */ }
+    } catch { /* an older native build, or the photo is gone: rank without faces */ }
   }, [faces]);
 
   /* --------------------------------------------------- weekly reminder */
@@ -417,11 +484,11 @@ export function useAppStore() {
   return {
     language, setLanguage, themeMode, setThemeMode,
     debug, dryRunAvailable, dryRun, setDryRun,
-    state, stateReady, storageError, updateTrips, recordAlbum, setBest, addKept, removeKept, updateLater, pruneLaterPile, setSort, protectPhotos, protectTrip, protectAlbum, albumMembers, useAlbums, markMonthDone, addFreed, markDay, countFree, resetDecisions, restoreState,
+    state, stateReady, storageError, updateTrips, recordAlbum, setBest, recordReview, addKept, removeKept, updateLater, pruneLaterPile, setSort, protectPhotos, protectTrip, protectAlbum, protectSimilar, albumMembers, useAlbums, markMonthDone, addFreed, markDay, countFree, resetDecisions, restoreState,
     reminder, setReminder,
     owned: isOwned, setOwned,
     access, refreshAccess, accessGranted,
-    photos, scan, startScan, reload, removePhotos,
+    photos, scan, startScan, reload, removePhotos, vectors,
     faces, scoreFaces,
     appAlbums,
     storage, refreshStorage,

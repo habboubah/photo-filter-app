@@ -1,4 +1,6 @@
 import type { Photo } from '../types';
+import { LABELS } from './ai';
+import { VEC_DIM, type VectorRow, pack } from './vectors';
 
 /*
  * A made-up photo library for the tests and the performance budget: a family
@@ -117,12 +119,29 @@ export function fakeLibrary(n: number, seed = 1, end = Date.UTC(2026, 10, 1)): F
   // The on-device AI's scores (src/logic/ai.ts), from a random source of their own so the photos
   // above stay as they were: about 4 % utility photos, the rest a family's usual categories.
   const ai = prng(seed + 991);
+  const utility = LABELS.flatMap((l, i) => (l.kind === 'utility' ? [i] : []));
+  const memory = LABELS.flatMap((l, i) => (l.kind === 'memory' ? [i] : []));
   for (const p of photos) {
     if (p.shot) continue;
-    const z = Array.from({ length: 13 }, () => Math.round(-160 + ai() * 40));
-    if (ai() < 0.04) z[Math.floor(ai() * 8)] = Math.round(-45 + ai() * 40);
-    else z[8 + Math.floor(ai() * 5)] = Math.round(-110 + ai() * 30);
+    const z = Array.from({ length: LABELS.length }, () => Math.round(-160 + ai() * 40));
+    if (ai() < 0.04) z[utility[Math.floor(ai() * utility.length)]] = Math.round(-45 + ai() * 40);
+    else z[memory[Math.floor(ai() * memory.length)]] = Math.round(-110 + ai() * 30);
     p.ai = z;
   }
   return { photos, trips };
+}
+
+/**
+ * Made-up compact vectors for the photos (src/logic/vectors.ts), so the
+ * analysis can be timed as it runs on a phone after the AI's pass: each
+ * vector follows its photo's hash bit by bit, with noise of its own — photos
+ * with close hashes (a burst) get alike vectors, the others don't.
+ */
+export function fakeVectors(photos: Photo[], seed = 1): VectorRow[] {
+  const r = prng(seed + 4711);
+  return photos.filter(p => p.hash && !p.shot).map(p => {
+    const bits = p.hash!.split('').flatMap(h => parseInt(h, 16).toString(2).padStart(4, '0').split('').map(Number));
+    const v = Array.from({ length: VEC_DIM }, (_, k) => (bits[k % 64] ? 1 : -1) * 0.6 + (r() - 0.5) * 0.5);
+    return { id: p.id, v: pack(v) };
+  });
 }

@@ -2,6 +2,8 @@ import type { Album } from '../types';
 import { NO_EDITS, TripEdits } from './trips';
 import { isSortKey, type SortKey } from './sort';
 import type { Protection } from './protect';
+import { type Picks, NO_PICKS, SIGNALS } from './best';
+import { type Ledger, normalizeLedger } from './ledger';
 
 /*
  * The user's own decisions — everything the app cannot work out again from
@@ -45,6 +47,10 @@ export interface AppState {
   protect: Protection;
   /** Albums used while swiping, the last used first (ids from PhotoLibrary.listAlbums), for the chips' order. */
   recentAlbums: string[];
+  /** How often each kind of suggestion was deleted or kept, on this phone only (src/logic/ledger.ts). */
+  ledger: Ledger;
+  /** What the user's own picks of a best shot taught the ranking (src/logic/best.ts learnPick). */
+  picks: Picks;
 }
 
 export const emptyState = (): AppState => ({
@@ -60,8 +66,10 @@ export const emptyState = (): AppState => ({
   early: false,
   later: [],
   sort: {},
-  protect: { ids: [], trips: [], albums: [] },
+  protect: { ids: [], trips: [], albums: [], similar: true },
   recentAlbums: [],
+  ledger: {},
+  picks: NO_PICKS,
 });
 
 const isObj = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
@@ -114,9 +122,20 @@ export function normalizeState(raw: unknown): AppState {
       ids: [...new Set(strings(raw.protect.ids))],
       trips: [...new Set(strings(raw.protect.trips))],
       albums: [...new Set(strings(raw.protect.albums))],
+      // Added 17 November 2026: on unless switched off (older state files have no such field).
+      similar: raw.protect.similar !== false,
     };
   }
   s.recentAlbums = [...new Set(strings(raw.recentAlbums))].slice(0, RECENT_ALBUMS);
+  s.ledger = normalizeLedger(raw.ledger);
+  if (isObj(raw.picks) && typeof raw.picks.n === 'number' && raw.picks.n > 0 && isObj(raw.picks.wins)) {
+    const wins: Picks['wins'] = {};
+    for (const k of SIGNALS) {
+      const v = raw.picks.wins[k];
+      if (typeof v === 'number' && v > 0) wins[k] = Math.round(v);
+    }
+    s.picks = { n: Math.round(raw.picks.n), wins };
+  }
   if (isObj(raw.sort)) for (const [k, v] of Object.entries(raw.sort)) if (isSortKey(v)) s.sort[k] = v;
   s.owned = raw.owned === true;
   s.months = [...new Set(strings(raw.months).filter(k => /^\d{4}-\d{2}$/.test(k)))];

@@ -59,7 +59,15 @@ export interface PhotoLibraryPlugin {
   getScanState(): Promise<ScanState>;
   /** The cached facts, PAGE rows at a time, oldest first. */
   getFacts(options: { offset: number; limit: number }): Promise<{ rows: Photo[]; total: number }>;
-  /** iPhone only: faces and open eyes for a few photos (a similar group), cached. Android answers with no rows. */
+  /**
+   * The compact vectors of these photos (src/logic/vectors.ts): 256 int8 in
+   * base64 each, for photos (and videos) whose facts carry `vv`. At most PAGE ids per call.
+   */
+  getVectors(options: { ids: string[] }): Promise<{ rows: { id: string; v: string }[] }>;
+  /**
+   * Faces for a few photos (a similar group), cached: the iPhone's Vision (faces, the best face's quality, open
+   * eyes); Android's YuNet in ONNX Runtime (faces and the best face's sharpness, no eyes — FaceDetector.kt).
+   */
   scoreFaces(options: { ids: string[] }): Promise<{ rows: Pick<Photo, 'id' | 'faces' | 'faceQ' | 'eyes'>[] }>;
 
   /** A JPEG of the photo, at most `size` px on its long side, in the app's cache folder (made on demand). */
