@@ -15,7 +15,7 @@ import { isProtected } from './protect';
 export type Decision = 'keep' | 'delete' | 'later';
 /** What the app suggests: `none` for the decide-later pile, where the user already hesitated. */
 export type Suggestion = 'keep' | 'delete' | 'none';
-export type Reason = 'best' | 'original' | 'similar' | 'duplicate' | 'blurry' | 'screenshot' | 'utility' | 'large' | 'trip' | 'later' | 'dark' | 'bright' | 'video' | 'lookalike' | 'bestTake';
+export type Reason = 'best' | 'original' | 'similar' | 'duplicate' | 'blurry' | 'screenshot' | 'utility' | 'large' | 'trip' | 'later' | 'dark' | 'bright' | 'video' | 'lookalike' | 'bestTake' | 'app';
 
 export interface ReviewItem {
   id: string;

@@ -29,6 +29,12 @@ const ai = fs.existsSync(aiFile) ? JSON.parse(fs.readFileSync(aiFile, 'utf8')).p
  * others don't — not the model's (the demo has no model to run).
  */
 const EDITED = new Set(['p063']);
+/** Files that came from other apps (Android's "Aus Apps"): the cake video saved again from WhatsApp, a copy from Telegram, a receipt downloaded. */
+const DIR = {
+  p090: 'Android/media/com.whatsapp/WhatsApp/Media/WhatsApp Video/',
+  p085: 'Pictures/Telegram/',
+  p094: 'Download/',
+};
 const SCENE = { p089: 'cake', p090: 'cake', p091: 'garda', p092: 'paris', p101: 'garda' };
 /** The second take of a scene: its vector a little off the first one's (cosine about 0.94). */
 const TAKE_JITTER = { p101: 3 };
@@ -44,8 +50,8 @@ export function schema4(entry) {
   const out = {};
   if (!entry.video) out.fmt = entry.shot ? 'png' : entry.live ? 'heic' : 'jpeg';
   if (EDITED.has(entry.id)) out.edited = true;
-  out.dir = entry.rec ? 'Movies/Screen recordings/' : entry.shot ? 'Pictures/Screenshots/'
-    : entry.copy ? 'Android/media/com.whatsapp/WhatsApp/Media/WhatsApp Images/' : 'DCIM/Camera/';
+  out.dir = DIR[entry.id] ?? (entry.rec ? 'Movies/Screen recordings/' : entry.shot ? 'Pictures/Screenshots/'
+    : entry.copy ? 'Android/media/com.whatsapp/WhatsApp/Media/WhatsApp Images/' : 'DCIM/Camera/');
   if (entry.video && !entry.rec && SCENE[entry.id]) out.emb = sceneVector(SCENE[entry.id], TAKE_JITTER[entry.id] ?? 0);
   return out;
 }

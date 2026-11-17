@@ -109,6 +109,34 @@ photo on a 2-core desktop CPU (4-bit and float32 alike) — measure the phones.
 3. Send Claude the table: it sets the thresholds in `src/logic/ai.ts` and
    this file.
 
+## Thresholds of the 2.1.0 features (provisional, 17 November 2026)
+
+| What | Where | Value | Tune on |
+| --- | --- | --- | --- |
+| Too dark | `src/logic/exposure.ts` `DARK_EXPO`, `DARK_CONTRAST` | expo < 0.06 and contrast < 12 | the demo set + Ahmad's test photos (night photos must stay out) |
+| Too bright | `BRIGHT_EXPO`, `BRIGHT_CLIP` | expo > 0.94, or clip > 0.6 on a light picture | the same |
+| Borderline, with the AI's `accidental` | `BORDER_*` | expo < 0.10 / contrast < 18; expo > 0.90 / clip > 0.45 | the same |
+| Lookalike videos | `src/logic/lookalike.ts` `LOOKALIKE_COSINE` | cosine ≥ 0.92 within 2 hours | the demo videos + 50 real video pairs: AUC and precision ≥ 95 % before it ships |
+| Smaller photos | `src/logic/compress.ts` `KEEP_MIN_SAVING` (and the native copies) | a copy is kept when ≥ 30 % smaller | 100 real photos per phone |
+
+Write the values chosen and the numbers they rest on here.
+
+## iPhone: which app saved a photo? (test pending)
+
+Apple Photos doesn't record the app that saved a photo, so "Aus Apps" is
+Android-only until a one-day test shows the iPhone can tell well enough.
+On 200 of Ahmad's photos whose origin he knows, three signals:
+
+- the original file name (`PHAssetResource.originalFilename`), e.g.
+  Telegram's `telegram-cloud-photo-…`;
+- no camera make and model in the metadata (read once, in the analyse pass,
+  only for photos without a location);
+- typical messenger sizes (long side 1600 or 2560 px).
+
+If together they reach **90 % precision**, the iPhone gets the same screen
+with one section, *Gespeichert aus Apps* [Saved from apps]. Otherwise it stays
+Android-only and docs/features.md says so. **Result:** not run yet.
+
 ## Files
 
 | File | What |
