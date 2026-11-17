@@ -59,12 +59,15 @@ further deleting need one one-time purchase (`com.habboubah.bildklar.unlock`, 4,
 - **No router.** `App.tsx` holds one state per pushed screen. The `pushed`
   array (deepest first) is the nav's single source of truth (back button,
   scroll reset, slide direction) and must match the render order in `content()`.
+  The root has two tabs (`tab`: `clean` = `HomeView`, `organize` =
+  `OrganizeView`); they are one screen for the stack, so pushed screens slide
+  over either, and switching crossfades and keeps each tab's scroll position.
 - **No global store library.** All state lives in `useAppStore()` in
   `src/store.ts`. Immutable updates only.
 - **Screens** are `src/components/XxxView.tsx`, bottom sheets `XxxSheet.tsx`.
   Named exports, props typed above.
-- **Shared primitives** in `src/ui/` (`Screen`, `Group`, `Row`, `MenuRow`,
-  `IconTile`, `Next`, `Away`, `Dock`, `Empty`, `Sheet`, `Confirm`, `Button`,
+- **Shared primitives** in `src/ui/` (`Screen`, `SectionHead`, `Group`, `Row`, `MenuRow`,
+  `IconTile`, `Next`, `Away`, `Dock`, `TabBar`, `StorageBar`, `Empty`, `Sheet`, `Confirm`, `Button`,
   `IconButton`, `Field`, `Toast`, `Progress`, `SwitchRow`, `Segmented`,
   `Badge`, `Thumb`, `PhotoGrid`, `Mosaic`, `SortMenu`, `haptics`). Compose them.
 - **Screens opened less often are lazy** (`lazy()` in `App.tsx`, under one
@@ -136,7 +139,7 @@ further deleting need one one-time purchase (`com.habboubah.bildklar.unlock`, 4,
   logical spacing (`ps-`/`pe-`/`start-`/`end-`), `rtl:rotate-180` on
   directional icons, numbers in `num`.
 
-## Styling — "Album" (Bildklar's own look, 16 November 2026)
+## Styling — "Album" (Bildklar's own look, 16 November 2026; modernised 17 November, docs/REDESIGN.md)
 - The photos bring the colour; the app stays quiet: warm paper page, white
   cards, slate ink, **one deep teal** for what you tap. Green (`keep`) is keep
   and the best shot, red (`neg`) is delete, amber (`warn`) is blurry.
@@ -147,8 +150,9 @@ further deleting need one one-time purchase (`com.habboubah.bildklar.unlock`, 4,
   `bg-surface-2` a fill. A card is `rounded-md card` — no border, no shadow.
   Only what floats casts a shadow (`shadow-e2`, `shadow-e3`). **No
   `backdrop-filter`, no `filter: blur`** (Android's WebView).
-- **Type**: Fraunces (`display`) for titles, the trip names and the big
-  numbers; Figtree for everything else. Both bundled in `src/assets/fonts/`
+- **Type**: Figtree for everything, titles and section headings with
+  `title-face` (a little tighter); Fraunces (`display`) only for the big
+  numbers and the trip names. Both bundled in `src/assets/fonts/`
   (OFL) — never load a font from the network.
 - Photos: `photo` utility (soft 8 px corners, the fill while loading). Text
   on a photo sits on `bg-veil`.
@@ -157,6 +161,11 @@ further deleting need one one-time purchase (`com.habboubah.bildklar.unlock`, 4,
   blurry = sand, scan = mint, access = sky.
 - What a screen does floats at the bottom in thumb reach (`<Dock>` with
   `<Screen docked>`): *Album erstellen*, *Durchgehen*, *Die anderen löschen*.
+  The root's tabs float the same way (`<TabBar>` with `<Screen tabbed>`):
+  an opaque pill with `shadow-e2`, never a blur.
+- Photo-forward: a category or a trip is shown with its own photos (the photo
+  cards on *Aufräumen*, the trip covers on *Ordnen*), never as a coloured text
+  tile. A category's hue is its dot and its segment in the `StorageBar`.
 - Motion: short and soft; transform and opacity only; all of it collapses
   under reduced motion. The review card follows the finger and flies out.
 - Type scale in rem (follows Dynamic Type, `dynamicType.ts`); touch targets

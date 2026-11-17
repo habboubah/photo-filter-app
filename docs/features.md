@@ -22,33 +22,54 @@ Every feature, as the user sees it (German labels, English in brackets).
   only look at new and changed photos (a quiet *wird aktualisiert …*), and drop
   deleted ones. It runs at every start, when coming back to the app after a
   while, and when photos change while the app is open.
-- *Neu durchsuchen* [Scan again] on home and in Settings.
+- *Neu durchsuchen* [Scan again] in Settings.
 - iCloud-only originals are never downloaded.
 - **The on-device AI** (docs/AI.md) looks at each photo after that: the
-  home subtitle counts along (*KI: 1.234 von 5.000 Fotos*), results show up
+  subtitle on *Aufräumen* counts along (*KI: 1.234 von 5.000 Fotos*), results show up
   every 480 photos, the app stays usable. It pauses when the phone runs hot
   and continues with the next scan. Nothing leaves the phone.
 
-## Home
-- *Deine Fotos* [Your photos] with the number of photos and trips.
-- **The clean-up card**: the space that could be freed (one big number), the
-  free space on the device (*2,4 GB von 128 GB auf dem Gerät frei*), how many
-  duplicates, near-identical and blurry photos and old screenshots, what
-  Bildklar has freed so far (*Bisher freigegeben: 1,2 GB*), *Aufräumen* [Clean up].
-- Tiles: *Duplikate* [Duplicates] and *Fast gleiche* [Near-identical]
-  (groups), *Missglückt* [Failed shots: blurry, too dark, too bright], *Screenshots*, *Große Dateien* [Large files]
-  (count and size) and, on the iPhone when there are any, *Live Photos*.
+## Home: two tabs
+The root has two tabs in a floating bar at the bottom: **Aufräumen** [Clean up]
+and **Ordnen** [Organise]. Each keeps its scroll position; tapping the current
+tab again scrolls to its top; Android's back button goes from *Ordnen* to
+*Aufräumen* first. Settings is the round button at the top right of both.
+
+### Aufräumen [Clean up]
+- The number of photos under the title.
+- **The clean-up card**: the space that could be freed (one big number), a
+  bar split into one segment per category (sized by the space it frees, in
+  the category's colour), the free space on the device (*2,4 GB von 128 GB
+  auf dem Gerät frei*), what Bildklar has freed so far (*Bisher freigegeben:
+  1,2 GB*), *Jetzt aufräumen* [Clean up now].
 - *3 Tage in Folge aufgeräumt* [3 days in a row of cleaning up] on the card
   once the streak is two days or more.
+- **Vorschläge** [Suggestions]: *Duplikate* [Duplicates], *Fast gleiche*
+  [Near-identical], *Missglückt* [Failed shots: blurry, too dark, too
+  bright], *Screenshots* and (once the AI has seen photos) *Unwichtige Fotos*
+  as cards, each with up to four of its own photos, its colour dot and the
+  space it would free (*222 MB · 9 Fotos*); the most space first. An odd last
+  card takes the whole row. Categories with nothing left are listed in one
+  line: *Erledigt: Duplikate, Screenshots* [Done: …].
+- **Mehr Platz** [More space]: *Große Dateien* [Large files] (size and count),
+  *Fotos verkleinern* [Smaller photos] (*bis zu 115 MB*), on the iPhone
+  *Live Photos*, on Android *Aus Apps* [From apps] — rows with a photo.
+- **Weitermachen** [Carry on]: *Später entscheiden* [Decide later] with the
+  number on the pile (see *Review*), and *Monat für Monat* [Month by month]
+  with *38 % durchgesehen* [38 % gone through] and a thin bar — the photos in
+  months gone through, as a share of all photos (rounded down, so 100 % only
+  once every month is done).
+
+### Ordnen [Organise]
+- The number of trips and photos under the title.
 - **An diesem Tag** [On this day]: when photos were taken on today's date in
-  earlier years, a card with one of them and the years; *Ansehen* [Look back]
-  reviews them (extra shots and blurry ones suggested for deleting).
-- **Monat für Monat** [Month by month]: *38 % durchgesehen* [38 % gone through]
-  with a thin bar — the photos in months gone through, as a share of all photos
-  (rounded down, so 100 % only once every month is done).
-- **Später entscheiden** [Decide later] with the number of photos on the pile (see *Review*).
-- **Trips**: the newest four as cards (a mosaic of their photos, the name,
-  photos and size, *Album erstellt* once made); *Alle Reisen* [All trips].
+  earlier years, one of them as a large photo with the years; *Ansehen* [Look
+  back] reviews them (extra shots and blurry ones suggested for deleting).
+- **Reisen** [Trips]: the newest three as large cards (a photo from the
+  middle of the trip as the cover, the name, photos and size, *Album
+  erstellt* once made); *Alle Reisen (4)* [All trips] opens the full list.
+- **Auf deinen Fotos** [On your photos]: the on-device AI's categories
+  (landscape, food, …), each with a photo and its count.
 
 ## Trips
 - Found by themselves: photos taken more than 50 km from home over at least
