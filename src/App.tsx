@@ -153,11 +153,13 @@ export default function App() {
         line: [summary.total.count ? bytes(t, summary.total.bytes) : pct > 0 ? fmt(t.widgetProgress, { pct: percent(t, pct) }) : null,
           storage ? fmt(t.storageValue, { free: bytes(t, storage.free), total: bytes(t, storage.total) }) : null].filter(Boolean).join(' · '),
       };
-    const key = JSON.stringify(data);
+    // The Lock Screen widget (iPhone): the space that could be freed and the share gone through.
+    const lock = { freeable: summary.total.bytes, pct };
+    const key = JSON.stringify({ ...data, ...lock });
     if (key === widgetSent.current) return;
     const timer = window.setTimeout(() => {
       widgetSent.current = key;
-      void PhotoLibrary.setWidget(data).catch(() => {});
+      void PhotoLibrary.setWidget({ ...data, ...lock }).catch(() => {});
     }, 1500);
     return () => window.clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -1,3 +1,6 @@
 "widgetName" = "Bildklar";
-"widgetDescription" = "An diesem Tag – oder wie viel Platz frei werden kann.";
+"widgetDescription" = "An diesem Tag – oder wie viel Platz frei werden kann. Auch für den Sperrbildschirm.";
 "widgetOpen" = "Öffne Bildklar einmal, dann erscheint hier etwas.";
+"lockFreeable" = "%@ frei machbar";
+"lockProgress" = "%@ durchgesehen";
+"lockNothing" = "Nichts aufzuräumen";
