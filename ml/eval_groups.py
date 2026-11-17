@@ -29,6 +29,18 @@ from compactlib import BUILD, ROOT, compact, embed_files, load_projection, meta,
 from eval import fit512
 
 SET = os.path.join(ROOT, 'ml', 'testset')
+HOW = '''ml/testset/ — your own photos, never in git, never leaves the Mac.
+One folder per example; name the folders anything (01, beach-burst, …).
+
+  pairs/same/<name>/       2 photos: the same moment twice (a burst, a retake seconds later)
+  pairs/copy/<name>/       2 photos: a photo and its copy (from WhatsApp, edited, filtered, cropped)
+  pairs/different/<name>/  2 photos: NOT the same shot, but alike (the same swing, minutes apart)
+  groups/<name>/           a burst or series (2 or more) + best.txt with the file name you would keep
+
+JPEG or PNG (export HEIC from Photos as JPEG: File › Export). About 50 of each
+kind of pair and 10 groups to start, 100 and 50 for numbers worth tuning on.
+Then: npm run ai:eval-groups
+'''
 GREY = os.path.join(BUILD, 'eval-grey')
 EXT = ('.jpg', '.jpeg', '.png')
 
@@ -71,7 +83,11 @@ def main():
             else:
                 print(f'skipped groups/{name}: needs two or more pictures and best.txt naming one of them')
     if not entries:
-        raise SystemExit('No pairs or groups in ml/testset/ (see the top of this file)')
+        for sub in ('pairs/same', 'pairs/copy', 'pairs/different', 'groups'):
+            os.makedirs(os.path.join(SET, sub), exist_ok=True)
+        with open(os.path.join(SET, 'README.txt'), 'w', encoding='utf-8') as f:
+            f.write(HOW)
+        raise SystemExit('No pictures in ml/testset/ yet. The folders are ready now — what goes where:\n\n' + HOW)
 
     every = sorted({f for e in entries for f in e[2]})
     vecs = compact(embed_files(every, meta()['size']), load_projection())

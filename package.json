@@ -45,11 +45,11 @@
     "demo-library": "python3 scripts/demo-library.py && node --experimental-strip-types scripts/demo-library-facts.mjs",
     "test-photos:sim": "bash scripts/test-photos-push.sh ios",
     "test-photos:android": "bash scripts/test-photos-push.sh android",
-    "ai:export": "python3 ml/export.py",
-    "ai:eval": "python3 ml/eval.py",
-    "ai:eval-groups": "python3 ml/eval_groups.py && node scripts/eval-groups.mjs",
-    "ai:labels": "python3 ml/labels.py && python3 ml/words.py",
-    "ai:demo": "cd ml && python3 demo_ai.py && cd .. && node --experimental-strip-types scripts/demo-facts.mjs"
+    "ai:export": "node scripts/ml.mjs export.py",
+    "ai:eval": "node scripts/ml.mjs eval.py",
+    "ai:eval-groups": "node scripts/ml.mjs eval_groups.py && node scripts/eval-groups.mjs",
+    "ai:labels": "node scripts/ml.mjs labels.py && node scripts/ml.mjs words.py",
+    "ai:demo": "node scripts/ml.mjs demo_ai.py && node --experimental-strip-types scripts/demo-facts.mjs"
   },
   "dependencies": {
     "@capacitor-community/keep-awake": "8.0.1",

@@ -1,4 +1,5 @@
 # The model export and evaluation (ml/), not the app. CPU is enough.
+# Only measuring or the demo? ml/requirements-light.txt is enough (no torch).
 #   python3 -m venv ml/.venv && . ml/.venv/bin/activate
 #   pip install --index-url https://download.pytorch.org/whl/cpu torch==2.15.0
 #   pip install -r ml/requirements.txt

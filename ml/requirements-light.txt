@@ -1,0 +1,6 @@
+# Enough for measuring (ai:eval, ai:eval-groups) and the demo (ai:demo): no torch.
+#   python3 -m venv ml/.venv && ml/.venv/bin/pip install -r ml/requirements-light.txt
+# The model export and the labels need the full ml/requirements.txt.
+onnxruntime==1.32.0
+pillow==13.0.0
+numpy==2.5.5
