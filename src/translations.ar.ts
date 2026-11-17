@@ -102,6 +102,8 @@ export const ar: Strings = {
   tabOrganize: 'ترتيب',
   suggestionsTitle: 'اقتراحات',
   analysisTitle: 'التحليل',
+  statScanned: 'تم فحصها',
+  statGood: 'سليمة',
   statPhotos: 'الصور',
   statVideos: 'الفيديو',
   statSimilarPhotos: 'صور متشابهة',

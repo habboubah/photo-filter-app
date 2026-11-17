@@ -1,5 +1,5 @@
 import type React from 'react';
-import { Aperture, CalendarDays, Check, Clapperboard, Clock, Copy, FileVideo, Image as ImageIcon, ImagePlus, MessageCircle, Minimize2, RefreshCw, Settings, Shield, Smartphone, Sparkles } from 'lucide-react';
+import { Aperture, CalendarDays, Check, CircleCheck, Clapperboard, Clock, Copy, FileVideo, Image as ImageIcon, ImagePlus, MessageCircle, Minimize2, RefreshCw, ScanSearch, Settings, Shield, Smartphone, Sparkles } from 'lucide-react';
 import type { CleanupSummary, Storage } from '../types';
 import type { Access } from '../native/photoLibrary';
 import type { ScanView } from '../store';
@@ -153,7 +153,7 @@ export function HomeView(p: Props) {
           t={t} summary={summary} bar={bar} storage={p.storage} freedBytes={p.freedBytes} streak={p.streak} onOpen={p.onCleanup}
           analysis={
             <Analysis
-              t={t} a={p.analysis}
+              t={t} a={p.analysis} marked={summary.total}
               onPhotos={p.onMonths} onVideos={p.onVideos} onSimilar={p.onSimilar} onVideoGroups={p.onVideoGroups}
               onChats={p.onApps} onScreenshots={p.onScreenshots}
             />
@@ -252,18 +252,26 @@ export function HomeView(p: Props) {
 }
 
 /**
- * The analysis inside the clean-up card: what the library holds, as six
- * compact rows in two columns — all photos, all videos, the near-identical
- * photos and similar videos that could go, chats & social media, screenshots
- * — each with its icon, a count and its size, each opening its screen.
+ * The analysis inside the clean-up card: what the library holds, as compact
+ * rows in two columns — first everything scanned and what is all good (not
+ * marked for deleting: scanned less what the card counts), then all photos,
+ * all videos, the near-identical photos and similar videos that could go,
+ * chats & social media, screenshots — each with its icon, a count and its
+ * size; all but the first two open their screen.
  */
-function Analysis({ t, a, onPhotos, onVideos, onSimilar, onVideoGroups, onChats, onScreenshots }: {
+function Analysis({ t, a, marked, onPhotos, onVideos, onSimilar, onVideoGroups, onChats, onScreenshots }: {
   t: Strings; a: Props['analysis'];
+  /** What the clean-up card counts for deleting (its big number). */
+  marked: Stat;
   onPhotos: () => void; onVideos: () => void; onSimilar: () => void; onVideoGroups: () => void; onChats: () => void; onScreenshots: () => void;
 }) {
-  const tiles: { key: string; label: string; stat: Stat; unit: 'photos' | 'videos' | 'files'; icon: React.ComponentType<{ className?: string; strokeWidth?: number }>; hue: string; onClick: () => void }[] = [
-    { key: 'photos', label: t.statPhotos, stat: a.photos, unit: 'photos', icon: ImageIcon, hue: 'mint', onClick: onPhotos },
-    { key: 'videos', label: t.statVideos, stat: a.videos, unit: 'videos', icon: FileVideo, hue: 'stone', onClick: onVideos },
+  const scanned: Stat = { count: a.photos.count + a.videos.count, bytes: a.photos.bytes + a.videos.bytes };
+  const good: Stat = { count: Math.max(0, scanned.count - marked.count), bytes: Math.max(0, scanned.bytes - marked.bytes) };
+  const tiles: { key: string; label: string; stat: Stat; unit: 'photos' | 'videos' | 'files'; icon: React.ComponentType<{ className?: string; strokeWidth?: number }>; hue: string; onClick?: () => void }[] = [
+    { key: 'scanned', label: t.statScanned, stat: scanned, unit: 'files', icon: ScanSearch, hue: 'stone' },
+    { key: 'good', label: t.statGood, stat: good, unit: 'files', icon: CircleCheck, hue: 'mint' },
+    { key: 'photos', label: t.statPhotos, stat: a.photos, unit: 'photos', icon: ImageIcon, hue: 'pink', onClick: onPhotos },
+    { key: 'videos', label: t.statVideos, stat: a.videos, unit: 'videos', icon: FileVideo, hue: 'sand', onClick: onVideos },
     { key: 'similar', label: t.statSimilarPhotos, stat: a.similarPhotos, unit: 'photos', icon: Copy, hue: 'lilac', onClick: onSimilar },
     { key: 'similarVideos', label: t.statSimilarVideos, stat: a.similarVideos, unit: 'videos', icon: Clapperboard, hue: 'cyan', onClick: onVideoGroups },
     { key: 'chats', label: t.statChats, stat: a.chats, unit: 'files', icon: MessageCircle, hue: 'rose', onClick: onChats },
@@ -271,21 +279,30 @@ function Analysis({ t, a, onPhotos, onVideos, onSimilar, onVideoGroups, onChats,
   ];
   return (
     <div role="group" aria-label={t.analysisTitle} className="grid grid-cols-2 gap-x-3 gap-y-1 -mx-2">
-      {tiles.map(x => (
-        <button
-          key={x.key} type="button" onClick={() => { tapLight(); x.onClick(); }}
-          aria-label={`${x.label}: ${plural(t, x.unit, x.stat.count)}, ${bytes(t, x.stat.bytes)}`}
-          className="min-h-tap rounded-sm px-2 py-1.5 flex items-center gap-2.5 text-start press active:bg-surface-2 focus-visible:ring-focus"
-        >
-          <IconTile icon={x.icon} hue={x.hue} />
-          <span className="min-w-0 flex-1">
-            <span className="block text-label font-semibold text-fg leading-tight wrap-compound">{x.label}</span>
-            <span className="block text-caption text-fg-mute num mt-0.5">
-              <span className="font-bold text-fg">{num(t, x.stat.count)}</span> · {bytes(t, x.stat.bytes)}
+      {tiles.map(x => {
+        const body = (
+          <>
+            <IconTile icon={x.icon} hue={x.hue} />
+            <span className="min-w-0 flex-1">
+              <span className="block text-label font-semibold text-fg leading-tight wrap-compound">{x.label}</span>
+              <span className="block text-caption text-fg-mute num mt-0.5">
+                <span className="font-bold text-fg">{num(t, x.stat.count)}</span> · {bytes(t, x.stat.bytes)}
+              </span>
             </span>
-          </span>
-        </button>
-      ))}
+          </>
+        );
+        const label = `${x.label}: ${plural(t, x.unit, x.stat.count)}, ${bytes(t, x.stat.bytes)}`;
+        const shell = 'min-h-tap rounded-sm px-2 py-1.5 flex items-center gap-2.5 text-start';
+        const onClick = x.onClick;
+        return onClick ? (
+          <button
+            key={x.key} type="button" onClick={() => { tapLight(); onClick(); }} aria-label={label}
+            className={`${shell} press active:bg-surface-2 focus-visible:ring-focus`}
+          >{body}</button>
+        ) : (
+          <div key={x.key} role="group" aria-label={label} className={shell}>{body}</div>
+        );
+      })}
     </div>
   );
 }

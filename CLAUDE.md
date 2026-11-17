@@ -190,9 +190,9 @@ the store set, the preview video and the App Review scenes follow the switch
   (or `bg-veil` for small facts like a date).
 - Settings-style rows lead with an `IconTile`: a white symbol on the hue's
   solid squircle (`data-hue` → `bg-hue-solid`), as in iOS Settings. Hues:
-  `sky`, `sand`, `mint`, `rose`, `lilac`, `stone`, `cyan` (`--hue-bg`,
+  `sky`, `sand`, `mint`, `rose`, `lilac`, `stone`, `cyan`, `pink` (`--hue-bg`,
   `--hue-ink`, `--hue-solid`); duplicates = rose, similar = lilac, similar
-  videos = cyan, blurry = sand, scan = mint, access = sky.
+  videos = cyan, all photos = pink, blurry = sand, scan = mint, access = sky.
   A category's hue is also its dot and its segment in the `StorageBar`.
 - What a screen does floats at the bottom in thumb reach (`<Dock>` with
   `<Screen docked>`). One prominent button; a second action goes **under**
