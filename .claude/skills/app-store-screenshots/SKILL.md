@@ -13,13 +13,12 @@ its parts are (`<screen>.marks.json`). `store-screenshot-studio`
 App Store and Google Play ask for, and lifts the marked parts out of the phone.
 Upload those, not these: the raw size (1290 × 2796) fits no required slot.
 
-**The demo photos are drawn** (`npm run demo-photos`: `scripts/demo-photos.py`
-draws them and writes `src/native/demo/manifest.json` — each photo's time and
-place —, `scripts/demo-facts.mjs` computes `facts.json` from them). Before the
-store set, replace them with licensed photos (`docs/TODO.md`, step 5). That
-needs one new piece: an importer that reads each photo's date and GPS from its
-EXIF into `manifest.json` and writes the grey copies `demo-facts.mjs` reads —
-not written yet.
+**The demo photos are real** (`npm run demo-photos`: `scripts/demo-photos.py`
+puts the test library's CC0 photos without identifiable people into the demo,
+id by id, along `src/native/demo/manifest.json` — each photo's time and place,
+kept by hand —; `scripts/demo-facts.mjs` computes `facts.json` from them;
+`npm run ai:demo` the AI's scores). They are public domain: fine for the store
+set. Only the screenshots, notes and failed shots are drawn.
 
 ## Run it
 
