@@ -54,7 +54,7 @@ tab again scrolls to its top; Android's back button goes from *Ordnen* to
   line: *Erledigt: Duplikate, Screenshots* [Done: …].
 - **Mehr Platz** [More space]: *Große Dateien* [Large files] (size and count),
   *Fotos verkleinern* [Smaller photos] (*bis zu 115 MB*), on the iPhone
-  *Live Photos*, on Android *Aus Apps* [From apps] — rows with a photo.
+  *Live Photos*, *Chats & soziale Medien* [Chats & social media] — rows with a photo.
 - **Weitermachen** [Carry on]: *Später entscheiden* [Decide later] with the
   number on the pile (see *Review*), and *Monat für Monat* [Month by month]
   with *38 % durchgesehen* [38 % gone through] and a thin bar — the photos in
@@ -316,19 +316,23 @@ tab again scrolls to its top; Android's back button goes from *Ordnen* to
   orders — so everything is suggested again. The photos and albums, the
   purchase and the "freed so far" count stay.
 
-## Photos from apps (*Aus Apps*, Android)
-- Photos and videos saved by messengers and other apps, told apart by their
-  folder: WhatsApp, Telegram, Signal, Instagram, Messenger / Facebook,
-  Snapchat, Downloads, and *Andere Apps* [Other apps] for any other folder
-  outside DCIM (not the screenshots, not Bildklar's own folders).
+## Chats & social media (*Chats & soziale Medien*)
+- Photos and videos from WhatsApp, Telegram, Signal, Instagram, Messenger /
+  Facebook, Snapchat and TikTok, one group per app.
+- **Android** tells them apart by their folder, and also lists Downloads and
+  *Andere Apps* [Other apps] for any other folder outside DCIM (not the
+  screenshots, not Bildklar's own folders).
+- **iPhone**: Photos records no source app, but these apps save into an album
+  of their own name (*WhatsApp*, *Telegram*, *Instagram*, *Snapchat* …); the
+  photos in those albums are the app's. A photo saved from a chat without
+  that album (the app's "save to Photos" off) is not found.
 - One card per app with the count and size; the sort menu sets the order
   (newest or largest first) of the review a tap starts. Only memes, receipts,
   documents and photos of screens (the AI's labels) are suggested for deleting;
   everything else comes with no suggestion — a photo of the grandchildren sent
   by the family is precious.
-- Home tile *Aus Apps · 1,8 GB* once those photos hold at least 100 MB.
-- **iPhone: not yet** — Photos doesn't record which app saved a photo; a test
-  decides whether the iPhone can tell well enough (docs/AI.md).
+- Home row *Chats & soziale Medien · 1,8 GB* under *Mehr Platz* as soon as
+  there is anything.
 
 ## Protected photos
 - **Geschützt** [Protected]: a protected photo is never suggested for

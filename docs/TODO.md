@@ -290,12 +290,12 @@ Everything in TypeScript is tested by `npm run check`; what needs a phone:
       appear in the album and stay in Recents. Android: one dialog for all the
       photos, then they are in Pictures/<name>/ (or the chosen folder).
 
-- [ ] **Aus Apps (Android)**: with WhatsApp / Telegram photos on the phone,
-      the tile appears (≥ 100 MB) and the cards match the folders.
-- [ ] **Aus Apps on the iPhone — the one-day test** (docs/AI.md): pick 200
-      photos whose origin you know (messengers, camera, downloads) and send
-      Claude their ids with the answer; Claude adds the three signals to the
-      scan and measures them. ≥ 90 % precision → the iPhone gets the screen.
+- [ ] **Chats & soziale Medien (Android)**: with WhatsApp / Telegram photos on
+      the phone, the row appears and the cards match the folders.
+- [ ] **Chats & soziale Medien (iPhone)**: with "Save to Photos" on in
+      WhatsApp (and Instagram / Snapchat), the albums of those names appear as
+      groups. Photos saved without the app's album are not found: the one-day
+      test (docs/AI.md) can still add file-name and metadata signals for them.
 
 ## Known gaps (to decide later)
 
