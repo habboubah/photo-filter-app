@@ -1,0 +1,8 @@
+New in Bildklar 2.1:
+• Make photos smaller with no visible loss of quality
+• Videos and photos in one go – with similar videos
+• Sort into albums while you swipe, and "Decide later"
+• Protected albums, trips and photos
+• Too dark and too bright photos under "Failed shots"
+• Sort lists, progress in percent, Lock Screen widget (iPhone), "From apps" (Android)
+Everything stays on your device.

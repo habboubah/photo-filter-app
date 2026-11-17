@@ -86,28 +86,40 @@ Zwanzig Mal dasselbe Lächeln? Bildklar fasst fast gleiche Aufnahmen zu Gruppen 
 DUPLIKATE
 Dasselbe Bild noch einmal aus dem Messenger gespeichert? Bildklar findet Kopien, auch wenn Wochen dazwischen liegen, und schlägt vor, das Original zu behalten.
 
-UNSCHARFE FOTOS
-Verwackelt oder unscharf: Bildklar zeigt solche Fotos in einer Liste, die eindeutigen zuerst.
+MISSGLÜCKTE FOTOS
+Verwackelt, unscharf, viel zu dunkel oder überbelichtet: Bildklar listet solche Fotos, die eindeutigen zuerst.
 
 SCREENSHOTS
-Alte Bildschirmfotos und -aufnahmen auf einen Blick – die über 30 Tage alten zuerst, die neuen schaust du dir in Ruhe an.
+Alte Bildschirmfotos und -aufnahmen auf einen Blick, die über 30 Tage alten zuerst.
 
 GROSSE VIDEOS
 Die größten Fotos und Videos zuerst. Ein Video kannst du verkleinern: Neben dem Original entsteht eine kleinere Kopie, das Original löschst du danach selbst.
+
+FOTOS VERKLEINERN
+Fotos verkleinern ohne sichtbaren Qualitätsverlust: Kamerafotos werden als HEIC neu gespeichert, meist etwa halb so groß. Datum, Ort und Favorit bleiben; das Original löschst du danach selbst.
+
+VIDEOS UND FOTOS IN EINEM DURCHGANG
+Beim Durchgehen Monat für Monat sind auch deine Videos dabei. Kopien und ähnliche Videos schlägt Bildklar zum Löschen vor.
 
 LIVE PHOTOS
 Jedes Live Photo speichert ein kurzes Video mit. Mach daraus normale Fotos – Bild, Datum, Ort und Alben bleiben.
 
 AUFRÄUMEN IN RUHE
-Auf einen Blick siehst du, wie viel Speicher Duplikate, fast gleiche und unscharfe Fotos und alte Screenshots belegen – und wie viel Platz auf dem Gerät noch frei ist. Beim Durchgehen wischst du nach rechts zum Behalten und nach links zum Aussortieren – jeder Schritt lässt sich zurücknehmen. Oder du wählst beim schnellen Aufräumen, welche Arten weg dürfen, und bestätigst einmal.
+Auf einen Blick siehst du, wie viel Speicher Duplikate, fast gleiche und unscharfe Fotos und alte Screenshots belegen – und wie viel Platz auf dem Gerät noch frei ist. Beim Durchgehen wischst du nach rechts zum Behalten, nach links zum Aussortieren und nach oben, wenn du später entscheiden willst – jeder Schritt lässt sich zurücknehmen. Oder du wählst beim schnellen Aufräumen, welche Arten weg dürfen, und bestätigst einmal.
+
+GESCHÜTZTE ALBEN
+Favoriten, geschützte Alben, Reisen und einzelne Fotos schlägt Bildklar nie vor.
 
 MONAT FÜR MONAT
-Geh deine ganze Mediathek Monat für Monat durch, Stück für Stück. Und „An diesem Tag“ zeigt dir, was du heute vor einem oder mehreren Jahren fotografiert hast. Auch als Widget auf dem Home-Bildschirm – und auf Wunsch erinnert dich Bildklar einmal pro Woche.
+Geh deine ganze Mediathek Monat für Monat durch, Stück für Stück – und sieh, wie viel Prozent schon geschafft sind. Und „An diesem Tag“ zeigt dir, was du heute vor einem oder mehreren Jahren fotografiert hast. Auch als Widget auf dem Home- und dem Sperrbildschirm – und auf Wunsch erinnert dich Bildklar einmal pro Woche.
+
+ALBEN BEIM DURCHGEHEN
+Leg Fotos beim Wischen direkt in ein Album – oder in ein neues. Am Ende bestätigst du alles auf einmal.
 
 SICHER
 • Bildklar löscht nie von selbst. Du bestätigst jedes Löschen, und das iPhone fragt noch einmal nach.
 • Gelöschte Fotos landen in „Zuletzt gelöscht“ und lassen sich dort 30 Tage lang wiederherstellen.
-• Deine Fotos werden nie verändert oder kopiert.
+• Deine Fotos werden nie verändert. Beim Verkleinern entsteht eine neue Kopie – das Original löschst du selbst.
 
 PRIVAT
 • Alles passiert auf deinem iPhone: kein Konto, kein Server, keine Werbung, keine Analyse.
@@ -115,7 +127,7 @@ PRIVAT
 • Du kannst Bildklar auch nur ausgewählte Fotos zeigen.
 
 EINMAL FREISCHALTEN, KEIN ABO
-Durchsuchen und Ansehen gehört dir sofort: Reisen, Duplikate, Gruppen, unscharfe Fotos und Screenshots siehst du ohne Kauf. Die ersten 50 Fotos löschst du ohne Kauf. Für mehr – und für Alben – schaltest du Bildklar einmal frei. Kein Abo. Der Kauf gilt auf allen deinen Geräten mit demselben Apple-Account und lässt sich wiederherstellen.
+Durchsuchen und Ansehen gehört dir sofort: Reisen, Duplikate, Gruppen, unscharfe Fotos und Screenshots siehst du ohne Kauf. Die ersten 50 Fotos löschst du ohne Kauf. Für mehr – für Alben, kleinere Fotos und das Einsortieren beim Durchgehen – schaltest du Bildklar einmal frei. Kein Abo. Der Kauf gilt auf allen deinen Geräten mit demselben Apple-Account und lässt sich wiederherstellen.
 
 Gemacht von einem Vater mit viel zu vielen Kinderfotos. Auf Deutsch und Englisch.
 ```
@@ -133,8 +145,8 @@ The same smile twenty times? Bildklar groups near-identical shots and suggests t
 DUPLICATES
 Saved the same picture again from a messenger? Bildklar finds copies, even weeks apart, and suggests keeping the original.
 
-BLURRY PHOTOS
-Shaky or out of focus: Bildklar lists such photos, the clear cases first.
+FAILED SHOTS
+Shaky, out of focus, far too dark or washed out – taken by accident in a pocket: Bildklar lists such photos, the clear cases first.
 
 SCREENSHOTS
 Old screenshots and screen recordings at a glance – the ones older than 30 days first; look at the new ones at your own pace.
@@ -142,19 +154,31 @@ Old screenshots and screen recordings at a glance – the ones older than 30 day
 LARGE VIDEOS
 The biggest photos and videos first. Make a video smaller: a smaller copy is saved next to the original, and you delete the original yourself afterwards.
 
+SMALLER PHOTOS
+Make photos smaller with no visible loss of quality: camera photos are saved again as HEIC, usually about half the size. Date, place and favourite stay; you delete the original yourself afterwards.
+
+VIDEOS AND PHOTOS IN ONE GO
+Going through your library month by month includes your videos. Copies and similar videos – the same scene filmed twice – are suggested for deleting; you keep all the others.
+
 LIVE PHOTOS
 Every Live Photo keeps a short video. Turn them into plain photos – picture, date, place and albums stay.
 
 CLEAN UP AT YOUR OWN PACE
-See at a glance how much space duplicates, near-identical and blurry photos and old screenshots take up – and how much space is left on the device. Going through them, swipe right to keep and left to sort out – and undo any step. Or use the quick clean: choose which kinds may go and confirm once.
+See at a glance how much space duplicates, near-identical and blurry photos and old screenshots take up – and how much space is left on the device. Going through them, swipe right to keep, left to sort out and up to decide later – and undo any step. Or use the quick clean: choose which kinds may go and confirm once.
+
+PROTECTED ALBUMS
+What matters to you is never suggested: favourites, protected albums, trips and single photos you protect with one tap.
 
 MONTH BY MONTH
-Go through your whole library a month at a time. And "On this day" shows what you photographed on this date in earlier years. Also as a home-screen widget – and if you like, Bildklar reminds you once a week.
+Go through your whole library a month at a time – and see what share you have done. And "On this day" shows what you photographed on this date in earlier years. Also as a widget on the home screen and the Lock Screen – and if you like, Bildklar reminds you once a week.
+
+ALBUMS WHILE YOU SWIPE
+Put photos straight into an album as you swipe – or into a new one. At the end you confirm it all at once.
 
 SAFE
 • Bildklar never deletes anything by itself. You confirm every deletion, and your iPhone asks once more.
 • Deleted photos go to Recently Deleted, where you can recover them for 30 days.
-• Your photos are never changed or copied.
+• Your photos are never changed. Making one smaller saves a new copy – you delete the original yourself.
 
 PRIVATE
 • Everything happens on your iPhone: no account, no server, no ads, no analytics.
@@ -162,7 +186,7 @@ PRIVATE
 • You can also let Bildklar see only the photos you choose.
 
 UNLOCK ONCE, NO SUBSCRIPTION
-Browsing is yours straight away: you see trips, duplicates, groups, blurry photos and screenshots without buying anything. Your first 50 photos can be deleted without buying. For more – and for albums – unlock Bildklar once. No subscription. The purchase works on all your devices with the same Apple Account and can be restored.
+Browsing is yours straight away: you see trips, duplicates, groups, blurry photos and screenshots without buying anything. Your first 50 photos can be deleted without buying. For more – albums, smaller photos and sorting into albums while you swipe – unlock Bildklar once. No subscription. The purchase works on all your devices with the same Apple Account and can be restored.
 
 Made by a father with far too many photos of his kids. In German and English.
 ```
@@ -171,6 +195,8 @@ Made by a father with far too many photos of his kids. In German and English.
 
 Not shown for the first version. From version 2 on, `npm run release` reads
 `release-notes/<version>/<language>.txt` (or `release-notes/default/`).
+Version 2.1.0: `release-notes/2.1.0/` (the ten features of the plan of
+17 November 2026).
 
 ### 2.5 App Review information
 
@@ -197,6 +223,8 @@ How to try it (the device needs some photos; trips need photos with locations at
 In-app purchase: one non-consumable, com.habboubah.bildklar.unlock. Scanning and browsing are free, and so are the first 50 deleted photos; creating albums and deleting more need the unlock. "Restore purchases" is on the paywall and in Settings.
 
 Safety: the app never deletes on its own. Deleted photos go to Recently Deleted (PHAssetChangeRequest.deleteAssets with the system confirmation). Albums contain the photos, nothing is copied or changed.
+
+New in 2.1: "Make photos smaller" saves a smaller HEIC copy of each selected photo (same date, place and albums) only after the user taps and confirms in the app; the originals go to Recently Deleted only through the system's own deletion dialog. "Sort into albums while swiping" writes nothing during the review; the end screen lists every change and the user confirms it once (adding to an album only links the photo). The Lock Screen widget shows numbers only, never a photo.
 
 The attached video shows all of this on a device with sample photos.
 
@@ -263,30 +291,45 @@ DEINE REISEN, VON SELBST GEFUNDEN
 Bildklar erkennt an Ort und Zeit deiner Fotos, wann du unterwegs warst, und gibt jeder Reise einen Namen wie „Paris, Mai 2026“. Mit einem Tipp kommen ihre Fotos in einen eigenen Ordner (Bilder/Bildklar) – Android fragt vorher nach. Namen ändern, zwei Reisen zusammenlegen, eine teilen oder ausblenden – du hast das letzte Wort.
 
 FAST GLEICHE FOTOS
-Zwanzig Mal dasselbe Lächeln? Bildklar fasst fast gleiche Aufnahmen zu Gruppen zusammen und schlägt das beste Foto vor: das schärfste und am besten belichtete. Du behältst es und löschst den Rest – oder wählst selbst.
+Bildklar fasst fast gleiche Aufnahmen zu Gruppen zusammen und schlägt das beste Foto vor: das schärfste und am besten belichtete. Du behältst es und löschst den Rest – oder wählst selbst.
 
 DUPLIKATE
 Dasselbe Bild noch einmal aus dem Messenger gespeichert? Bildklar findet Kopien, auch wenn Wochen dazwischen liegen, und schlägt vor, das Original zu behalten.
 
-UNSCHARFE FOTOS
-Verwackelt oder unscharf: Bildklar zeigt solche Fotos in einer Liste, die eindeutigen zuerst.
+MISSGLÜCKTE FOTOS
+Verwackelt, unscharf, viel zu dunkel oder überbelichtet: Bildklar listet solche Fotos, die eindeutigen zuerst.
 
 SCREENSHOTS
-Alte Bildschirmfotos und -aufnahmen auf einen Blick – die über 30 Tage alten zuerst, die neuen schaust du dir in Ruhe an.
+Alte Bildschirmfotos und -aufnahmen auf einen Blick, die über 30 Tage alten zuerst.
 
 GROSSE VIDEOS
 Die größten Fotos und Videos zuerst. Ein Video kannst du verkleinern: Neben dem Original entsteht eine kleinere Kopie, das Original löschst du danach selbst.
 
+FOTOS VERKLEINERN
+Fotos verkleinern ohne sichtbaren Qualitätsverlust: Kamerafotos werden als HEIC neu gespeichert, meist etwa halb so groß. Datum, Ort und Favorit bleiben; das Original löschst du danach selbst.
+
+VIDEOS UND FOTOS IN EINEM DURCHGANG
+Beim Durchgehen Monat für Monat sind auch deine Videos dabei. Kopien und ähnliche Videos schlägt Bildklar zum Löschen vor.
+
 AUFRÄUMEN IN RUHE
-Auf einen Blick siehst du, wie viel Speicher Duplikate, fast gleiche und unscharfe Fotos und alte Screenshots belegen – und wie viel Platz auf dem Gerät noch frei ist. Beim Durchgehen wischst du nach rechts zum Behalten und nach links zum Aussortieren – jeder Schritt lässt sich zurücknehmen. Oder du wählst beim schnellen Aufräumen, welche Arten weg dürfen, und bestätigst einmal.
+Auf einen Blick siehst du, wie viel Speicher Duplikate, fast gleiche und unscharfe Fotos und alte Screenshots belegen – und wie viel Platz auf dem Gerät noch frei ist. Beim Durchgehen wischst du nach rechts zum Behalten, nach links zum Aussortieren und nach oben, wenn du später entscheiden willst – jeder Schritt lässt sich zurücknehmen. Oder du wählst beim schnellen Aufräumen, welche Arten weg dürfen, und bestätigst einmal.
+
+GESCHÜTZTE ORDNER
+Favoriten, geschützte Ordner, Reisen und einzelne Fotos schlägt Bildklar nie vor.
 
 MONAT FÜR MONAT
-Geh deine ganze Mediathek Monat für Monat durch, Stück für Stück. Und „An diesem Tag“ zeigt dir, was du heute vor einem oder mehreren Jahren fotografiert hast. Auch als Widget auf dem Home-Bildschirm – und auf Wunsch erinnert dich Bildklar einmal pro Woche.
+Geh deine ganze Mediathek Monat für Monat durch, Stück für Stück – mit Fortschritt in Prozent. Und „An diesem Tag“ zeigt dir, was du heute vor einem oder mehreren Jahren fotografiert hast. Auch als Widget auf dem Home-Bildschirm – und auf Wunsch erinnert dich Bildklar einmal pro Woche.
+
+AUS APPS
+Fotos und Videos aus WhatsApp, Telegram und anderen Apps, nach App sortiert. Bildklar schlägt nur Memes, Belege und Dokumente zum Löschen vor.
+
+ORDNER BEIM DURCHGEHEN
+Leg Fotos beim Wischen direkt in einen Ordner – oder in einen neuen. Am Ende bestätigst du alles auf einmal.
 
 SICHER
 • Bildklar löscht und verschiebt nie von selbst. Du bestätigst jeden Schritt, und Android fragt noch einmal nach.
 • Gelöschte Fotos landen im Papierkorb und lassen sich dort 30 Tage lang wiederherstellen.
-• Deine Fotos werden nie verändert oder kopiert – beim Ordner anlegen nur verschoben.
+• Deine Fotos werden nie verändert – in Ordner nur verschoben. Beim Verkleinern entsteht eine neue Kopie, das Original löschst du selbst.
 
 PRIVAT
 • Alles passiert auf deinem Handy: kein Konto, kein Server, keine Werbung, keine Analyse.
@@ -294,7 +337,7 @@ PRIVAT
 • Auf Android 14 und neuer kannst du Bildklar auch nur ausgewählte Fotos zeigen.
 
 EINMAL FREISCHALTEN, KEIN ABO
-Durchsuchen und Ansehen gehört dir sofort: Reisen, Duplikate, Gruppen, unscharfe Fotos und Screenshots siehst du ohne Kauf. Die ersten 50 Fotos löschst du ohne Kauf. Für mehr – und für Ordner – schaltest du Bildklar einmal frei. Kein Abo. Der Kauf läuft über Google Play, gilt auf allen deinen Geräten mit demselben Google-Konto und lässt sich wiederherstellen.
+Durchsuchen und Ansehen gehört dir sofort: Reisen, Duplikate, Gruppen, unscharfe Fotos und Screenshots siehst du ohne Kauf. Die ersten 50 Fotos löschst du ohne Kauf. Für mehr – für Ordner, kleinere Fotos und das Einsortieren beim Durchgehen – schaltest du Bildklar einmal frei. Kein Abo. Der Kauf läuft über Google Play, gilt auf allen deinen Geräten mit demselben Google-Konto und lässt sich wiederherstellen.
 
 Gemacht von einem Vater mit viel zu vielen Kinderfotos. Auf Deutsch und Englisch.
 ```
@@ -312,8 +355,8 @@ The same smile twenty times? Bildklar groups near-identical shots and suggests t
 DUPLICATES
 Saved the same picture again from a messenger? Bildklar finds copies, even weeks apart, and suggests keeping the original.
 
-BLURRY PHOTOS
-Shaky or out of focus: Bildklar lists such photos, the clear cases first.
+FAILED SHOTS
+Shaky, out of focus, far too dark or washed out – taken by accident in a pocket: Bildklar lists such photos, the clear cases first.
 
 SCREENSHOTS
 Old screenshots and screen recordings at a glance – the ones older than 30 days first; look at the new ones at your own pace.
@@ -321,16 +364,31 @@ Old screenshots and screen recordings at a glance – the ones older than 30 day
 LARGE VIDEOS
 The biggest photos and videos first. Make a video smaller: a smaller copy is saved next to the original, and you delete the original yourself afterwards.
 
+SMALLER PHOTOS
+Make photos smaller with no visible loss of quality: camera photos are saved again as HEIC, usually about half the size. Date, place and favourite stay; you delete the original yourself afterwards.
+
+VIDEOS AND PHOTOS IN ONE GO
+Going through your library month by month includes your videos. Copies and similar videos – the same scene filmed twice – are suggested for deleting; you keep all the others.
+
 CLEAN UP AT YOUR OWN PACE
-See at a glance how much space duplicates, near-identical and blurry photos and old screenshots take up – and how much space is left on the device. Going through them, swipe right to keep and left to sort out – and undo any step. Or use the quick clean: choose which kinds may go and confirm once.
+See at a glance how much space duplicates, near-identical and blurry photos and old screenshots take up – and how much space is left on the device. Going through them, swipe right to keep, left to sort out and up to decide later – and undo any step. Or use the quick clean: choose which kinds may go and confirm once.
+
+PROTECTED FOLDERS
+What matters to you is never suggested: favourites, protected folders, trips and single photos you protect with one tap.
 
 MONTH BY MONTH
-Go through your whole library a month at a time. And "On this day" shows what you photographed on this date in earlier years. Also as a home-screen widget – and if you like, Bildklar reminds you once a week.
+Go through your whole library a month at a time – and see what share you have done. And "On this day" shows what you photographed on this date in earlier years. Also as a home-screen widget – and if you like, Bildklar reminds you once a week.
+
+FROM APPS
+Photos and videos saved by WhatsApp, Telegram and other apps, by app. Bildklar only suggests deleting memes, receipts and documents.
+
+FOLDERS WHILE YOU SWIPE
+Put photos straight into a folder as you swipe – or into a new one. At the end you confirm it all at once.
 
 SAFE
 • Bildklar never deletes or moves anything by itself. You confirm every step, and Android asks once more.
 • Deleted photos go to the trash, where you can recover them for 30 days.
-• Your photos are never changed or copied – creating a folder only moves them.
+• Your photos are never changed – folders only move them. Making one smaller saves a new copy; you delete the original yourself.
 
 PRIVATE
 • Everything happens on your phone: no account, no server, no ads, no analytics.
@@ -338,7 +396,7 @@ PRIVATE
 • On Android 14 and newer you can also let Bildklar see only the photos you choose.
 
 UNLOCK ONCE, NO SUBSCRIPTION
-Browsing is yours straight away: you see trips, duplicates, groups, blurry photos and screenshots without buying anything. Your first 50 photos can be deleted without buying. For more – and for folders – unlock Bildklar once. No subscription. The purchase goes through Google Play, works on all your devices with the same Google Account and can be restored.
+Browsing is yours straight away: you see trips, duplicates, groups, blurry photos and screenshots without buying anything. Your first 50 photos can be deleted without buying. For more – folders, smaller photos and sorting into folders while you swipe – unlock Bildklar once. No subscription. The purchase goes through Google Play, works on all your devices with the same Google Account and can be restored.
 
 Made by a father with far too many photos of his kids. In German and English.
 ```
