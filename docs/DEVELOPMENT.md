@@ -72,6 +72,39 @@ scan; the scan screenshot slows it down). `bildklar-dev-platform` = `android`
 gives a development or demo build Android's words. In dev the app is a "debug build": the dry run is
 on until `bildklar-dry-run` is `0`.
 
+## The test library
+
+For a full test on a simulator, an emulator or a test phone — never your own
+library — `npm run test-photos` builds `test-photos/` (gitignored, about
+160 MB): about 200 real photos and videos as a phone holds them. Every one
+is **CC0 1.0** (public domain, from Openverse and Wikimedia Commons), so they
+may also go into the store screenshots and the preview video; the sources are
+in `scripts/test-photos.json`, and `test-photos/credits.csv` maps each file to
+its source. `store: false` (`no` in the CSV) marks identifiable people and the
+Eiffel Tower lit at night: fine for tests, not for store assets.
+
+The script renames them (`IMG_1001.JPG` …) and gives each a date and a place
+in its EXIF (videos: QuickTime `creationdate` and `ISO6709` location): two years
+at home in Hainburg, November 2024 to November 2026 — Christmas, birthdays,
+Eid, snow, the twins — and trips to Vienna, Paris, a wedding at the Baltic Sea,
+Amsterdam, the Rhine and Lake Garda; some photos without GPS, and photos on
+17 November of earlier years for *An diesem Tag*. On top: bursts of
+near-identical shots seconds apart (some blurry), photos saved again from
+WhatsApp (`IMG-…-WA….jpg`, small, no EXIF), one exact duplicate
+(`… (1).JPG`), screenshots (`Screenshot_….png`, made-up apps), a shot in the
+pocket and one into the sun, one long video and a lookalike video
+(`VID-…-WA….mp4`). The timeline is the `EVENTS` table in the script.
+
+```bash
+npm run test-photos           # downloads into .cache/test-photos/ once, then builds (Pillow, ffmpeg)
+npm run test-photos -- --offline   # rebuild from the cache only
+npm run test-photos:sim       # xcrun simctl addmedia into the booted simulator
+npm run test-photos:android   # adb push into DCIM/Camera, Pictures/Screenshots, WhatsApp's folders; then a media scan
+```
+
+Wikimedia Commons slows down a script after a few downloads (HTTP 429): the
+script waits and goes on, and whatever is still missing is fetched on the next run.
+
 ## The features
 
 `src/logic/features.ts` is the spec; `FeatureMath.swift` and `FeatureMath.kt`

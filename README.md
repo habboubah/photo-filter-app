@@ -20,6 +20,14 @@ npx playwright install chromium   # once per Mac, for the checks and screenshots
 npm run dev              # http://localhost:3001 — the demo library stands in for the photos
 ```
 
+## A real test library
+
+```bash
+npm run test-photos          # ~200 real CC0 photos and videos with dates and places → test-photos/
+npm run test-photos:sim      # into the booted iOS simulator's Photos
+npm run test-photos:android  # onto the emulator / test phone adb sees
+```
+
 ## Build
 
 ```bash

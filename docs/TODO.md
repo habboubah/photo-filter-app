@@ -172,13 +172,17 @@ tests pass — **but it has not run on a phone.**
       `npm run assets:generate` for the new splash colours; then the
       screenshots, the preview video and the App Review rehearsal below. Tell
       Claude if the store studio's headlines should drop Fraunces too.
-- [ ] **Demo photos**: about 60 photos licensed for commercial use (or your
-      own), **with GPS and dates in their EXIF**, so they form trips — ideally
-      Paris, Lake Garda, Amsterdam and Vienna like the drawn demo (then the
-      App Review scenes match as they are). No recognisable children's faces
-      unless you choose them. Note each licence in `store/demo-photos/LICENCES.md`.
-      Then: Claude puts them into the web demo (replacing the drawn ones) for
-      the screenshots and the preview video.
+- [ ] **Test with real photos** (docs/DEVELOPMENT.md, *The test library*):
+      on the Mac `npm run test-photos` (run it again if Wikimedia's videos
+      were still missing), boot a simulator, `npm run test-photos:sim`, then go
+      through every screen: trips, *An diesem Tag*, similar and blurry photos,
+      duplicates, screenshots, videos, the AI's categories. Android:
+      `npm run test-photos:android`. **Never on your own phone.**
+- [ ] **Demo photos for the store**: the test library's photos are CC0 (free
+      for the screenshots and the preview video, no credit needed); use those
+      marked `store = yes` in `test-photos/credits.csv`. Then: Claude puts them
+      into the web demo (replacing the drawn ones) for the screenshots and the
+      preview video.
 - [ ] `npm run screenshots && npm run store-screenshots` on the Mac; look at the
       contact sheets. While nothing is for sale the set has seven screens (no
       album, no paywall) and shows the app as a new user sees it. The studio's headlines are in
