@@ -152,13 +152,16 @@ export class DemoLibrary extends WebPlugin implements PhotoLibraryPlugin {
     return { done, cancelled: false, dryRun };
   }
 
-  /** Two made-up albums: the family photos at home and the Lake Garda summer, and the ones made while swiping. */
+  /** Made-up albums: the family photos at home, the Lake Garda summer, WhatsApp's and Snapchat's, and the ones made while swiping. */
   private albums(): { id: string; title: string; members: string[] }[] {
     const all = this.photos().filter(p => !p.shot && !p.video);
     const near = (p: Photo, lat: number, lon: number) => p.lat !== undefined && Math.abs(p.lat - lat) < 0.1 && Math.abs((p.lon ?? 0) - lon) < 0.1;
     return [
       { id: 'demo-album-family', title: 'Familie', members: all.filter(p => near(p, 50.132, 8.917) && p.expo !== undefined && (p.expo ?? 0) > 0.1 && (p.expo ?? 1) < 0.9).slice(0, 12).map(p => p.id) },
       { id: 'demo-album-garda', title: 'Gardasee 2026', members: all.filter(p => near(p, 45.886, 10.842)).map(p => p.id) },
+      // What WhatsApp and Snapchat save into Photos: pictures without a location ("Chats & soziale Medien").
+      { id: 'demo-album-whatsapp', title: 'WhatsApp', members: all.filter(p => p.lat === undefined).slice(0, 14).map(p => p.id) },
+      { id: 'demo-album-snapchat', title: 'Snapchat', members: all.filter(p => p.lat === undefined).slice(14, 19).map(p => p.id) },
     ].map(a => {
       const extra = this.madeAlbums().find(m => m.id === a.id);
       return extra ? { ...a, members: [...new Set([...a.members, ...extra.members])] } : a;

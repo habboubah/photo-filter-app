@@ -10,6 +10,8 @@ import { addDay } from './logic/streak';
 import type { SortKey } from './logic/sort';
 import { toggled } from './logic/protect';
 import { UNLOCK_ON_SALE } from './logic/allowance';
+import { type Source, sourceOfAlbum } from './logic/sources';
+import { isAndroid } from './platform';
 import { LocalNotifications } from '@capacitor/local-notifications';
 
 /*
@@ -323,6 +325,29 @@ export function useAppStore() {
     return () => { alive = false; };
   }, [protectedAlbums, photos]);
 
+  // iPhone: the photos in the albums WhatsApp, Telegram, Instagram, Snapchat … make in Photos — the
+  // "Chats & soziale Medien" groups (src/logic/sources.ts). Asked once per load of the facts. Android
+  // knows the source from the folder and needs none of this.
+  const [appAlbums, setAppAlbums] = useState<Map<string, Source>>(() => new Map());
+  useEffect(() => {
+    if (!photos || isAndroid()) return;
+    let alive = true;
+    void (async () => {
+      try {
+        const { albums } = await PhotoLibrary.listAlbums();
+        const map = new Map<string, Source>();
+        for (const a of albums) {
+          const source = sourceOfAlbum(a.title);
+          if (!source || !a.count) continue;
+          const { ids } = await PhotoLibrary.albumMembers({ ids: [a.id] });
+          for (const id of ids) if (!map.has(id)) map.set(id, source);
+        }
+        if (alive) setAppAlbums(map);
+      } catch { /* no access to albums, or an older native build: no app groups on the iPhone */ }
+    })();
+    return () => { alive = false; };
+  }, [photos]);
+
   /** iPhone: face scores for a similar group, worked out on demand and laid over the photos for ranking. */
   const scoreFaces = useCallback(async (ids: string[]) => {
     const missing = ids.filter(id => !faces.has(id));
@@ -398,6 +423,7 @@ export function useAppStore() {
     access, refreshAccess, accessGranted,
     photos, scan, startScan, reload, removePhotos,
     faces, scoreFaces,
+    appAlbums,
     storage, refreshStorage,
   };
 }

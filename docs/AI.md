@@ -123,9 +123,11 @@ Write the values chosen and the numbers they rest on here.
 
 ## iPhone: which app saved a photo? (test pending)
 
-Apple Photos doesn't record the app that saved a photo, so "Aus Apps" is
-Android-only until a one-day test shows the iPhone can tell well enough.
-On 200 of Ahmad's photos whose origin he knows, three signals:
+Apple Photos doesn't record the app that saved a photo. Since 17 November
+2026 *Chats & soziale Medien* uses the albums the apps make themselves
+(WhatsApp, Telegram, Instagram, Snapchat …; `sourceOfAlbum`). For photos
+saved without such an album, a one-day test could add more signals. On 200
+of Ahmad's photos whose origin he knows, three signals:
 
 - the original file name (`PHAssetResource.originalFilename`), e.g.
   Telegram's `telegram-cloud-photo-…`;

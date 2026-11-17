@@ -9,9 +9,10 @@ import { tapLight } from '../ui/haptics';
 import { SortButton } from './SortButton';
 
 /**
- * "Aus Apps" [From apps], Android: photos and videos saved by messengers and
- * other apps (src/logic/sources.ts), one card per app with its count and
- * size; a tap goes through that app's photos in the order of the sort menu.
+ * "Chats & soziale Medien" [Chats & social media]: photos and videos saved by
+ * messengers and social apps (src/logic/sources.ts), one card per app with
+ * its count and size; a tap goes through that app's photos in the order of
+ * the sort menu.
  */
 export function AppsView({ t, groups, sort, onSort, onBack, onReview }: {
   t: Strings;
@@ -23,7 +24,7 @@ export function AppsView({ t, groups, sort, onSort, onBack, onReview }: {
 }) {
   const name: Record<Source, string> = {
     whatsapp: 'WhatsApp', telegram: 'Telegram', signal: 'Signal', instagram: 'Instagram', facebook: 'Messenger',
-    snapchat: 'Snapchat', download: t.sourceDownload, other: t.sourceOther,
+    snapchat: 'Snapchat', tiktok: 'TikTok', download: t.sourceDownload, other: t.sourceOther,
   };
   const total = groups.reduce((s, g) => s + g.bytes, 0);
   return (

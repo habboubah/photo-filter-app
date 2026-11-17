@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Photo } from '../types';
 import { LABELS } from './ai';
-import { groupBySource, reviewSource, sourceOf } from './sources';
+import { groupBySource, reviewSource, sourceOf, sourceOfAlbum } from './sources';
 
 let n = 0;
 const at = (dir: string | undefined, extra: Partial<Photo> = {}): Photo => ({ id: `s${++n}`, t: n, bytes: 1_000_000, w: 1, h: 1, dir, ...extra });
@@ -50,5 +50,18 @@ describe('photos from apps', () => {
     const items = reviewSource([meme, receipt, kids, fav], new Set());
     expect(items.map(i => i.suggest)).toEqual(['delete', 'delete', 'none', 'none']);
     expect(reviewSource([meme], new Set([meme.id]))[0].suggest).toBe('none');
+  });
+});
+
+describe('chat and social apps on the iPhone (their albums)', () => {
+  it('knows an app by its album and groups the album photos under it', () => {
+    expect(sourceOfAlbum('WhatsApp')).toBe('whatsapp');
+    expect(sourceOfAlbum('Snapchat')).toBe('snapchat');
+    expect(sourceOfAlbum('TikTok')).toBe('tiktok');
+    expect(sourceOfAlbum('Familie')).toBeNull();
+    expect(sourceOfAlbum('Downloads')).toBeNull();
+    const p = (id: string): Photo => ({ id, t: 1, bytes: 10, w: 1, h: 1 });
+    const groups = groupBySource([p('a'), p('b'), p('c')], new Map([['a', 'whatsapp'], ['c', 'snapchat']]));
+    expect(groups.map(g => [g.source, g.photos.map(x => x.id)])).toEqual([['whatsapp', ['a']], ['snapchat', ['c']]]);
   });
 });

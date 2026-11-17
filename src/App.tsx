@@ -136,8 +136,8 @@ export default function App() {
   const large = useMemo(() => findLarge(lib.photos), [lib]);
   const live = useMemo(() => findLive(lib.photos), [lib]);
   const compressible = useMemo(() => findCompressible(lib.photos, kept), [lib, kept]);
-  // "Aus Apps" (src/logic/sources.ts): Android only — the iPhone can't tell which app saved a photo.
-  const sources = useMemo(() => (isAndroid() ? groupBySource(lib.photos) : []), [lib]);
+  // "Chats & soziale Medien" (src/logic/sources.ts): Android by folder, the iPhone by the apps' own albums.
+  const sources = useMemo(() => groupBySource(lib.photos, isAndroid() ? undefined : store.appAlbums), [lib, store.appAlbums]);
   const sourcesBytes = useMemo(() => sources.reduce((s, g) => s + g.bytes, 0), [sources]);
   const hasLocations = useMemo(() => lib.photos.some(p => p.lat !== undefined), [lib]);
   // The decide-later pile, without photos that are gone (a full scan's view of the library prunes it for good).
