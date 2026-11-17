@@ -205,9 +205,9 @@ the store set, the preview video and the App Review scenes follow the switch
   (or `bg-veil` for small facts like a date).
 - Settings-style rows lead with an `IconTile`: a white symbol on the hue's
   solid squircle (`data-hue` → `bg-hue-solid`), as in iOS Settings. Hues:
-  `sky`, `sand`, `mint`, `rose`, `lilac`, `stone`, `cyan` (`--hue-bg`,
+  `sky`, `sand`, `mint`, `rose`, `lilac`, `stone`, `cyan`, `pink` (`--hue-bg`,
   `--hue-ink`, `--hue-solid`); duplicates = rose, similar = lilac, similar
-  videos = cyan, blurry = sand, scan = mint, access = sky.
+  videos = cyan, all photos = pink, blurry = sand, scan = mint, access = sky.
   A category's hue is also its dot and its segment in the `StorageBar`.
 - What a screen does floats at the bottom in thumb reach (`<Dock>` with
   `<Screen docked>`). One prominent button; a second action goes **under**
@@ -295,7 +295,7 @@ the store set, the preview video and the App Review scenes follow the switch
 | The city table (GeoNames) | `npm run cities` |
 | The licences list (after adding or updating a dependency) | `npm run licences` |
 | The demo's real photos (keeps the manifest), then the AI's scores and the facts | `npm run demo-photos && npm run ai:demo` |
-| A real test library (~200 CC0 photos and videos, dates and places) / onto the simulator / onto Android | `npm run test-photos` / `test-photos:sim` / `test-photos:android` |
+| A real test library (~560 CC0 photos and videos, dates and places) / onto the simulator / onto Android / into `npm run dev` | `npm run test-photos` / `test-photos:sim` / `test-photos:android` / `demo-library` |
 | Every screen before and after a UI change | `npm run ui-review` (→ `screenshots/review/`) |
 | Store screenshots: raw (iPhone words / Android words) / framed | `npm run screenshots` (`-- --android`) / `npm run store-screenshots` |
 | The App Store preview video | `npm run app-preview` (needs ffmpeg) |

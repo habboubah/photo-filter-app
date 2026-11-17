@@ -40,3 +40,4 @@ ios/AIFeatures/.swiftpm/
 
 # The test library (npm run test-photos): real CC0 photos, rebuilt by the script
 /test-photos/
+/src/native/demo/test-library/

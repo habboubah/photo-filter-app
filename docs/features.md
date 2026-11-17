@@ -39,9 +39,11 @@ tab again scrolls to its top; Android's back button goes from *Ordnen* to
 
 ### Aufräumen [Clean up]
 - The number of photos under the title.
-- **The analysis**, inside the clean-up card under the bar: six rows in two
-  columns, each with its icon, a count and its size and each opening its
-  screen — *Fotos* (all photos → *Monat für Monat*), *Videos* (all videos,
+- **The analysis**, inside the clean-up card under the bar: rows in two
+  columns, each with its icon, a count and its size. First *Gescannt*
+  (every photo and video scanned) and *In Ordnung* (what is not marked for
+  deleting: scanned less what the card counts) — facts, not buttons; then
+  six that open their screen — *Fotos* (all photos → *Monat für Monat*), *Videos* (all videos,
   largest first), *Ähnliche Fotos* (near-identical photos that could go),
   *Ähnliche Videos* (similar videos that could go), *Chats & Social*,
   *Screenshots*.
