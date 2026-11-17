@@ -24,13 +24,13 @@ export function useToast() {
 
 /**
  * The snackbar: confirmation of a quiet action, and the undo for a reversible
- * one — in place of a confirm dialog. `bottom` lifts it above a docked bar.
+ * one — in place of a confirm dialog. `raised` lifts it above a docked bar ('high': a Dock of two buttons).
  */
-export function Toast({ toast, onDone, raised }: { toast: ToastState | null; onDone: () => void; raised?: boolean }) {
+export function Toast({ toast, onDone, raised }: { toast: ToastState | null; onDone: () => void; raised?: boolean | 'high' }) {
   return createPortal(
     <div
       className="fixed inset-x-0 z-[55] flex justify-center px-4 pointer-events-none"
-      style={{ bottom: `calc(${raised ? 108 : 24}px + var(--safe-area-inset-bottom, env(safe-area-inset-bottom)))` }}
+      style={{ bottom: `calc(${raised === 'high' ? 156 : raised ? 108 : 24}px + var(--safe-area-inset-bottom, env(safe-area-inset-bottom)))` }}
     >
       <AnimatePresence mode="popLayout">
         {toast && (

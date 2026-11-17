@@ -67,7 +67,9 @@ tab again scrolls to its top; Android's back button goes from *Ordnen* to
 - **Mehr Platz** [More space]: *Große Dateien* [Large files] (size and count),
   *Fotos verkleinern* [Smaller photos] (*bis zu 115 MB*), on the iPhone
   *Live Photos*, *Chats & soziale Medien* [Chats & social media] — rows with a photo.
-- **Weitermachen** [Carry on]: *Später entscheiden* [Decide later] with the
+- **Weitermachen** [Carry on]: *Zum Löschen* [To delete] while anything waits
+  there (its size, *Noch nicht gelöscht*, the count; see *To delete*),
+  *Später entscheiden* [Decide later] with the
   number on the pile (see *Review*), and *Monat für Monat* [Month by month]
   with *38 % durchgesehen* [38 % gone through] and a thin bar — the photos in
   months gone through, as a share of all photos (rounded down, so 100 % only
@@ -317,7 +319,7 @@ tab again scrolls to its top; Android's back button goes from *Ordnen* to
 - *Aufräumen* lists what the card counts (duplicates, near-identical, blurry,
   too dark or too bright, old screenshots, unimportant photos) with sizes, *Alle durchgehen* [Go through all] and
   **Schnell aufräumen** [Quick clean]: a switch per kind (all on), the
-  free space, then *35 Fotos löschen · 91 MB* → the system's dialog — or
+  free space, then *35 Fotos löschen · 91 MB* → into *Zum Löschen* — or
   *Durchgehen* [Review] for the same photos first. Needs the unlock.
 - Favourites are never suggested, nor a photo you kept in a review before.
 
@@ -330,15 +332,14 @@ tab again scrolls to its top; Android's back button goes from *Ordnen* to
 - At the end: the space it would free as one big number (*13 MB — kannst du
   jetzt freigeben* [you can free up now]), *Zum Löschen markiert: 4 Fotos
   (13 MB)* with thumbnails and
-  **4 Fotos löschen** [Delete 4 photos] → the system's dialog → Recently
-  Deleted (iPhone) / the Trash (Android). Nothing is deleted before that.
-  Needs the unlock.
+  **In „Zum Löschen“ legen · 4 Fotos** [Put in “To delete”] — nothing is
+  deleted yet (*Noch wird nichts gelöscht …*); see *To delete*.
 - Photos you kept against the suggestion are remembered and not suggested again.
 - **Into albums while swiping** (needs the unlock): a row of album chips
   under the photo (the last used first) and *+ Neues Album* [New album]. A tap
   keeps the photo, files it into that album and moves on; undo takes it out
   again. Nothing is written during the review: the end screen lists
-  *3 Fotos löschen · 5 Fotos in 2 Alben* with each album, then does it all in
+  *In „Zum Löschen“ legen · 3 Fotos · 5 Fotos in 2 Alben* with each album, then does it all in
   one go — iPhone: the photos are added to the albums (nothing moves);
   Android: an album is a folder, so the photos move there after one system
   dialog (*Die Fotos werden in den Ordner verschoben*). Albums made here show
@@ -348,6 +349,29 @@ tab again scrolls to its top; Android's back button goes from *Ordnen* to
   [Decide later] while the pile isn't empty; it goes through the pile with no
   suggestion. A photo leaves the pile once it is kept or deleted, or when it
   is gone from the library.
+
+## To delete (*Zum Löschen*)
+- **Nothing is deleted the moment you choose it.** Whatever you pick to
+  delete — the end of a review, *Die anderen löschen* in a group, quick
+  clean, *Video/Foto löschen* in the large files — goes into *Zum Löschen*
+  first. It leaves the group, list, trip and count it was in at once, as if
+  it were gone; a toast says *4 Fotos in „Zum Löschen“* with **Rückgängig**
+  [Undo].
+- *Aufräumen* › *Weitermachen* › **Zum Löschen** opens it: the photos, the
+  last put aside first, each with its size (a video with its length). A tap
+  selects one; **Zurücklegen · 2 Fotos** [Put back] returns them to where
+  they were (with undo), *Nur diese löschen* [Delete only these] deletes just
+  them.
+- With nothing selected: **12 Fotos löschen · 340 MB** → the system's dialog
+  → Recently Deleted (iPhone) / the Trash (Android) — the only place that
+  deletes — and *Noch einmal durchgehen* [Go through them again]: a review
+  without a suggestion, swiped right goes back, swiped left is deleted at the
+  end (*1 Foto löschen*), up stays in the list.
+- Free deletes (before the unlock) are counted here, when the photos really
+  go. It is kept with the decisions (it survives a restart and *Entscheidungen
+  zurücksetzen*); a photo deleted elsewhere leaves it by itself.
+- Making a video or photos smaller and turning Live Photos into stills still
+  ask about the originals right away: the copy is already saved.
 
 ## The unlock
 - **Not for sale yet — the launch phase** (`UNLOCK_ON_SALE` is `false` in

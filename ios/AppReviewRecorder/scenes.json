@@ -1,5 +1,5 @@
 {
- "about": "The App Review screen recording for Bildklar (Bildklar KI: Foto Reiniger / Bildklar AI: Photo Cleaner), one step per line, in the order a new user meets the app: the scan, a trip found by itself, near-identical photos and the best shot, a review that deletes two photos with iOS's own dialog, the settings. About 2 minutes. Nothing is for sale yet (UNLOCK_ON_SALE in src/logic/allowance.ts): no paywall, no album button for a new user — so the recording shows the trip, not an album. When the unlock goes on sale, bring back the album scene (git history: \"A trip becomes an album\"). The iPhone UI test (RecorderUITests) plays this file on a real iPhone that has the demo photos and has given Bildklar Limited Access to only those; scripts/rehearse-app-review.mjs plays the same file against the web build to check every label first. Step keys: see README.md.",
+ "about": "The App Review screen recording for Bildklar (Bildklar KI: Foto Reiniger / Bildklar AI: Photo Cleaner), one step per line, in the order a new user meets the app: the scan, a trip found by itself, near-identical photos and the best shot, a review that puts two photos into To delete, then deletes them from there with iOS's own dialog, the settings. About 2 minutes. Nothing is for sale yet (UNLOCK_ON_SALE in src/logic/allowance.ts): no paywall, no album button for a new user — so the recording shows the trip, not an album. When the unlock goes on sale, bring back the album scene (git history: \"A trip becomes an album\"). The iPhone UI test (RecorderUITests) plays this file on a real iPhone that has the demo photos and has given Bildklar Limited Access to only those; scripts/rehearse-app-review.mjs plays the same file against the web build to check every label first. Step keys: see README.md.",
  "app": {
   "bundleId": "com.habboubah.bildklar",
   "iconName": ["Bildklar"],
@@ -74,7 +74,7 @@
     {"tap": "Back"},
     {"pause": 1.5}
   ]},
-  { "name": "A review that deletes", "steps": [
+  { "name": "A review that deletes, through To delete", "steps": [
     {"tap": "Clean up now", "role": "button"},
     {"pause": 1.5},
     {"tap": "Go through all"},
@@ -87,6 +87,12 @@
     {"pause": 1.2},
     {"tap": "Finish"},
     {"pause": 2},
+    {"tap": ["Put in “To delete” · 2 photos", "Put in “To delete” · 2 files"]},
+    {"pause": 2},
+    {"tap": "Back"},
+    {"pause": 1.5},
+    {"tap": "To delete", "role": "button"},
+    {"pause": 2},
     {"tap": ["Delete 2 photos", "Delete 2 files"]},
     {"pause": 1.5},
     {"systemAlert": ["Delete", "Löschen"], "timeout": 8},
@@ -95,8 +101,6 @@
     {"pause": 2}
   ]},
   { "name": "Settings and the end", "steps": [
-    {"tap": "Back"},
-    {"pause": 1.5},
     {"tap": "Settings"},
     {"pause": 1.5},
     {"scrollTo": "Privacy"},

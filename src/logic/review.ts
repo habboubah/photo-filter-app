@@ -8,15 +8,17 @@ import { type Cos, type Detail, type Trust, blurryTrust, exposureTrust, groupVer
 /*
  * A review: photos shown one by one, each with the app's suggestion, swiped
  * to keep, to delete or (swiped up) to decide later. Nothing happens to a
- * photo during a review; only "Delete N photos" at the end, confirmed in the
- * system's own dialog, moves the ones marked to Recently Deleted / the Trash.
+ * photo during a review; the end screen puts the ones marked into "Zum
+ * Löschen" (src/logic/bin.ts), from where they are deleted later, through the
+ * system's own dialog, into Recently Deleted / the Trash. Gone through from
+ * the bin itself, the end screen deletes for real.
  * The ones put off land on the decide-later pile (AppState.later), which is
  * gone through again from home without a suggestion.
  */
 export type Decision = 'keep' | 'delete' | 'later';
 /** What the app suggests: `none` for the decide-later pile, where the user already hesitated. */
 export type Suggestion = 'keep' | 'delete' | 'none';
-export type Reason = 'best' | 'original' | 'similar' | 'duplicate' | 'blurry' | 'screenshot' | 'utility' | 'large' | 'trip' | 'later' | 'dark' | 'bright' | 'video' | 'lookalike' | 'bestTake' | 'app' | 'found';
+export type Reason = 'best' | 'original' | 'similar' | 'duplicate' | 'blurry' | 'screenshot' | 'utility' | 'large' | 'trip' | 'later' | 'dark' | 'bright' | 'video' | 'lookalike' | 'bestTake' | 'app' | 'found' | 'bin';
 
 export interface ReviewItem {
   id: string;
@@ -131,6 +133,11 @@ export function reviewTrip(
 /** Photos found by a search or as look-alikes of one photo: no suggestion — the user decides what they searched for. */
 export function reviewFound(ids: string[]): ReviewItem[] {
   return ids.map(id => ({ id, suggest: 'none', reason: 'found' }));
+}
+
+/** "Zum Löschen" gone through again: no suggestion — the user already chose to delete each of them once (src/logic/bin.ts). */
+export function reviewBin(ids: string[]): ReviewItem[] {
+  return ids.map(id => ({ id, suggest: 'none', reason: 'bin' }));
 }
 
 /** The decide-later pile: no suggestion — the user already hesitated over each of them once. */

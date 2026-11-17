@@ -133,6 +133,14 @@ the store set, the preview video and the App Review scenes follow the switch
 ## Safety rules (never break these)
 - Never delete, move or change a photo automatically. Every delete or move
   needs the user's tap **and** the system's own dialog.
+- **Choosing to delete puts aside, never deletes** (`src/logic/bin.ts`,
+  *Zum Löschen*): a review's end, a group's *Die anderen löschen*, quick
+  clean and a list's delete call `toBin` (App.tsx) — the photos leave every
+  finder (`lib` is the library without the bin; `all` has it) and wait in
+  `AppState.bin`. Only the bin's screen (and a review started from it) calls
+  `deletePhotos` → the system's dialog. A new place that deletes goes through
+  `toBin` too. (Exception: the originals after a smaller copy or a Live Photo
+  made a still — the copy is already saved.)
 - A new asset (a plain photo made from a Live Photo, a smaller copy of a video
   or of a photo) needs the user's tap and a confirmation in the app; the original stays and
   goes only through the system's delete dialog afterwards. The copy keeps the

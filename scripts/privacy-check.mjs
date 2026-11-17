@@ -6,8 +6,9 @@
 //    and drives Chromium through what people do — the permission screen, the
 //    first scan, a trip and its album (through the paywall and the purchase
 //    once the unlock is for sale; before, as an owner would), a similar
-//    group and "delete the others", the blurry list, a review that deletes,
-//    the settings and the licences — recording every request. Any request to
+//    group and "delete the others", the blurry list, a review whose photos go
+//    into "Zum Löschen", that list (one put back, the rest gone through and
+//    deleted), the settings and the licences — recording every request. Any request to
 //    another origin fails the check (it is aborted, so nothing leaves this
 //    machine either).
 //
@@ -138,21 +139,37 @@ try {
     await page.click(`button${aria(w.t.back)}`);
     await pause(page, 400);
   });
-  await step('a similar group: another best shot picked, the others deleted', async () => {
+  await step('a similar group: another best shot picked, the others into Zum Löschen', async () => {
     await openGroup(page, w);
     await page.click('main .grid button >> nth=1');
     await pause(page, 300);
     await page.click(`button:has-text("${w.t.deleteOthers}")`);
     await pause(page, 900);
   });
-  await step('the blurry photos, reviewed and deleted', async () => {
+  await step('the blurry photos, reviewed, into Zum Löschen', async () => {
     await start(page, prefs({ owned: true }));
     await openBlurry(page, w);
     await page.click(`button:has-text("${w.t.reviewBlurry}")`);
     await pause(page, 600);
     await page.click(`button${aria(w.t.delete)}`);
+    await page.click(`button${aria(w.t.delete)}`);
     await page.click(`button${aria(w.t.keep)}`);
     await page.click(`button:has-text("${w.t.finishReview}")`);
+    await page.click(`button:has-text("${w.t.binAdd}")`);
+    await pause(page, 900);
+  });
+  await step('Zum Löschen: one put back, the rest gone through and deleted', async () => {
+    await page.click(`button${aria(w.t.back)}`);
+    await pause(page, 400);
+    await page.click(`button:has-text("${w.t.binTitle}")`);
+    await pause(page, 600);
+    await page.click(`button[aria-label$="${w.t.notSelected}"] >> nth=0`);
+    await page.click(`button:has-text("${w.t.binRestore}")`);
+    await pause(page, 400);
+    await page.click(`button:has-text("${w.t.binReview}")`);
+    await pause(page, 600);
+    await page.click(`button${aria(w.t.delete)}`);
+    await page.click(`button:has-text("${w.t.finishReview}")`).catch(() => {});
     await page.click('button:has-text("1 Foto löschen")');
     await pause(page, 900);
   });
