@@ -1,4 +1,5 @@
 import type React from 'react';
+import { useState } from 'react';
 import { Aperture, CalendarDays, Check, Clock, FileVideo, Image as ImageIcon, ImagePlus, MessageCircle, Minimize2, RefreshCw, Search, Settings, Shield, Sparkles } from 'lucide-react';
 import type { CleanupSummary, Storage } from '../types';
 import type { Access } from '../native/photoLibrary';
@@ -10,6 +11,7 @@ import { BigNumber, Progress } from '../ui/Controls';
 import { StorageBar } from '../ui/StorageBar';
 import { tapLight } from '../ui/haptics';
 import { Thumb } from '../ui/Photo';
+import { Confirm } from '../ui/Sheet';
 
 /** The categories that suggest photos to delete, each a photo card on home. */
 export type FoundKey = 'duplicates' | 'similar' | 'videos' | 'failed' | 'screenshots' | 'utility';
@@ -48,6 +50,7 @@ interface Props {
   protection: { albums: number; trips: number; photos: number };
   onLater: () => void;
   onProtected: () => void;
+  /** Every photo analysed again from the start, the AI's pass too (after a confirmation here). */
   onRescan: () => void;
   onSettings: () => void;
   /** Suchen (src/components/SearchView.tsx): find photos by words, then go through them. */
@@ -78,6 +81,7 @@ interface Props {
  */
 export function HomeView(p: Props) {
   const { t, summary } = p;
+  const [askRescan, setAskRescan] = useState(false);
   const firstScan = p.scan.running && !p.scan.lastScanAt;
   const loaded = p.photoCount !== null;
   const has = loaded && p.photoCount! > 0;
@@ -136,7 +140,7 @@ export function HomeView(p: Props) {
           <IconButton
             label={rescanLabel} icon={RefreshCw} tone="bar" disabled={p.scan.running}
             className={p.scan.running ? '[&>svg]:motion-safe:animate-spin' : ''}
-            onClick={() => { if (!p.scan.running) p.onRescan(); }}
+            onClick={() => { if (!p.scan.running) setAskRescan(true); }}
           />
         )}
         {p.onSearch && <IconButton label={t.searchOpen} icon={Search} tone="bar" onClick={p.onSearch} />}
@@ -254,6 +258,11 @@ export function HomeView(p: Props) {
           />
         </Group>
       )}
+      <Confirm
+        open={askRescan} title={t.rescanAllTitle} body={t.rescanAllBody}
+        confirmLabel={t.rescan} cancelLabel={t.cancel}
+        onConfirm={() => { setAskRescan(false); p.onRescan(); }} onCancel={() => setAskRescan(false)}
+      />
     </Screen>
   );
 }

@@ -24,7 +24,11 @@ Every feature, as the user sees it (German labels, English in brackets).
   while, and when photos change while the app is open.
 - *Neu durchsuchen* [Scan again]: the round button at the top of *Aufräumen*,
   beside search and settings; it spins while a scan runs, and its label says
-  when the last scan ran (*Durchsucht vor 5 Minuten*).
+  when the last scan ran (*Durchsucht vor 5 Minuten*). A tap asks first
+  (*Alle Fotos neu durchsuchen?*), then looks at **every** photo again from
+  the start, the AI's pass too: the scan cache and the thumbnails are emptied
+  and the app shows a first scan. What you kept, protected or renamed stays
+  (it is a file of its own). The automatic scans stay incremental.
 - iCloud-only originals are never downloaded.
 - **The on-device AI** (docs/AI.md) looks at each photo after that: the
   line above the card on *Aufräumen* counts along (*KI: 1.234 von 5.000 Fotos*), results show up

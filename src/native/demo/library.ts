@@ -281,10 +281,9 @@ export class DemoLibrary extends WebPlugin implements PhotoLibraryPlugin {
   async getState() { return { json: get(K.state) }; }
   async setState({ json }: { json: string }) { set(K.state, json); }
 
+  /** Like a phone: the scan starts over; what was deleted stays deleted. */
   async clearCache() {
     set(K.scanned, null);
-    set(K.trashed, null);
-    set(K.made, null);
   }
 
   /** A 128 GB phone that is nearly full; what the demo "deleted" comes back as free space. */
