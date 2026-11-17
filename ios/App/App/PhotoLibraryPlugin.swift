@@ -832,8 +832,8 @@ public class PhotoLibraryPlugin: CAPPlugin, CAPBridgedPlugin, PHPhotoLibraryChan
                         return
                     }
                     let albums = PHAssetCollection.fetchAssetCollectionsContaining(asset, with: .album, options: nil)
-                    let name = (PHAssetResource.assetResources(for: asset).first { $0.type == .photo }?.originalFilename as NSString?)?
-                        .deletingPathExtension ?? "Bildklar"
+                    let original = PHAssetResource.assetResources(for: asset).first(where: { $0.type == .photo })?.originalFilename
+                    let name = (original as NSString?)?.deletingPathExtension ?? "Bildklar"
                     var created: String?
                     do {
                         try PHPhotoLibrary.shared().performChangesAndWait {
