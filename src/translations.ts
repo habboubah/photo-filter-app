@@ -5,7 +5,8 @@
  * with `fmt()`; counts go through `plural()` (keys ending in _one / _other).
  *
  * To add a language: add a block. Set `dir: 'rtl'` for Arabic or Hebrew — the
- * layout uses logical spacing everywhere, so it mirrors itself.
+ * layout uses logical spacing everywhere, so it mirrors itself. Plural forms
+ * beyond one / other (Arabic's two and few) go in `EXTRA_PLURALS`.
  *
  * Strings that name the iPhone, Apple Photos or "Recently Deleted" have an
  * Android twin in `androidStrings` (laid over in the Android app).
@@ -904,7 +905,14 @@ const en: Strings = {
   crashReload: 'Reload',
 };
 
-const translations = { de, en } satisfies Record<string, Strings>;
+
+/** The languages the app speaks. German and English ship in the main bundle; Arabic loads when chosen (`loadLanguage`). */
+export type Language = 'de' | 'en' | 'ar';
+export const languages: Language[] = ['de', 'en', 'ar'];
+/** Each language's own name, for the language menu — known before its block is loaded. */
+export const languageNames: Record<Language, string> = { de: 'Deutsch', en: 'English', ar: 'العربية' };
+
+const translations = { de, en } as Record<Language, Strings>;
 export default translations;
 
 /**
@@ -913,7 +921,8 @@ export default translations;
  * over each language in the Android app only (`setPlatform`, called once in
  * main.tsx). A test fails when a string naming an Apple thing has no twin.
  */
-export const androidStrings: Record<keyof typeof translations, Partial<Strings>> = {
+export const androidStrings: Record<Language, Partial<Strings>> = {
+  ar: {}, // laid in by loadLanguage('ar')
   de: {
     resetBody: 'Bildklar vergisst, was du entschieden hast: behaltene, geschützte und für später gemerkte Fotos, die gewählten besten Fotos, bearbeitete Reisen, durchgesehene Monate und Sortierungen. Alles wird wieder vorgeschlagen. Deine Fotos und Ordner bleiben, wie sie sind.',
     protectedAlbums: 'Ordner',
@@ -1002,16 +1011,32 @@ export function setPlatform(p: 'android' | null): void {
   merged.clear();
 }
 
-/** A language's strings as this platform words them. Components get them as `t`. */
-export function stringsFor(lang: keyof typeof translations): Strings {
+/** A language's strings as this platform words them. Components get them as `t`. A language not loaded yet falls back to English. */
+export function stringsFor(lang: Language): Strings {
+  if (!translations[lang]) lang = 'en';
   if (platform !== 'android') return translations[lang];
   let all = merged.get(lang);
   if (!all) { all = { ...translations[lang], ...androidStrings[lang] }; merged.set(lang, all); }
   return all;
 }
 
-export type Language = keyof typeof translations;
-export const languages = Object.keys(translations) as Language[];
+/**
+ * Makes a language ready: Arabic comes from its own chunk (translations.ar.ts),
+ * so German and English users never download it. Call before switching to a
+ * language and before the first render; resolves at once when it is there.
+ */
+export async function loadLanguage(lang: Language): Promise<void> {
+  if (translations[lang]) return;
+  if (lang === 'ar') {
+    const m = await import('./translations.ar');
+    translations.ar = m.ar;
+    androidStrings.ar = m.arAndroid;
+    EXTRA_PLURALS[m.ar.locale] = m.arPlurals;
+    ANDROID_EXTRA_PLURALS[m.ar.locale] = m.arAndroidPlurals;
+    merged.delete('ar');
+  }
+}
+
 export const isLanguage = (v: unknown): v is Language =>
   typeof v === 'string' && (languages as string[]).includes(v);
 export const DEFAULT_LANGUAGE: Language = 'de';
@@ -1024,12 +1049,25 @@ export function fmt(s: string, vars: Record<string, string | number>): string {
 type PluralBase<T> = { [K in keyof T]: K extends `${infer B}_one` ? B : never }[keyof T];
 const rules = new Map<string, Intl.PluralRules>();
 
-/** "1 Foto" / "48.210 Fotos": a count in words, with the number in the app's locale. */
+/**
+ * The plural forms a language has beyond one and other, by locale: Arabic
+ * says "صورتان" for two and "3 صور" for three to ten (Intl's `two` and
+ * `few`); its `many`, `zero` and `other` share the `_other` form. Keyed
+ * `<base>_<category>`; Android's wording is laid over as for the blocks.
+ * Filled by `loadLanguage` (translations.ar.ts).
+ */
+const EXTRA_PLURALS: Record<string, Record<string, string>> = {};
+const ANDROID_EXTRA_PLURALS: Record<string, Record<string, string>> = {};
+
+/** "1 Foto" / "48.210 Fotos" / "صورتان": a count in words, with the number in the app's locale. */
 export function plural(t: Strings, base: PluralBase<Strings>, n: number, vars: Record<string, string | number> = {}): string {
   let r = rules.get(t.locale);
   if (!r) { r = new Intl.PluralRules(t.locale); rules.set(t.locale, r); }
-  const key = (r.select(n) === 'one' ? `${base}_one` : `${base}_other`) as keyof Strings;
-  return fmt(t[key], { n: num(t, n), ...vars });
+  const cat = r.select(n);
+  const extra = cat === 'one' || cat === 'other' ? undefined
+    : (platform === 'android' ? ANDROID_EXTRA_PLURALS[t.locale]?.[`${base}_${cat}`] : undefined) ?? EXTRA_PLURALS[t.locale]?.[`${base}_${cat}`];
+  const key = (cat === 'one' ? `${base}_one` : `${base}_other`) as keyof Strings;
+  return fmt(extra ?? t[key], { n: num(t, n), ...vars });
 }
 
 /** A number in the app's locale: 48.210 / 48,210. */

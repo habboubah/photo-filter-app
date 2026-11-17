@@ -34,7 +34,7 @@ export const ORIGIN = `http://127.0.0.1:${PORT}`;
 
 /** 430 × 932 pt at 3x = 1290 × 2796, the raw capture size. */
 export const IPHONE = { width: 430, height: 932, scale: 3 };
-const LOCALE = { de: 'de-DE', en: 'en-GB' };
+const LOCALE = { de: 'de-DE', en: 'en-GB', ar: 'ar' };
 
 /** Whether the unlock is for sale yet (UNLOCK_ON_SALE in src/logic/allowance.ts). */
 export const unlockOnSale = () =>
@@ -45,6 +45,7 @@ export async function loadSource() {
   const vite = await createServer({ root, logLevel: 'silent', appType: 'custom', server: { middlewareMode: true, hmr: false, ws: false } });
   try {
     const tr = await vite.ssrLoadModule('/src/translations.ts');
+    await tr.loadLanguage('ar'); // Arabic is its own chunk
     return { strings: tr.default, android: tr.androidStrings, fmt: tr.fmt, plural: tr.plural, onSale: unlockOnSale() };
   } finally {
     await vite.close();

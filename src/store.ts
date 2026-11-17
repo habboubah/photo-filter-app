@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { App as CapacitorApp } from '@capacitor/app';
 import type { Album, Photo, Storage, ThemeMode } from './types';
-import translations, { DEFAULT_LANGUAGE, isLanguage, Language } from './translations';
+import translations, { DEFAULT_LANGUAGE, isLanguage, Language, loadLanguage } from './translations';
 import { Access, PhotoLibrary, ScanProgress, loadAllFacts } from './native/photoLibrary';
 import { PRODUCT_ID, Purchases } from './native/purchases';
 import { AppState, RECENT_ALBUMS, SCHEMA_VERSION, emptyState, normalizeState, pruneLater } from './logic/state';
@@ -39,7 +39,8 @@ const REMINDER_ID = 7001;
 const read = (key: string) => { try { return localStorage.getItem(key); } catch { return null; } };
 const write = (key: string, value: string) => { try { localStorage.setItem(key, value); return true; } catch { return false; } };
 
-function initialLanguage(): Language {
+/** The language to start in: the one chosen in Settings, else the device's, else German. main.tsx loads it before the first render. */
+export function initialLanguage(): Language {
   const saved = read(K.lang);
   if (isLanguage(saved)) return saved;
   const device = navigator.language.split('-')[0];
@@ -59,7 +60,9 @@ const AI_BATCH = 16;
 const RESCAN_AFTER_MS = 2 * 60_000;
 
 export function useAppStore() {
-  const [language, setLanguage] = useState<Language>(initialLanguage);
+  const [language, setLanguageNow] = useState<Language>(initialLanguage);
+  // Arabic comes from its own chunk: switch once its strings are there.
+  const setLanguage = useCallback((l: Language) => { void loadLanguage(l).then(() => setLanguageNow(l)); }, []);
   const [themeMode, setThemeMode] = useState<ThemeMode>(() => {
     const saved = read(K.theme);
     return saved === 'light' || saved === 'dark' || saved === 'system' ? saved : 'system';

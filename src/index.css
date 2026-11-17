@@ -268,6 +268,12 @@
   background: linear-gradient(to bottom, var(--t-bg) 0%, var(--t-bg) 58%, transparent 100%);
 }
 
+/* Arabic is joined script: tracking would tear its letters apart, so the
+   tightened titles and numbers keep the font's own spacing right to left. */
+[dir="rtl"] .display,
+[dir="rtl"] .title-face,
+[dir="rtl"] .eyebrow { letter-spacing: normal; }
+
 /* Glass: what floats above the content (bar buttons, the tab bar, a chip on a
    photo). A translucent fill, a sheen from the top, a bright specular line,
    a darkened hairline edge and a soft shadow — no backdrop blur. */

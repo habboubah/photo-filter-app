@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { BadgeCheck, FileText, FlaskConical, Globe, Images, Mail, Moon, RotateCcw, ShieldCheck, Star, Unlock } from 'lucide-react';
 import type { ThemeMode } from '../types';
 import type { Access } from '../native/photoLibrary';
-import { Language, Strings, languages, plural, stringsFor } from '../translations';
+import { Language, Strings, languageNames, languages, plural } from '../translations';
 import { Away, Group, IconTile, MenuRow, Next, Row, Screen } from '../ui/Screen';
 import { Confirm } from '../ui/Sheet';
 import { SwitchRow } from '../ui/Controls';
@@ -77,7 +77,7 @@ export function SettingsView(p: Props) {
       <Group title={t.displaySection}>
         <MenuRow
           label={t.language} leading={<IconTile icon={Globe} hue="sky" />} value={p.language}
-          options={languages.map(l => ({ value: l, label: stringsFor(l).languageName }))}
+          options={languages.map(l => ({ value: l, label: languageNames[l] }))}
           onChange={p.onLanguage}
         />
         <MenuRow

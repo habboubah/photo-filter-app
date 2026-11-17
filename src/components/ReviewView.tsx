@@ -122,7 +122,8 @@ export function ReviewView({ t, session, finished, byId, debug, albums, android,
               </button>
             </div>}
             <div className="px-6 pb-safe-8 pt-3">
-              <div className="flex justify-center items-end gap-6">
+              {/* Physical, like the swipe: delete on the left, keep on the right — also right to left. */}
+              <div dir="ltr" className="flex justify-center items-end gap-6">
                 <RoundButton label={t.delete} tone="neg" icon={Trash2} onClick={() => onDecide('delete')} />
                 <RoundButton label={t.later} tone="later" icon={Clock} onClick={() => onDecide('later')} />
                 <RoundButton label={t.keep} tone="keep" icon={Check} onClick={() => onDecide('keep')} />
@@ -207,13 +208,13 @@ function Card({ t, item, photo, debug, onDecide, onProtect, onPreview }: {
         aria-label={[when, chip, reason].filter(Boolean).join('. ')}
       >
         <div className="absolute inset-0"><Thumb id={item.id} size={LARGE} className="!rounded-none !object-contain bg-surface-2" /></div>
-        <motion.span style={{ opacity: delOpacity }} className="absolute top-6 end-6 px-4 py-2 rounded-[12px] border-[3px] border-neg bg-surface text-neg text-heading font-extrabold rotate-[8deg]" aria-hidden="true">
+        <motion.span style={{ opacity: delOpacity }} className="absolute top-6 right-6 px-4 py-2 rounded-[12px] border-[3px] border-neg bg-surface text-neg text-heading font-extrabold rotate-[8deg]" aria-hidden="true">
           {t.delete}
         </motion.span>
         <motion.span style={{ opacity: laterOpacity }} className="absolute top-6 start-1/2 -translate-x-1/2 px-4 py-2 rounded-[12px] border-[3px] border-accent bg-surface text-accent text-heading font-extrabold" aria-hidden="true">
           {t.later}
         </motion.span>
-        <motion.span style={{ opacity: keepOpacity }} className="absolute top-6 start-6 px-4 py-2 rounded-[12px] border-[3px] border-keep bg-surface text-keep text-heading font-extrabold -rotate-[8deg]" aria-hidden="true">
+        <motion.span style={{ opacity: keepOpacity }} className="absolute top-6 left-6 px-4 py-2 rounded-[12px] border-[3px] border-keep bg-surface text-keep text-heading font-extrabold -rotate-[8deg]" aria-hidden="true">
           {t.keep}
         </motion.span>
         <span className="absolute bottom-3 start-3 px-2.5 py-1 rounded-full bg-veil text-on-color text-caption font-bold">{when}</span>

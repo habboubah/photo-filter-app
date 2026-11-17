@@ -151,6 +151,18 @@ tests pass — **but it has not run on a phone.**
       hand (`npm run release:android -- --no-upload`, then the Play Console).
       You will need an upload key first: `npm run android:key`.
 
+## 4b. Arabic (added 17 November 2026)
+
+- [ ] **Read the Arabic texts** in the app (Settings › Sprache › العربية) and
+      tell Claude what sounds wrong — they are Claude's translation
+      (`src/translations.ar.ts`).
+- [ ] Open the project in Xcode once (`npm run build:ios`): the widget's new
+      `ar.lproj/Localizable.strings` is in the project file; check it shows under
+      the widget's Localizable.strings.
+- [ ] Decide whether the stores get an Arabic listing (`store/listing.md` has
+      de / en only) and whether trip names should use Arabic city names (then
+      `npm run cities` with the Arabic GeoNames names — the table grows).
+
 ## 5. Store assets (milestone 7)
 
 - [ ] **After the iOS 27 redesign ("Glass", 17 November 2026, docs/REDESIGN.md)**:
