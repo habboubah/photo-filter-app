@@ -17,8 +17,8 @@
 // Every label a tap needs comes from the app's strings (`w.t`), like the store
 // screenshots — one storyboard films every language, and a renamed button
 // stops the run with a message instead of filming the wrong thing. The film
-// runs on the demo library (src/native/demo/): drawn photos until licensed
-// ones replace them (docs/TODO.md, step 5).
+// runs on the demo library (src/native/demo/): real CC0 photos
+// (scripts/demo-photos.py), fine for the store.
 import { PORT, ORIGIN, SCREENS, aria, loadSource, prefs as demoPrefs, start, tripCard, unlockOnSale, words } from '../../../../scripts/lib/shots.mjs';
 
 /**

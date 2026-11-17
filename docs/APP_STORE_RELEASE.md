@@ -241,7 +241,7 @@ Upload `screenshots/store/iphone-6.3/de/` and `…/en/`: 9 images each at
 **1206 × 2622**, the size of the required *iPhone with Dynamic Island (medium
 display)* slot (6.1″/6.3″) – scan · home and the clean-up card · trips · a
 trip · album made · a similar group · blurry photos · the review · the
-paywall. Swap the drawn demo photos for licensed ones first (docs/TODO.md).
+paywall. The demo's photos are real CC0 photos, fine for the store.
 **No "free" ribbon or price words**: the unlock costs money. Look at
 `screenshots/store/contact-sheet.png` first. The raw captures (1290 × 2796)
 don't fit that slot. The headlines are in

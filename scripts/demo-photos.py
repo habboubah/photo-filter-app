@@ -1,22 +1,22 @@
 #!/usr/bin/env python3
-"""Puts real photos into the demo library (src/native/demo/photos/): the
-drawn scenes of scripts/demo-photos.py become CC0 photos of the test library
-(scripts/test-photos.py — public domain, free for the store screenshots and
-the preview video), only those without identifiable people (store=true in
-scripts/test-photos.json).
+"""Puts the photos into the demo library (src/native/demo/photos/): real
+CC0 photos of the test library (scripts/test-photos.py — public domain, free
+for the store screenshots and the preview video), only those without
+identifiable people (store=true in scripts/test-photos.json).
 
-The demo's manifest stays as it is — every time, place, burst, blurry shot,
-copy and video keeps its id — so the screenshots, the preview video and the
-App Review scenes still find what they expect. Only the pictures change:
-each id below gets a photo that fits its place and season; a burst's frames
-are the same photo cropped a little differently, the blurry ones blurred,
-the messenger copies small copies of their original, a video's poster the
-middle 16:9 band. The screenshots, notes and failed shots stay drawn.
+The demo's manifest (src/native/demo/manifest.json) is the story and stays
+as it is — every time, place, burst, blurry shot, copy and video keeps its
+id — so the screenshots, the preview video and the App Review scenes find
+what they expect. This script only makes the pictures: each id below gets a
+photo that fits its place and season; a burst's frames are the same photo
+cropped a little differently, the blurry ones blurred, the messenger copies
+small copies of their original, a video's poster the middle 16:9 band. The
+screenshots, notes and failed shots (DRAWN) are committed drawings and stay.
 
-Then the grey copies for the features (.cache/demo-grey/), so run after it:
-  python3 scripts/demo-real.py && npm run ai:demo
-(npm run demo-photos:real does both but the AI step, which needs ml/'s venv.)
-Run `npm run test-photos` once first: it downloads the photos.
+Then the grey copies for the features (.cache/demo-grey/). Run:
+  npm run test-photos       (once: downloads the photos)
+  npm run demo-photos       (this, then scripts/demo-facts.mjs)
+  npm run ai:demo           (the AI's scores, ml/'s venv; then the facts again)
 """
 import json
 import os

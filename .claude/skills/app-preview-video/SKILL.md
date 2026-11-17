@@ -11,8 +11,8 @@ built like the shopping list's (after Bring!'s, which Ahmad pointed at): a
 line of text on the dimmed screen, then the app doing what the line says —
 four times — and the icon at the end. About 24 seconds, German and English,
 in the app's own colours and type, so it sits next to the store screenshots
-as one set. It runs on the **demo library** (drawn photos until licensed ones
-replace them, `docs/TODO.md` step 5): the upload waits for the real photos.
+as one set. It runs on the **demo library**: real CC0 photos (public domain,
+`scripts/demo-photos.py`), fine for the upload.
 
 It is made in three steps, by one command:
 

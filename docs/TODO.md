@@ -179,7 +179,7 @@ tests pass — **but it has not run on a phone.**
       duplicates, screenshots, videos, the AI's categories. Android:
       `npm run test-photos:android`. **Never on your own phone.**
 - [x] **Demo photos for the store** (17 November 2026): the web demo shows
-      real CC0 photos now (`scripts/demo-real.py`; no identifiable people).
+      real CC0 photos now (`npm run demo-photos`; no identifiable people).
       Make the screenshots, the preview video and the App Review rehearsal
       again on the Mac (below) — they still show the drawn ones.
 - [ ] `npm run screenshots && npm run store-screenshots` on the Mac; look at the

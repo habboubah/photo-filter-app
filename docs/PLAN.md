@@ -26,7 +26,7 @@ mapping with the API names as checked, the design, and the decisions.
 │ access · scan → cache · features · thumbnails       │  └────────────────────────────────┘
 │ albums / folders · trash · decisions file           │
 └──────────────────────────────────────────────────────┘
-   In a browser both plugins are the demo library (src/native/demo): drawn photos with the
+   In a browser both plugins are the demo library (src/native/demo): real CC0 photos with the
    facts the scan would report. `--mode native` builds leave it out entirely.
 ```
 
