@@ -55,14 +55,24 @@ npm run test:android     # FeatureMath.kt against fixtures/features (JUnit)
 ## The demo library
 
 In a browser (`npm run dev`, the checks, the screenshots, the rehearsal) the
-plugins are `src/native/demo/`: 82 drawn photos of a home near Hanau and
-trips to Amsterdam, Vienna, Paris and Lake Garda, with bursts, blurry shots and
-screenshots. Their facts (`facts.json`) are computed by the app's own feature
-spec from the drawn pictures:
+plugins are `src/native/demo/`: 101 photos and videos of a home near Hanau and
+trips to Amsterdam, Vienna, Paris and Lake Garda, with bursts, blurry shots,
+copies, screenshots, notes and failed shots. The photos are **real**: CC0
+pictures of the test library (below), only those without identifiable people,
+so they may go into the store screenshots and the preview video. The
+screenshots, notes and failed shots are drawn. Their facts (`facts.json`) are
+computed by the app's own feature spec from the pictures:
 
 ```bash
-npm run demo-photos      # draws the photos (Pillow), then computes their facts
+python3 scripts/demo-real.py   # the real photos into the demo, id by id (npm run test-photos first: it downloads them)
+npm run ai:demo                # the AI's scores, then the facts (ml/'s venv)
 ```
+
+`manifest.json` (every time and place) is kept as committed: `demo-real.py`
+only changes the pictures, so the screenshots, the preview video and the App
+Review scenes still find what they expect. `npm run demo-photos` would draw
+everything again and write a new manifest — don't, unless the demo's story
+itself changes.
 
 The demo's state lives in localStorage: `bildklar-demo-access`
 (`notDetermined` · `limited` · `denied` · `full`, also `?access=…` in the URL),
