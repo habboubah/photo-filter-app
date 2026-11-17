@@ -8,10 +8,11 @@
 //   no platform flag  both stores                       npm run release
 //   --ios             the App Store only                npm run release:ios
 //   --android         Google Play only                  npm run release:android
-//   patch (default)   1.0.0 -> 1.0.1
+//   patch (default)   0.0.1 -> 0.0.2
 //   --keep-version    ship the current version again: a new build number on iOS,
 //                     the next free version code on Android (the very first
-//                     upload, or a build TestFlight/App Review rejected)
+//                     upload — npm run release:first ships package.json's 0.0.1 —,
+//                     or a build TestFlight/App Review rejected)
 //   --skip-check      don't run `npm run check` first (it ran a moment ago)
 //   --dry-run         print what would happen; nothing written, built or uploaded
 //   Android's own:    --build N, --track T, --no-upload (scripts/release-android.js)
@@ -22,9 +23,15 @@
 // run that broke off catches up instead of opening a gap. Naming patch, minor
 // or major always takes a new version.
 //
-// The starting version and build come from the highest of the Xcode project,
-// the v* git tags and what the stores already hold, so a release commit that
+// The starting *build* comes from the highest of the Xcode project, the v* git
+// tags and what App Store Connect already holds, so a release commit that
 // dropped out of main can't make the next upload re-use a build number.
+// The starting *version* comes from package.json, the versions Apple approved
+// (App Store versions past review) and what Google Play holds — not from
+// TestFlight builds or git tags: an upload nobody approved does not hold the
+// version up (Apple only refuses a version lower than an approved one), so a
+// mis-numbered test upload (Bildklar's 1.0.0 and 2.0.0 of 16 November 2026)
+// can't push every later release up with it.
 //
 // Credentials (never committed) come from the environment, optionally via the
 // gitignored .env.release file (see .env.release.example):
@@ -101,11 +108,17 @@ function taggedReleases() {
   }
   return { versions, builds };
 }
+/** App Store version states that mean Apple approved the version (appVersionState, and the older appStoreState). */
+const APPROVED_STATES = new Set([
+  'ACCEPTED', 'PENDING_DEVELOPER_RELEASE', 'PENDING_APPLE_RELEASE', 'PROCESSING_FOR_DISTRIBUTION', 'PROCESSING_FOR_APP_STORE',
+  'READY_FOR_DISTRIBUTION', 'READY_FOR_SALE', 'PREORDER_READY_FOR_SALE', 'REPLACED_WITH_NEW_VERSION',
+  'DEVELOPER_REMOVED_FROM_SALE', 'REMOVED_FROM_SALE',
+]);
 // Every build App Store Connect holds for this bundle id (still processing,
 // expired or failed included) and the version each was uploaded under.
 // Read-only, so the dry run asks too when the key is on this machine.
 async function uploadedReleases() {
-  const none = { versions: [], builds: [], known: false };
+  const none = { versions: [], builds: [], approved: [], known: false };
   if (!ascKeyPath || !ASC_ISSUER_ID || !bundleId || !fs.existsSync(ascKeyPath)) {
     if (dryRun) console.log('(No App Store Connect key on this machine — the dry run goes by the project and the git tags.)');
     return none;
@@ -124,7 +137,7 @@ async function uploadedReleases() {
     const apps = await get(`${api}/apps?${new URLSearchParams({ 'filter[bundleId]': bundleId, 'fields[apps]': 'bundleId' })}`);
     const app = apps.data.find(a => a.attributes.bundleId === bundleId);
     if (!app) return { ...none, known: true }; // no app record yet, so nothing uploaded
-    const versions = [], builds = [];
+    const versions = [], builds = [], approved = [];
     let url = `${api}/builds?${new URLSearchParams({
       'filter[app]': app.id,
       'fields[builds]': 'version,preReleaseVersion',
@@ -138,8 +151,18 @@ async function uploadedReleases() {
       versions.push(...(page.included || []).map(v => v.attributes.version));
       url = page.links?.next;
     }
-    console.log(`App Store Connect: highest build so far ${maxOf(builds) || '(none)'}, newest version ${versions.length ? newestVersion(versions) : '(none)'}.`);
-    return { versions, builds, known: true };
+    // The App Store versions Apple approved (in review and rejected ones don't count): a new version must be above these.
+    let page = await get(`${api}/apps/${app.id}/appStoreVersions?${new URLSearchParams({ 'fields[appStoreVersions]': 'versionString,appStoreState,appVersionState', limit: '200' })}`);
+    for (;;) {
+      for (const v of page.data) {
+        const state = v.attributes.appVersionState || v.attributes.appStoreState || '';
+        if (APPROVED_STATES.has(state)) approved.push(v.attributes.versionString);
+      }
+      if (!page.links?.next) break;
+      page = await get(page.links.next);
+    }
+    console.log(`App Store Connect: highest build so far ${maxOf(builds) || '(none)'}, newest uploaded version ${versions.length ? newestVersion(versions) : '(none)'}, newest approved ${approved.length ? newestVersion(approved) : '(none)'}.`);
+    return { versions, builds, approved, known: true };
   } catch (err) {
     console.warn(`Could not ask App Store Connect for its last build (${err.message}) — going by the project and the git tags.`);
     return none;
@@ -192,8 +215,9 @@ const android = doAndroid ? await prepareAndroid(args, { dryRun }) : null;
 const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
 const projectBuild = maxOf([...pbxproj.matchAll(/CURRENT_PROJECT_VERSION = (\d+);/g)].map(m => Number(m[1])));
 const tagged = taggedReleases();
-const uploaded = doIos ? await uploadedReleases() : { versions: [], builds: [], known: false };
-const oldVersion = newestVersion([pkg.version, ...tagged.versions, ...uploaded.versions, ...(android ? playVersions(android) : [])]);
+const uploaded = doIos ? await uploadedReleases() : { versions: [], builds: [], approved: [], known: false };
+// Approved App Store versions and Play's hold the version up; TestFlight uploads and tags do not (see the top).
+const oldVersion = newestVersion([pkg.version, ...uploaded.approved, ...(android ? playVersions(android) : [])]);
 // Does each store this run ships to have that version already? null = it could not be asked.
 const onStore = {
   android: doAndroid ? playHasVersion(android, oldVersion) : undefined,
@@ -229,6 +253,10 @@ if (doIos) console.log(`iOS:     build ${oldBuild} -> ${newBuild}`);
 if (doAndroid) console.log(`Android: version code ${versionCode(newVersion, androidBuildNumber)}${android.upload ? `, ${android.track} track` : ', bundle only (--no-upload)'}`);
 if (normVersion(oldVersion) !== normVersion(pkg.version) || (doIos && oldBuild !== projectBuild)) {
   console.log(`         (the project said ${pkg.version}, build ${projectBuild} — the git tags / the stores are further on)`);
+}
+const higherTests = [...tagged.versions, ...uploaded.versions].filter(v => normVersion(v) && newestVersion([v, newVersion]) === normVersion(v) && normVersion(v) !== newVersion);
+if (higherTests.length) {
+  console.log(`         (git tags / TestFlight uploads with a higher version — ${[...new Set(higherTests.map(normVersion))].join(', ')} — don't hold the version up: only approved App Store versions and Google Play do)`);
 }
 console.log(`Stores:  ${targets.map(t => storeName[t]).join(' + ')}`);
 if (dryRun) {

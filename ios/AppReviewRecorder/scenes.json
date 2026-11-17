@@ -3,7 +3,7 @@
  "app": {
   "bundleId": "com.habboubah.bildklar",
   "iconName": ["Bildklar"],
-  "minVersion": "0.1.0"
+  "minVersion": "0.0.1"
  },
  "preflight": {
   "mustSee": ["Your photos", "Deine Fotos"],

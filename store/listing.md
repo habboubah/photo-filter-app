@@ -407,7 +407,7 @@ photos* the app works with the chosen photos only.
 ### 3.6 Release notes (500 per language)
 
 `npm run release:android` reads `release-notes/<version>/<language>.txt`
-(first release: `release-notes/1.0.0/`, worded for both stores — `npm run release:first` takes the app from 0.1.0 to 1.0.0).
+(first release: `release-notes/0.0.1/`, worded for both stores — `npm run release:first` ships package.json's 0.0.1).
 
 ### 3.7 Google Play graphics
 

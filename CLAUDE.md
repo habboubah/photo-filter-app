@@ -181,7 +181,7 @@ further deleting need one one-time purchase (`com.habboubah.bildklar.unlock`, 4,
 
 ## Native Android
 - `android/` is Capacitor's project with the shopping list's Gradle setup:
-  version and version code from `package.json` (0.1.0 → 10000, plus
+  version and version code from `package.json` (0.0.1 → 100, 0.1.0 → 10000, plus
   `ANDROID_BUILD`), the upload key from the environment, R8 on for release.
   **minSdk 30.** Kotlin 2.2 (`kotlinVersion` in `variables.gradle`).
 - Dependencies of our own: `androidx.exifinterface`, the **Play Billing
