@@ -82,6 +82,16 @@ export function buildGroups(lib: Library, raw: RawGroup[], state: AppState, face
 }
 
 /**
+ * The groups with something left to suggest: a group whose every photo but
+ * the one to keep is kept (all kept with "Alle behalten", in a review, or
+ * protected) is settled and not shown again. A new copy joining it later
+ * opens it again — that one is not kept.
+ */
+export function openGroups(groups: Group[], kept: Set<string>): Group[] {
+  return groups.filter(g => g.ids.some(id => id !== g.best && !kept.has(id)));
+}
+
+/**
  * The blurry photos worth listing, most certain first: not in a similar group
  * (the group handles those), no favourites, and none that is too dark or too
  * bright (src/logic/exposure.ts lists those; the sharpness of a black frame
