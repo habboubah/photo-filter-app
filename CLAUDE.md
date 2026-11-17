@@ -278,7 +278,7 @@ the store set, the preview video and the App Review scenes follow the switch
 | The city table (GeoNames) | `npm run cities` |
 | The licences list (after adding or updating a dependency) | `npm run licences` |
 | The demo's real photos (keeps the manifest), then the AI's scores and the facts | `npm run demo-photos && npm run ai:demo` |
-| A real test library (~200 CC0 photos and videos, dates and places) / onto the simulator / onto Android | `npm run test-photos` / `test-photos:sim` / `test-photos:android` |
+| A real test library (~500 CC0 photos and videos, dates and places) / onto the simulator / onto Android | `npm run test-photos` / `test-photos:sim` / `test-photos:android` |
 | Every screen before and after a UI change | `npm run ui-review` (→ `screenshots/review/`) |
 | Store screenshots: raw (iPhone words / Android words) / framed | `npm run screenshots` (`-- --android`) / `npm run store-screenshots` |
 | The App Store preview video | `npm run app-preview` (needs ffmpeg) |

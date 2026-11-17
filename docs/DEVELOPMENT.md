@@ -85,7 +85,7 @@ on until `bildklar-dry-run` is `0`.
 
 For a full test on a simulator, an emulator or a test phone — never your own
 library — `npm run test-photos` builds `test-photos/` (gitignored, about
-160 MB): about 200 real photos and videos as a phone holds them. Every one
+280 MB): about 500 real photos and videos as a phone holds them. Every one
 is **CC0 1.0** (public domain, from Openverse and Wikimedia Commons), so they
 may also go into the store screenshots and the preview video; the sources are
 in `scripts/test-photos.json`, and `test-photos/credits.csv` maps each file to
@@ -95,14 +95,18 @@ Eiffel Tower lit at night: fine for tests, not for store assets.
 The script renames them (`IMG_1001.JPG` …) and gives each a date and a place
 in its EXIF (videos: QuickTime `creationdate` and `ISO6709` location): two years
 at home in Hainburg, November 2024 to November 2026 — Christmas, birthdays,
-Eid, snow, the twins — and trips to Vienna, Paris, a wedding at the Baltic Sea,
-Amsterdam, the Rhine and Lake Garda; some photos without GPS, and photos on
+Eid, Ramadan, Easter, St. Martin, carnival, Halloween, snow, the zoo, the farm,
+food, pets, the twins — and 13 trips (Vienna, Barcelona, Paris, a wedding at
+the Baltic Sea, Amsterdam, Istanbul, the Rhine, London, Berlin, skiing in the
+Alps, the Black Forest, Lake Garda, the North Sea); some photos without GPS, and photos on
 17 November of earlier years for *An diesem Tag*. On top: bursts of
 near-identical shots seconds apart (some blurry), photos saved again from
 WhatsApp (`IMG-…-WA….jpg`, small, no EXIF), one exact duplicate
 (`… (1).JPG`), screenshots (`Screenshot_….png`, made-up apps), a shot in the
 pocket and one into the sun, one long video and a lookalike video
-(`VID-…-WA….mp4`). The timeline is the `EVENTS` table in the script.
+(`VID-…-WA….mp4`). The timeline is the `EVENTS` table in the script (trips and
+occasions); everyday photos go into `SPREAD`, one a day in their season, never
+inside a trip (`TRIPS`).
 
 ```bash
 npm run test-photos           # downloads into .cache/test-photos/ once, then builds (Pillow, ffmpeg)

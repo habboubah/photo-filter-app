@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Builds the test library: about 200 real photos and videos, as a phone would
+"""Builds the test library: about 500 real photos and videos, as a phone would
 hold them, for a full test of Bildklar on a simulator, an emulator or a test
 phone (never your own library). Writes test-photos/ (gitignored).
 
@@ -10,9 +10,11 @@ Eiffel Tower lit at night; fine for tests, keep them out of store assets).
 
 The script gives each one a new name and a new life: two years of a family
 near Hanau (Hainburg) from November 2024 to November 2026 — Christmas,
-birthdays, Eid, snow, the playground, the twins' first weeks — and trips to
-Vienna, Paris, a wedding at the Baltic Sea, Amsterdam, the Rhine and Lake
-Garda. The date and the place go into the EXIF (the file's time follows),
+birthdays, Eid and Ramadan, Easter, St. Martin, carnival, Halloween, snow,
+the playground, the zoo and the farm, food, pets and the twins' first weeks —
+and trips to Vienna, Barcelona, Paris, a wedding at the Baltic Sea,
+Amsterdam, Istanbul, the Rhine, London, Berlin, the Alps, the Black Forest,
+Lake Garda and the North Sea. The date and the place go into the EXIF (the file's time follows),
 for videos into the QuickTime metadata. On top come what a real library
 has: bursts of near-identical shots seconds apart, blurry ones, photos saved
 again from WhatsApp (smaller, without EXIF), one exact duplicate, screenshots,
@@ -53,6 +55,11 @@ PLACES = {
     'liege': (50.6240, 5.5670, 0.01), 'baltic': (53.9940, 10.7820, 0.004), 'amsterdam': (52.3700, 4.8900, 0.012),
     'rhine': (50.0700, 7.7670, 0.012), 'malcesine': (45.7632, 10.8090, 0.006), 'sirmione': (45.4925, 10.6065, 0.003),
     'limone': (45.8130, 10.7920, 0.005), 'riva': (45.8850, 10.8420, 0.005), 'brenner': (47.0020, 11.5070, 0.01),
+    'barcelona': (41.3900, 2.1700, 0.02), 'london': (51.5072, -0.1276, 0.02), 'istanbul': (41.0082, 28.9784, 0.02),
+    'airport': (50.0379, 8.5622, 0.003), 'alps': (47.4467, 12.3925, 0.03), 'northsea': (54.3097, 8.6200, 0.02),
+    'berlin': (52.5200, 13.4050, 0.02), 'blackforest': (48.1300, 8.2330, 0.03), 'zoo': (50.1166, 8.6998, 0.002),
+    'farm': (50.0610, 8.9800, 0.004), 'mainz': (50.0000, 8.2711, 0.004), 'konigstein': (50.1830, 8.4690, 0.005),
+    'senckenberg': (50.1175, 8.6519, 0.001),
 }
 
 D = datetime  # local time, Europe/Berlin
@@ -76,7 +83,7 @@ EVENTS = [
     ev('ho27 ho28', D(2024, 12, 24, 17, 0), D(2024, 12, 24, 19, 30), 'home'),
     ev('ho95 ho104 ho105', D(2025, 1, 10, 9, 15), D(2025, 1, 10, 9, 40), 'home'),
     ev('pe0', D(2025, 1, 25, 20, 10), D(2025, 1, 25, 20, 11), 'home'),
-    ev('xpe84 xpe87', D(2025, 2, 2, 16, 0), D(2025, 2, 2, 16, 4), None, gps=0),  # old prints, scanned
+    ev('xpe84 xpe87 peo14 peo17', D(2025, 2, 2, 16, 0), D(2025, 2, 2, 16, 8), None, gps=0),  # old prints, scanned
     ev('do1', D(2025, 2, 14, 21, 50), D(2025, 2, 14, 21, 51), 'frankfurt'),
     # a birthday
     ev('xpe97 ho9 ho19 ho20 v:cakecut xpe100', D(2025, 3, 8, 15, 0), D(2025, 3, 8, 17, 30), 'home'),
@@ -143,15 +150,114 @@ EVENTS = [
     ev('ho67', D(2026, 11, 1, 10, 0), D(2026, 11, 1, 10, 1), 'home'),
     ev('do0', D(2026, 11, 7, 13, 0), D(2026, 11, 7, 13, 1), None, gps=0),
     ev('ho8', D(2026, 11, 15, 8, 30), D(2026, 11, 15, 8, 31), 'home'),
+    # More trips: Barcelona at Easter, Istanbul, London, Berlin, skiing, the Black Forest, the North Sea
+    ev('bar1', D(2025, 4, 17, 8, 30), D(2025, 4, 17, 8, 31), None, gps=0),
+    ev('bar27 bar38 bar20 bar21 bar22 bar23', D(2025, 4, 17, 14, 0), D(2025, 4, 17, 20, 0), 'barcelona'),
+    ev('bar25 bar26 bar31 bar28 bar29 bar30 bar34 bar36 bar41 bar42', D(2025, 4, 18, 10, 0), D(2025, 4, 18, 18, 0), 'barcelona'),
+    ev('eve4 eve3', D(2025, 9, 19, 7, 30), D(2025, 9, 19, 9, 30), 'airport'),
+    ev('ist3 ist5 ist8 ist13 ist4', D(2025, 9, 19, 15, 0), D(2025, 9, 19, 20, 0), 'istanbul'),
+    ev('ist35 ist39 ist47 ist15 ist22 ist26 ist37', D(2025, 9, 20, 10, 0), D(2025, 9, 20, 20, 30), 'istanbul'),
+    ev('ist16 ist17 ist20 ist23 ist29 ist33', D(2025, 9, 21, 10, 0), D(2025, 9, 21, 20, 0), 'istanbul'),
+    ev('lon24 lon30 lon31 lon36', D(2025, 10, 30, 17, 0), D(2025, 10, 30, 21, 30), 'london'),
+    ev('lon5 lon7 lon10 lon12 lon13 lon15 lon18', D(2025, 10, 31, 10, 0), D(2025, 10, 31, 15, 0), 'london'),
+    ev('lon21 lon39 lon41 lon44 lon47 lon53 lon29', D(2025, 11, 1, 9, 30), D(2025, 11, 1, 16, 0), 'london'),
+    ev('ber5 ber14 ber3 ber2 ber27 ber29', D(2025, 11, 21, 15, 0), D(2025, 11, 21, 22, 30), 'berlin'),
+    ev('ber22 ber23 ber34 ber21 ber15 ber19 ber20 ber6', D(2025, 11, 22, 10, 0), D(2025, 11, 22, 18, 30), 'berlin'),
+    ev('alp1 alp5 alp6', D(2026, 2, 1, 14, 0), D(2026, 2, 1, 17, 0), 'alps'),
+    ev('alp9 alp18 alp19 alp21 alp22 alp4 alp16', D(2026, 2, 2, 9, 30), D(2026, 2, 2, 16, 0), 'alps'),
+    ev('bla1 bla4 bla5 bla6 bla7', D(2026, 5, 15, 12, 0), D(2026, 5, 15, 17, 0), 'blackforest'),
+    ev('bla3 bla8 bla10 bla12', D(2026, 5, 16, 10, 0), D(2026, 5, 16, 15, 0), 'blackforest'),
+    ev('nor1 nor2 nor5 nor8 nor27', D(2026, 7, 11, 15, 0), D(2026, 7, 11, 20, 0), 'northsea'),
+    ev('nor10 nor11 nor12 nor13 nor53 nor54 nor15', D(2026, 7, 12, 10, 0), D(2026, 7, 12, 18, 0), 'northsea'),
+    ev('nor19 nor29 nor34 nor35', D(2026, 7, 13, 10, 0), D(2026, 7, 13, 21, 30), 'northsea'),
+    # Days out
+    ev('zoo3 zoo4 zoo6 zoo8 zoo10 zoo14 zoo15 zoo16', D(2025, 7, 12, 10, 0), D(2025, 7, 12, 13, 0), 'zoo'),
+    ev('zoo19 zoo21 zoo27 zoo29 zoo30 zoo31', D(2025, 7, 12, 13, 30), D(2025, 7, 12, 16, 0), 'zoo'),
+    ev('far17 far19 far24 far28 far30 far31 far55 zoo43', D(2025, 9, 27, 11, 0), D(2025, 9, 27, 14, 0), 'farm'),
+    ev('far2 far5 far6 far7 far12 far15 far16 zoo38', D(2026, 4, 18, 10, 0), D(2026, 4, 18, 13, 0), 'farm'),
+    ev('eve132', D(2025, 2, 22, 14, 0), D(2025, 2, 22, 14, 1), 'senckenberg'),
+    ev('occ31 foo100', D(2026, 9, 26, 11, 0), D(2026, 9, 26, 13, 0), 'konigstein'),
+    # Occasions
+    ev('occ46 occ47 occ49', D(2025, 1, 1, 0, 1), D(2025, 1, 1, 0, 20), 'home'),  # New Year
+    ev('occ86 occ87 occ88', D(2025, 6, 21, 10, 0), D(2025, 6, 21, 12, 30), 'baltic'),  # the wedding, morning
+    ev('occ73 occ78', D(2025, 11, 11, 17, 30), D(2025, 11, 11, 18, 15), 'home'),  # St. Martin
+    ev('occ26 occ27 occ29 occ30', D(2025, 12, 6, 17, 0), D(2025, 12, 6, 19, 30), 'frankfurt'),  # Christmas market
+    ev('occ8 occ9 occ11 occ18 occ23', D(2026, 2, 16, 11, 0), D(2026, 2, 16, 14, 0), 'mainz'),  # carnival
+    ev('occ84', D(2026, 2, 20, 18, 0), D(2026, 2, 20, 18, 1), 'hanau'),  # Ramadan
+    ev('occ57 occ58', D(2026, 3, 1, 18, 30), D(2026, 3, 1, 20, 0), 'hanau'),  # an iftar
+    ev('occ38 occ40 occ41 occ45', D(2026, 4, 5, 10, 0), D(2026, 4, 5, 11, 30), 'home'),  # Easter
+    ev('occ4 occ5', D(2026, 6, 27, 18, 0), D(2026, 6, 27, 18, 30), 'home'),  # a barbecue
+    ev('occ77 occ79 occ80', D(2026, 10, 31, 18, 30), D(2026, 10, 31, 18, 33), 'home'),  # Halloween
+    # Lookalikes taken moments apart
+    ev('foo66 foo67', D(2025, 1, 18, 12, 30), D(2025, 1, 18, 12, 31), 'home'),
+    ev('ani54 ani55', D(2025, 3, 15, 15, 0), D(2025, 3, 15, 15, 2), 'home'),
+    ev('eve23 eve24 eve25', D(2025, 5, 10, 8, 15), D(2025, 5, 10, 8, 16), 'home'),
+    ev('ani8 ani9 ani10', D(2025, 6, 8, 11, 0), D(2025, 6, 8, 11, 2), 'zoo'),
+    ev('ani15 ani16', D(2026, 5, 3, 7, 40), D(2026, 5, 3, 7, 41), 'home'),
+    ev('nat56 nat57', D(2026, 4, 26, 11, 0), D(2026, 4, 26, 11, 1), 'home'),
+    ev('nat21 nat22 nat23', D(2025, 9, 14, 15, 0), D(2025, 9, 14, 15, 20), 'spessart'),
+    ev('ani62 ani66', D(2025, 10, 18, 10, 0), D(2025, 10, 18, 10, 1), 'home'),
 ]
+
+# Away from home (start inclusive, end exclusive): nothing at home falls in here.
+TRIPS = [(D(2024, 12, 12), D(2024, 12, 15)), (D(2025, 4, 17), D(2025, 4, 21)), (D(2025, 5, 22), D(2025, 5, 26)),
+         (D(2025, 6, 21), D(2025, 6, 23)), (D(2025, 8, 14), D(2025, 8, 17)), (D(2025, 9, 19), D(2025, 9, 23)),
+         (D(2025, 10, 4), D(2025, 10, 5)), (D(2025, 10, 30), D(2025, 11, 2)), (D(2025, 11, 21), D(2025, 11, 24)),
+         (D(2026, 2, 1), D(2026, 2, 5)), (D(2026, 5, 15), D(2026, 5, 18)), (D(2026, 6, 5), D(2026, 6, 9)),
+         (D(2026, 7, 11), D(2026, 7, 15))]
+SEASONS = {
+    'winter': [(D(2024, 12, 1), D(2025, 3, 1)), (D(2025, 12, 1), D(2026, 3, 1))],
+    'spring': [(D(2025, 3, 1), D(2025, 6, 1)), (D(2026, 3, 1), D(2026, 6, 1))],
+    'summer': [(D(2025, 6, 1), D(2025, 9, 1)), (D(2026, 6, 1), D(2026, 9, 1))],
+    'autumn': [(D(2024, 11, 10), D(2024, 12, 1)), (D(2025, 9, 1), D(2025, 12, 1)), (D(2026, 9, 1), D(2026, 11, 16))],
+    'any': [(D(2024, 11, 10), D(2026, 11, 16))],
+}
+# Everyday photos, one a day on a day at home in their season; places: one is picked per photo (none: no GPS).
+SPREAD = [
+    ('winter', 'eve64 eve65 eve77 eve44 eve47 foo65 foo73 nat64', ['home']),
+    ('spring', 'eve7 eve9 eve55 nat9 nat10 nat12 nat15 nat54 nat117 ani21 ani29', ['home', 'home', 'hanau']),
+    ('summer', 'eve130 eve59 eve85 eve48 foo33 foo47 foo50 foo53 foo55 foo62 nat69 nat74 ani30 ani34 ani35 ani39 ani41',
+     ['home', 'home', 'hanau', 'frankfurt']),
+    ('summer', 'nat42 nat43 nat48 nat32 nat34', ['spessart']),
+    ('autumn', 'eve61 nat1 nat3 nat5 nat103 eve56 eve28 eve31 nat51 ani13 ani45', ['home', 'home', 'spessart', 'hanau']),
+    ('any', 'eve112 eve116 eve139 foo1 foo3 foo5 foo7 foo18 foo19 foo20 foo21 foo22 foo23 foo26 foo32 foo87 foo92 bla2',
+     ['home', 'hanau', 'frankfurt']),
+    ('any', 'peo2 peo5 peo22 peo23 peo25 peo26 peo29 peo35 doc20 doc29 doc32 doc36 doc39 doc21', ['home', 'hanau', 'frankfurt']),
+    ('any', 'doc6 doc8 doc14 doc15 doc17', []),
+]
+
+
+def away(day):
+    day = day.replace(hour=0, minute=0, second=0)
+    return any(a <= day < b for a, b in TRIPS)
+
+
+def spread():
+    rnd = random.Random(11)
+    out = []
+    for season, keys, places in SPREAD:
+        windows = SEASONS[season]
+        for i, key in enumerate(keys.split()):
+            a, b = windows[i % len(windows)]
+            day = a + timedelta(days=rnd.randrange((b - a).days))
+            while away(day):
+                day += timedelta(days=1)
+            t = day.replace(hour=rnd.randint(8, 19), minute=rnd.randint(0, 59))
+            out.append(ev(key, t, t + timedelta(minutes=1), rnd.choice(places) if places else None, gps=0.9 if places else 0))
+    return out
+
+
+EVENTS += spread()
 # Bursts: n more frames, 2–3 s apart, a little moved; the first one blurry where marked.
 BURSTS = {'pa23': (3, True), 'ga2': (2, True), 'ho16': (2, False), 'xpe37': (3, True),
-          'pe4': (2, False), 'am7': (2, False), 'xpe131': (2, False)}
+          'pe4': (2, False), 'am7': (2, False), 'xpe131': (2, False), 'bar26': (2, True), 'ist37': (2, False),
+          'zoo15': (3, False), 'occ29': (2, True), 'foo92': (1, False)}
 # Saved again from WhatsApp, hours later: smaller, recompressed, no EXIF.
-COPIES = {'xpe100': 20, 'ho19': 3, 'am45': 30, 'xpe106': 14}
+COPIES = {'xpe100': 20, 'ho19': 3, 'am45': 30, 'xpe106': 14, 'occ9': 5, 'foo18': 2, 'nor53': 26, 'lon30': 40}
 DUPLICATE = 'pa21'  # an exact second file
 SCREENSHOTS = [D(2025, 1, 3, 20, 14), D(2025, 6, 2, 8, 2), D(2025, 9, 30, 13, 37), D(2026, 1, 22, 22, 5),
-               D(2026, 5, 30, 7, 48), D(2026, 11, 12, 18, 21)]
+               D(2026, 5, 30, 7, 48), D(2026, 11, 12, 18, 21), D(2025, 3, 18, 21, 40), D(2025, 8, 2, 10, 15),
+               D(2025, 10, 12, 16, 5), D(2026, 3, 5, 7, 30), D(2026, 7, 21, 13, 0), D(2026, 9, 14, 19, 45)]
 ACCIDENTS = [('dark', D(2025, 6, 1, 14, 3)), ('bright', D(2026, 4, 25, 13, 12))]
 VIDEO_COPY = ('kittens', 26)  # the kittens video again, from WhatsApp a day later
 MAX_SECONDS = {'sailing': 45}  # one long video; the rest are cut to 30 s
