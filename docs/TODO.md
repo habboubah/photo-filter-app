@@ -22,8 +22,8 @@ In order. (State: 16 November 2026, after the first build by Claude.)
       app* in the Play Console. If you already registered
       `com.habboubah.fotonest` or created a "Fotonest" app record, leave it
       unused — it does no harm. Name taken after all? Tell Claude.
-- [ ] **Icon.** The icon still shows photos in a nest (`assets/icon.svg`) —
-      the old name's picture. Ask Claude for a "Bildklar" icon if you want one.
+- [x] **Icon.** New Bildklar icon (broom sweeping photos, `assets/icon-master.png`),
+      17 Nov 2026. Upload `store/play-icon-512.png` as the Play listing icon.
 - [ ] `npm install` in `~/repos/photo-filter-app` (the repository came without
       `node_modules`), then `npm run check` — it should pass as it did in the cloud.
 
