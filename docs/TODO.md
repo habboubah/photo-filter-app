@@ -12,6 +12,27 @@ In order. (State: 16 November 2026, after the first build by Claude.)
       `false` (or ask Claude to remove it). **Never send a build to review
       while it is `true`.**
 
+## 0b. The launch phase: free first, sell later
+
+Since 17 November 2026 nothing is for sale (`UNLOCK_ON_SALE = false` in
+`src/logic/allowance.ts`; docs/PLAN.md, *Pricing*). Albums, smaller videos
+and photos and Live Photos are hidden, deleting has no limit.
+
+- [ ] **Don't put the in-app purchase into a version** while this lasts: you
+      may create it in App Store Connect and the Play Console, but don't add
+      it to the App Store version, and leave the Play product inactive. Play's
+      content rating: *Digital purchases: No* for now.
+- [ ] Your own TestFlight account may own the unlock from earlier tests: then
+      your iPhone shows the hidden extras. That's expected — a new user
+      doesn't see them.
+- [ ] **The day you start selling** (after about 5,000 downloads and good
+      ratings) — ask Claude for "the sale": `UNLOCK_ON_SALE = true`, the store
+      texts with the purchase (`store/listing.md`, git history before
+      17 Nov 2026), the album slide in the store screenshots, the album scene
+      in the App Review recording, the in-app purchase submitted **with** that
+      version, Play's content rating answered again. Users from the free
+      phase keep deleting without a limit; nobody loses anything.
+
 ## 1. Before anything else
 
 - [ ] **Reserve the name.** The app is now **Bildklar** (store name *Bildklar KI:
@@ -117,12 +138,12 @@ tests pass — **but it has not run on a phone.**
 
 ## 4. The stores (milestone 5)
 
-- [ ] App Store Connect: create the app (APP_STORE_RELEASE.md step 4), the
-      in-app purchase `com.habboubah.bildklar.unlock` at 4,99 € (step 8g), a
-      sandbox tester; sign in with it on the iPhone (Settings › App Store).
-- [ ] Play Console: create the app, the in-app product with the same id and
-      price, your account as a licence tester (ANDROID_RELEASE.md).
-- [ ] Buy once in each (sandbox / licence tester), then *Käufe
+- [ ] App Store Connect: create the app (APP_STORE_RELEASE.md step 4). The
+      in-app purchase `com.habboubah.bildklar.unlock` at 4,99 € (step 8g) and a
+      sandbox tester only when the unlock goes on sale (0b).
+- [ ] Play Console: create the app (ANDROID_RELEASE.md). The in-app product
+      and a licence tester only when the unlock goes on sale (0b).
+- [ ] When selling: buy once in each (sandbox / licence tester), then *Käufe
       wiederherstellen* after reinstalling.
 - [ ] Publish the privacy pages: copy `store/privacy/` to
       `../privacy-policy/bildklar/` and push (APP_STORE_RELEASE.md step 5).
@@ -140,16 +161,17 @@ tests pass — **but it has not run on a phone.**
       Then: Claude puts them into the web demo (replacing the drawn ones) for
       the screenshots and the preview video.
 - [ ] `npm run screenshots && npm run store-screenshots` on the Mac; look at the
-      contact sheets. The studio's headlines are in
+      contact sheets. While nothing is for sale the set has seven screens (no
+      album, no paywall) and shows the app as a new user sees it. The studio's headlines are in
       `.claude/skills/store-screenshot-studio/config/copy.<de|en>.json`.
 - [ ] `npm run app-preview` (needs `brew install ffmpeg`).
 - [ ] **App Review recording** (`ios/AppReviewRecorder/README.md`): put the
       demo photos on the iPhone, give Bildklar **Limited Access to only
       those** (Settings › Apps › Bildklar › Photos › Limited Access), install
-      the TestFlight build and buy the unlock once there (free in TestFlight),
-      then `npm run rehearse:app-review`, `DRY_RUN=1 npm run record:app-review`,
-      `npm run record:app-review`. After each run delete the album *Paris, …*
-      and recover the two deleted photos from *Zuletzt gelöscht*.
+      the TestFlight build (nothing to buy while the app is free), then
+      `npm run rehearse:app-review`, `DRY_RUN=1 npm run record:app-review`,
+      `npm run record:app-review`. After each run recover the two deleted
+      photos from *Zuletzt gelöscht*.
 - [ ] Play: the **Photo and video permissions** declaration (text in
       `store/listing.md` 3.5); if Play asks for a video, record the same flow
       on the Android phone: `adb shell screenrecord /sdcard/bildklar.mp4`

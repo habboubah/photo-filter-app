@@ -4,7 +4,8 @@
 //    with the reason it is harmless — so a new one gets looked at.
 // 2. Builds the app (with the demo library), serves dist/ with `vite preview`,
 //    and drives Chromium through what people do — the permission screen, the
-//    first scan, a trip and its album, the paywall and the purchase, a similar
+//    first scan, a trip and its album (through the paywall and the purchase
+//    once the unlock is for sale; before, as an owner would), a similar
 //    group and "delete the others", the blurry list, a review that deletes,
 //    the settings and the licences — recording every request. Any request to
 //    another origin fails the check (it is aborted, so nothing leaves this
@@ -112,16 +113,23 @@ try {
     await page.waitForSelector(`text=${w.t.cleanupCard}`, { timeout: 15000 });
     await pause(page, 600);
   });
-  await step('a trip: renamed, its album made through the paywall', async () => {
+  await step(src.onSale ? 'a trip: renamed, its album made through the paywall' : 'a trip: renamed, then (as an owner) its album made', async () => {
     await openTrip(page, w);
     await page.click(`button${aria(w.t.editTrip)}`);
     await page.click(`button:has-text("${w.t.rename}")`);
     await page.fill(`[role="dialog"] input`, 'Paris mit Oma');
     await page.click(`[role="dialog"] button${aria(w.t.save)}`);
     await pause(page, 400);
-    await page.click(`button:has-text("${w.t.createAlbum}")`);
-    await page.waitForSelector('[role="dialog"]');
-    await page.click(`[role="dialog"] button:has-text("€")`);
+    if (src.onSale) {
+      await page.click(`button:has-text("${w.t.createAlbum}")`);
+      await page.waitForSelector('[role="dialog"]');
+      await page.click(`[role="dialog"] button:has-text("€")`);
+    } else {
+      // Nothing is for sale (src/logic/allowance.ts): albums show only for an owner.
+      await start(page, prefs({ owned: true }));
+      await openTrip(page, w);
+      await page.click(`button:has-text("${w.t.createAlbum}")`);
+    }
     await page.click(`[role="alertdialog"] button:has-text("${w.t.createAlbum}")`, { timeout: 5000 });
     await pause(page, 800);
     await page.click(`button${aria(w.t.back)}`);

@@ -19,7 +19,13 @@
 // stops the run with a message instead of filming the wrong thing. The film
 // runs on the demo library (src/native/demo/): drawn photos until licensed
 // ones replace them (docs/TODO.md, step 5).
-import { PORT, ORIGIN, SCREENS, aria, loadSource, prefs as demoPrefs, start, tripCard, words } from '../../../../scripts/lib/shots.mjs';
+import { PORT, ORIGIN, SCREENS, aria, loadSource, prefs as demoPrefs, start, tripCard, unlockOnSale, words } from '../../../../scripts/lib/shots.mjs';
+
+/**
+ * Nothing is for sale yet (src/logic/allowance.ts): the film shows what a new
+ * user gets — the unlock not owned, a trip looked at instead of made an album.
+ */
+const ON_SALE = unlockOnSale();
 
 export { loadSource, words };
 
@@ -54,12 +60,12 @@ export const video = {
 export const locales = ['de', 'en'];
 export const browserLocale = { de: 'de-DE', en: 'en-GB' };
 
-/** The app's settings as it would have stored them, and the demo's state: scanned, unlocked, no dry run. */
-export const prefs = lang => Object.fromEntries(Object.entries(demoPrefs({ lang })).filter(([, v]) => v !== null));
+/** The app's settings as it would have stored them, and the demo's state: scanned, unlocked once it is for sale, no dry run. */
+export const prefs = lang => Object.fromEntries(Object.entries(demoPrefs({ lang, owned: ON_SALE })).filter(([, v]) => v !== null));
 
 /** Before the camera runs: a fresh demo library, home. */
 export async function prepare(page, w) {
-  await start(page, demoPrefs({ lang: w.lang }));
+  await start(page, demoPrefs({ lang: w.lang, owned: ON_SALE }));
 }
 
 /* ------------------------------------------------------------ what is tapped */
@@ -89,7 +95,7 @@ export const marks = w => ({
 /* -------------------------------------------------------------- the chapters */
 
 // The story: what the app found (the clean-up card) → a trip becomes an album
-// → the best of near-identical shots → swiping through what can go → the icon
+// (before the sale: a trip found by itself) → the best of near-identical shots → swiping through what can go → the icon
 // and the name.
 export const chapters = [
   {
@@ -104,13 +110,18 @@ export const chapters = [
   },
   {
     id: 'trips',
-    caption: 'trips',
+    caption: ON_SALE ? 'trips' : 'tripsFound',
     hold: 2.0,
     run: async a => {
       await a.scrollTo('paris', { block: 'center' });
       await a.pause(0.4);
       await a.tap('paris');
       await a.pause(0.9);
+      if (!ON_SALE) {
+        // The trip's own photos, named after the place and the month.
+        await a.pause(2.2);
+        return;
+      }
       await a.tap('create-album');
       await a.pause(0.6);
       await a.tap('confirm-album');

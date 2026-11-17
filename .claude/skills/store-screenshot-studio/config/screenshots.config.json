@@ -211,12 +211,22 @@
   "//ribbon": "The corner ribbon with the copy file's `ribbon` word, per target and on the feature graphic: true = every slide, \"first\" = the first slide only, false or absent = none. The same switch lets a target show the price points of the copy files ({ \"text\": …, \"price\": true }). Bildklar has an in-app purchase, so it is off everywhere and the copy files have no ribbon and no price points: \"free\" on a screenshot of an app that sells something is misleading on Play and rejected by Apple (guideline 2.3.7). See reference/store-specs.md.",
   "targets": [
     {
+      "//": "While nothing is for sale (UNLOCK_ON_SALE in src/logic/allowance.ts) albums are hidden in the app, so the \"album\" slide is left out; put it back after \"trips\" when the unlock goes on sale.",
       "id": "iphone-6.3",
       "store": "apple",
       "width": 1206,
       "height": 2622,
       "scale": 3,
       "format": "png",
+      "slides": [
+        "home",
+        "trips",
+        "group",
+        "review",
+        "blurry",
+        "cleanup",
+        "private"
+      ],
       "ribbon": false
     },
     {

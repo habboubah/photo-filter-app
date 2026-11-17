@@ -9,6 +9,12 @@
 // Garda. What a real phone would ask (photo access, the purchase) is settled
 // by localStorage keys set before the app starts (`prefs` below).
 //
+// While nothing is for sale (UNLOCK_ON_SALE in src/logic/allowance.ts) the
+// store set shows what a new user gets: the unlock not owned, so no album
+// button, no smaller videos, no Live Photos; the screens that exist only for
+// sale (`onSale`) or only show the extras (`extras`) are left out of it.
+// ui-review keeps the unlock owned and so still sees the hidden screens.
+//
 // The labels the clicks need are the app's own: src/translations.ts is loaded
 // through Vite, so renaming a button in the app can't silently break a capture.
 //
@@ -30,12 +36,16 @@ export const ORIGIN = `http://127.0.0.1:${PORT}`;
 export const IPHONE = { width: 430, height: 932, scale: 3 };
 const LOCALE = { de: 'de-DE', en: 'en-GB' };
 
+/** Whether the unlock is for sale yet (UNLOCK_ON_SALE in src/logic/allowance.ts). */
+export const unlockOnSale = () =>
+  /^export const UNLOCK_ON_SALE = true;/m.test(fs.readFileSync(path.join(root, 'src', 'logic', 'allowance.ts'), 'utf8'));
+
 /** The app's own strings, read from source through Vite. */
 export async function loadSource() {
   const vite = await createServer({ root, logLevel: 'silent', appType: 'custom', server: { middlewareMode: true, hmr: false, ws: false } });
   try {
     const tr = await vite.ssrLoadModule('/src/translations.ts');
-    return { strings: tr.default, android: tr.androidStrings, fmt: tr.fmt, plural: tr.plural };
+    return { strings: tr.default, android: tr.androidStrings, fmt: tr.fmt, plural: tr.plural, onSale: unlockOnSale() };
   } finally {
     await vite.close();
   }
@@ -44,7 +54,7 @@ export async function loadSource() {
 /** Everything a screen's `run` needs for one language (and, for Android captures, Android's words). */
 export function words(src, lang, platform) {
   const t = platform === 'android' ? { ...src.strings[lang], ...src.android[lang] } : src.strings[lang];
-  return { lang, t, f: (s, vars) => src.fmt(s, vars), p: (base, n) => src.plural(t, base, n) };
+  return { lang, t, onSale: src.onSale, f: (s, vars) => src.fmt(s, vars), p: (base, n) => src.plural(t, base, n) };
 }
 
 /** The demo's state before the app starts: access granted, the library scanned, the unlock bought — each can be changed per screen. */
@@ -144,6 +154,8 @@ const section = title => `section:has(> h2:text-is("${title}")) > div`;
  * `store: true` ones are the App Store / Google Play set (npm run screenshots);
  * ui-review takes them all. `prefs` changes the demo's state for that screen.
  * `marks` names the parts of a store screen the studio may lift (see above).
+ * `onSale`: only while the unlock is for sale (skipped otherwise). `extras`:
+ * shows what the unlock pays for — not in the store set while nothing is sold.
  */
 export const SCREENS = [
   {
@@ -168,9 +180,13 @@ export const SCREENS = [
     },
     marks: w => ({ 'trip-1': `${tripCards(w)} >> nth=0`, 'trip-2': `${tripCards(w)} >> nth=1` }),
   },
-  { name: '04-trip', store: true, run: (page, w) => openTrip(page, w), marks: w => ({ album: `button:has-text("${w.t.createAlbum}")` }) },
   {
-    name: '05-album', store: true, run: async (page, w) => {
+    name: '04-trip', store: true, run: (page, w) => openTrip(page, w),
+    // The album button only while albums are sold; before, the trip's own "go through" button.
+    marks: w => (w.onSale ? { album: `button:has-text("${w.t.createAlbum}")` } : { review: `button:has-text("${w.t.reviewTrip}")` }),
+  },
+  {
+    name: '05-album', store: true, extras: true, run: async (page, w) => {
       await openTrip(page, w);
       await page.click(`button:has-text("${w.t.createAlbum}")`);
       await pause(page, 500);
@@ -196,7 +212,7 @@ export const SCREENS = [
     marks: () => ({ card: 'div[role="img"]' }),
   },
   {
-    name: '09-paywall', store: true, prefs: { owned: false }, run: async (page, w) => {
+    name: '09-paywall', store: true, onSale: true, prefs: { owned: false }, run: async (page, w) => {
       await openSettings(page, w);
       await page.click(`main button:has-text("${w.t.unlockRow}")`);
       await pause(page, 900);
@@ -378,10 +394,13 @@ export async function measure(page, wanted) {
  * gets `<name>.marks.json` next to it. Returns the names that could not be
  * reached.
  */
-export async function capture({ variants, screens, outDir, clean = true, onlyNames = null, marks = false }) {
+export async function capture({ variants, screens, outDir, clean = true, onlyNames = null, marks = false, forStore = false }) {
   console.log('Building …');
   execSync('npx vite build', { cwd: root, stdio: 'ignore' });
   const src = await loadSource();
+  // The store set before the sale: what a new user sees (the header above).
+  const userView = forStore && !src.onSale;
+  screens = screens.filter(s => (src.onSale || !s.onSale) && !(userView && s.extras));
   const server = await preview({ root, logLevel: 'silent', preview: { port: PORT, strictPort: true, host: '127.0.0.1' } });
   const browser = await chromium.launch();
   const failed = [];
@@ -403,7 +422,7 @@ export async function capture({ variants, screens, outDir, clean = true, onlyNam
       for (const s of screens) {
         if (onlyNames && !onlyNames.includes(s.name)) continue;
         try {
-          await start(page, prefs({ lang: v.lang, theme: v.theme ?? 'light', ...s.prefs }));
+          await start(page, prefs({ lang: v.lang, theme: v.theme ?? 'light', ...(userView ? { owned: false } : {}), ...s.prefs }));
           if (s.run) await s.run(page, w);
           await pause(page, s.wait ?? 700);
           const found = marks && s.marks ? await measure(page, s.marks(w)) : null;

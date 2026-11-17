@@ -13,7 +13,7 @@ Bildklar's. Five scenes, from the icon on the home screen to the settings:
 | Scene | Shows |
 |---|---|
 | 1 Launch and the scan | The icon, the photo permission (*Limit Access…* if iOS asks), the *Clean up* tab filling up, the clean-up card |
-| 2 A trip becomes an album | The *Organise* tab, *Paris*, *Create album* → (the paywall and *Restore purchases*, only if the unlock isn't owned yet) → the confirmation → *Album made on …* |
+| 2 A trip, found by itself | The *Organise* tab, *Paris* and its photos, back (nothing is for sale yet, so no album — `src/logic/allowance.ts`) |
 | 3 Near-identical photos and the best shot | A group, the suggested best photo, picking another one as the best |
 | 4 A review that deletes | *Clean up now* › *Go through all*: delete, keep, delete, *Finish*, *Delete 2 photos* → iOS's own *Delete* dialog → *2 photos deleted* |
 | 5 Settings and the end | The settings down to *Privacy*, back home |
@@ -60,10 +60,11 @@ and 5 are done.
    **Limited Access** › select the demo photos. The video must not show your
    own photos. (If iOS asks during scene 1, the runner taps *Limit Access…*;
    then select the demo photos in the picker by hand once, and record again.)
-3. **The unlock, bought once with the TestFlight build** (purchases in
-   TestFlight are free and stay with your Apple Account). Scene 2 then makes
-   the album straight away. The paywall itself is in the in-app purchase
-   screenshot for review (`screenshots/en/09-paywall.png`).
+3. **Nothing to buy while the app is free** (`UNLOCK_ON_SALE` is false in
+   `src/logic/allowance.ts`). If this Apple Account bought the unlock in
+   TestFlight before, the trip shows *Create album* — the scenes don't tap
+   it. When the unlock goes on sale, bring back the album scene and buy it
+   once with the TestFlight build again.
 4. **Debug only:** a debug build has the dry run on, so nothing would be
    deleted — record with the TestFlight build, as App Review sees it.
 
@@ -81,10 +82,10 @@ and 5 are done.
    Like the system, *Start over*. Your photos and the purchase stay.
 3. Connect the iPhone by cable, unlock it, **Do Not Disturb** on.
 4. **Dry run:** `DRY_RUN=1 npm run record:app-review` — everything except the
-   screen recording. **It does make the album and delete the two photos** (the
-   app can't tell a dry run of the recorder from a real one).
-5. **Tidy up after the dry run:** Photos › Albums › delete the album
-   *Paris, …*; Photos › Recently Deleted › recover the two photos.
+   screen recording. **It does delete the two photos** (the app can't tell a
+   dry run of the recorder from a real one).
+5. **Tidy up after the dry run:** Photos › Recently Deleted › recover the
+   two photos.
 6. **Record:** `npm run record:app-review`. Keep the phone unlocked and
    don't touch it.
 7. **Afterwards:** the video is in Photos. Trim it, AirDrop it to the Mac,
@@ -132,8 +133,6 @@ The recording is stopped, so what was filmed so far is in Photos.
 - **Scene 1 times out** — the scan took longer than 60 s, or no clean-up card
   appeared (no near-identical or blurry photos among the selected ones). Give
   the step a longer `timeout`, or add photos that make a group.
-- **Scene 2: the paywall appears and *Restore purchases* finds nothing** —
-  the unlock wasn't bought with this Apple Account (Preparation, 3).
 - **Scene 4: iOS's *Delete* dialog isn't tapped** — the dialog's button is
   named differently in your language: add it to the `systemAlert` list.
 - **It works in the rehearsal but not on the iPhone** — system UI or a

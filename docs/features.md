@@ -246,7 +246,20 @@ tab again scrolls to its top; Android's back button goes from *Ordnen* to
   is gone from the library.
 
 ## The unlock
-- Scanning, trips, groups, the blurry list and reviews are free. Making an
+- **Not for sale yet — the launch phase** (`UNLOCK_ON_SALE` is `false` in
+  `src/logic/allowance.ts`, since 17 November 2026). Everything below is
+  built, but what the unlock pays for is **hidden**, not shown locked: no
+  *Album erstellen* on a trip, no album chips in a review, no *Fotos
+  verkleinern* and *Live Photos* tiles, no *Video verkleinern* in the large
+  files, no *Vollversion* section in Settings, never the paywall. Deleting has
+  **no limit** and nothing is counted. The permission screen promises the
+  trips instead of an album per trip. Someone who owns the unlock anyway (a
+  TestFlight purchase, the demo's `owned`) sees the extras.
+- **Every start in the launch phase marks the install as early**
+  (`AppState.early`, kept by *Von vorn anfangen*). When the
+  unlock goes on sale, early installs keep deleting without a limit; only the
+  extras need the purchase. New installs from then on get the 50 free deletes.
+- Once on sale: scanning, trips, groups, the blurry list and reviews are free. Making an
   album/folder, smaller videos, Live Photo conversion and deleting need
   **one one-time purchase** (4,99 €, no subscription). The paywall appears
   when needed, and from Settings.
@@ -280,9 +293,11 @@ tab again scrolls to its top; Android's back button goes from *Ordnen* to
   at 18:00, scheduled on the phone — no server.
 
 ## Settings
-- **Fotos**: *Zugriff* with the access (all / selected / none); a tap opens
-  the system's settings, where it is changed. Settings holds only what can be
-  changed: the storage, what was freed and *Fotos auswählen* are on
+- **Fotos** (only with limited access): *Zugriff auf alle Fotos erlauben*
+  [Allow access to all photos] opens the system's settings, the only place
+  where iOS (and Android, once decided) lets the access change. With full
+  access there is nothing to do; with none the app shows its permission
+  screen instead. Settings holds only what can be changed: the storage, what was freed and *Fotos auswählen* are on
   *Aufräumen*, so are *Geschützt* and *Neu durchsuchen* (its last rows).
 - **Vollversion**: unlock or *Freigeschaltet*, restore.
 - **Darstellung**: language (Deutsch, English), appearance (system, light, dark).
