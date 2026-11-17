@@ -26,7 +26,7 @@ Two sets, both made from real **CC0** photos and videos (public domain: free for
 tests, the store screenshots and the preview video; sources in
 `scripts/test-photos.json`):
 
-**1. The test library** — about 200 photos and videos for a simulator, an emulator
+**1. The test library** — about 500 photos and videos (≈ 280 MB) for a simulator, an emulator
 or a test phone (never your own phone):
 
 ```bash
@@ -38,9 +38,12 @@ npm run test-photos:android   # onto the emulator / test phone adb sees, then a 
 ```
 
 Every file gets a new name (`IMG_1001.JPG` …) and a date and place in its
-EXIF / QuickTime data: two years at home in Hainburg and trips to Vienna, Paris,
-the Baltic Sea, Amsterdam, the Rhine and Lake Garda — with bursts, blurry
-shots, WhatsApp copies, a duplicate, screenshots and failed shots.
+EXIF / QuickTime data: two years at home in Hainburg — family, parties, Eid,
+Ramadan, Easter, carnival, Christmas, food, pets, the zoo and the farm — and
+13 trips (Vienna, Barcelona, Paris, the Baltic Sea, Amsterdam, Istanbul, the
+Rhine, London, Berlin, the Alps, the Black Forest, Lake Garda, the North Sea),
+with bursts, blurry shots, WhatsApp copies, a duplicate, screenshots, failed
+shots and 20 videos.
 `test-photos/credits.csv` lists each file's source; `store = no` (identifiable
 people, the Eiffel Tower lit at night) are for tests only. To change the story,
 edit `EVENTS` in `scripts/test-photos.py`; to add photos, add them to
