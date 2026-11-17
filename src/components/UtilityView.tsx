@@ -6,6 +6,8 @@ import { Dock, Empty, Screen } from '../ui/Screen';
 import { Button } from '../ui/Button';
 import { PhotoGrid } from '../ui/Photo';
 import { tapLight } from '../ui/haptics';
+import { sortPhotos, type SortKey } from '../logic/sort';
+import { SortButton } from './SortButton';
 
 /**
  * The utility photos the on-device AI found (src/logic/ai.ts): receipts,
@@ -13,24 +15,27 @@ import { tapLight } from '../ui/haptics';
  * AI took them for, and "Go through" into the review. The AI only suggests:
  * nothing goes without the review and the system's own dialog.
  */
-export function UtilityView({ t, photos, progress, onBack, onReview }: {
+export function UtilityView({ t, photos, progress, sort, onSort, onBack, onReview }: {
   t: Strings;
   /** Already without kept photos and favourites, newest first (findUtility). */
   photos: Photo[];
   /** How far the AI's pass got, for the hint while it runs. */
   progress: { seen: number; total: number };
+  sort: SortKey;
+  onSort: (key: SortKey) => void;
   onBack: () => void;
   onReview: (photos: Photo[]) => void;
 }) {
   const groups = groupUtility(photos);
   const [filter, setFilter] = useState<UtilityLabel | 'all'>('all');
-  const shown = filter === 'all' ? photos : groups.find(g => g.label === filter)?.photos ?? [];
+  const shown = sortPhotos(filter === 'all' ? photos : groups.find(g => g.label === filter)?.photos ?? [], sort);
   const byId = new Map(shown.map(p => [p.id, p]));
   const total = shown.reduce((s, p) => s + p.bytes, 0);
   const checking = progress.total > 0 && progress.seen < progress.total;
 
   return (
-    <Screen title={t.utilityTitle} subtitle={`${plural(t, 'photos', shown.length)} · ${bytes(t, total)}`} onBack={onBack} backLabel={t.back} docked={shown.length > 0}>
+    <Screen title={t.utilityTitle} subtitle={`${plural(t, 'photos', shown.length)} · ${bytes(t, total)}`} onBack={onBack} backLabel={t.back} docked={shown.length > 0}
+      actions={<SortButton t={t} value={sort} onChange={onSort} />}>
       <p className="text-label text-fg-mute px-1 -mt-2 wrap-prose">{t.utilityIntro}</p>
       {checking && (
         <p className="text-caption text-fg-mute px-1 num" aria-live="polite">

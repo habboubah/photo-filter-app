@@ -24,6 +24,7 @@ import { findScreenshots, isOldShot, oldShots } from './logic/screenshots';
 import { findLarge, findLive } from './logic/large';
 import { buildMonths, onThisDay } from './logic/months';
 import { findExposure } from './logic/exposure';
+import { sortFor, type SortScreen } from './logic/sort';
 import { cleanParts } from './logic/smartClean';
 import { streak } from './logic/streak';
 import { feedbackMail, openExternal, privacyUrl, rateUrl, systemFromAgent } from './links';
@@ -381,6 +382,9 @@ export default function App() {
 
   /* -------------------------------------------------------------- review */
 
+  /** A list screen's order and how to change it (src/logic/sort.ts). */
+  const sorting = (screen: SortScreen) => ({ sort: sortFor(state.sort, screen), onSort: (k: Parameters<typeof store.setSort>[1]) => store.setSort(screen, k) });
+
   const startReview = (items: ReviewItem[], onDone?: () => void) => {
     if (items.length) setReview({ session: startSession(items), finished: false, onDone });
   };
@@ -484,7 +488,7 @@ export default function App() {
     if (showBlurry) {
       return (
         <FailedView
-          t={t} blurry={blurry} dark={exposure.dark} bright={exposure.bright} tab={failedTab}
+          t={t} {...sorting('failed')} blurry={blurry} dark={exposure.dark} bright={exposure.bright} tab={failedTab}
           onBack={() => setShowBlurry(false)}
           onReviewBlurry={(list: Photo[]) => startReview(reviewBlurry(list))}
           onReviewExposure={(list, level) => startReview(reviewExposure(list, level))}
@@ -494,7 +498,7 @@ export default function App() {
     if (showScreenshots) {
       return (
         <ScreenshotsView
-          t={t} photos={shots} now={now} onBack={() => setShowScreenshots(false)}
+          t={t} {...sorting('screenshots')} photos={shots} now={now} onBack={() => setShowScreenshots(false)}
           onReview={(list: Photo[]) => startReview(reviewScreenshots(list))}
         />
       );
@@ -515,7 +519,7 @@ export default function App() {
     if (showLarge) {
       return (
         <LargeView
-          t={t} photos={large} canCompress
+          t={t} {...sorting('large')} photos={large} canCompress
           onBack={() => setShowLarge(false)}
           onReview={(list: Photo[]) => startReview(reviewLarge(list))}
           onCompress={p => needUnlock(() => { void compress(p); })}
@@ -526,13 +530,13 @@ export default function App() {
     if (showUtility) {
       return (
         <UtilityView
-          t={t} photos={utility} progress={aiSeen} onBack={() => setShowUtility(false)}
+          t={t} {...sorting('utility')} photos={utility} progress={aiSeen} onBack={() => setShowUtility(false)}
           onReview={(list: Photo[]) => startReview(reviewUtility(list))}
         />
       );
     }
     if (showLive) {
-      return <LiveView t={t} photos={live} onBack={() => setShowLive(false)} onConvert={list => needUnlock(() => setLiveConfirm(list))} />;
+      return <LiveView t={t} {...sorting('live')} photos={live} onBack={() => setShowLive(false)} onConvert={list => needUnlock(() => setLiveConfirm(list))} />;
     }
     if (showCleanup && summary) {
       return (
@@ -550,7 +554,7 @@ export default function App() {
     }
     if (category) {
       const c = cats.find(x => x.label === category);
-      return <CategoryView t={t} label={category} photos={c?.photos ?? []} onBack={() => setCategory(null)} />;
+      return <CategoryView t={t} {...sorting('category')} label={category} photos={c?.photos ?? []} onBack={() => setCategory(null)} />;
     }
     if (showMonths) {
       return (

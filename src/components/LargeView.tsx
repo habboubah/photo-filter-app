@@ -9,16 +9,20 @@ import { Segmented } from '../ui/Controls';
 import { PhotoGrid, Thumb } from '../ui/Photo';
 import { Sheet } from '../ui/Sheet';
 import { LARGE } from '../thumbs';
+import { sortPhotos, type SortKey } from '../logic/sort';
+import { SortButton } from './SortButton';
 
 /**
  * The largest photos and videos, biggest first. Nothing is suggested for
  * deleting here: a tap opens one file with what can be done with it — make a
  * video smaller (a copy, the original stays until it is deleted), or delete it.
  */
-export function LargeView({ t, photos, canCompress, onBack, onReview, onCompress, onDelete }: {
+export function LargeView({ t, photos, canCompress, sort, onSort, onBack, onReview, onCompress, onDelete }: {
   t: Strings;
   photos: Photo[];
   canCompress: boolean;
+  sort: SortKey;
+  onSort: (key: SortKey) => void;
   onBack: () => void;
   onReview: (photos: Photo[]) => void;
   onCompress: (photo: Photo) => void;
@@ -26,7 +30,7 @@ export function LargeView({ t, photos, canCompress, onBack, onReview, onCompress
 }) {
   const [filter, setFilter] = useState<LargeFilter>('all');
   const [open, setOpen] = useState<Photo | null>(null);
-  const list = filter === 'all' ? photos : photos.filter(p => (filter === 'videos' ? p.video : !p.video));
+  const list = sortPhotos(filter === 'all' ? photos : photos.filter(p => (filter === 'videos' ? p.video : !p.video)), sort);
   const byId = new Map(list.map(p => [p.id, p]));
   const total = list.reduce((s, p) => s + p.bytes, 0);
   const approx = list.some(p => !p.exact);
@@ -34,7 +38,8 @@ export function LargeView({ t, photos, canCompress, onBack, onReview, onCompress
   const size = (p: Photo) => `${p.exact ? '' : '≈ '}${bytes(t, p.bytes)}`;
 
   return (
-    <Screen title={t.largeTitle} subtitle={`${plural(t, 'files', list.length)} · ${approx ? '≈ ' : ''}${bytes(t, total)}`} onBack={onBack} backLabel={t.back} docked={list.length > 0}>
+    <Screen title={t.largeTitle} subtitle={`${plural(t, 'files', list.length)} · ${approx ? '≈ ' : ''}${bytes(t, total)}`} onBack={onBack} backLabel={t.back} docked={list.length > 0}
+      actions={<SortButton t={t} value={sort} onChange={onSort} />}>
       <p className="text-label text-fg-mute px-1 -mt-2 wrap-prose">{t.largeIntro}</p>
       <Segmented
         label={t.largeTitle} value={filter} onChange={setFilter}
