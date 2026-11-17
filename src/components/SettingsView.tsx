@@ -43,7 +43,6 @@ interface Props {
 export function SettingsView(p: Props) {
   const { t } = p;
   const [confirmReset, setConfirmReset] = useState(false);
-  const accessLabel = p.access === 'full' ? t.accessFull : p.access === 'limited' ? t.accessLimited : t.accessNone;
   return (
     <Screen title={t.settings} onBack={p.onBack} backLabel={t.back}>
       <section className="rounded-md card p-4 flex items-center gap-3">
@@ -55,9 +54,12 @@ export function SettingsView(p: Props) {
         </div>
       </section>
 
-      <Group title={t.photosSection}>
-        <Row label={t.accessRow} sub={accessLabel} leading={<IconTile icon={Images} hue="sky" />} trailing={<Away />} onClick={p.onOpenSettings} />
-      </Group>
+      {/* Only with limited access: full access needs nothing, and without access the app shows its permission screen. */}
+      {p.access === 'limited' && (
+        <Group title={t.photosSection}>
+          <Row label={t.accessAllRow} sub={t.limitedBanner} leading={<IconTile icon={Images} hue="sky" />} trailing={<Away />} onClick={p.onOpenSettings} />
+        </Group>
+      )}
 
       <Group title={t.reminderSection}>
         <SwitchRow label={t.reminderRow} sub={t.reminderSub} checked={p.reminder} onChange={p.onReminder} />

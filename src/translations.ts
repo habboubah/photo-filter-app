@@ -382,10 +382,7 @@ const de = {
 
   // Settings
   photosSection: 'Fotos',
-  accessRow: 'Zugriff',
-  accessFull: 'Alle Fotos',
-  accessLimited: 'Ausgewählte Fotos',
-  accessNone: 'Kein Zugriff',
+  accessAllRow: 'Zugriff auf alle Fotos erlauben',
   protectedRow: 'Geschützt',
   protectedRowSub: '{albums} · {trips} · {photos}',
   protectedTitle: 'Geschützt',
@@ -832,10 +829,7 @@ const en: Strings = {
   restoredNone: 'No earlier purchase found.',
 
   photosSection: 'Photos',
-  accessRow: 'Access',
-  accessFull: 'All photos',
-  accessLimited: 'Selected photos',
-  accessNone: 'No access',
+  accessAllRow: 'Allow access to all photos',
   protectedRow: 'Protected',
   protectedRowSub: '{albums} · {trips} · {photos}',
   protectedTitle: 'Protected',
