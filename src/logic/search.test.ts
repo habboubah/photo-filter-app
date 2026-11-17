@@ -50,27 +50,40 @@ describe('search by words', () => {
     const words = list.map(e => file.concepts[e.concept].en[0]);
     expect(list.length).toBeGreaterThan(0);
     expect(list.length).toBeLessThanOrEqual(EXAMPLE_COUNT);
-    // The demo has a playground, a birthday and snow; no cat, no baby in a bath.
-    expect(words).toEqual(expect.arrayContaining(['playground', 'birthday', 'snow']));
+    // The demo has a child, a birthday and snow; no cat, no baby in a bath. The family words come first.
+    expect(words).toEqual(expect.arrayContaining(['birthday', 'snow']));
+    expect(words[0]).toBe('baby');
     expect(words).not.toContain('cat');
     expect(words).not.toContain('bath');
     expect(new Set(list.map(e => e.cover)).size).toBe(list.length);
-    expect(list.find(e => file.concepts[e.concept].en[0] === 'playground')!.cover).toBe('p002');
+    expect(list.find(e => file.concepts[e.concept].en[0] === 'birthday')!.cover).toBe('p031');
     expect(examples(Vectors.empty(), file)).toEqual([]);
   });
 
   it('puts the word with most sure photos first, the list order breaking ties, and gives each card its own cover', () => {
     const picked = pickExamples([
-      { concept: 1, sure: 3, best: ['a', 'b'] },
+      { concept: 1, sure: 3, best: ['a', 'b', 'x'] },
       null,
-      { concept: 2, sure: 9, best: ['a', 'c'] },
-      { concept: 3, sure: 3, best: ['a'] },
-    ], 3);
-    expect(picked).toEqual([{ concept: 2, cover: 'a' }, { concept: 1, cover: 'b' }, { concept: 3, cover: 'a' }]);
+      { concept: 2, sure: 9, best: ['a', 'c', 'y'] },
+      { concept: 3, sure: 3, best: ['a', 'd', 'z'] },
+    ], 3, 0);
+    expect(picked).toEqual([{ concept: 2, cover: 'a' }, { concept: 1, cover: 'b' }, { concept: 3, cover: 'd' }]);
+  });
+
+  it('shows the family words first, in their order and at most so many, and no word showing mostly the same photos', () => {
+    const picked = pickExamples([
+      { concept: 10, sure: 2, best: ['b1', 'b2', 'b3'] }, // baby
+      { concept: 11, sure: 8, best: ['b1', 'b2', 'k1'] }, // child: mostly the baby's photos
+      { concept: 12, sure: 3, best: ['f1', 'f2'] }, // family
+      { concept: 13, sure: 5, best: ['g1', 'g2'] }, // birthday: one family word too many
+      { concept: 20, sure: 30, best: ['r1', 'r2'] }, // receipt
+      { concept: 21, sure: 9, best: ['c1', 'c2'] }, // city
+    ], 8, 4, 2);
+    expect(picked.map(p => p.concept)).toEqual([10, 12, 20, 21]);
   });
 
   it('leaves out what is not allowed (screenshots)', () => {
-    const list = examples(vectors, file, id => id !== 'p002');
-    expect(list.some(e => e.cover === 'p002')).toBe(false);
+    const list = examples(vectors, file, id => id !== 'p031');
+    expect(list.some(e => e.cover === 'p031')).toBe(false);
   });
 });

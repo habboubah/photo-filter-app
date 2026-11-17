@@ -989,7 +989,7 @@ export default function App() {
         onProtected={() => setShowProtected(true)}
         onRescan={() => void store.rescanAll()}
         onSettings={() => setShowSettings(true)}
-        onSearch={aiSeen.seen > 0 ? () => setShowSearch(true) : undefined}
+        onSearch={() => setShowSearch(true)}
         onAddPhotos={addPhotos}
         onCleanup={() => setShowCleanup(true)}
         onSimilar={() => setShowSimilar(true)}

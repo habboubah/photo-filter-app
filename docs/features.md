@@ -251,9 +251,10 @@ tab again scrolls to its top; Android's back button goes from *Ordnen* to
   *Schnuller*, *Laternenumzug* …); tap one. Several words find photos that
   show all of them.
 - *In deinen Fotos* [In your photos]: before anything is typed, up to eight
-  cards with words your library really has, each with its best photo (*Baby*,
-  *Hund*, *Spielplatz* …) — the one with most photos first; a tap searches
-  for it. A word the library hasn't got is not offered, and a photo of an ID
+  cards with words your library really has, each with its best photo: first
+  up to four family words (*Baby*, *Kind*, *Familie*, *Zwillinge*,
+  *Geburtstag* …), then the others with most photos (*Kassenzettel*, *Stadt*,
+  *Zoo* …); no two cards with mostly the same photos. A tap searches for it. A word the library hasn't got is not offered, and a photo of an ID
   or a bank card is never a cover. Until the AI has seen the photos, plain
   examples instead (*Zum Beispiel*).
 - Found by the on-device AI from each photo's vector, best match first (at
