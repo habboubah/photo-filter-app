@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Photo } from '../types';
-import { buildGroups, findBlurry, makeLibrary, summarize } from './analyze';
+import { buildGroups, findBlurry, makeLibrary, openGroups, summarize } from './analyze';
 import { findUtility, LABELS } from './ai';
 import { exposureLevel } from './exposure';
 import { isProtected, protectedIds, toggled } from './protect';
@@ -63,5 +63,16 @@ describe('protected photos', () => {
     expect(toggled(list, ['a'], true)).toBe(list);
     expect(toggled(list, ['b'], true)).toEqual(['a', 'b']);
     expect(toggled(['a', 'b'], ['a'], false)).toEqual(['b']);
+  });
+});
+
+describe('keep all (openGroups)', () => {
+  const g = (key: string, ids: string[], best = ids[0]) => ({ key, kind: 'duplicate' as const, ids, suggested: ids[0], best });
+  it('drops a group once every photo but the one to keep is kept, and opens it again for a new copy', () => {
+    const groups = [g('a', ['a1', 'a2', 'a3']), g('b', ['b1', 'b2'])];
+    expect(openGroups(groups, new Set()).map(x => x.key)).toEqual(['a', 'b']);
+    expect(openGroups(groups, new Set(['a1', 'a2', 'a3'])).map(x => x.key)).toEqual(['b']);
+    expect(openGroups(groups, new Set(['a2'])).map(x => x.key)).toEqual(['a', 'b']);
+    expect(openGroups([g('a', ['a1', 'a2', 'a3', 'a4'])], new Set(['a1', 'a2', 'a3'])).map(x => x.key)).toEqual(['a']);
   });
 });

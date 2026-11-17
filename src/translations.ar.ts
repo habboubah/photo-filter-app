@@ -151,6 +151,8 @@ export const ar: Strings = {
   makeBest: 'اختيار {date} كأفضل صورة',
   bestPicked: 'سيُحتفظ بها',
   deleteOthers: 'حذف البقية',
+  keepAll: 'الاحتفاظ بالكل',
+  keepAllDone: 'تم الاحتفاظ بالكل – لن تُقترح مرة أخرى',
   reviewGroup: 'مراجعة',
   noGroups: 'لا توجد صور متشابهة جدًا',
   noGroupsBody: 'لم يجد Bildklar سلسلة من الصور المتشابهة جدًا.',

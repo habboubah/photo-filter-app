@@ -127,6 +127,11 @@ export function useAppStore() {
   const addKept = (ids: string[]) => {
     if (ids.length) setState(s => ({ ...s, kept: [...new Set([...s.kept, ...ids])] }));
   };
+  /** Undoes `addKept` (the toast after "Alle behalten"): these photos may be suggested again. */
+  const removeKept = (ids: string[]) => {
+    const gone = new Set(ids);
+    if (ids.length) setState(s => ({ ...s, kept: s.kept.filter(id => !gone.has(id)) }));
+  };
   /**
    * The decide-later pile after a review: the photos put off join it (at the
    * end, once), the ones given a final answer leave it.
@@ -387,7 +392,7 @@ export function useAppStore() {
   return {
     language, setLanguage, themeMode, setThemeMode,
     debug, dryRunAvailable, dryRun, setDryRun,
-    state, stateReady, storageError, updateTrips, recordAlbum, setBest, addKept, updateLater, pruneLaterPile, setSort, protectPhotos, protectTrip, protectAlbum, albumMembers, useAlbums, markMonthDone, addFreed, markDay, countFree, resetDecisions, restoreState,
+    state, stateReady, storageError, updateTrips, recordAlbum, setBest, addKept, removeKept, updateLater, pruneLaterPile, setSort, protectPhotos, protectTrip, protectAlbum, albumMembers, useAlbums, markMonthDone, addFreed, markDay, countFree, resetDecisions, restoreState,
     reminder, setReminder,
     owned: isOwned, setOwned,
     access, refreshAccess, accessGranted,

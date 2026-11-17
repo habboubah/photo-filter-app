@@ -12,9 +12,10 @@ import { tapLight } from '../ui/haptics';
  * One similar group: the photo that will be kept, large, and the series
  * under it. A tap on another photo keeps that one instead. "Delete the
  * others" goes straight to the system's dialog; "Go through" reviews them
- * one by one.
+ * one by one; "Keep all" keeps every photo and settles the group, so it is
+ * not suggested again (with undo).
  */
-export function GroupView({ t, group, byId, kept, debug, onBack, onPick, onReview, onDeleteOthers, onScoreFaces }: {
+export function GroupView({ t, group, byId, kept, debug, onBack, onPick, onReview, onDeleteOthers, onKeepAll, onScoreFaces }: {
   t: Strings;
   group: Group;
   byId: Map<string, Photo>;
@@ -24,6 +25,8 @@ export function GroupView({ t, group, byId, kept, debug, onBack, onPick, onRevie
   onPick: (id: string) => void;
   onReview: () => void;
   onDeleteOthers: (ids: string[]) => void;
+  /** "Alle behalten": every photo of the group is kept, and the group is not suggested again. */
+  onKeepAll: () => void;
   onScoreFaces: (ids: string[]) => void;
 }) {
   // iPhone: faces and open eyes refine the pick; asked for once per group.
@@ -77,7 +80,10 @@ export function GroupView({ t, group, byId, kept, debug, onBack, onPick, onRevie
           <Button full size="lg" variant="danger" disabled={!others.length} onClick={() => onDeleteOthers(others)}>
             {others.length ? `${t.deleteOthers} · ${bytes(t, othersBytes)}` : t.deleteOthers}
           </Button>
-          <Button full variant="ghost" onClick={onReview}>{t.reviewGroup}</Button>
+          <div className="grid grid-cols-2 gap-1">
+            <Button full variant="ghost" onClick={onReview}>{t.reviewGroup}</Button>
+            <Button full variant="ghost" onClick={onKeepAll}>{t.keepAll}</Button>
+          </div>
         </div>
       </Dock>
     </Screen>

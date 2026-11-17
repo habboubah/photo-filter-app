@@ -12,7 +12,7 @@ import { PRODUCT_ID, Purchases } from './native/purchases';
 import { loadCities } from './cities';
 import { forgetThumbs } from './thumbs';
 import type { CityIndex } from './logic/geo';
-import { buildGroups, buildTrips, cleanupBlurry, detect, findBlurry, makeLibrary, summarize } from './logic/analyze';
+import { buildGroups, buildTrips, cleanupBlurry, detect, findBlurry, makeLibrary, summarize, openGroups } from './logic/analyze';
 import { folderName } from './logic/naming';
 import { addMerge, addSplit, removeMerge, removeSplits, setIgnored, setName } from './logic/trips';
 import {
@@ -102,8 +102,9 @@ export default function App() {
     const tripIds = new Map(trips.map(x => [x.key, x.ids]));
     return protectedIds(state.kept, state.protect, key => tripIds.get(key), store.albumMembers);
   }, [state.kept, state.protect, trips, store.albumMembers]);
+  // Settled groups (every photo but the one to keep is kept — "Alle behalten") are not shown again (openGroups).
   const groups = useMemo(
-    () => buildGroups(lib, detection.groups, state, store.faces, kept),
+    () => openGroups(buildGroups(lib, detection.groups, state, store.faces, kept), kept),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [lib, detection, state.best, store.faces, kept],
   );
@@ -589,6 +590,12 @@ export default function App() {
           onPick={id => store.setBest(group.key, id === group.suggested ? null : id)}
           onReview={() => startReview(reviewGroup(group, kept, byId))}
           onDeleteOthers={ids => deletePhotos(ids, [], () => setGroupKey(null))}
+          onKeepAll={() => {
+            const ids = group.ids.filter(id => !state.kept.includes(id));
+            store.addKept(ids);
+            setGroupKey(null);
+            show(t.keepAllDone, { label: t.undo, run: () => store.removeKept(ids) });
+          }}
           onScoreFaces={ids => { void store.scoreFaces(ids); }}
         />
       );

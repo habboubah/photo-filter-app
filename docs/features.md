@@ -96,7 +96,10 @@ tab again scrolls to its top; Android's back button goes from *Ordnen* to
 - **A group**: the best one large, the series under it. A tap on another photo
   keeps that one instead (the app remembers). *Die anderen löschen* [Delete the
   others] (with their size) goes straight to the system's dialog;
-  *Durchgehen* reviews them one by one.
+  *Durchgehen* reviews them one by one; *Alle behalten* [Keep all] keeps
+  every photo of the group and the group is not suggested again (with undo;
+  a new copy joining it later opens it again; *Von vorn anfangen* brings it
+  back).
 - **The best shot**: the sharpest, well exposed one; on the iPhone also the
   best face and open eyes. A favourite always wins.
 
@@ -108,8 +111,8 @@ tab again scrolls to its top; Android's back button goes from *Ordnen* to
   form one group.
 - Listed like the near-identical groups, with the copy to keep marked
   *Original*: a favourite, else the one with the most pixels, else the
-  sharpest, else the oldest. A tap keeps another one; *Die anderen löschen*
-  and *Durchgehen* as for near-identical photos.
+  sharpest, else the oldest. A tap keeps another one; *Die anderen löschen*,
+  *Durchgehen* and *Alle behalten* as for near-identical photos.
 
 ## Similar videos (*Ähnliche Videos*)
 - The same scene filmed twice within two hours — two takes, a clip and its
