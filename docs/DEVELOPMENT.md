@@ -15,6 +15,7 @@ follows are in [CLAUDE.md](../CLAUDE.md); the concept in [PLAN.md](PLAN.md).
 | `src/components/` | Screens (`*View`) and sheets (`*Sheet`) |
 | `src/ui/` | Shared primitives: Screen, Sheet, Button, Field, Toast, Photo (Thumb, PhotoGrid, Mosaic), Controls |
 | `src/cities.ts`, `src/data/cities.tsv` | The offline city table and its loader ([CITIES.md](CITIES.md)) |
+| `src/licences.json` | Every open-source part the app ships and its licence text, for *Einstellungen › Lizenzen* (`npm run licences`) |
 | `src/thumbs.ts` | The thumbnail queue (6 at a time, newest first) |
 | `src/translations.ts` | All UI text: `de`, `en`, and Android's wording |
 | `src/index.css` | The design tokens ("Album") |
@@ -82,6 +83,19 @@ python3 scripts/feature-fixtures.py                             # only if the pi
 node --experimental-strip-types scripts/feature-vectors.mjs     # writes fixtures/features/expected.json
 npm test && npm run test:ios && npm run test:android
 ```
+
+## The licences
+
+*Einstellungen › Über die App › Lizenzen* lists every open-source part the
+app ships, alphabetically, and a tap shows its full licence text — the way
+Google's "Open source licences" screen and iOS acknowledgements do. The
+list is `src/licences.json`, written by `npm run licences` from the
+production npm tree (`npm ls --omit=dev`, each package's own LICENSE file)
+plus the parts that are not npm packages, listed in `scripts/licences.mjs`:
+ONNX Runtime, SigLIP 2, the fonts, GeoNames and, on Android only, AndroidX,
+Media3 and the Kotlin standard library. Run it after adding or updating a
+dependency or a native library; `src/licences.test.ts` fails while a
+dependency or its version is missing.
 
 ## The city table
 

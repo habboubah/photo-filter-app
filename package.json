@@ -15,6 +15,7 @@
     "test:ios:ai": "swift test --package-path ios/AIFeatures",
     "assets:generate": "npx @capacitor/assets generate --ios --android --iconBackgroundColor '#8AE1B7' --iconBackgroundColorDark '#8AE1B7' --splashBackgroundColor '#F7F3EC' --splashBackgroundColorDark '#121617'",
     "cities": "node scripts/cities.mjs",
+    "licences": "node scripts/licences.mjs",
     "screenshots": "node scripts/screenshots.mjs",
     "store-screenshots": "node .claude/skills/store-screenshot-studio/scripts/export.mjs && node .claude/skills/store-screenshot-studio/scripts/feature_graphic.mjs && node .claude/skills/store-screenshot-studio/scripts/preview.mjs && python3 .claude/skills/store-screenshot-studio/scripts/validate.py",
     "ui-review": "node scripts/ui-review.mjs",

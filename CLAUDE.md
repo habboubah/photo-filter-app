@@ -248,6 +248,7 @@ the store set, the preview video and the App Review scenes follow the switch
 | Build + open Xcode / Android Studio / a debug APK | `npm run build:ios` / `npm run build:android` / `npm run android:debug` |
 | Icons and splash from `assets/icon-master.png` | `node scripts/icon-assets.mjs && npm run assets:generate` |
 | The city table (GeoNames) | `npm run cities` |
+| The licences list (after adding or updating a dependency) | `npm run licences` |
 | The demo photos and their facts | `npm run demo-photos` |
 | Every screen before and after a UI change | `npm run ui-review` (→ `screenshots/review/`) |
 | Store screenshots: raw (iPhone words / Android words) / framed | `npm run screenshots` (`-- --android`) / `npm run store-screenshots` |

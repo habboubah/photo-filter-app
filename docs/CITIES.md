@@ -10,7 +10,7 @@ ships inside it — no geocoding server is ever asked.
 | Made by | `npm run cities` (`scripts/cities.mjs`) |
 | Source | [GeoNames](https://www.geonames.org) — `cities15000` (every populated place with at least 15,000 people) and `alternateNamesV2` (the German and English names) |
 | Licence | **Creative Commons Attribution 4.0** (CC BY 4.0) — commercial use allowed with attribution |
-| Attribution | In the app: *Einstellungen › Über die App › Lizenzen* ("Ortsnamen: GeoNames (geonames.org), Lizenz CC BY 4.0"); here; and in the privacy pages |
+| Attribution | In the app: *Einstellungen › Über die App › Lizenzen › GeoNames* ("Ortsnamen: GeoNames (geonames.org), Lizenz CC BY 4.0", and the licence); here; and in the privacy pages |
 | Built | 16 November 2026: 31,800 places |
 
 ## Format

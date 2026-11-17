@@ -40,6 +40,9 @@ const ALLOWED_URLS = [
     'Einstellungen › Bildklar bewerten in the Android app (src/links.ts): handed to Google Play when tapped, never fetched'],
   [/^https:\/\/habboubah\.github\.io\/privacy-policy\/bildklar\/(de\/)?$/,
     'Einstellungen › Datenschutz (src/links.ts): opened in the browser when tapped, never fetched'],
+  [/^http:\/\/www\.apache\.org\/licenses\/$/, 'the Apache 2.0 text in Einstellungen › Lizenzen (src/licences.json) — shown as text, never fetched'],
+  [/^https:\/\/motion\.dev$/, "Motion's licence text in Einstellungen › Lizenzen — shown as text, never fetched"],
+  [/^https:\/\/ionic\.io$/, "Capacitor's licence texts in Einstellungen › Lizenzen — shown as text, never fetched"],
 ];
 
 const failures = [];
@@ -162,6 +165,9 @@ try {
     await page.selectOption(`select${aria(src.strings.en.language)}`, 'de');
     await page.click(`main button:has-text("${w.t.licences}")`);
     await pause(page, 400);
+    await page.click('main button:has-text("SigLIP 2")');
+    await pause(page, 400);
+    await page.click(`button${aria(w.t.back)}`);
     await page.click(`button${aria(w.t.back)}`);
     await page.click(`main button:has-text("${w.t.resetDecisions}")`);
     await page.click(`[role="alertdialog"] button:has-text("${w.t.resetDecisions}")`);

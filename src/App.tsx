@@ -69,7 +69,8 @@ const ReviewView = lazy(() => import('./components/ReviewView').then(m => ({ def
 const AppsView = lazy(() => import('./components/AppsView').then(m => ({ default: m.AppsView })));
 const CompressView = lazy(() => import('./components/CompressView').then(m => ({ default: m.CompressView })));
 const ProtectedView = lazy(() => import('./components/ProtectedView').then(m => ({ default: m.ProtectedView })));
-const LicencesView = lazy(() => import('./components/SettingsView').then(m => ({ default: m.LicencesView })));
+const LicencesView = lazy(() => import('./components/LicencesView').then(m => ({ default: m.LicencesView })));
+const LicenceView = lazy(() => import('./components/LicencesView').then(m => ({ default: m.LicenceView })));
 const OrganizeView = lazy(() => import('./components/OrganizeView').then(m => ({ default: m.OrganizeView })));
 
 /** `onDone`: what happens once the review was gone through to its end (a month marked as done). */
@@ -213,6 +214,8 @@ export default function App() {
   const [category, setCategory] = useState<MemoryLabel | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const [showLicences, setShowLicences] = useState(false);
+  /** The part whose licence is open (Einstellungen › Lizenzen › one row). */
+  const [licence, setLicence] = useState<string | null>(null);
   const [showProtected, setShowProtected] = useState(false);
   const [review, setReview] = useState<Review | null>(null);
 
@@ -234,6 +237,7 @@ export default function App() {
   // here: it drives the hardware back, the scroll reset and the slide.
   const pushed: [string, boolean, () => void][] = [
     ['review', !!review, closeReview],
+    ['licence', !!licence, () => setLicence(null)],
     ['licences', showLicences, () => setShowLicences(false)],
     ['protected', showProtected, () => setShowProtected(false)],
     ['group', !!group, () => setGroupKey(null)],
@@ -561,7 +565,8 @@ export default function App() {
         />
       );
     }
-    if (showLicences) return <LicencesView t={t} onBack={() => setShowLicences(false)} />;
+    if (licence) return <LicenceView t={t} name={licence} onBack={() => setLicence(null)} />;
+    if (showLicences) return <LicencesView t={t} onBack={() => setShowLicences(false)} onOpen={setLicence} />;
     if (showProtected) {
       return (
         <ProtectedView
