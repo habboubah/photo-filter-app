@@ -87,7 +87,7 @@
     {"pause": 1.2},
     {"tap": "Finish"},
     {"pause": 2},
-    {"tap": "Delete 2 photos"},
+    {"tap": ["Delete 2 photos", "Delete 2 files"]},
     {"pause": 1.5},
     {"systemAlert": ["Delete", "Löschen"], "timeout": 8},
     {"pause": 2.5},
