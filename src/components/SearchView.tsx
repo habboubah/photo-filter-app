@@ -119,23 +119,23 @@ export function SearchView({ t, lang, vectors, byId, aiSeen, onBack, onOpen, onR
       )}
 
       {!typed.trim() && !tokens.length && ready && cards === null && (
-        <div className="grid grid-cols-2 gap-[12px]" aria-hidden="true">
-          {[0, 1, 2, 3].map(i => <div key={i} className="aspect-[4/3] rounded-md bg-surface" />)}
+        <div className="grid grid-cols-3 min-[560px]:grid-cols-4 gap-[8px]" aria-hidden="true">
+          {[0, 1, 2, 3, 4, 5].map(i => <div key={i} className="aspect-square rounded-sm bg-surface" />)}
         </div>
       )}
 
       {!typed.trim() && !tokens.length && ready && cards !== null && cards.length > 0 && (
         <section className="space-y-2" aria-labelledby="search-yours-h">
           <h2 id="search-yours-h" className="eyebrow text-fg-mute px-1">{t.searchYours}</h2>
-          <div className="grid grid-cols-2 gap-[12px]">
+          <div className="grid grid-cols-3 min-[560px]:grid-cols-4 gap-[8px]">
             {cards.map(c => (
               <button
                 key={c.concept} type="button" onClick={() => add(c.concept)}
-                className="relative aspect-[4/3] rounded-md overflow-hidden bg-surface text-start press focus-visible:ring-focus"
+                className="relative aspect-square rounded-sm overflow-hidden bg-surface text-start press focus-visible:ring-focus"
               >
                 <Thumb id={c.cover} className="!rounded-none absolute inset-0" />
                 <span className="absolute inset-0 photo-shade" aria-hidden="true" />
-                <span className="absolute inset-x-0 bottom-0 block px-3 pb-2.5 text-on-color text-label font-semibold truncate first-letter:uppercase">
+                <span className="absolute inset-x-0 bottom-0 block px-2 pb-1.5 text-on-color text-caption font-semibold truncate first-letter:uppercase">
                   {conceptWord(FILE, c.concept, lang)}
                 </span>
               </button>

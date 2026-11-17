@@ -99,18 +99,18 @@ export function OrganizeView(p: Props) {
       {loaded && p.categories.length > 0 && (
         <section aria-labelledby="categories-h">
           <SectionHead id="categories-h" title={t.categoriesTitle} />
-          <div className="flex gap-[12px] overflow-x-auto no-scrollbar -mx-[16px] px-[16px] pb-1">
+          <div className="grid grid-cols-4 gap-x-[8px] gap-y-[12px]">
             {p.categories.map(c => (
               <button
                 key={c.label} type="button" onClick={() => { tapLight(); p.onCategory(c.label); }}
-                className="relative shrink-0 w-[140px] aspect-[4/5] rounded-md overflow-hidden bg-surface text-start press focus-visible:ring-focus"
+                aria-label={`${t[`aiLabel_${c.label}`]}, ${plural(t, 'photos', c.count)}`}
+                className="min-w-0 self-start text-start press focus-visible:ring-focus rounded-sm"
               >
-                <Thumb id={c.cover} className="!rounded-none absolute inset-0" />
-                <span className="absolute inset-0 photo-shade" aria-hidden="true" />
-                <span className="absolute inset-x-0 bottom-0 px-3 pb-2.5 text-on-color">
-                  <span className="block text-label font-semibold truncate">{t[`aiLabel_${c.label}`]}</span>
-                  <span className="block text-caption font-medium num opacity-90">{plural(t, 'photos', c.count)}</span>
+                <span className="relative block aspect-square rounded-sm overflow-hidden bg-surface">
+                  <Thumb id={c.cover} className="!rounded-none absolute inset-0" />
                 </span>
+                <span className="mt-1.5 px-0.5 text-caption font-semibold text-fg leading-tight line-clamp-2 hyphens-auto">{t[`aiLabel_${c.label}`]}</span>
+                <span className="block px-0.5 text-caption text-fg-mute num truncate">{num(t, c.count)}</span>
               </button>
             ))}
           </div>
