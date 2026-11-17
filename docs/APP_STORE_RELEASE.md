@@ -184,28 +184,24 @@ After a minute or two, check https://habboubah.github.io/privacy-policy/bildklar
 
 ```bash
 cd ~/repos/photo-filter-app
-npm run release:dry -- --ios --keep-version   # shows only: version 0.0.1 (kept), build 5 -> 6
-npm run release:first                          # builds and uploads 0.0.1 (build 6)
+npm run release:dry -- --ios --keep-version   # shows only: version 2.0.1 (kept), build 6 -> 7
+npm run release:first                          # builds and uploads 2.0.1 (build 7)
 ```
 
-Bildklar's versions start at **0.0.1** (package.json). `release:first`
-ships that version as it is (`release.js --ios --keep-version`). The command:
+Bildklar's versions are on the **2.0.x** line (17 November 2026): two test
+uploads to App Store Connect became 1.0.0 and 2.0.0 (the old `release:first`
+took a major step each time), and Google Play already holds 2.0.0 and 2.0.1
+(version code 2000100) — Play never takes a lower version code, so the
+version can't go back. `release:first` (`release.js --ios --keep-version`)
+uploads the version package.json says, 2.0.1, so both stores carry the same
+one. The command:
 1. runs `npm run check`,
 2. keeps the version and raises the build number past every build App Store Connect has,
 3. builds the web app and syncs it into the iOS project,
 4. archives with `xcodebuild` and uploads to App Store Connect,
-5. commits "Prepare release v0.0.1 (build 6)" and tags `v0.0.1`.
+5. commits "Prepare release v2.0.1 (build 7)" and tags `v2.0.1`.
 
-It ends with `Done: Bildklar v0.0.1 (build 6) uploaded to App Store Connect.`
-
-**Test uploads with a higher version** (16 November 2026: 1.0.0 and 2.0.0,
-builds up to 5 — the old `release:first` took a major step each time) stay in
-App Store Connect but don't count: Apple only refuses a version lower than
-one it **approved**, and `release.js` now takes its version from package.json,
-the approved App Store versions and Google Play — not from TestFlight builds
-or git tags. Build numbers keep rising past every upload. If 2.0.0 was ever
-submitted and approved, App Store Connect refuses 0.0.1 (ITMS-90062): then
-the version has to stay above it.
+It ends with `Done: Bildklar v2.0.1 (build 7) uploaded to App Store Connect.`
 Apple then needs 5–30 minutes to process it (you get an email).
 
 An error? → see [Troubleshooting](#troubleshooting) below.
@@ -261,7 +257,7 @@ App Store Connect → Bildklar → left: **iOS App 1.0 – Prepare for Submissio
       **Keywords** → from `store/listing.md` (DE).
 - [ ] **Support URL** → `https://habboubah.github.io/privacy-policy/bildklar/de/`
 - [ ] **Copyright** → `2026 Ahmad Habboubah`
-- [ ] **Build** → *Add Build* → pick 0.0.1 (6) (visible after step 6 finished processing).
+- [ ] **Build** → *Add Build* → pick 2.0.1 (7) (visible after step 6 finished processing).
 - [ ] **App Review Information** [App-Prüfungsinformationen] → Sign-in required:
       **No**, your contact details, the note from `store/listing.md` (it explains
       the paywall, the dry run of debug builds and where deleted photos go), and
@@ -340,8 +336,8 @@ or to your reply, and answer Apple's questions in the notes.
 ```bash
 cd ~/repos/photo-filter-app
 git status                       # everything committed?
-npm run release                  # bug fix:     0.0.1 -> 0.0.2, App Store and Google Play
-npm run release -- minor         # new feature: 0.0.x -> 0.1.0
+npm run release                  # bug fix:     2.0.1 -> 2.0.2, App Store and Google Play
+npm run release -- minor         # new feature: 2.0.x -> 2.1.0
 npm run release:ios              # the App Store only
 ```
 

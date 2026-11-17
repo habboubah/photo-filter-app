@@ -72,7 +72,7 @@ and 5 are done.
 1. `npm run rehearse:app-review` — checks every step against the current
    code in about 2 minutes.
 2. The build you submit has to be the one installed from **TestFlight**,
-   and a build the scenes fit: `scenes.json` › `app.minVersion` (0.0.1). The
+   and a build the scenes fit: `scenes.json` › `app.minVersion` (0.1.0). The
    run prints which build the iPhone has; an older one it **updates from
    TestFlight by itself** before anything is reset or filmed (`UPDATE=0` only
    says so and stops).
