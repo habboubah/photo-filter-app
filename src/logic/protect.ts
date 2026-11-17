@@ -1,4 +1,5 @@
 import type { Photo } from '../types';
+import type { Vectors } from './vectors';
 
 /*
  * Protected photos: never suggested for deleting, by any finder (similar and
@@ -9,7 +10,11 @@ import type { Photo } from '../types';
  *   - kept in a review against the app's suggestion (AppState.kept),
  *   - protected by hand (the shield in the review),
  *   - in a trip marked "Nie vorschlagen" [Never suggest],
- *   - in an album (iPhone) / folder (Android) chosen in Settings › Geschützt.
+ *   - in an album (iPhone) / folder (Android) chosen in Settings › Geschützt,
+ *   - very like a photo protected by hand, taken at another time ("Ähnliche
+ *     mitschützen", on unless switched off: the same document, the same
+ *     scene photographed again — likeProtected below),
+ *   - an identity document or a bank card (src/logic/ai.ts sensitiveLabel).
  * Inside a similar or duplicate group a protected photo stays and ranks like
  * a favourite, so it can become the best shot.
  */
@@ -20,9 +25,36 @@ export interface Protection {
   trips: string[];
   /** Album ids (iPhone: PHAssetCollection.localIdentifier; Android: the folder's RELATIVE_PATH). */
   albums: string[];
+  /** Photos very like one protected by hand are protected too (likeProtected); on unless switched off. */
+  similar: boolean;
 }
 
-export const NO_PROTECTION: Protection = { ids: [], trips: [], albums: [] };
+export const NO_PROTECTION: Protection = { ids: [], trips: [], albums: [], similar: true };
+
+/** "Very like": at least this alike (the AI's vectors' cosine). */
+export const PROTECT_COS = 0.92;
+/** …and taken at least this far apart: the rest of a burst stays a burst to clean up. */
+export const PROTECT_APART_MS = 3600_000;
+
+/**
+ * The photos very like one protected by hand (src/logic/vectors.ts): at least
+ * PROTECT_COS alike and taken PROTECT_APART_MS or more apart from it — the
+ * same document or scene photographed again, not the other frames of the
+ * same moment (those stay in their similar group, the protected one ranks
+ * first there).
+ */
+export function likeProtected(vectors: Vectors, ids: string[], timeOf: (id: string) => number | undefined): Set<string> {
+  const out = new Set<string>();
+  for (const id of ids) {
+    const t = timeOf(id);
+    if (t === undefined) continue;
+    for (const n of vectors.nearest(id, PROTECT_COS, 500)) {
+      const tn = timeOf(n.id);
+      if (tn !== undefined && Math.abs(tn - t) >= PROTECT_APART_MS) out.add(n.id);
+    }
+  }
+  return out;
+}
 
 /**
  * Every protected photo id but the favourites (those carry `fav`). `tripIds`

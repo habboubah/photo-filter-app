@@ -1,4 +1,4 @@
-import { Check, History, MapPin, Settings } from 'lucide-react';
+import { Check, History, MapPin, Search, Settings } from 'lucide-react';
 import type { Trip } from '../types';
 import type { MemoryLabel } from '../logic/ai';
 import { Strings, bytes, fmt, num, plural } from '../translations';
@@ -17,6 +17,8 @@ interface Props {
   /** The on-device AI's categories (src/logic/ai.ts), the largest first. */
   categories: { label: MemoryLabel; count: number; cover: string }[];
   onSettings: () => void;
+  /** Suchen (src/components/SearchView.tsx); absent until the AI has vectors to search. */
+  onSearch?: () => void;
   onOnThisDay: () => void;
   onTrips: () => void;
   onTrip: (key: string) => void;
@@ -44,7 +46,10 @@ export function OrganizeView(p: Props) {
       title={t.tabOrganize}
       subtitle={subtitle}
       tabbed
-      actions={<IconButton label={t.settings} icon={Settings} tone="bar" onClick={p.onSettings} />}
+      actions={<>
+        {p.onSearch && <IconButton label={t.searchOpen} icon={Search} tone="bar" onClick={p.onSearch} />}
+        <IconButton label={t.settings} icon={Settings} tone="bar" onClick={p.onSettings} />
+      </>}
     >
       {loaded && p.onThisDay.photos > 0 && p.onThisDay.cover && (
         <button

@@ -172,6 +172,8 @@ export function useAppStore() {
     const albums = toggled(s.protect.albums, [id], on);
     return albums === s.protect.albums ? s : { ...s, protect: { ...s.protect, albums } };
   });
+  /** "Ähnliche mitschützen" on or off (src/logic/protect.ts likeProtected). */
+  const protectSimilar = (on: boolean) => setState(s => (s.protect.similar === on ? s : { ...s, protect: { ...s.protect, similar: on } }));
   /** Albums just used while swiping: first in the chips next time. */
   const useAlbums = (ids: string[]) => {
     if (!ids.length) return;
@@ -476,7 +478,7 @@ export function useAppStore() {
   return {
     language, setLanguage, themeMode, setThemeMode,
     debug, dryRunAvailable, dryRun, setDryRun,
-    state, stateReady, storageError, updateTrips, recordAlbum, setBest, addKept, removeKept, updateLater, pruneLaterPile, setSort, protectPhotos, protectTrip, protectAlbum, albumMembers, useAlbums, markMonthDone, addFreed, markDay, countFree, resetDecisions, restoreState,
+    state, stateReady, storageError, updateTrips, recordAlbum, setBest, addKept, removeKept, updateLater, pruneLaterPile, setSort, protectPhotos, protectTrip, protectAlbum, protectSimilar, albumMembers, useAlbums, markMonthDone, addFreed, markDay, countFree, resetDecisions, restoreState,
     reminder, setReminder,
     owned: isOwned, setOwned,
     access, refreshAccess, accessGranted,

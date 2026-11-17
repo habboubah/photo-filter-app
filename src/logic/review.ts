@@ -16,7 +16,7 @@ import { type Cos, type Detail, type Trust, blurryTrust, exposureTrust, groupVer
 export type Decision = 'keep' | 'delete' | 'later';
 /** What the app suggests: `none` for the decide-later pile, where the user already hesitated. */
 export type Suggestion = 'keep' | 'delete' | 'none';
-export type Reason = 'best' | 'original' | 'similar' | 'duplicate' | 'blurry' | 'screenshot' | 'utility' | 'large' | 'trip' | 'later' | 'dark' | 'bright' | 'video' | 'lookalike' | 'bestTake' | 'app';
+export type Reason = 'best' | 'original' | 'similar' | 'duplicate' | 'blurry' | 'screenshot' | 'utility' | 'large' | 'trip' | 'later' | 'dark' | 'bright' | 'video' | 'lookalike' | 'bestTake' | 'app' | 'found';
 
 export interface ReviewItem {
   id: string;
@@ -126,6 +126,11 @@ export function reviewTrip(
     if (!protectedPhoto && (level === 'high' || level === 'medium')) return { id, suggest: 'delete', reason: 'blurry', level, trust: blurryTrust(p!) };
     return { id, suggest: 'keep', reason: 'trip' };
   });
+}
+
+/** Photos found by a search or as look-alikes of one photo: no suggestion — the user decides what they searched for. */
+export function reviewFound(ids: string[]): ReviewItem[] {
+  return ids.map(id => ({ id, suggest: 'none', reason: 'found' }));
 }
 
 /** The decide-later pile: no suggestion — the user already hesitated over each of them once. */

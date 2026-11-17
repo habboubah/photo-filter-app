@@ -60,7 +60,7 @@ export const emptyState = (): AppState => ({
   early: false,
   later: [],
   sort: {},
-  protect: { ids: [], trips: [], albums: [] },
+  protect: { ids: [], trips: [], albums: [], similar: true },
   recentAlbums: [],
 });
 
@@ -114,6 +114,8 @@ export function normalizeState(raw: unknown): AppState {
       ids: [...new Set(strings(raw.protect.ids))],
       trips: [...new Set(strings(raw.protect.trips))],
       albums: [...new Set(strings(raw.protect.albums))],
+      // Added 17 November 2026: on unless switched off (older state files have no such field).
+      similar: raw.protect.similar !== false,
     };
   }
   s.recentAlbums = [...new Set(strings(raw.recentAlbums))].slice(0, RECENT_ALBUMS);

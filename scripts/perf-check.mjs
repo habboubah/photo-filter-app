@@ -19,8 +19,12 @@ import { root } from './lib/shots.mjs';
  * The main chunk's gzip size (level 9) when this was recorded. Raise it only
  * with a line here saying what made it grow.
  *   - November 2026: 146 kB — React, Motion, Capacitor, the screens and the logic.
+ *   - 17 November 2026: 162 kB — Arabic's plural rules and the chat groups (158 kB), then the AI's
+ *     version 2: the compact vectors and the label scoring, two-signal groups, how sure each
+ *     suggestion is, search's entry points, protecting look-alikes, and their strings in German and
+ *     English. The search vocabulary (67 kB) is a chunk of its own, loaded with the search screen.
  */
-const BUNDLE_GZIP_BASELINE = 146_000;
+const BUNDLE_GZIP_BASELINE = 162_000;
 const BUNDLE_GROWTH = 1.10;
 /**
  * 50,000 photos (about 62,000 with bursts and screenshots), on a desktop. Measured 16 November 2026: ~300 ms;

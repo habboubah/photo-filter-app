@@ -12,9 +12,10 @@ import { IconButton } from '../ui/Button';
  * Settings › Geschützt [Protected]: the albums (iPhone) / folders (Android)
  * whose photos are never suggested, each with a switch; the trips marked
  * "Nie vorschlagen" and the photos protected by hand, each protection lifted
- * with a tap (src/logic/protect.ts).
+ * with a tap, and whether photos very like those are protected too
+ * (src/logic/protect.ts).
  */
-export function ProtectedView({ t, loadAlbums, albums: chosen, trips, photos, photoDate, onAlbum, onTrip, onPhoto, onBack }: {
+export function ProtectedView({ t, loadAlbums, albums: chosen, trips, photos, photoDate, similar, similarCount, onSimilar, onAlbum, onTrip, onPhoto, onBack }: {
   t: Strings;
   /** PhotoLibrary.listAlbums, asked when the screen opens. */
   loadAlbums: () => Promise<AlbumInfo[]>;
@@ -25,6 +26,11 @@ export function ProtectedView({ t, loadAlbums, albums: chosen, trips, photos, ph
   /** The photos protected by hand that are still in the library. */
   photos: string[];
   photoDate: (id: string) => string;
+  /** "Ähnliche mitschützen": photos very like one protected by hand are protected too (src/logic/protect.ts likeProtected). */
+  similar: boolean;
+  /** How many photos that protects now. */
+  similarCount: number;
+  onSimilar: (on: boolean) => void;
   onAlbum: (id: string, on: boolean) => void;
   onTrip: (key: string) => void;
   onPhoto: (id: string) => void;
@@ -63,6 +69,13 @@ export function ProtectedView({ t, loadAlbums, albums: chosen, trips, photos, ph
           ))}
         </Group>
       )}
+
+      <Group footer={t.protectSimilarHint}>
+        <SwitchRow
+          label={t.protectSimilar} sub={similar && similarCount > 0 ? fmt(t.protectSimilarCount, { photos: plural(t, 'photos', similarCount) }) : undefined}
+          checked={similar} onChange={onSimilar}
+        />
+      </Group>
 
       <section aria-labelledby="protected-photos-h" className="space-y-2">
         <h2 id="protected-photos-h" className="eyebrow text-fg-mute px-[16px]">{`${t.protectedPhotos} · ${num(t, photos.length)}`}</h2>

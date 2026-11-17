@@ -101,7 +101,7 @@ export class Vectors {
   }
 
   /** dot(unit vector, query) for every slot: the query need not be a unit vector (a label's or a word's, already scaled). */
-  scores(query: Float32Array): Float32Array {
+  scores(query: ArrayLike<number>): Float32Array {
     const d = this.data;
     const out = new Float32Array(this.ids.length);
     for (let s = 0; s < this.ids.length; s++) {

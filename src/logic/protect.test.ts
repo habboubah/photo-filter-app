@@ -17,7 +17,7 @@ const photo = (extra: Partial<Photo> = {}): Photo => ({
 
 describe('protected photos', () => {
   it('protects by each source', () => {
-    const guard = protectedIds(['kept'], { ids: ['hand'], trips: ['trip-1'], albums: ['album-1'] },
+    const guard = protectedIds(['kept'], { ids: ['hand'], trips: ['trip-1'], albums: ['album-1'], similar: true },
       key => (key === 'trip-1' ? ['in-trip'] : undefined), ['in-album']);
     for (const id of ['kept', 'hand', 'in-trip', 'in-album']) expect(isProtected({ id }, guard), id).toBe(true);
     expect(isProtected({ id: 'fav', fav: true }, guard)).toBe(true);
@@ -57,8 +57,8 @@ describe('protected photos', () => {
   });
 
   it('stores what is protected, and toggles without doubles', () => {
-    expect(normalizeState({ protect: { ids: ['a', 'a'], trips: ['t'], albums: [1, 'x'] } }).protect).toEqual({ ids: ['a'], trips: ['t'], albums: ['x'] });
-    expect(normalizeState({}).protect).toEqual({ ids: [], trips: [], albums: [] });
+    expect(normalizeState({ protect: { ids: ['a', 'a'], trips: ['t'], albums: [1, 'x'] } }).protect).toEqual({ ids: ['a'], trips: ['t'], albums: ['x'], similar: true });
+    expect(normalizeState({}).protect).toEqual({ ids: [], trips: [], albums: [], similar: true });
     const list = ['a'];
     expect(toggled(list, ['a'], true)).toBe(list);
     expect(toggled(list, ['b'], true)).toEqual(['a', 'b']);
@@ -74,5 +74,25 @@ describe('keep all (openGroups)', () => {
     expect(openGroups(groups, new Set(['a1', 'a2', 'a3'])).map(x => x.key)).toEqual(['b']);
     expect(openGroups(groups, new Set(['a2'])).map(x => x.key)).toEqual(['a', 'b']);
     expect(openGroups([g('a', ['a1', 'a2', 'a3', 'a4'])], new Set(['a1', 'a2', 'a3'])).map(x => x.key)).toEqual(['a']);
+  });
+});
+
+describe('protecting look-alikes', () => {
+  it('protects photos very like a protected one, taken at another time — not the rest of its burst', async () => {
+    const { Vectors, pack } = await import('./vectors');
+    const { likeProtected, PROTECT_COS } = await import('./protect');
+    const unit = (a: number) => { const v = new Array(256).fill(0); v[0] = Math.cos(a); v[1] = Math.sin(a); return pack(v); };
+    const vs = Vectors.of([
+      { id: 'hand', v: unit(0) }, { id: 'again', v: unit(0.1) }, { id: 'burst', v: unit(0.05) }, { id: 'other', v: unit(1) },
+    ]);
+    const times: Record<string, number> = { hand: 0, again: 30 * 24 * 3600_000, burst: 2_000, other: 5 * 24 * 3600_000 };
+    expect(Math.cos(0.1)).toBeGreaterThan(PROTECT_COS);
+    expect([...likeProtected(vs, ['hand'], id => times[id])]).toEqual(['again']);
+  });
+
+  it('reads the switch from older state files as on', async () => {
+    const { normalizeState } = await import('./state');
+    expect(normalizeState({ protect: { ids: ['a'] } }).protect.similar).toBe(true);
+    expect(normalizeState({ protect: { ids: ['a'], similar: false } }).protect.similar).toBe(false);
   });
 });

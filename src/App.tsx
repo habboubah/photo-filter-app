@@ -17,7 +17,7 @@ import { folderName } from './logic/naming';
 import { addMerge, addSplit, removeMerge, removeSplits, setIgnored, setName } from './logic/trips';
 import {
   Decision, ReviewItem, Session, decide, fileTo, isDone, isNewAlbum, keptAgainstSuggestion, laterIds, reviewBlurry, reviewCleanup, reviewGroup,
-  reviewExposure, reviewLarge, reviewLater, reviewScreenshots, reviewTrip, reviewUtility, settledIds, startSession, undo,
+  reviewExposure, reviewFound, reviewLarge, reviewLater, reviewScreenshots, reviewTrip, reviewUtility, settledIds, startSession, undo,
 } from './logic/review';
 import { aiProgress, categories, findSensitive, findUtility, type MemoryLabel } from './logic/ai';
 import { findScreenshots, isOldShot, oldShots } from './logic/screenshots';
@@ -25,7 +25,7 @@ import { findLarge, findLive } from './logic/large';
 import { buildMonths, onThisDay, progress } from './logic/months';
 import { findExposure } from './logic/exposure';
 import { sortFor, type SortScreen } from './logic/sort';
-import { protectedIds } from './logic/protect';
+import { likeProtected, protectedIds } from './logic/protect';
 import { batches, findCompressible, tally } from './logic/compress';
 import { APPS_TILE_MIN, groupBySource, reviewSource } from './logic/sources';
 import { cleanParts } from './logic/smartClean';
@@ -73,6 +73,8 @@ const ProtectedView = lazy(() => import('./components/ProtectedView').then(m => 
 const LicencesView = lazy(() => import('./components/LicencesView').then(m => ({ default: m.LicencesView })));
 const LicenceView = lazy(() => import('./components/LicencesView').then(m => ({ default: m.LicenceView })));
 const OrganizeView = lazy(() => import('./components/OrganizeView').then(m => ({ default: m.OrganizeView })));
+const SearchView = lazy(() => import('./components/SearchView').then(m => ({ default: m.SearchView })));
+const LikeView = lazy(() => import('./components/LikeView').then(m => ({ default: m.LikeView })));
 
 /** `onDone`: what happens once the review was gone through to its end (a month marked as done). */
 interface Review { session: Session; finished: boolean; onDone?: () => void }
@@ -99,12 +101,17 @@ export default function App() {
   );
   // Every photo never to be suggested but the favourites (src/logic/protect.ts): kept in a review,
   // protected by hand, in a protected trip or album. Every finder below takes it as `kept`.
-  // Photos of identity documents and bank cards (src/logic/ai.ts sensitiveLabel) are protected too.
+  // Photos of identity documents and bank cards (src/logic/ai.ts sensitiveLabel) are protected too,
+  // and — unless switched off — photos very like one protected by hand (src/logic/protect.ts likeProtected).
   const sensitive = useMemo(() => findSensitive(lib.photos), [lib]);
+  const alike = useMemo(
+    () => (state.protect.similar ? likeProtected(store.vectors, state.protect.ids, id => lib.byId.get(id)?.t) : new Set<string>()),
+    [state.protect.similar, state.protect.ids, store.vectors, lib],
+  );
   const kept = useMemo(() => {
     const tripIds = new Map(trips.map(x => [x.key, x.ids]));
-    return protectedIds(state.kept, state.protect, key => tripIds.get(key), [...store.albumMembers, ...sensitive]);
-  }, [state.kept, state.protect, trips, store.albumMembers, sensitive]);
+    return protectedIds(state.kept, state.protect, key => tripIds.get(key), [...store.albumMembers, ...sensitive, ...alike]);
+  }, [state.kept, state.protect, trips, store.albumMembers, sensitive, alike]);
   // Settled groups (every photo but the one to keep is kept — "Alle behalten") are not shown again (openGroups).
   const groups = useMemo(
     () => openGroups(buildGroups(lib, detection.groups, state, store.faces, kept), kept),
@@ -224,6 +231,9 @@ export default function App() {
   const [licence, setLicence] = useState<string | null>(null);
   const [showProtected, setShowProtected] = useState(false);
   const [review, setReview] = useState<Review | null>(null);
+  const [showSearch, setShowSearch] = useState(false);
+  /** The photo whose look-alikes are shown (Ähnliche Fotos), over a review or the search. */
+  const [likeId, setLikeId] = useState<string | null>(null);
 
   const trip = tripKey ? trips.find(x => x.key === tripKey) ?? null : null;
   const group = groupKey ? groups.find(g => g.key === groupKey) ?? null : null;
@@ -254,6 +264,7 @@ export default function App() {
   // Screens pushed over Home, the deepest first. Every pushed screen must be
   // here: it drives the hardware back, the scroll reset and the slide.
   const pushed: [string, boolean, () => void][] = [
+    ['like', !!likeId, () => setLikeId(null)],
     ['review', !!review, closeReview],
     ['licence', !!licence, () => setLicence(null)],
     ['licences', showLicences, () => setShowLicences(false)],
@@ -274,6 +285,7 @@ export default function App() {
     ['category', !!category, () => setCategory(null)],
     ['months', showMonths, () => setShowMonths(false)],
     ['trips', showTrips, () => setShowTrips(false)],
+    ['search', showSearch, () => setShowSearch(false)],
     ['settings', showSettings, () => setShowSettings(false)],
   ];
   const topIndex = pushed.findIndex(([, open]) => open);
@@ -563,6 +575,15 @@ export default function App() {
   };
 
   const content = () => {
+    if (likeId) {
+      return (
+        <LikeView
+          t={t} id={likeId} vectors={store.vectors} byId={byId}
+          onBack={() => setLikeId(null)} onOpen={setLikeId}
+          onReview={ids => { setLikeId(null); startReview(reviewFound(ids)); }}
+        />
+      );
+    }
     if (review) {
       return (
         <ReviewView
@@ -570,6 +591,7 @@ export default function App() {
           onDecide={onDecide} onUndo={onUndo} albums={chips} android={isAndroid()} onFile={extras ? onFile : undefined}
           onProtect={id => { store.protectPhotos([id], true); onDecide('keep'); show(t.protected); }}
           onPreview={id => { void PhotoLibrary.preview({ id }).catch(() => show(t.previewFailed)); }}
+          onLike={id => { if (store.vectors.has(id)) setLikeId(id); else show(t.likeNone); }}
           onFinish={() => setReview(r => (r ? { ...r, finished: true } : r))}
           onDelete={outcome => {
             applyLater(review.session);
@@ -592,6 +614,7 @@ export default function App() {
           trips={trips.filter(x => state.protect.trips.includes(x.key)).map(x => ({ key: x.key, title: x.title, count: x.ids.length }))}
           photos={state.protect.ids.filter(id => byId.has(id))}
           photoDate={id => new Date(byId.get(id)?.t ?? 0).toLocaleString(t.locale, { dateStyle: 'medium', timeStyle: 'short' })}
+          similar={state.protect.similar} similarCount={alike.size} onSimilar={store.protectSimilar}
           onAlbum={store.protectAlbum}
           onTrip={key => store.protectTrip(key, false)}
           onPhoto={id => store.protectPhotos([id], false)}
@@ -766,6 +789,15 @@ export default function App() {
         />
       );
     }
+    if (showSearch) {
+      return (
+        <SearchView
+          t={t} lang={language} vectors={store.vectors} byId={byId} aiSeen={aiSeen}
+          onBack={() => setShowSearch(false)} onOpen={setLikeId}
+          onReview={ids => startReview(reviewFound(ids))}
+        />
+      );
+    }
     if (showTrips) return <TripsView t={t} trips={trips} onBack={() => setShowTrips(false)} onOpen={setTripKey} />;
     if (showSettings) {
       return (
@@ -812,6 +844,7 @@ export default function App() {
           onThisDay={{ photos: today.ids.length, years: today.years, cover: today.ids[0] }}
           categories={cats.slice(0, 8).map(c => ({ label: c.label, count: c.photos.length, cover: c.photos[0].id }))}
           onSettings={() => setShowSettings(true)}
+          onSearch={() => setShowSearch(true)}
           onOnThisDay={() => startReview(reviewTrip(today.ids, groups, byId, kept, undefined, cos))}
           onTrips={() => setShowTrips(true)}
           onTrip={setTripKey}
@@ -844,6 +877,7 @@ export default function App() {
         onProtected={() => setShowProtected(true)}
         onRescan={() => store.startScan()}
         onSettings={() => setShowSettings(true)}
+        onSearch={aiSeen.seen > 0 ? () => setShowSearch(true) : undefined}
         onAddPhotos={addPhotos}
         onCleanup={() => setShowCleanup(true)}
         onSimilar={() => setShowSimilar(true)}
@@ -951,7 +985,7 @@ export default function App() {
         </div>
       </Sheet>
 
-      <Toast toast={toast} onDone={hide} raised={['trip', 'group', 'blurry', 'screenshots', 'utility', 'quickClean', 'large', 'live', 'compress', 'cleanup', 'review'].includes(screen)} />
+      <Toast toast={toast} onDone={hide} raised={['trip', 'group', 'blurry', 'screenshots', 'utility', 'quickClean', 'large', 'live', 'compress', 'cleanup', 'review', 'search', 'like'].includes(screen)} />
     </div>
   );
 }
