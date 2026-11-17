@@ -554,6 +554,61 @@ class PhotoLibraryPlugin : Plugin() {
         }
     }
 
+    /**
+     * Android's "albums" for Settings › Geschützt: every folder (RELATIVE_PATH)
+     * that holds photos or videos, titled by its last part, with how many.
+     */
+    @PluginMethod
+    fun listAlbums(call: PluginCall) {
+        io.execute {
+            val counts = LinkedHashMap<String, Int>()
+            for (uri in listOf(MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL), MediaStore.Video.Media.getContentUri(MediaStore.VOLUME_EXTERNAL))) {
+                try {
+                    context.contentResolver.query(uri, arrayOf(MediaStore.MediaColumns.RELATIVE_PATH), null, null, null)?.use { c ->
+                        while (c.moveToNext()) {
+                            val path = c.getString(0) ?: continue
+                            counts[path] = (counts[path] ?: 0) + 1
+                        }
+                    }
+                } catch (_: SecurityException) { /* no access to videos: photos only */ }
+            }
+            val albums = JSArray()
+            for ((path, count) in counts.entries.sortedBy { it.key.lowercase(Locale.ROOT) }) {
+                val title = path.trimEnd('/').substringAfterLast('/').ifEmpty { path }
+                albums.put(JSObject().put("id", path).put("title", title).put("count", count))
+            }
+            call.resolve(JSObject().put("albums", albums))
+        }
+    }
+
+    /** The photo and video ids in these folders (asked once per load, for the protected ones only). */
+    @PluginMethod
+    fun albumMembers(call: PluginCall) {
+        val paths = call.getArray("ids")?.toList<String>()?.filter { it.isNotEmpty() } ?: emptyList()
+        io.execute {
+            val out = JSArray()
+            if (paths.isNotEmpty()) {
+                val where = "${MediaStore.MediaColumns.RELATIVE_PATH} IN (${paths.joinToString(",") { "?" }})"
+                val args = paths.toTypedArray()
+                val sources = listOf(
+                    MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL) to "",
+                    MediaStore.Video.Media.getContentUri(MediaStore.VOLUME_EXTERNAL) to "v",
+                )
+                for ((uri, prefix) in sources) {
+                    try {
+                        context.contentResolver.query(uri, arrayOf(android.provider.BaseColumns._ID, MediaStore.MediaColumns.VOLUME_NAME), where, args, null)?.use { c ->
+                            while (c.moveToNext()) {
+                                val volume = c.getString(1) ?: MediaStore.VOLUME_EXTERNAL_PRIMARY
+                                out.put("$volume:$prefix${c.getLong(0)}")
+                            }
+                        }
+                    } catch (_: SecurityException) { /* no access to videos: photos only */ }
+                }
+            }
+            call.resolve(JSObject().put("ids", out))
+        }
+    }
+
     @PluginMethod
     fun trash(call: PluginCall) {
         val list = ids(call)

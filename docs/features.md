@@ -219,6 +219,20 @@ Every feature, as the user sees it (German labels, English in brackets).
   edits, best-shot picks, kept photos, the months marked as done (the
   "freed so far" count stays).
 
+## Protected photos
+- **Geschützt** [Protected]: a protected photo is never suggested for
+  deleting, by anything — duplicates, near-identical, failed shots, screenshots,
+  unimportant photos, quick clean, every review. Protected are:
+  favourites; photos kept in a review; photos protected by hand (the shield
+  *Schützen* [Protect] in the review: kept and protected for good); every photo
+  of a trip marked *⋯ › Nie vorschlagen* [Never suggest]; and every photo of the
+  albums (iPhone) / folders (Android) switched on in *Einstellungen › Geschützt*.
+- Settings › Geschützt lists the albums / folders with a switch each, the
+  protected trips and the photos protected by hand; each protection is lifted
+  with a tap.
+- In a duplicate or near-identical group a protected photo stays and ranks
+  like a favourite, so it becomes the best shot.
+
 ## Everywhere
 - Dark mode, Larger Text (iPhone Dynamic Type; Android's font scale), VoiceOver
   / TalkBack labels on every photo and button, reduced motion.

@@ -205,6 +205,13 @@ Everything in TypeScript is tested by `npm run check`; what needs a phone:
       shot missing? Tune `DARK_*` / `BRIGHT_*` in `src/logic/exposure.ts`
       (provisional, like the AI thresholds) and write what you chose in docs/AI.md.
 
+- [ ] **Protected albums** — new native methods `listAlbums` and
+      `albumMembers` (Swift and Kotlin, not compiled in the cloud): Xcode build,
+      then Settings › Geschützt on the iPhone lists your own albums with the
+      right counts; switch one on and check its photos vanish from the
+      suggestions. Android: the list shows your folders (Camera, WhatsApp
+      Images, …).
+
 ## Known gaps (to decide later)
 
 - Arabic: the structure is there (RTL rules, the translation layout), the texts are not.

@@ -1,5 +1,8 @@
 import type { Photo } from '../types';
 import { utilityLabel } from './ai';
+import { isProtected } from './protect';
+
+const NONE = new Set<string>();
 
 /*
  * Too dark and too bright photos, from what the scan already measures on the
@@ -35,7 +38,7 @@ export const BORDER_BRIGHT_CLIP = 0.45;
 
 /** How the photo's exposure failed, or null. `kept`: photos the user chose to keep in a review. */
 export function exposureLevel(p: Photo, kept?: Set<string>): ExposureLevel | null {
-  if (p.expo === undefined || p.shot || p.rec || p.video || p.fav || (p.faces ?? 0) > 0 || kept?.has(p.id)) return null;
+  if (p.expo === undefined || p.shot || p.rec || p.video || (p.faces ?? 0) > 0 || isProtected(p, kept ?? NONE)) return null;
   const contrast = p.contrast ?? 99;
   const clip = p.clip ?? 0;
   if (p.expo < DARK_EXPO && contrast < DARK_CONTRAST) return 'dark';

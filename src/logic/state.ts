@@ -1,6 +1,7 @@
 import type { Album } from '../types';
 import { NO_EDITS, TripEdits } from './trips';
 import { isSortKey, type SortKey } from './sort';
+import type { Protection } from './protect';
 
 /*
  * The user's own decisions — everything the app cannot work out again from
@@ -36,6 +37,8 @@ export interface AppState {
   later: string[];
   /** The order the user chose for each list screen (src/logic/sort.ts SORT_DEFAULT keys). */
   sort: Record<string, SortKey>;
+  /** Photos, trips and albums never suggested for deleting (src/logic/protect.ts). */
+  protect: Protection;
 }
 
 export const emptyState = (): AppState => ({
@@ -50,6 +53,7 @@ export const emptyState = (): AppState => ({
   freeUsed: 0,
   later: [],
   sort: {},
+  protect: { ids: [], trips: [], albums: [] },
 });
 
 const isObj = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
@@ -97,6 +101,13 @@ export function normalizeState(raw: unknown): AppState {
   s.best = stringMap(raw.best);
   s.kept = [...new Set(strings(raw.kept))];
   s.later = [...new Set(strings(raw.later))];
+  if (isObj(raw.protect)) {
+    s.protect = {
+      ids: [...new Set(strings(raw.protect.ids))],
+      trips: [...new Set(strings(raw.protect.trips))],
+      albums: [...new Set(strings(raw.protect.albums))],
+    };
+  }
   if (isObj(raw.sort)) for (const [k, v] of Object.entries(raw.sort)) if (isSortKey(v)) s.sort[k] = v;
   s.owned = raw.owned === true;
   s.months = [...new Set(strings(raw.months).filter(k => /^\d{4}-\d{2}$/.test(k)))];

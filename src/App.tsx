@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'motion/react';
 import { App as CapacitorApp } from '@capacitor/app';
 import { StatusBar, Style } from '@capacitor/status-bar';
@@ -25,6 +25,7 @@ import { findLarge, findLive } from './logic/large';
 import { buildMonths, onThisDay, progress } from './logic/months';
 import { findExposure } from './logic/exposure';
 import { sortFor, type SortScreen } from './logic/sort';
+import { protectedIds } from './logic/protect';
 import { cleanParts } from './logic/smartClean';
 import { streak } from './logic/streak';
 import { feedbackMail, openExternal, privacyUrl, rateUrl, systemFromAgent } from './links';
@@ -61,6 +62,7 @@ const UtilityView = lazy(() => import('./components/UtilityView').then(m => ({ d
 const CategoryView = lazy(() => import('./components/CategoryView').then(m => ({ default: m.CategoryView })));
 const TripsView = lazy(() => import('./components/TripsView').then(m => ({ default: m.TripsView })));
 const SettingsView = lazy(() => import('./components/SettingsView').then(m => ({ default: m.SettingsView })));
+const ProtectedView = lazy(() => import('./components/ProtectedView').then(m => ({ default: m.ProtectedView })));
 const LicencesView = lazy(() => import('./components/SettingsView').then(m => ({ default: m.LicencesView })));
 
 /** `onDone`: what happens once the review was gone through to its end (a month marked as done). */
@@ -86,12 +88,17 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [lib, detection, state.trips, cities, language],
   );
+  // Every photo never to be suggested but the favourites (src/logic/protect.ts): kept in a review,
+  // protected by hand, in a protected trip or album. Every finder below takes it as `kept`.
+  const kept = useMemo(() => {
+    const tripIds = new Map(trips.map(x => [x.key, x.ids]));
+    return protectedIds(state.kept, state.protect, key => tripIds.get(key), store.albumMembers);
+  }, [state.kept, state.protect, trips, store.albumMembers]);
   const groups = useMemo(
-    () => buildGroups(lib, detection.groups, state, store.faces),
+    () => buildGroups(lib, detection.groups, state, store.faces, kept),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [lib, detection, state.best, store.faces],
+    [lib, detection, state.best, store.faces, kept],
   );
-  const kept = useMemo(() => new Set(state.kept), [state.kept]);
   const blurry = useMemo(() => findBlurry(lib, groups).filter(p => !kept.has(p.id)), [lib, groups, kept]);
   // Too dark and too bright (src/logic/exposure.ts): with the blurry ones on the "Missglückt" screen.
   const exposure = useMemo(() => findExposure(lib.photos, new Set(groups.flatMap(g => g.ids)), kept), [lib, groups, kept]);
@@ -179,6 +186,7 @@ export default function App() {
   const [category, setCategory] = useState<MemoryLabel | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const [showLicences, setShowLicences] = useState(false);
+  const [showProtected, setShowProtected] = useState(false);
   const [review, setReview] = useState<Review | null>(null);
 
   const trip = tripKey ? trips.find(x => x.key === tripKey) ?? null : null;
@@ -200,6 +208,7 @@ export default function App() {
   const pushed: [string, boolean, () => void][] = [
     ['review', !!review, closeReview],
     ['licences', showLicences, () => setShowLicences(false)],
+    ['protected', showProtected, () => setShowProtected(false)],
     ['group', !!group, () => setGroupKey(null)],
     ['trip', !!trip, () => setTripKey(null)],
     ['similar', showSimilar, () => setShowSimilar(false)],
@@ -401,6 +410,9 @@ export default function App() {
 
   /* ----------------------------------------------------------- the rest */
 
+  // Settings › Geschützt: the albums to choose from, asked when the screen opens (stable, so it asks once).
+  const loadAlbums = useCallback(() => PhotoLibrary.listAlbums().then(r => r.albums), []);
+
   const rate = rateUrl(isAndroid() ? 'android' : isIos() || devNative() ? 'ios' : 'web');
   const byId = lib.byId;
   const access = store.access;
@@ -417,6 +429,7 @@ export default function App() {
         <ReviewView
           t={t} session={review.session} finished={review.finished} byId={byId} debug={store.debug}
           onDecide={onDecide} onUndo={onUndo}
+          onProtect={id => { store.protectPhotos([id], true); onDecide('keep'); show(t.protected); }}
           onFinish={() => setReview(r => (r ? { ...r, finished: true } : r))}
           onDelete={ids => { applyLater(review.session); deletePhotos(ids, keptAgainstSuggestion(review.session), () => {
             if (isDone(review.session)) review.onDone?.();
@@ -427,6 +440,20 @@ export default function App() {
       );
     }
     if (showLicences) return <LicencesView t={t} onBack={() => setShowLicences(false)} />;
+    if (showProtected) {
+      return (
+        <ProtectedView
+          t={t} loadAlbums={loadAlbums} albums={state.protect.albums}
+          trips={trips.filter(x => state.protect.trips.includes(x.key)).map(x => ({ key: x.key, title: x.title, count: x.ids.length }))}
+          photos={state.protect.ids.filter(id => byId.has(id))}
+          photoDate={id => new Date(byId.get(id)?.t ?? 0).toLocaleString(t.locale, { dateStyle: 'medium', timeStyle: 'short' })}
+          onAlbum={store.protectAlbum}
+          onTrip={key => store.protectTrip(key, false)}
+          onPhoto={id => store.protectPhotos([id], false)}
+          onBack={() => setShowProtected(false)}
+        />
+      );
+    }
     if (group) {
       return (
         <GroupView
@@ -459,6 +486,8 @@ export default function App() {
           }}
           onUndoSplit={() => { store.updateTrips(e => removeSplits(e, trip.key)); setTripKey(base); }}
           onUndoMerge={() => store.updateTrips(e => removeMerge(e, trip.key))}
+          isProtected={state.protect.trips.includes(trip.key)}
+          onProtect={on => { store.protectTrip(trip.key, on); if (on) show(fmt(t.tripProtected, { name: trip.title })); }}
           onIgnore={ignored => {
             store.updateTrips(e => setIgnored(e, trip.key, ignored));
             if (ignored) {
@@ -575,6 +604,8 @@ export default function App() {
           t={t} language={language} themeMode={store.themeMode} access={access} owned={store.owned} freeLeft={freeLeft(state.freeUsed)}
           debug={store.debug} dryRunAvailable={store.dryRunAvailable} dryRun={store.dryRun} storage={store.storage} freed={state.freed}
           reminder={store.reminder}
+          protection={{ albums: state.protect.albums.length, trips: state.protect.trips.length, photos: state.protect.ids.length }}
+          onProtected={() => setShowProtected(true)}
           onReminder={on => { void store.setReminder(on, t.reminderTitle, t.reminderBody).then(ok => { if (on && !ok) show(t.reminderDenied); }); }}
           onBack={() => setShowSettings(false)}
           onLanguage={store.setLanguage} onTheme={store.setThemeMode}

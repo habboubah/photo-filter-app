@@ -90,9 +90,13 @@ export function memoryLabel(p: Photo): MemoryLabel | null {
   return LABELS[m.i].id as MemoryLabel;
 }
 
-/** Every utility photo that could go, newest first: never one the user kept. */
+/**
+ * Every utility photo that could go, newest first: never a protected one
+ * (`kept`: src/logic/protect.ts protectedIds — the same rule as isProtected,
+ * written out here because scripts/ai-check.mjs loads this file on its own).
+ */
 export function findUtility(photos: Photo[], kept: Set<string>): Photo[] {
-  return photos.filter(p => !kept.has(p.id) && utilityLabel(p) !== null).sort((a, b) => b.t - a.t);
+  return photos.filter(p => !p.fav && !kept.has(p.id) && utilityLabel(p) !== null).sort((a, b) => b.t - a.t);
 }
 
 export interface LabelGroup<L extends LabelId> {

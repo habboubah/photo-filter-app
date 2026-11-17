@@ -1,5 +1,6 @@
 import type { Group, Photo } from '../types';
 import { blurLevel } from './blur';
+import { isProtected } from './protect';
 
 /*
  * Smart Clean: everything the clean-up card counts, by kind, each kind on or
@@ -27,7 +28,7 @@ export function cleanParts(
   };
   const seen = new Set<string>();
   const add = (kind: CleanKind, p: Photo | undefined) => {
-    if (!p || p.fav || kept.has(p.id) || seen.has(p.id)) return;
+    if (!p || isProtected(p, kept) || seen.has(p.id)) return;
     seen.add(p.id);
     parts[kind].ids.push(p.id);
     parts[kind].bytes += p.bytes;
