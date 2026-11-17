@@ -166,30 +166,34 @@ success/failure, connection issues — its release notes, since version 6), and
 it brings the `INTERNET` permission with it (docs/ANDROID_RELEASE.md). The
 store texts therefore don't promise "no internet".
 
-## Design — "Album"
+## Design — "Glass" (iOS 27)
 
-The photos bring the colour, so the app stays quiet: a warm paper page
-(`#F7F3EC`), white cards, slate ink, one deep teal for what you tap, green for
-keep, red for delete, amber for blurry. Titles and the big numbers in
-**Fraunces** (a soft serif, like the labels in a printed photo album), text in
-**Figtree**; both bundled. Flat, no blur, shadows only on what floats. Dark
-mode is a near-black slate with a light teal. Trips are cards with a 2 × 2
-mosaic of their photos; the clean-up card leads with one big number ("76 MB").
+Since 17 November 2026 Bildklar looks like the system apps of iOS 26 and 27
+(docs/REDESIGN.md): the content is the page — photos edge to edge, white
+grouped cards on the cool grouped background (`#F2F2F7`, black at night) —
+and the controls float above it on glass: round bar buttons, the tab bar,
+the dock's buttons, sheets. One deep teal for what you tap, green for keep,
+red for delete, amber for blurry. Figtree for everything, the big numbers
+heavy and tight with a small unit beside them ("388 MB"). Categories, trips
+and *An diesem Tag* are photo cards with their name on a shade at the foot;
+settings rows lead with white symbols on coloured squircles.
 
-**Modernised on 17 November 2026** (docs/REDESIGN.md, after looking at Gemini
-Photos, Slidebox, the swipe cleaners, CleanMyPhone / Clever Cleaner, iOS 26's
-Photos and Material 3 Expressive): home became two tabs, *Aufräumen* and
-*Ordnen*; the clean-up card shows a bar split by category instead of a dot list
-that repeated the tiles; the categories became cards with their own photos,
-ranked by the space they free; trips moved to *Ordnen* as large cover cards.
-Titles are now Figtree; Fraunces stays for the big numbers and trip names.
+The glass is drawn, not blurred: Android's WebView cannot afford
+backdrop-filter over a scrolling list. A translucent fill (iOS 27's "tinted"
+setting, readable over any photo), a sheen from the top, a bright specular
+line, a darkened hairline edge and a soft shadow — iOS 27 itself added the
+brighter highlight and the darkened edge to separate glass from content. The
+scroll edge effect (content fading into the page where it meets a floating
+bar) is a gradient.
 
-Ahmad asked Claude on 16 November 2026 to decide most things itself, so this
-direction was picked without the usual three mockups. Two others were weighed
-and can still be tried: **"Kinderzimmer"** (rounded, pastel, playful — closer
-to the shopping list, but it fights the photos) and **"Dunkelkammer"** (dark
-by default, photo-forward like a pro tool — wrong mood for parents on the
-sofa).
+**Before (16–17 November 2026): "Album"** — a warm paper page (`#F7F3EC`),
+white cards, slate ink, Fraunces (a soft serif) for titles and then only for
+the big numbers and trip names. Modernised the same day into two tabs and
+photo cards (docs/REDESIGN.md); replaced by "Glass" on Ahmad's request for a
+look "like iOS 27". Directions weighed before: **"Kinderzimmer"** (rounded,
+pastel, playful) and **"Dunkelkammer"** (dark, photo-forward); on 17 November
+also "Bold and colourful" (CleanMy Phone), "Material Expressive" (Android 16)
+and "keep Album, polish it".
 
 ## Decisions (taken 16 November 2026)
 

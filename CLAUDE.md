@@ -146,33 +146,49 @@ the store set, the preview video and the App Review scenes follow the switch
   logical spacing (`ps-`/`pe-`/`start-`/`end-`), `rtl:rotate-180` on
   directional icons, numbers in `num`.
 
-## Styling — "Album" (Bildklar's own look, 16 November 2026; modernised 17 November, docs/REDESIGN.md)
-- The photos bring the colour; the app stays quiet: warm paper page, white
-  cards, slate ink, **one deep teal** for what you tap. Green (`keep`) is keep
-  and the best shot, red (`neg`) is delete, amber (`warn`) is blurry.
+## Styling — "Glass" (iOS 27 look, 17 November 2026, docs/REDESIGN.md)
+- The look of the system apps since iOS 26, as refined in iOS 27: the content
+  is the page (photos edge to edge, white grouped cards on the cool grouped
+  background), the controls float above it on glass. **One deep teal** for
+  what you tap. Green (`keep`) is keep and the best shot, red (`neg`) is
+  delete, amber (`warn`) is blurry.
 - **All colours, radii, shadows, fonts and easings are tokens in
   `src/index.css`** — never a literal hex in a component. After touching any
-  colour, run `npm run audit:contrast` — it must pass.
-- Layers: `bg-bg` the page, `bg-surface` a card / sheet / bar button,
-  `bg-surface-2` a fill. A card is `rounded-md card` — no border, no shadow.
-  Only what floats casts a shadow (`shadow-e2`, `shadow-e3`). **No
-  `backdrop-filter`, no `filter: blur`** (Android's WebView).
-- **Type**: Figtree for everything, titles and section headings with
-  `title-face` (a little tighter); Fraunces (`display`) only for the big
-  numbers and the trip names. Both bundled in `src/assets/fonts/`
-  (OFL) — never load a font from the network.
-- Photos: `photo` utility (soft 8 px corners, the fill while loading). Text
-  on a photo sits on `bg-veil`.
-- Tiles take a hue with `data-hue` (`sky`, `sand`, `mint`, `rose`, `lilac`,
-  `stone`) and paint with `bg-hue-bg` / `text-hue-ink`: similar = lilac,
-  blurry = sand, scan = mint, access = sky.
+  colour, run `npm run audit:contrast` — it must pass (it also checks the
+  inks on glass and the white glyph on every hue's squircle).
+- Layers: `bg-bg` the page (`#F2F2F7` / black), `bg-surface` a card / grouped
+  list / sheet, `bg-surface-2` a translucent fill. A card is `rounded-md card`
+  (24 px) — no border, no shadow. Corners are concentric: a photo inside a
+  card takes the card's radius minus its inset.
+- **Glass, drawn — no `backdrop-filter`, no `filter: blur`** (Android's
+  WebView): `glass` for what floats (bar buttons, the tab bar, a secondary or
+  danger button, the toast, a chip on a photo), `glass-flat` for the same
+  material inside a card or sheet, `sheen` on a prominent (teal / red / green)
+  fill. Where content meets a floating bar it fades into the page
+  (`edge-fade-top` behind the top bar once scrolled, `dock-fade` under the
+  dock and the tab bar) — never a line.
+- **Type**: Figtree for everything (bundled in `src/assets/fonts/`, OFL —
+  never a font from the network). Titles and headings with `title-face`;
+  the big numbers with `display` (Figtree 800, tight) — sizes through
+  `<BigNumber>` (number large, unit small and quiet). Fraunces is no longer
+  in the app; the store-screenshot and preview-video tools still use it for
+  their headlines.
+- Photo cards (a category on *Aufräumen*, a trip and *An diesem Tag* on
+  *Ordnen*, the AI's categories): the photos fill the card, the name and the
+  figure lie white on `photo-shade` at its foot. A chip on a photo is `glass`
+  (or `bg-veil` for small facts like a date).
+- Settings-style rows lead with an `IconTile`: a white symbol on the hue's
+  solid squircle (`data-hue` → `bg-hue-solid`), as in iOS Settings. Hues:
+  `sky`, `sand`, `mint`, `rose`, `lilac`, `stone` (`--hue-bg`, `--hue-ink`,
+  `--hue-solid`); similar = lilac, blurry = sand, scan = mint, access = sky.
+  A category's hue is also its dot and its segment in the `StorageBar`.
 - What a screen does floats at the bottom in thumb reach (`<Dock>` with
-  `<Screen docked>`): *Album erstellen*, *Durchgehen*, *Die anderen löschen*.
-  The root's tabs float the same way (`<TabBar>` with `<Screen tabbed>`):
-  an opaque pill with `shadow-e2`, never a blur.
-- Photo-forward: a category or a trip is shown with its own photos (the photo
-  cards on *Aufräumen*, the trip covers on *Ordnen*), never as a coloured text
-  tile. A category's hue is its dot and its segment in the `StorageBar`.
+  `<Screen docked>`). One prominent button; a second action goes **under**
+  it as a plain text button (`variant="ghost"`), never squeezed beside it.
+  The root's tabs float as a glass capsule (`<TabBar>` with `<Screen tabbed>`),
+  the current tab in a lens of the same glass.
+- Sheets float inset from the edges with large corners (`rounded-xl`), their
+  close button `glass-flat`, their confirm button teal with `sheen`.
 - Motion: short and soft; transform and opacity only; all of it collapses
   under reduced motion. The review card follows the finger and flies out.
 - A screen says what it is for behind an (i) in its bar (`<Screen info>`,
