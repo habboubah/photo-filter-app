@@ -32,8 +32,7 @@ export function CompressView({ t, photos, screenshots, onBack, onRun }: {
   const when = (p: Photo) => new Date(p.t).toLocaleString(t.locale, { dateStyle: 'medium', timeStyle: 'short' });
 
   return (
-    <Screen title={t.compressPhotosTitle} subtitle={fmt(t.upTo, { size: bytes(t, saving) })} onBack={onBack} backLabel={t.back} docked={list.length > 0}>
-      <p className="text-label text-fg-mute px-1 -mt-2 wrap-prose">{t.compressPhotosIntro}</p>
+    <Screen title={t.compressPhotosTitle} subtitle={fmt(t.upTo, { size: bytes(t, saving) })} onBack={onBack} backLabel={t.back} info={{ label: t.aboutScreen, close: t.close, body: t.compressPhotosIntro }} docked={list.length > 0}>
       {photos.length > 0 && screenshots.length > 0 && (
         <Segmented
           label={t.compressPhotosTitle} value={tab} onChange={setTab}

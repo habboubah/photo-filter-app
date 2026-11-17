@@ -25,9 +25,8 @@ export function ScreenshotsView({ t, photos, now, sort, onSort, onBack, onReview
   const total = list.reduce((s, p) => s + p.bytes, 0);
 
   return (
-    <Screen title={t.screenshotsTitle} subtitle={`${plural(t, 'photos', list.length)} · ${bytes(t, total)}`} onBack={onBack} backLabel={t.back} docked={list.length > 0}
+    <Screen title={t.screenshotsTitle} subtitle={`${plural(t, 'photos', list.length)} · ${bytes(t, total)}`} onBack={onBack} backLabel={t.back} info={{ label: t.aboutScreen, close: t.close, body: t.screenshotsIntro }} docked={list.length > 0}
       actions={<SortButton t={t} value={sort} onChange={onSort} />}>
-      <p className="text-label text-fg-mute px-1 -mt-2 wrap-prose">{t.screenshotsIntro}</p>
       <Segmented
         label={t.screenshotsTitle} value={filter} onChange={setFilter}
         options={[{ value: 'old', label: t.filterOld }, { value: 'all', label: t.filterAll }]}
@@ -40,7 +39,7 @@ export function ScreenshotsView({ t, photos, now, sort, onSort, onBack, onReview
         />
       )}
       {list.length > 0 && (
-        <Dock><Button full size="lg" onClick={() => onReview(list)}>{`${t.reviewScreenshots} · ${plural(t, 'photos', list.length)}`}</Button></Dock>
+        <Dock><Button full size="lg" onClick={() => onReview(list)}>{`${t.reviewScreenshots} · ${plural(t, 'photos', list.length)} · ${bytes(t, total)}`}</Button></Dock>
       )}
     </Screen>
   );

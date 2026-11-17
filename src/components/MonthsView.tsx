@@ -29,13 +29,12 @@ export function MonthsView({ t, months, done, byId, shown, onMore, onBack, onOpe
   const name = (m: Month) => new Date(m.year, m.month, 1).toLocaleDateString(t.locale, { month: 'long', year: 'numeric' });
   return (
     <Screen
-      title={t.monthsTitle} onBack={onBack} backLabel={t.back}
+      title={t.monthsTitle} onBack={onBack} backLabel={t.back} info={{ label: t.aboutScreen, close: t.close, body: t.monthsIntro }}
       subtitle={<>
         <span className="num">{`${pctText} · ${fmt(t.monthsDone, { done: num(t, doneCount), total: num(t, months.length) })}`}</span>
         <span className="block mt-2 max-w-[220px]"><Progress thin value={pct / 100} label={pctText} /></span>
       </>}
     >
-      <p className="text-label text-fg-mute px-1 -mt-2 wrap-prose">{t.monthsIntro}</p>
       <div className="rounded-md card overflow-hidden divide-hairline-inset">
         {visible.map(m => {
           const isDone = done.has(m.key);

@@ -57,7 +57,8 @@ export function PaywallSheet({ t, open, free, onClose, onOwned, toast }: {
     } catch { toast(t.storeUnavailable); } finally { setBusy(null); }
   };
 
-  const points = [t.paywallAlbums, t.paywallDelete, t.paywallPhotos, t.paywallFile, t.paywallSave, t.paywallOnce, t.paywallPrivate];
+  // What the unlock adds; paying once and nothing leaving the phone sit under the price instead.
+  const points = [t.paywallAlbums, t.paywallDelete, t.paywallPhotos, t.paywallFile, t.paywallSave];
   return (
     <Sheet open={open} title={t.paywallTitle} closeLabel={t.close} onClose={onClose}>
       <div className="flex flex-col items-center text-center">
@@ -81,7 +82,12 @@ export function PaywallSheet({ t, open, free, onClose, onOwned, toast }: {
           </li>
         ))}
       </ul>
-      <div className="mt-7 space-y-2">
+      <div className="mt-6 rounded-md bg-surface-2 px-5 py-4 text-center">
+        <p className="display text-title font-semibold text-fg num">{product ? product.price : '–'}</p>
+        <p className="text-label font-bold text-fg mt-0.5">{t.paywallOnce}</p>
+        <p className="text-caption text-fg-mute mt-0.5 wrap-prose">{t.paywallPrivate}</p>
+      </div>
+      <div className="mt-4 space-y-2">
         <Button full size="lg" disabled={!product || busy !== null} onClick={buy}>
           {product ? fmt(t.buyFor, { price: product.price }) : product === null ? t.paywallTitle : t.buyLoading}
         </Button>

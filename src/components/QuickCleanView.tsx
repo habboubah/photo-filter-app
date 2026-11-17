@@ -33,8 +33,7 @@ export function QuickCleanView({ t, parts, storage, onBack, onReview, onDelete }
   });
 
   return (
-    <Screen title={t.quickCleanTitle} subtitle={bytes(t, chosen.bytes)} onBack={onBack} backLabel={t.back} docked>
-      <p className="text-label text-fg-mute px-1 -mt-2 wrap-prose">{t.quickCleanIntro}</p>
+    <Screen title={t.quickCleanTitle} subtitle={bytes(t, chosen.bytes)} onBack={onBack} backLabel={t.back} info={{ label: t.aboutScreen, close: t.close, body: t.quickCleanIntro }} docked>
       <Group footer={storage ? fmt(t.storageFree, { free: bytes(t, storage.free), total: bytes(t, storage.total) }) : undefined}>
         {present.map(part => (
           <SwitchRow

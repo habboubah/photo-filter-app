@@ -34,9 +34,8 @@ export function UtilityView({ t, photos, progress, sort, onSort, onBack, onRevie
   const checking = progress.total > 0 && progress.seen < progress.total;
 
   return (
-    <Screen title={t.utilityTitle} subtitle={`${plural(t, 'photos', shown.length)} · ${bytes(t, total)}`} onBack={onBack} backLabel={t.back} docked={shown.length > 0}
+    <Screen title={t.utilityTitle} subtitle={`${plural(t, 'photos', shown.length)} · ${bytes(t, total)}`} onBack={onBack} backLabel={t.back} info={{ label: t.aboutScreen, close: t.close, body: t.utilityIntro }} docked={shown.length > 0}
       actions={<SortButton t={t} value={sort} onChange={onSort} />}>
-      <p className="text-label text-fg-mute px-1 -mt-2 wrap-prose">{t.utilityIntro}</p>
       {checking && (
         <p className="text-caption text-fg-mute px-1 num" aria-live="polite">
           {fmt(t.utilityChecking, { seen: num(t, progress.seen), total: num(t, progress.total) })}
@@ -64,7 +63,7 @@ export function UtilityView({ t, photos, progress, sort, onSort, onBack, onRevie
         />
       )}
       {shown.length > 0 && (
-        <Dock><Button full size="lg" onClick={() => onReview(shown)}>{`${t.reviewUtility} · ${plural(t, 'photos', shown.length)}`}</Button></Dock>
+        <Dock><Button full size="lg" onClick={() => onReview(shown)}>{`${t.reviewUtility} · ${plural(t, 'photos', shown.length)} · ${bytes(t, total)}`}</Button></Dock>
       )}
     </Screen>
   );

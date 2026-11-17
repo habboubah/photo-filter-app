@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { ArrowUpRight, ChevronLeft, ChevronRight, ChevronsUpDown } from 'lucide-react';
+import { ArrowUpRight, ChevronLeft, ChevronRight, ChevronsUpDown, Info } from 'lucide-react';
 import { tapLight } from './haptics';
+import { IconButton } from './Button';
+import { Sheet } from './Sheet';
 
 interface Props {
   title: string;
@@ -10,8 +12,10 @@ interface Props {
   subtitle?: React.ReactNode;
   onBack?: () => void;
   backLabel?: string;
-  /** Header-right controls. Keep to two. */
+  /** Header-right controls. Keep to two (with `info`). */
   actions?: React.ReactNode;
+  /** What the screen is for, in a few sentences: behind an (i) in the bar, in a sheet — never a paragraph above the content. */
+  info?: { label: string; close: string; body: React.ReactNode };
   /** Something shown left of the large title (a list's picture). */
   leading?: React.ReactNode;
   /** Something shown right of it (a list's progress ring). */
@@ -37,8 +41,9 @@ interface Props {
  * bar it fades out (a gradient, never a blur — backdrop-filter over a
  * scrolling list is too expensive in a WebView).
  */
-export function Screen({ title, eyebrow, subtitle, onBack, backLabel, actions, leading, trailing, docked, tabbed, still, top, hideTitle, children }: Props) {
+export function Screen({ title, eyebrow, subtitle, onBack, backLabel, actions, info, leading, trailing, docked, tabbed, still, top, hideTitle, children }: Props) {
   const [scrolled, setScrolled] = useState(false);
+  const [about, setAbout] = useState(false);
   useEffect(() => {
     const on = () => setScrolled(window.scrollY > 44);
     on();
@@ -69,7 +74,10 @@ export function Screen({ title, eyebrow, subtitle, onBack, backLabel, actions, l
           >
             {title}
           </span>
-          <div className="justify-self-end flex items-center gap-2">{actions}</div>
+          <div className="justify-self-end flex items-center gap-2">
+            {info && <IconButton label={info.label} icon={Info} tone="bar" onClick={() => setAbout(true)} />}
+            {actions}
+          </div>
         </div>
         {/* Scroll edge: the content fades into the bar instead of meeting a line. */}
         <div
@@ -95,6 +103,12 @@ export function Screen({ title, eyebrow, subtitle, onBack, backLabel, actions, l
 
       {/* Its cards rise into place one after another as the screen appears (index.css: rise-children). */}
       <main className={`px-[16px] space-y-6 ${still ? '' : 'rise-children'}`}>{children}</main>
+
+      {info && (
+        <Sheet open={about} title={title} closeLabel={info.close} onClose={() => setAbout(false)}>
+          <p className="text-body text-fg wrap-prose pb-2">{info.body}</p>
+        </Sheet>
+      )}
     </div>
   );
 }

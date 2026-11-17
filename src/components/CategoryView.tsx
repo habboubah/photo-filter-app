@@ -19,9 +19,8 @@ export function CategoryView({ t, label, photos: all, sort, onSort, onBack }: {
   const byId = new Map(photos.map(p => [p.id, p]));
   const total = photos.reduce((s, p) => s + p.bytes, 0);
   return (
-    <Screen title={t[`aiLabel_${label}`]} subtitle={`${plural(t, 'photos', photos.length)} · ${bytes(t, total)}`} onBack={onBack} backLabel={t.back}
+    <Screen title={t[`aiLabel_${label}`]} subtitle={`${plural(t, 'photos', photos.length)} · ${bytes(t, total)}`} onBack={onBack} backLabel={t.back} info={{ label: t.aboutScreen, close: t.close, body: t.categoryIntro }}
       actions={<SortButton t={t} value={sort} onChange={onSort} />}>
-      <p className="text-label text-fg-mute px-1 -mt-2 wrap-prose">{t.categoryIntro}</p>
       <PhotoGrid
         ids={photos.map(p => p.id)}
         columns={3}
