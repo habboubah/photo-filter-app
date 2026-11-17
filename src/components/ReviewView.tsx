@@ -42,7 +42,7 @@ export function ReviewView({ t, session, finished, byId, debug, albums, android,
   onFile?: (album: string) => void;
   /** The shield: the photo is kept and protected for good (src/logic/protect.ts). */
   onProtect: (id: string) => void;
-  /** A video: played in the system's player over the app. */
+  /** A video: played inside the app (src/ui/play.tsx). */
   onPreview: (id: string) => void;
   /** The photos like this one (src/logic/search.ts likeThis); absent for a photo without the AI's vector. */
   onLike?: (id: string) => void;

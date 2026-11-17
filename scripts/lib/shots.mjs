@@ -355,6 +355,19 @@ export const SCREENS = [
       await pause(page, 800);
     },
   },
+  // One series of similar videos: the one to keep plays from its picture (inside the app), each take from its own button.
+  {
+    name: '44-lookalike-group', run: async (page, w) => {
+      await page.click(`main button:has-text("${w.t.lookalikeTitle}")`);
+      await pause(page, 800);
+      await page.locator('main button').first().click();
+      await pause(page, 900);
+      // The demo has no player: it remembers what it was asked to play.
+      await page.locator(`main figure ${aria(w.t.playVideo.split('{')[0]).replace('aria-label=', 'aria-label^=')}`).click();
+      const asked = await page.evaluate(() => localStorage.getItem('bildklar-demo-preview'));
+      if (!asked) throw new Error('the play button asked for no video');
+    },
+  },
   // Fotos verkleinern: the photos that qualify, the largest saving first.
   { name: '34-compress', run: async (page, w) => { await page.click(`button:has-text("${w.t.compressPhotosTile}")`); await pause(page, 800); } },
   // Aufräumen › Geschützt (the last rows of home): one album switched on (the demo's family album).

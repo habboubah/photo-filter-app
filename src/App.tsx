@@ -21,7 +21,7 @@ import {
 } from './logic/review';
 import { aiProgress, categories, findSensitive, findUtility, type MemoryLabel } from './logic/ai';
 import { findScreenshots, isOldShot, oldShots } from './logic/screenshots';
-import { findLarge, findLive } from './logic/large';
+import { duration, findLarge, findLive } from './logic/large';
 import { buildMonths, onThisDay, progress } from './logic/months';
 import { findExposure } from './logic/exposure';
 import { sortFor, type SortScreen } from './logic/sort';
@@ -35,6 +35,7 @@ import { streak } from './logic/streak';
 import { feedbackMail, openExternal, privacyUrl, rateUrl, systemFromAgent } from './links';
 import { devNative, isAndroid, isIos } from './platform';
 import { Toast, useToast } from './ui/Toast';
+import { PlayerContext, type Player } from './ui/play';
 import { Confirm } from './ui/Sheet';
 import { notifySuccess } from './ui/haptics';
 import { PermissionView } from './components/PermissionView';
@@ -586,6 +587,16 @@ export default function App() {
   const access = store.access;
   const hasAccess = access === 'full' || access === 'limited';
 
+  // A video plays inside the app (src/ui/play.tsx): the native player over the app, never another app.
+  const player: Player = {
+    length: id => { const p = byId.get(id); return p?.video ? p.dur ?? 0 : null; },
+    play: id => {
+      void PhotoLibrary.preview({ id, closeLabel: t.close })
+        .catch((e: { code?: string }) => show(e?.code === 'CLOUD' ? t.previewFailed : t.playFailed));
+    },
+    label: id => fmt(t.playVideo, { length: duration(byId.get(id)?.dur ?? 0) }),
+  };
+
   const addPhotos = async () => {
     const { access: a } = await PhotoLibrary.addMorePhotos().catch(() => ({ access: access ?? 'denied' }));
     await store.accessGranted(a);
@@ -607,7 +618,7 @@ export default function App() {
           t={t} session={review.session} finished={review.finished} byId={byId} debug={store.debug}
           onDecide={onDecide} onUndo={onUndo} albums={chips} android={isAndroid()} onFile={extras ? onFile : undefined}
           onProtect={id => { store.protectPhotos([id], true); onDecide('keep'); show(t.protected); }}
-          onPreview={id => { void PhotoLibrary.preview({ id }).catch(() => show(t.previewFailed)); }}
+          onPreview={player.play}
           onLike={id => { if (store.vectors.has(id)) setLikeId(id); else show(t.likeNone); }}
           onFinish={() => setReview(r => (r ? { ...r, finished: true } : r))}
           onDelete={outcome => {
@@ -942,6 +953,7 @@ export default function App() {
   };
 
   return (
+    <PlayerContext.Provider value={player}>
     <div className="font-sans text-fg min-h-screen bg-bg overflow-x-clip">
       {store.storageError && (
         <div role="alert" className="bg-neg-dim text-neg px-4 py-2 safe-top">
@@ -1036,5 +1048,6 @@ export default function App() {
 
       <Toast toast={toast} onDone={hide} raised={['trip', 'group', 'blurry', 'screenshots', 'utility', 'quickClean', 'large', 'live', 'compress', 'cleanup', 'review', 'search', 'like'].includes(screen)} />
     </div>
+    </PlayerContext.Provider>
   );
 }

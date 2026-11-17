@@ -688,19 +688,17 @@ class PhotoLibraryPlugin : Plugin() {
         }
     }
 
-    /** A video (or photo) shown in the system's own player / viewer, with a read grant for its content URI. */
+    /**
+     * A video played inside the app ([VideoPlayer]) — never handed to another
+     * app. Resolves when the player closes; rejects if the phone can't play it.
+     */
     @PluginMethod
     fun preview(call: PluginCall) {
-        val id = call.getString("id")?.takeIf { it.contains(':') } ?: run { call.reject("No id"); return }
-        val intent = Intent(Intent.ACTION_VIEW)
-            .setDataAndType(contentUri(id), if (isVideo(id)) "video/*" else "image/*")
-            .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        val id = call.getString("id")?.takeIf { it.contains(':') && isVideo(it) } ?: run { call.reject("No video"); return }
+        val closeLabel = call.getString("closeLabel") ?: "Close"
         activity.runOnUiThread {
-            try {
-                activity.startActivity(intent)
-                call.resolve()
-            } catch (_: android.content.ActivityNotFoundException) {
-                call.reject("No player for this file")
+            VideoPlayer.show(activity, contentUri(id), closeLabel) { failed ->
+                if (failed) call.reject("Cannot play this video", "PLAYBACK") else call.resolve()
             }
         }
     }

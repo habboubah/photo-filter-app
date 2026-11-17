@@ -1,6 +1,7 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { cachedThumb, SMALL, thumbUrl } from '../thumbs';
 import { tapLight } from './haptics';
+import { VideoBadge, usePlayer } from './play';
 
 /** A photo's thumbnail, loaded on demand; the empty tint until it is there. */
 export function useThumb(id: string | undefined, size: number): string | undefined {
@@ -70,6 +71,8 @@ export function PhotoGrid({ ids, columns = 3, gap = 4, label, onOpen, overlay }:
     return () => { window.removeEventListener('scroll', on); window.removeEventListener('resize', on); };
   }, [rowH, rows]);
 
+  // A video in a grid that opens nothing else plays when tapped, inside the app.
+  const player = usePlayer();
   const tiles: React.ReactNode[] = [];
   if (cell > 0) {
     for (let r = range[0]; r < range[1]; r++) {
@@ -78,10 +81,12 @@ export function PhotoGrid({ ids, columns = 3, gap = 4, label, onOpen, overlay }:
         if (i >= ids.length) break;
         const id = ids[i];
         const style: React.CSSProperties = { position: 'absolute', top: r * rowH, insetInlineStart: c * (cell + gap), width: cell, height: cell };
-        const inner = <><Thumb id={id} />{overlay?.(id)}</>;
-        tiles.push(onOpen ? (
-          <button key={id} type="button" style={style} aria-label={label(id)}
-            onClick={() => { tapLight(); onOpen(id); }}
+        const ms = onOpen ? null : player?.length(id) ?? null;
+        const open = onOpen ?? (ms !== null ? player!.play : undefined);
+        const inner = <><Thumb id={id} />{overlay?.(id)}{ms !== null && <VideoBadge ms={ms} />}</>;
+        tiles.push(open ? (
+          <button key={id} type="button" style={style} aria-label={ms !== null ? `${label(id)}, ${player!.label(id)}` : label(id)}
+            onClick={() => { tapLight(); open(id); }}
             className="block overflow-hidden rounded-[8px] press focus-visible:ring-focus">
             {inner}
           </button>

@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Star } from 'lucide-react';
+import { Play, Star } from 'lucide-react';
 import type { Group, Photo } from '../types';
 import type { Detail, Verdict } from '../logic/confidence';
 import { Strings, bytes, fmt, plural } from '../translations';
@@ -8,6 +8,7 @@ import { Button } from '../ui/Button';
 import { Thumb } from '../ui/Photo';
 import { LARGE } from '../thumbs';
 import { tapLight } from '../ui/haptics';
+import { PlayOver, usePlayer } from '../ui/play';
 
 /**
  * One similar group: the photo that will be kept, large, and the series
@@ -35,6 +36,7 @@ export function GroupView({ t, group, byId, kept, verdicts, debug, onBack, onPic
   // Faces (and on the iPhone open eyes) refine the pick; asked for once per group.
   useEffect(() => { onScoreFaces(group.ids); }, [group.key]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const player = usePlayer();
   const best = byId.get(group.best);
   const others = group.ids.filter(id => id !== group.best && !kept.has(id) && !byId.get(id)?.fav);
   const othersBytes = others.reduce((s, id) => s + (byId.get(id)?.bytes ?? 0), 0);
@@ -45,9 +47,10 @@ export function GroupView({ t, group, byId, kept, verdicts, debug, onBack, onPic
   };
 
   return (
-    <Screen title={group.kind === 'duplicate' ? t.duplicatesTitle : group.kind === 'lookalike' ? t.lookalikeTitle : t.similarTitle} subtitle={plural(t, 'photos', group.ids.length)} onBack={onBack} backLabel={t.back} docked>
+    <Screen title={group.kind === 'duplicate' ? t.duplicatesTitle : group.kind === 'lookalike' ? t.lookalikeTitle : t.similarTitle} subtitle={plural(t, group.kind === 'lookalike' ? 'videos' : 'photos', group.ids.length)} onBack={onBack} backLabel={t.back} docked>
       <figure className="relative rounded-lg overflow-hidden card">
         <div className="aspect-[4/3]"><Thumb id={group.best} size={LARGE} alt={when(group.best)} className="!rounded-none" /></div>
+        <PlayOver id={group.best} />
         <figcaption className="absolute top-3 start-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-keep text-keep-ink text-caption font-extrabold">
           <Star className="w-3.5 h-3.5" fill="currentColor" strokeWidth={0} aria-hidden="true" />
           {group.best !== group.suggested ? t.bestPicked : group.kind === 'duplicate' ? t.originalBadge : group.kind === 'lookalike' ? t.bestTakeBadge : t.bestBadge}
@@ -67,8 +70,9 @@ export function GroupView({ t, group, byId, kept, verdicts, debug, onBack, onPic
           const v = isBest ? undefined : verdicts.get(id);
           const tag = v?.detail ? short[v.detail] : undefined;
           return (
+            <div key={id} className="relative">
             <button
-              key={id} type="button" aria-pressed={isBest}
+              type="button" aria-pressed={isBest}
               aria-label={[fmt(t.makeBest, { date: when(id) }), tag, v?.trust === 'check' ? t.trustCheck : undefined].filter(Boolean).join('. ')}
               onClick={() => { tapLight(); onPick(id); }}
               className={`relative aspect-square rounded-[10px] overflow-hidden press focus-visible:ring-focus ${isBest ? 'ring-[3px] ring-keep ring-offset-2 ring-offset-bg' : ''}`}
@@ -88,6 +92,19 @@ export function GroupView({ t, group, byId, kept, verdicts, debug, onBack, onPic
                 </span>
               )}
             </button>
+            {/* A video plays from its own button: picking it as the one to keep is the tile's tap. */}
+            {player && player.length(id) !== null && (
+              <button
+                type="button" aria-label={player.label(id)}
+                onClick={() => { tapLight(); player.play(id); }}
+                className="absolute top-0 end-0 w-11 h-11 inline-flex items-center justify-center press focus-visible:ring-focus rounded-full"
+              >
+                <span className="w-8 h-8 rounded-full glass text-fg inline-flex items-center justify-center" aria-hidden="true">
+                  <Play className="w-4 h-4 translate-x-[1px]" fill="currentColor" strokeWidth={0} />
+                </span>
+              </button>
+            )}
+            </div>
           );
         })}
       </div>

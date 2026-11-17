@@ -156,8 +156,9 @@ tab again scrolls to its top; Android's back button goes from *Ordnen* to
   *Videos*, *Fotos*. Each tile shows its size (≈ where the iPhone can only
   estimate) and a video's length. Nothing is suggested for deleting;
   *Durchgehen* reviews them with every suggestion on keep.
-- A tap opens the file: date, size, length, **Video verkleinern** [Make video
-  smaller] for videos of 30 MB or more, and *Video/Foto löschen*.
+- A tap opens the file: date, size, length, a play button on a video's
+  picture, **Video verkleinern** [Make video smaller] for videos of 30 MB or
+  more, and *Video/Foto löschen*.
 - **Making a video smaller** (needs the unlock): a copy at about a third of the
   bitrate (iPhone: HEVC at most 1080p; Android: HEVC where the phone can, 2–8
   Mbit/s) is saved next to the original with its date and place, with progress
@@ -166,6 +167,23 @@ tab again scrolls to its top; Android's back button goes from *Ordnen* to
 - **Duplicate videos**: the same length (± 0.5 s), shape and poster frame,
   listed under *Duplikate*.
 - Videos are not part of trips, near-identical groups or the blurry list.
+
+## Playing videos
+- A video plays **inside the app**, wherever its picture is shown: the play
+  button on a review card, on a large file's sheet, on the one to keep of
+  similar videos and on each of its series (picking the one to keep stays the
+  tile's tap), and any video tile in a grid that opens nothing else (a
+  category, screen recordings, …) — those tiles carry ▶ and the length.
+- iPhone: the system's player over the app (AVPlayerViewController), from the
+  phone only — a video that is only in iCloud is never downloaded: *Das Video
+  ist nicht auf diesem Gerät – es liegt nur in der Cloud.*
+- Android: a full-screen player of the app's own (the platform's VideoView and
+  its controls: a tap shows play / pause and the timeline), closed with Back or
+  its round close button; the screen stays on while it plays. Never handed to
+  another app. A file the phone can't play: *Dieses Video lässt sich hier nicht
+  abspielen.*
+- The web demo has no video files: the play button only remembers what it was
+  asked to play.
 
 ## Smaller photos (*Fotos verkleinern*, needs the unlock)
 - Home tile *Fotos verkleinern · bis zu 3,1 GB* [Smaller photos · up to …]
@@ -272,8 +290,8 @@ tab again scrolls to its top; Android's back button goes from *Ordnen* to
 - **Videos** join the month (and *An diesem Tag*) in time order: a copy of
   another video → delete; a screen recording older than 30 days → delete;
   every other video → keep, with its length and size (*2:14 · 480 MB*). A
-  video shows its poster frame with a play button: a tap plays it in the
-  system's player (iPhone: over the app; never downloaded from iCloud).
+  video shows its poster frame with a play button: a tap plays it inside the
+  app (see *Playing videos*).
   The end screen counts videos apart (*Dazu 2 Videos, 1,1 GB*). Trips stay
   photos only.
 
