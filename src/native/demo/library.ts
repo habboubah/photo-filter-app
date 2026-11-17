@@ -2,6 +2,7 @@ import { WebPlugin } from '@capacitor/core';
 import type { Photo } from '../../types';
 import type { Access, PhotoLibraryPlugin, ScanState } from '../photoLibrary';
 import facts from './facts.json';
+import { AI_VERSION } from '../../logic/ai';
 
 /*
  * The demo library: the PhotoLibrary plugin in a browser. 93 drawn photos and videos
@@ -40,6 +41,9 @@ const set = (k: string, v: string | null) => {
 };
 const wait = (ms: number) => new Promise(r => setTimeout(r, ms));
 
+/** A demo photo: the facts and its compact vector (ml/demo_ai.py), which a phone keeps apart. */
+type DemoPhoto = Photo & { vec?: string };
+
 const ACCESS = ['notDetermined', 'denied', 'restricted', 'limited', 'full'] as const;
 /** In "limited" the demo sees only the photos of the last trip — as if just those were picked. */
 const LIMITED_FROM = Date.UTC(2026, 6, 1);
@@ -61,17 +65,17 @@ export class DemoLibrary extends WebPlugin implements PhotoLibraryPlugin {
     return (ACCESS as readonly string[]).includes(a ?? '') ? (a as Access) : 'notDetermined';
   }
 
-  private photos(): Photo[] {
+  private photos(): DemoPhoto[] {
     const gone = new Set<string>(JSON.parse(get(K.trashed) ?? '[]'));
     const limited = this.access() === 'limited';
-    const made: Photo[] = JSON.parse(get(K.made) ?? '[]');
-    return [...(facts as Photo[]), ...made]
+    const made: DemoPhoto[] = JSON.parse(get(K.made) ?? '[]');
+    return [...(facts as DemoPhoto[]), ...made]
       .filter(p => !gone.has(p.id) && (!limited || p.t >= LIMITED_FROM))
       .sort((a, b) => a.t - b.t || (a.id < b.id ? -1 : 1));
   }
 
-  private remember(p: Photo) {
-    const made: Photo[] = JSON.parse(get(K.made) ?? '[]');
+  private remember(p: DemoPhoto) {
+    const made: DemoPhoto[] = JSON.parse(get(K.made) ?? '[]');
     set(K.made, JSON.stringify([...made.filter(x => x.id !== p.id), p]));
   }
 
@@ -117,9 +121,16 @@ export class DemoLibrary extends WebPlugin implements PhotoLibraryPlugin {
 
   async cancelScan() { this.running = false; }
 
+  /** Like a phone: the facts carry only the vector's version (`vv`), the vectors come from getVectors. */
   async getFacts({ offset, limit }: { offset: number; limit: number }) {
     const all = get(K.scanned) === '1' ? this.photos() : [];
-    return { rows: all.slice(offset, offset + limit), total: all.length };
+    const rows = all.slice(offset, offset + limit).map(({ vec, ...p }) => (vec ? { ...p, vv: AI_VERSION } : p));
+    return { rows, total: all.length };
+  }
+
+  async getVectors({ ids }: { ids: string[] }) {
+    const by = new Map(this.photos().map(p => [p.id, p.vec]));
+    return { rows: ids.flatMap(id => { const v = by.get(id); return v ? [{ id, v }] : []; }) };
   }
 
   async scoreFaces() { return { rows: [] }; }

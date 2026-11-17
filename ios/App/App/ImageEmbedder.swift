@@ -7,24 +7,23 @@ import OnnxRuntimeBindings
 /// (fixtures/ai/expected.json, ImageEmbedderTests).
 ///
 /// SigLIP 2's image encoder (ai-assets/image.onnx, Apache 2.0) runs in ONNX
-/// Runtime on the CPU. A photo becomes a 768-number embedding; each label's
-/// score is `scale · dot(embedding, label) + bias` — stored × 10, rounded, in
-/// label order (src/types.ts Photo.ai). Nothing leaves the phone: ONNX Runtime
-/// is a library inside the app, the model and the label vectors ship in the
-/// app bundle (the `ai-assets` folder).
+/// Runtime on the CPU. A photo becomes a 768-number embedding, and that becomes
+/// the 256-number compact vector the scan stores (ai-assets/compact.bin, a fixed
+/// projection): the app scores its labels, finds look-alikes and searches
+/// from it (src/logic/vectors.ts). Nothing leaves the phone: ONNX Runtime is a
+/// library inside the app, the model and the projection ship in the app bundle
+/// (the `ai-assets` folder).
 ///
 /// Not thread-safe: the plugin uses one instance from its scan queue.
 final class ImageEmbedder {
     /// Bump with src/logic/ai.ts AI_VERSION, vectors.json and ImageEmbedder.kt: every photo gets its AI pass again.
-    static let aiVersion = 1
+    static let aiVersion = 2
 
     let size: Int
     let dim: Int
-    let labelCount: Int
-    private let scale: Float
-    private let bias: Float
-    /// labelCount × dim, row-major.
-    private let vectors: [Float]
+    let vecDim: Int
+    /// vecDim × dim, row-major.
+    private let projection: [Float]
     private let env: ORTEnv
     private let session: ORTSession
 
@@ -39,17 +38,13 @@ final class ImageEmbedder {
     init(directory: URL) throws {
         let meta = try JSONSerialization.jsonObject(with: Data(contentsOf: directory.appendingPathComponent("vectors.json"))) as? [String: Any] ?? [:]
         guard let version = meta["aiVersion"] as? Int, version == Self.aiVersion,
-              let size = meta["size"] as? Int, let dim = meta["dim"] as? Int,
-              let scale = (meta["scale"] as? NSNumber)?.floatValue, let bias = (meta["bias"] as? NSNumber)?.floatValue,
-              let labels = meta["labels"] as? [Any] else {
+              let size = meta["size"] as? Int, let dim = meta["dim"] as? Int, let vecDim = meta["vecDim"] as? Int else {
             throw NSError(domain: "ImageEmbedder", code: 2, userInfo: [NSLocalizedDescriptionKey: "vectors.json does not match this build"])
         }
         self.size = size
         self.dim = dim
-        self.labelCount = labels.count
-        self.scale = scale
-        self.bias = bias
-        vectors = try Self.halfFloats(Data(contentsOf: directory.appendingPathComponent("vectors.bin")), count: labels.count * dim)
+        self.vecDim = vecDim
+        projection = try Self.halfFloats(Data(contentsOf: directory.appendingPathComponent("compact.bin")), count: vecDim * dim)
 
         env = try ORTEnv(loggingLevel: .warning)
         let options = try ORTSessionOptions()
@@ -61,7 +56,7 @@ final class ImageEmbedder {
     /// float16 little-endian → Float.
     private static func halfFloats(_ data: Data, count: Int) throws -> [Float] {
         guard data.count == count * 2 else {
-            throw NSError(domain: "ImageEmbedder", code: 3, userInfo: [NSLocalizedDescriptionKey: "vectors.bin has the wrong size"])
+            throw NSError(domain: "ImageEmbedder", code: 3, userInfo: [NSLocalizedDescriptionKey: "compact.bin has the wrong size"])
         }
         return data.withUnsafeBytes { raw in
             (0..<count).map { i in Float(Float16(bitPattern: raw.loadUnaligned(fromByteOffset: i * 2, as: UInt16.self))) }
@@ -109,34 +104,34 @@ final class ImageEmbedder {
         return raw.withUnsafeBytes { Array($0.bindMemory(to: Float.self).prefix(dim)) }
     }
 
-    /// Each label's logit for an embedding.
-    func logits(_ embedding: [Float]) -> [Float] {
-        (0..<labelCount).map { l in
+    /// The compact vector of an embedding: the projection, L2-normalised (ml/compactlib.py `compact`).
+    func compact(_ embedding: [Float]) -> [Float] {
+        var out = [Float](repeating: 0, count: vecDim)
+        var norm: Float = 0
+        for r in 0..<vecDim {
             var dot: Float = 0
-            let row = l * dim
-            for i in 0..<dim { dot += embedding[i] * vectors[row + i] }
-            return scale * dot + bias
+            let row = r * dim
+            for i in 0..<dim { dot += embedding[i] * projection[row + i] }
+            out[r] = dot
+            norm += dot * dot
         }
+        let k = norm > 0 ? 1 / norm.squareRoot() : 0
+        return out.map { $0 * k }
     }
 
-    /// What the scan stores for a picture: the logits × 10, rounded (Photo.ai); nil when the picture can't be read.
-    /// The picture's embedding (a video's poster frame: lookalike videos, src/logic/lookalike.ts).
+    /// The picture's embedding (a video's poster frame: lookalike videos, src/logic/lookalike.ts); nil when it can't be read.
     func embed(_ cg: CGImage) -> [Float]? {
         guard let px = pixels(cg) else { return nil }
         return try? embedding(px)
     }
 
-    /// An embedding as int8 values in base64 (768 bytes → 1,024 characters). Each vector is scaled by its own
-    /// largest value, which the cosine between two vectors does not notice. Matches ImageEmbedder.kt `packed`.
+    /// A vector as int8 values in base64 (768 bytes → 1,024 characters; a compact vector 256 → 344). Each vector is
+    /// scaled by its own largest value, which the cosine between two vectors does not notice. Matches
+    /// ImageEmbedder.kt `packed` and ml/compactlib.py `pack`.
     static func packed(_ e: [Float]) -> String {
         let top = e.reduce(Float(0)) { max($0, abs($1)) }
         let k: Float = top > 0 ? 127 / top : 0
         let bytes = e.map { UInt8(bitPattern: Int8(clamping: Int(($0 * k).rounded()))) }
         return Data(bytes).base64EncodedString()
-    }
-
-    func scores(_ cg: CGImage) -> [Int]? {
-        guard let px = pixels(cg), let emb = try? embedding(px) else { return nil }
-        return logits(emb).map { Int(($0 * 10).rounded()) }
     }
 }

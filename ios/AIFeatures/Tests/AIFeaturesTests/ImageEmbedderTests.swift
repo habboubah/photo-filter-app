@@ -5,8 +5,8 @@ import XCTest
 
 /// The app's ImageEmbedder against the golden fixtures (fixtures/ai/): the
 /// same model inputs ml/fixtures.py ran through the Python reference must give
-/// the same embedding and label scores here — within expected.json's
-/// tolerances — so the thresholds tuned in Python hold on the iPhone.
+/// the same embedding and compact vector here — within expected.json's
+/// tolerances — so the labels, groups and search tuned in Python hold on the iPhone.
 /// ImageEmbedderTest.kt checks Android the same way.
 final class ImageEmbedderTests: XCTestCase {
     /// ios/AIFeatures/Tests/AIFeaturesTests/ → the repository root.
@@ -15,8 +15,8 @@ final class ImageEmbedderTests: XCTestCase {
         .deletingLastPathComponent().deletingLastPathComponent()
 
     private struct Expected: Decodable {
-        struct Tolerance: Decodable { let cosine: Float; let logit: Float }
-        struct Case: Decodable { let file: String; let embedding: [Float]; let logits: [Float]; let top: String }
+        struct Tolerance: Decodable { let cosine: Float; let vectorCosine: Float }
+        struct Case: Decodable { let file: String; let embedding: [Float]; let vector: [Float] }
         let aiVersion: Int
         let tolerance: Tolerance
         let cases: [Case]
@@ -41,11 +41,17 @@ final class ImageEmbedderTests: XCTestCase {
             let emb = try embedder.embedding(px)
             let cosine = zip(emb, c.embedding).reduce(Float(0)) { $0 + $1.0 * $1.1 }
             XCTAssertGreaterThanOrEqual(cosine, expected.tolerance.cosine, c.file)
-            let logits = embedder.logits(emb)
-            for (got, want) in zip(logits, c.logits) {
-                XCTAssertEqual(got, want, accuracy: expected.tolerance.logit, c.file)
-            }
+            let vec = embedder.compact(emb)
+            XCTAssertEqual(vec.count, c.vector.count, c.file)
+            let vecCosine = zip(vec, c.vector).reduce(Float(0)) { $0 + $1.0 * $1.1 }
+            XCTAssertGreaterThanOrEqual(vecCosine, expected.tolerance.vectorCosine, c.file)
         }
+    }
+
+    func testPacksLikeTheApp() {
+        // int8, scaled by the largest value: [0.5, -1, 0.25] → [64, -127, 32] (rounded), base64.
+        let packed = ImageEmbedder.packed([0.5, -1, 0.25])
+        XCTAssertEqual(Array(Data(base64Encoded: packed)!).map { Int8(bitPattern: $0) }, [64, -127, 32])
     }
 
     func testNormalisesToMinusOneToOne() {

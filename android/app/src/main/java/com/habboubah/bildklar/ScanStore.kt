@@ -23,12 +23,13 @@ class ScanStore(context: Context) : SQLiteOpenHelper(context, "bildklar-scan.db"
     companion object {
         /**
          * 2: videos and screen recordings; 3: the on-device AI's columns (November 2026); 4: the file
-         * format (MIME_TYPE), the folder (RELATIVE_PATH) and a video's picture (its poster frame's embedding).
+         * format (MIME_TYPE), the folder (RELATIVE_PATH) and a video's picture (its poster frame's embedding);
+         * 5: every photo's compact vector (the AI's version 2: labels, look-alikes and search come from it).
          */
-        const val SCHEMA = 4
+        const val SCHEMA = 5
         /**
          * What the AI still has to look at: analysed, readable (a hash), no screenshots; videos too (their
-         * poster frame, for lookalike videos — only the embedding is kept), not screen recordings.
+         * poster frame: lookalike videos and search), not screen recordings.
          */
         private const val AI_WANTED = "av < ? AND fv > 0 AND hash IS NOT NULL AND shot = 0 AND rec = 0"
     }
@@ -47,7 +48,7 @@ class ScanStore(context: Context) : SQLiteOpenHelper(context, "bildklar-scan.db"
                 fv INTEGER NOT NULL DEFAULT 0,
                 hash TEXT, sharp REAL, contrast REAL, expo REAL, clip REAL,
                 av INTEGER NOT NULL DEFAULT 0, ai TEXT,
-                fmt TEXT, dir TEXT, emb TEXT
+                fmt TEXT, dir TEXT, emb TEXT, vec TEXT
             )"""
         )
         db.execSQL("CREATE INDEX asset_t ON asset(t, id)")
@@ -57,11 +58,15 @@ class ScanStore(context: Context) : SQLiteOpenHelper(context, "bildklar-scan.db"
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-        // From 3 to 4 the rows stay: the new columns are filled by the next listing, nothing is analysed again.
-        if (oldVersion == 3 && newVersion == 4) {
-            db.execSQL("ALTER TABLE asset ADD COLUMN fmt TEXT")
-            db.execSQL("ALTER TABLE asset ADD COLUMN dir TEXT")
-            db.execSQL("ALTER TABLE asset ADD COLUMN emb TEXT")
+        // From 3 or 4 the rows stay: the new columns are filled by the next listing and the AI's next pass
+        // (its new version gives every photo that pass once more), nothing is analysed again.
+        if ((oldVersion == 3 || oldVersion == 4) && newVersion == 5) {
+            if (oldVersion == 3) {
+                db.execSQL("ALTER TABLE asset ADD COLUMN fmt TEXT")
+                db.execSQL("ALTER TABLE asset ADD COLUMN dir TEXT")
+                db.execSQL("ALTER TABLE asset ADD COLUMN emb TEXT")
+            }
+            db.execSQL("ALTER TABLE asset ADD COLUMN vec TEXT")
             return
         }
         // A cache: when its shape changes it is simply built again.
@@ -180,10 +185,10 @@ class ScanStore(context: Context) : SQLiteOpenHelper(context, "bildklar-scan.db"
         readableDatabase.rawQuery("SELECT COUNT(*) FROM asset WHERE $AI_WANTED", arrayOf(ImageEmbedder.AI_VERSION.toString()))
             .use { c -> if (c.moveToFirst()) c.getInt(0) else 0 }
 
-    /** One photo's (or video's) AI pass: the labels' logits × 10 for a photo, the packed embedding for a video; null: unreadable. */
-    data class AIResult(val id: String, val scores: IntArray?, val emb: String? = null)
+    /** One photo's (or video's) AI pass: its compact vector, packed, and a video's full embedding; null: unreadable. */
+    data class AIResult(val id: String, val vec: String?, val emb: String? = null)
 
-    /** The AI's pass over some photos and videos. `av` moves on either way. */
+    /** The AI's pass over some photos and videos. `av` moves on either way; version 1's label scores (`ai`) are cleared. */
     fun storeAI(results: List<AIResult>) {
         val db = writableDatabase
         db.beginTransaction()
@@ -193,7 +198,8 @@ class ScanStore(context: Context) : SQLiteOpenHelper(context, "bildklar-scan.db"
                 val id = r.id
                 v.clear()
                 v.put("av", ImageEmbedder.AI_VERSION)
-                if (r.scores != null) v.put("ai", r.scores.joinToString(",")) else v.putNull("ai")
+                v.putNull("ai")
+                if (r.vec != null) v.put("vec", r.vec) else v.putNull("vec")
                 if (r.emb != null) v.put("emb", r.emb) else v.putNull("emb")
                 db.update("asset", v, "id = ?", arrayOf(id))
             }
@@ -201,6 +207,18 @@ class ScanStore(context: Context) : SQLiteOpenHelper(context, "bildklar-scan.db"
         } finally {
             db.endTransaction()
         }
+    }
+
+    /** The compact vectors of these photos (PhotoLibrary.getVectors): only rows of the current AI version. */
+    fun vectors(ids: List<String>): JSArray {
+        val rows = JSArray()
+        val db = readableDatabase
+        for (id in ids) {
+            db.rawQuery("SELECT vec FROM asset WHERE id = ? AND av = ? AND vec IS NOT NULL", arrayOf(id, ImageEmbedder.AI_VERSION.toString())).use { c ->
+                if (c.moveToFirst()) rows.put(JSObject().put("id", id).put("v", c.getString(0)))
+            }
+        }
+        return rows
     }
 
     data class Result(
@@ -235,7 +253,7 @@ class ScanStore(context: Context) : SQLiteOpenHelper(context, "bildklar-scan.db"
     fun facts(offset: Int, limit: Int): JSArray {
         val rows = JSArray()
         readableDatabase.rawQuery(
-            "SELECT id, t, lat, lon, bytes, w, h, fav, shot, fv, hash, sharp, contrast, expo, clip, video, dur, rec, av, ai, fmt, dir, emb FROM asset ORDER BY t, id LIMIT ? OFFSET ?",
+            "SELECT id, t, lat, lon, bytes, w, h, fav, shot, fv, hash, sharp, contrast, expo, clip, video, dur, rec, av, vec IS NOT NULL, fmt, dir, emb FROM asset ORDER BY t, id LIMIT ? OFFSET ?",
             arrayOf(limit.toString(), offset.toString())
         ).use { c ->
             while (c.moveToNext()) {
@@ -254,11 +272,8 @@ class ScanStore(context: Context) : SQLiteOpenHelper(context, "bildklar-scan.db"
                 }
                 if (c.getInt(15) == 1) { o.put("video", true); o.put("dur", c.getLong(16)) }
                 if (c.getInt(17) == 1) o.put("rec", true)
-                if (c.getInt(18) == ImageEmbedder.AI_VERSION && !c.isNull(19)) {
-                    val ai = JSArray()
-                    for (part in c.getString(19).split(',')) part.toIntOrNull()?.let { ai.put(it) }
-                    o.put("ai", ai)
-                }
+                // The vector itself comes apart (getVectors): only its version rides with the facts.
+                if (c.getInt(18) == ImageEmbedder.AI_VERSION && c.getInt(19) == 1) o.put("vv", ImageEmbedder.AI_VERSION)
                 if (c.getInt(18) == ImageEmbedder.AI_VERSION && !c.isNull(22)) o.put("emb", c.getString(22))
                 if (!c.isNull(20)) o.put("fmt", c.getString(20))
                 if (!c.isNull(21) && c.getString(21).isNotEmpty()) o.put("dir", c.getString(21))

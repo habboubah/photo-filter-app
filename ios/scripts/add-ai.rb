@@ -1,6 +1,6 @@
 # Adds the on-device AI (docs/AI.md) to App.xcodeproj: ImageEmbedder.swift
 # in the App target's sources, the repository's ai-assets folder (the model
-# and the label vectors) as a folder resource of the app bundle, and ONNX
+# and the compact vectors' projection) as a folder resource of the app bundle, and ONNX
 # Runtime's Swift package (exact version below) linked into the App target.
 # Safe to run again: it only adds what is missing.
 #   gem install xcodeproj; ruby ios/scripts/add-ai.rb

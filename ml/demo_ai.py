@@ -1,7 +1,9 @@
 """
-The demo library's AI facts (src/native/demo/ai.json): every demo photo run
-through ai-assets/image.onnx with the phone's pre-processing, so the web
-demo, the screenshots and the privacy check show what a phone would.
+The demo library's AI facts (src/native/demo/ai.json): every demo photo (and
+each video's poster frame) run through ai-assets/image.onnx with the phone's
+pre-processing and turned into the compact vector a phone would store
+(ai-assets/compact.bin, docs/AI.md) — so the web demo, the screenshots and the
+privacy check show the labels, groups and search results a phone would.
 scripts/demo-facts.mjs merges them into facts.json.
 
   python ml/demo_ai.py && node --experimental-strip-types scripts/demo-facts.mjs
@@ -9,30 +11,21 @@ scripts/demo-facts.mjs merges them into facts.json.
 import json
 import os
 
-import numpy as np
-import onnxruntime as ort
-
-from eval import pixels
+from compactlib import compact, embed_files, load_projection, meta, pack
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DEMO = os.path.join(ROOT, 'src', 'native', 'demo')
 
 
 def main():
-    meta = json.load(open(os.path.join(ROOT, 'ai-assets', 'vectors.json')))
-    vecs = np.fromfile(os.path.join(ROOT, 'ai-assets', 'vectors.bin'), dtype=np.float16).astype(np.float32).reshape(len(meta['labels']), meta['dim'])
-    sess = ort.InferenceSession(os.path.join(ROOT, 'ai-assets', 'image.onnx'), providers=['CPUExecutionProvider'])
+    m = meta()
     manifest = json.load(open(os.path.join(DEMO, 'manifest.json')))
-    out = {}
-    for entry in manifest:
-        if entry.get('video'):
-            continue
-        x = pixels(os.path.join(DEMO, 'photos', entry['id'] + '.jpg'), meta['size'])[None]
-        emb = sess.run(None, {'pixels': x})[0][0]
-        logits = meta['scale'] * emb @ vecs.T + meta['bias']
-        out[entry['id']] = [int(round(float(v) * 10)) for v in logits]
+    entries = [e for e in manifest if not e.get('rec') and os.path.exists(os.path.join(DEMO, 'photos', e['id'] + '.jpg'))]
+    emb = embed_files([os.path.join(DEMO, 'photos', e['id'] + '.jpg') for e in entries], m['size'])
+    vecs = compact(emb, load_projection())
+    out = {e['id']: pack(v) for e, v in zip(entries, vecs)}
     with open(os.path.join(DEMO, 'ai.json'), 'w', encoding='utf-8') as f:
-        json.dump({'aiVersion': meta['aiVersion'], 'photos': out}, f, separators=(',', ':'))
+        json.dump({'aiVersion': m['aiVersion'], 'photos': out}, f, separators=(',', ':'))
         f.write('\n')
     print(f'{len(out)} photos → src/native/demo/ai.json')
 

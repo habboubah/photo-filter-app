@@ -64,7 +64,7 @@ android {
 }
 
 def copyAiAssets = tasks.register('copyAiAssets', Copy) {
-    from('../../ai-assets') { include 'image.onnx', 'vectors.bin', 'vectors.json', 'LICENSES.md' }
+    from('../../ai-assets') { include 'image.onnx', 'compact.bin', 'vectors.json', 'LICENSES.md' }
     into(layout.buildDirectory.dir('generated/ai-assets/ai'))
 }
 preBuild.dependsOn(copyAiAssets)

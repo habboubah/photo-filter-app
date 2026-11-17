@@ -60,6 +60,7 @@ public class PhotoLibraryPlugin: CAPPlugin, CAPBridgedPlugin, PHPhotoLibraryChan
         CAPPluginMethod(name: "cancelScan", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "getScanState", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "getFacts", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "getVectors", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "scoreFaces", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "thumbnail", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "createAlbum", returnType: CAPPluginReturnPromise),
@@ -401,21 +402,23 @@ public class PhotoLibraryPlugin: CAPPlugin, CAPBridgedPlugin, PHPhotoLibraryChan
                 if cancelled { break }
                 autoreleasepool {
                     guard let asset = byId[id] else {
-                        results.append(.init(id: id, scores: nil, aes: nil, util: nil))
+                        results.append(.init(id: id, vec: nil, aes: nil, util: nil))
                         return
                     }
                     let fit = FeatureMath.fitSize(asset.pixelWidth, asset.pixelHeight)
-                    guard let image = requestImage(asset, size: CGSize(width: fit.w, height: fit.h)), let cg = image.cgImage else {
-                        results.append(.init(id: id, scores: nil, aes: nil, util: nil))
+                    guard let image = requestImage(asset, size: CGSize(width: fit.w, height: fit.h)), let cg = image.cgImage,
+                          let emb = embedder.embed(cg) else {
+                        results.append(.init(id: id, vec: nil, aes: nil, util: nil))
                         return
                     }
-                    // A video: only its poster frame's embedding (lookalike videos), no labels.
+                    let vec = ImageEmbedder.packed(embedder.compact(emb))
+                    // A video: its poster frame's vector, and the full embedding for lookalike videos.
                     if asset.mediaType == .video {
-                        results.append(.init(id: id, scores: nil, aes: nil, util: nil, emb: embedder.embed(cg).map(ImageEmbedder.packed)))
+                        results.append(.init(id: id, vec: vec, aes: nil, util: nil, emb: ImageEmbedder.packed(emb)))
                         return
                     }
                     let vision = aesthetics(cg, orientation: CGImagePropertyOrientation(image.imageOrientation))
-                    results.append(.init(id: id, scores: embedder.scores(cg), aes: vision?.aes, util: vision?.util))
+                    results.append(.init(id: id, vec: vec, aes: vision?.aes, util: vision?.util))
                 }
             }
             store.storeAI(results)
@@ -473,6 +476,15 @@ public class PhotoLibraryPlugin: CAPPlugin, CAPBridgedPlugin, PHPhotoLibraryChan
         io.async { [weak self] in
             guard let store = self?.store else { call.reject("No scan cache"); return }
             call.resolve(["rows": store.facts(offset: offset, limit: limit), "total": store.count()])
+        }
+    }
+
+    /// The compact vectors of these photos (src/logic/vectors.ts asks for the ones it lacks, PAGE at a time).
+    @objc func getVectors(_ call: CAPPluginCall) {
+        let ids = (call.getArray("ids") as? [String] ?? []).prefix(5000).map { $0 }
+        io.async { [weak self] in
+            guard let store = self?.store else { call.reject("No scan cache"); return }
+            call.resolve(["rows": store.vectors(ids)])
         }
     }
 

@@ -1,62 +1,7 @@
 {
   "model": "google/siglip2-base-patch32-256",
-  "aiVersion": 1,
+  "aiVersion": 2,
   "size": 256,
   "dim": 768,
-  "scale": 111.832573,
-  "bias": -16.766876,
-  "labels": [
-    {
-      "id": "receipt",
-      "kind": "utility"
-    },
-    {
-      "id": "document",
-      "kind": "utility"
-    },
-    {
-      "id": "whiteboard",
-      "kind": "utility"
-    },
-    {
-      "id": "screen",
-      "kind": "utility"
-    },
-    {
-      "id": "chat",
-      "kind": "utility"
-    },
-    {
-      "id": "meme",
-      "kind": "utility"
-    },
-    {
-      "id": "code",
-      "kind": "utility"
-    },
-    {
-      "id": "accidental",
-      "kind": "utility"
-    },
-    {
-      "id": "kids",
-      "kind": "memory"
-    },
-    {
-      "id": "people",
-      "kind": "memory"
-    },
-    {
-      "id": "pet",
-      "kind": "memory"
-    },
-    {
-      "id": "food",
-      "kind": "memory"
-    },
-    {
-      "id": "landscape",
-      "kind": "memory"
-    }
-  ]
+  "vecDim": 256
 }

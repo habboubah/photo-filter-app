@@ -11,8 +11,8 @@ import java.util.zip.Inflater
 /**
  * The app's ImageEmbedder against the golden fixtures (fixtures/ai/): the same
  * model inputs ml/fixtures.py ran through the Python reference must give the
- * same embedding and label scores here — within expected.json's tolerances —
- * so the thresholds tuned in Python hold on Android. Runs ONNX Runtime's
+ * same embedding and compact vector here — within expected.json's tolerances —
+ * so the labels, groups and search tuned in Python hold on Android. Runs ONNX Runtime's
  * desktop library on the build machine (app/build.gradle swaps it in for the
  * unit tests). ImageEmbedderTests.swift checks the iPhone the same way.
  * Run: npm run test:android
@@ -86,22 +86,32 @@ class ImageEmbedderTest {
         val json = File(fixtures, "expected.json").readText()
         assertEquals(ImageEmbedder.AI_VERSION, ImageEmbedder.number(json, "aiVersion").toInt())
         val minCosine = ImageEmbedder.number(json, "cosine").toFloat()
-        val maxLogitError = ImageEmbedder.number(json, "logit").toFloat()
-        val cases = Regex("\"file\":\\s*\"([^\"]+)\",\\s*\"embedding\":\\s*\\[([^\\]]*)\\],\\s*\"logits\":\\s*\\[([^\\]]*)\\]").findAll(json).toList()
+        val minVectorCosine = ImageEmbedder.number(json, "vectorCosine").toFloat()
+        val cases = Regex("\"file\":\\s*\"([^\"]+)\",\\s*\"embedding\":\\s*\\[([^\\]]*)\\],\\s*\"vector\":\\s*\\[([^\\]]*)\\]").findAll(json).toList()
         assertTrue("no cases in expected.json", cases.isNotEmpty())
         ImageEmbedder(assets).use { embedder ->
             for (c in cases) {
-                val (file, embText, logitText) = c.destructured
+                val (file, embText, vecText) = c.destructured
                 val (w, _, argb) = readPng(File(fixtures, file))
                 assertEquals(file, embedder.size, w)
                 val emb = embedder.embedding(ImageEmbedder.normalise(argb, embedder.size))
                 val want = numbers(embText)
                 val cosine = emb.indices.fold(0f) { s, i -> s + emb[i] * want[i] }
                 assertTrue("$file: cosine $cosine", cosine >= minCosine)
-                val logits = embedder.logits(emb)
-                numbers(logitText).forEachIndexed { i, w -> assertEquals("$file label $i", w, logits[i], maxLogitError) }
+                val vec = embedder.compact(emb)
+                val wantVec = numbers(vecText)
+                assertEquals(file, wantVec.size, vec.size)
+                val vecCosine = vec.indices.fold(0f) { s, i -> s + vec[i] * wantVec[i] }
+                assertTrue("$file: vector cosine $vecCosine", vecCosine >= minVectorCosine)
             }
         }
+    }
+
+    @Test
+    fun packsLikeTheApp() {
+        // int8, scaled by the largest value: [0.5, -1, 0.25] → [64, -127, 32], base64.
+        val bytes = java.util.Base64.getDecoder().decode(ImageEmbedder.packed(floatArrayOf(0.5f, -1f, 0.25f)))
+        assertEquals(listOf<Byte>(64, -127, 32), bytes.toList())
     }
 
     @Test

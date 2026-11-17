@@ -448,12 +448,13 @@ class PhotoLibraryPlugin : Plugin() {
                 if (cancelled.get()) break
                 val video = isVideo(id)
                 val result = try {
-                    // A video's thumbnail is its poster frame: only its embedding is kept (lookalike videos), no labels.
+                    // A video's thumbnail is its poster frame: its vector, and the full embedding for lookalike videos.
                     val bmp = context.contentResolver.loadThumbnail(contentUri(id), Size(FeatureMath.LONG_SIDE, FeatureMath.LONG_SIDE), null)
                     val fitted = fit(bmp)
                     try {
-                        if (video) ScanStore.AIResult(id, null, ImageEmbedder.packed(model.embed(fitted)))
-                        else ScanStore.AIResult(id, model.scores(fitted))
+                        val emb = model.embed(fitted)
+                        val vec = ImageEmbedder.packed(model.compact(emb))
+                        if (video) ScanStore.AIResult(id, vec, ImageEmbedder.packed(emb)) else ScanStore.AIResult(id, vec)
                     } finally {
                         if (fitted !== bmp) fitted.recycle()
                         bmp.recycle()
@@ -484,6 +485,19 @@ class PhotoLibraryPlugin : Plugin() {
         io.execute {
             try {
                 call.resolve(JSObject().put("rows", store.facts(offset, limit)).put("total", store.count()))
+            } catch (e: Exception) {
+                call.reject("Could not read the cache", e)
+            }
+        }
+    }
+
+    /** The compact vectors of these photos (src/logic/vectors.ts asks for the ones it lacks, PAGE at a time). */
+    @PluginMethod
+    fun getVectors(call: PluginCall) {
+        val ids = call.getArray("ids")?.toList<String>()?.take(5000) ?: emptyList()
+        io.execute {
+            try {
+                call.resolve(JSObject().put("rows", store.vectors(ids)))
             } catch (e: Exception) {
                 call.reject("Could not read the cache", e)
             }

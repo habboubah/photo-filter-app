@@ -24,13 +24,18 @@ final class ScanStore {
         }
         exec("PRAGMA journal_mode = WAL")
         // A cache: when its shape changes it is simply built again (the next scan fills it) —
-        // except from 3 to 4, whose new columns are filled without analysing a photo again.
-        if userVersion() == 3 {
-            exec("ALTER TABLE asset ADD COLUMN fmt TEXT")
-            exec("ALTER TABLE asset ADD COLUMN edited INTEGER")
-            exec("ALTER TABLE asset ADD COLUMN emb TEXT")
+        // except from 3 and 4, whose new columns are filled without analysing a photo again
+        // (the AI's new version gives every photo its AI pass once more, the features stay).
+        let from = userVersion()
+        if from == 3 || from == 4 {
+            if from == 3 {
+                exec("ALTER TABLE asset ADD COLUMN fmt TEXT")
+                exec("ALTER TABLE asset ADD COLUMN edited INTEGER")
+                exec("ALTER TABLE asset ADD COLUMN emb TEXT")
+            }
+            exec("ALTER TABLE asset ADD COLUMN vec TEXT")
             exec("PRAGMA user_version = \(Self.schema)")
-        } else if userVersion() < Self.schema {
+        } else if from < Self.schema {
             exec("DROP TABLE IF EXISTS asset")
             exec("DROP TABLE IF EXISTS meta")
             exec("PRAGMA user_version = \(Self.schema)")
@@ -50,7 +55,7 @@ final class ScanStore {
               hash TEXT, sharp REAL, contrast REAL, expo REAL, clip REAL,
               faces INTEGER, faceq REAL, eyes REAL,
               av INTEGER NOT NULL DEFAULT 0, ai TEXT, aes REAL, util INTEGER,
-              fmt TEXT, edited INTEGER, emb TEXT
+              fmt TEXT, edited INTEGER, emb TEXT, vec TEXT
             )
             """)
         exec("CREATE INDEX IF NOT EXISTS asset_t ON asset(t, id)")
@@ -62,8 +67,9 @@ final class ScanStore {
     deinit { sqlite3_close(db) }
 
     /// 2: videos, screen recordings, Live Photos and bursts; 3: the on-device AI's columns (November 2026);
-    /// 4: the file format, whether a photo was edited, and a video's picture (the AI's embedding of its poster frame).
-    private static let schema: Int64 = 4
+    /// 4: the file format, whether a photo was edited, and a video's picture (the AI's embedding of its poster frame);
+    /// 5: every photo's compact vector (the AI's version 2: labels, look-alikes and search come from it, docs/AI.md).
+    private static let schema: Int64 = 5
 
     private func userVersion() -> Int64 {
         guard let stmt = prepare("PRAGMA user_version") else { return 0 }
@@ -176,7 +182,7 @@ final class ScanStore {
     func pendingCount() -> Int { count("SELECT COUNT(*) FROM asset WHERE fv < \(FeatureMath.featureVersion)") }
 
     /// What the AI still has to look at, newest first: analysed photos with a local copy (a hash), no screenshots;
-    /// videos too (their poster frame, for lookalike videos — only the embedding is kept), not screen recordings.
+    /// videos too (their poster frame: lookalike videos and search), not screen recordings.
     private static let aiWanted = "av < ? AND fv > 0 AND hash IS NOT NULL AND shot = 0 AND rec = 0"
 
     /// Photos whose file format is not known yet: new or changed ones, and every photo cached before schema 4.
@@ -220,24 +226,25 @@ final class ScanStore {
 
     struct AIResult {
         let id: String
-        /// The labels' logits × 10 (nil: the picture could not be read).
-        let scores: [Int]?
+        /// The compact vector, packed (ImageEmbedder.packed); nil: the picture could not be read.
+        let vec: String?
         /// Vision's aesthetics score and utility flag (iOS 18+).
         let aes: Double?
         let util: Bool?
-        /// A video's picture: its poster frame's embedding, packed (ImageEmbedder.packed). Photos keep only their scores.
+        /// A video's picture: its poster frame's full embedding, packed (lookalike videos).
         var emb: String? = nil
     }
 
     /// The AI's pass over some photos; `av` moves on either way, so an unreadable photo isn't tried again and again.
+    /// The labels' scores of AI version 1 (`ai`) are cleared: the app scores the labels from the vector now.
     func storeAI(_ results: [AIResult]) {
-        guard let stmt = prepare("UPDATE asset SET av = ?, ai = ?, aes = ?, util = ?, emb = ? WHERE id = ?") else { return }
+        guard let stmt = prepare("UPDATE asset SET av = ?, ai = NULL, vec = ?, aes = ?, util = ?, emb = ? WHERE id = ?") else { return }
         defer { sqlite3_finalize(stmt) }
         transaction {
             for r in results {
                 sqlite3_reset(stmt)
                 bind(stmt, 1, Int64(ImageEmbedder.aiVersion))
-                if let s = r.scores { bind(stmt, 2, s.map(String.init).joined(separator: ",")) } else { sqlite3_bind_null(stmt, 2) }
+                if let v = r.vec { bind(stmt, 2, v) } else { sqlite3_bind_null(stmt, 2) }
                 bind(stmt, 3, r.aes)
                 if let u = r.util { bind(stmt, 4, Int64(u ? 1 : 0)) } else { sqlite3_bind_null(stmt, 4) }
                 if let e = r.emb { bind(stmt, 5, e) } else { sqlite3_bind_null(stmt, 5) }
@@ -245,6 +252,20 @@ final class ScanStore {
                 sqlite3_step(stmt)
             }
         }
+    }
+
+    /// The compact vectors of these photos (PhotoLibrary.getVectors): only rows of the current AI version.
+    func vectors(_ ids: [String]) -> [[String: String]] {
+        guard let stmt = prepare("SELECT vec FROM asset WHERE id = ? AND av = ? AND vec IS NOT NULL") else { return [] }
+        defer { sqlite3_finalize(stmt) }
+        var out: [[String: String]] = []
+        out.reserveCapacity(ids.count)
+        for id in ids {
+            sqlite3_reset(stmt)
+            bind(stmt, 1, id); bind(stmt, 2, Int64(ImageEmbedder.aiVersion))
+            if sqlite3_step(stmt) == SQLITE_ROW { out.append(["id": id, "v": String(cString: sqlite3_column_text(stmt, 0))]) }
+        }
+        return out
     }
 
     /// An analysis: the features, or none when no local copy of the picture exists (an iCloud-only original is never downloaded).
@@ -300,7 +321,7 @@ final class ScanStore {
     func facts(offset: Int, limit: Int) -> [[String: Any]] {
         guard let stmt = prepare("""
             SELECT id, t, lat, lon, bytes, w, h, fav, shot, fv, hash, sharp, contrast, expo, clip, faces, faceq, eyes,
-                   video, dur, rec, live, burst, pick, av, ai, aes, util, fmt, edited, emb
+                   video, dur, rec, live, burst, pick, av, vec IS NOT NULL, aes, util, fmt, edited, emb
             FROM asset ORDER BY t, id LIMIT ? OFFSET ?
             """) else { return [] }
         defer { sqlite3_finalize(stmt) }
@@ -342,9 +363,8 @@ final class ScanStore {
             if sqlite3_column_type(stmt, 22) != SQLITE_NULL { o["burst"] = String(cString: sqlite3_column_text(stmt, 22)) }
             if sqlite3_column_int64(stmt, 23) == 1 { o["pick"] = true }
             if sqlite3_column_int64(stmt, 24) == Int64(ImageEmbedder.aiVersion) {
-                if sqlite3_column_type(stmt, 25) != SQLITE_NULL {
-                    o["ai"] = String(cString: sqlite3_column_text(stmt, 25)).split(separator: ",").compactMap { Int($0) }
-                }
+                // The vector itself comes apart (getVectors): only its version rides with the facts.
+                if sqlite3_column_int64(stmt, 25) == 1 { o["vv"] = ImageEmbedder.aiVersion }
                 if sqlite3_column_type(stmt, 26) != SQLITE_NULL { o["aes"] = sqlite3_column_double(stmt, 26) }
                 if sqlite3_column_type(stmt, 27) != SQLITE_NULL { o["util"] = sqlite3_column_int64(stmt, 27) == 1 }
                 if sqlite3_column_type(stmt, 30) != SQLITE_NULL { o["emb"] = String(cString: sqlite3_column_text(stmt, 30)) }

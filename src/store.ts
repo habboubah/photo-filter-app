@@ -1,8 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { App as CapacitorApp } from '@capacitor/app';
 import type { Album, Photo, Storage, ThemeMode } from './types';
 import translations, { DEFAULT_LANGUAGE, isLanguage, Language, loadLanguage } from './translations';
-import { Access, PhotoLibrary, ScanProgress, loadAllFacts } from './native/photoLibrary';
+import { Access, PAGE, PhotoLibrary, ScanProgress, loadAllFacts } from './native/photoLibrary';
+import { Vectors } from './logic/vectors';
+import { AI_VERSION, type LabelModel, labelModel, scoreLabels, withScores } from './logic/ai';
 import { PRODUCT_ID, Purchases } from './native/purchases';
 import { AppState, RECENT_ALBUMS, SCHEMA_VERSION, emptyState, normalizeState, pruneLater } from './logic/state';
 import type { TripEdits } from './logic/trips';
@@ -24,7 +26,9 @@ import { LocalNotifications } from '@capacitor/local-notifications';
  *   SQLite (PhotoLibrary getState/setState) — localStorage on the web —
  *   debounced, and only after they were read, so a slow first read can never
  *   be overwritten by the empty default.
- * - The photo facts come from the native scan cache, page by page.
+ * - The photo facts come from the native scan cache, page by page; the
+ *   photos' compact vectors (src/logic/vectors.ts) come apart, once each, and
+ *   the label scores the app works out from them are laid onto the photos.
  */
 
 export const KEY_PREFIX = 'bildklar-';
@@ -214,11 +218,51 @@ export function useAppStore() {
   /* ----------------------------------------------------- photos and scan */
 
   const [access, setAccess] = useState<Access | null>(null);
-  const [photos, setPhotos] = useState<Photo[] | null>(null);
+  /** The facts as the phone reports them; `photos` (below) are these with the label scores laid on. */
+  const [facts, setPhotos] = useState<Photo[] | null>(null);
   const [scan, setScan] = useState<ScanView>({ running: false, phase: 'list', done: 0, total: 0, lastScanAt: 0 });
   const [faces, setFaces] = useState<Map<string, Partial<Photo>>>(() => new Map());
   const [storage, setStorage] = useState<Storage | null>(null);
   const loading = useRef(false);
+
+  /* ------------------------------------------- the AI's vectors and labels */
+
+  // The compact vectors the app lacks are fetched once each (PAGE per call) after every load of the facts.
+  const [vectors, setVectors] = useState<Vectors>(() => Vectors.empty());
+  const vectorsRef = useRef(vectors);
+  vectorsRef.current = vectors;
+  const fetchingVectors = useRef(false);
+  useEffect(() => {
+    if (!facts || fetchingVectors.current) return;
+    const missing = facts.filter(p => p.vv === AI_VERSION && !vectorsRef.current.has(p.id)).map(p => p.id);
+    if (!missing.length) return;
+    fetchingVectors.current = true;
+    void (async () => {
+      let next = vectorsRef.current;
+      try {
+        for (let i = 0; i < missing.length; i += PAGE) {
+          const { rows } = await PhotoLibrary.getVectors({ ids: missing.slice(i, i + PAGE) });
+          next = next.with(rows);
+        }
+      } catch { /* an older native build: no vectors, the app works without them */ }
+      fetchingVectors.current = false;
+      setVectors(next);
+    })();
+  }, [facts]);
+  // The labels' vectors (src/logic/aiLabels.json) load apart from the main bundle.
+  const [labels, setLabels] = useState<LabelModel | null>(null);
+  useEffect(() => {
+    void import('./logic/aiLabels.json').then(m => setLabels(labelModel(m.default))).catch(() => setLabels(null));
+  }, []);
+  // Each photo's label scores, worked out once per vector (only the new ones when more arrive).
+  const scoresRef = useRef<Int16Array | undefined>(undefined);
+  const scores = useMemo(() => {
+    if (!labels || !vectors.size) return null;
+    const next = scoreLabels(vectors, labels, scoresRef.current);
+    scoresRef.current = next;
+    return next;
+  }, [vectors, labels]);
+  const photos = useMemo(() => (facts && scores ? withScores(facts, vectors, scores) : facts), [facts, vectors, scores]);
 
   /** Free and total space on the phone; asked again after deleting and when the app comes back. */
   const refreshStorage = useCallback(() => {
@@ -421,7 +465,7 @@ export function useAppStore() {
     reminder, setReminder,
     owned: isOwned, setOwned,
     access, refreshAccess, accessGranted,
-    photos, scan, startScan, reload, removePhotos,
+    photos, scan, startScan, reload, removePhotos, vectors,
     faces, scoreFaces,
     appAlbums,
     storage, refreshStorage,
