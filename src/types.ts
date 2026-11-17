@@ -127,6 +127,8 @@ export interface Group {
   best: string;
   /** The one the app would keep. */
   suggested: string;
+  /** A duplicate group held together by a copy only the AI's vectors confirmed (src/logic/similar.ts): one to check. */
+  weak?: boolean;
 }
 
 export interface CleanupSummary {

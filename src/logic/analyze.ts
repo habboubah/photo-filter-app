@@ -79,7 +79,7 @@ export function buildGroups(lib: Library, raw: RawGroup[], state: AppState, face
     const ranked = g.kind === 'duplicate' ? rankDuplicates(photos) : g.kind === 'lookalike' ? rankLookalike(photos) : rankGroup(photos);
     const suggested = ranked[0]?.id ?? g.ids[0];
     const picked = state.best[g.key];
-    return { key: g.key, kind: g.kind, ids: g.ids, suggested, best: picked && g.ids.includes(picked) ? picked : suggested };
+    return { key: g.key, kind: g.kind, ids: g.ids, suggested, best: picked && g.ids.includes(picked) ? picked : suggested, ...(g.weak ? { weak: true } : {}) };
   }).sort((a, b) => (lib.byId.get(b.ids[0])?.t ?? 0) - (lib.byId.get(a.ids[0])?.t ?? 0));
 }
 

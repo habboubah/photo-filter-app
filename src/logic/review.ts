@@ -3,6 +3,7 @@ import { utilityLabel, type UtilityLabel } from './ai';
 import { blurLevel } from './blur';
 import { exposureLevel, type ExposureLevel } from './exposure';
 import { isProtected } from './protect';
+import { type Cos, type Detail, type Trust, blurryTrust, exposureTrust, groupVerdict, screenshotTrust, utilityTrust } from './confidence';
 
 /*
  * A review: photos shown one by one, each with the app's suggestion, swiped
@@ -24,17 +25,34 @@ export interface ReviewItem {
   level?: Confidence;
   /** For `utility`: what the on-device AI took the photo for (src/logic/ai.ts). */
   label?: UtilityLabel;
+  /** For a suggested delete: how sure the app is (src/logic/confidence.ts). */
+  trust?: Trust;
+  /** For a group's extra shot: the one reason shown (blurrier, eyes closed, a smaller copy …). */
+  detail?: Detail;
 }
 
 const extraReason = (g: Group): Reason => (g.kind === 'duplicate' ? 'duplicate' : g.kind === 'lookalike' ? 'lookalike' : 'similar');
 
-/** A similar or duplicate group: the best one (keep), then the others (delete), in time order. */
-export function reviewGroup(group: Group, kept: Set<string>, byId: Map<string, Photo>): ReviewItem[] {
-  return group.ids.map(id => ({
-    id,
-    suggest: id === group.best || isProtected(byId.get(id) ?? { id }, kept) ? 'keep' : 'delete',
-    reason: id === group.best ? (group.kind === 'similar' ? 'best' : group.kind === 'lookalike' ? 'bestTake' : 'original') : extraReason(group),
-  }));
+/** The verdict on a group's extra shot (src/logic/confidence.ts), or nothing when a photo is missing. */
+function extraVerdict(group: Group, id: string, byId: Map<string, Photo>, cos?: Cos): Pick<ReviewItem, 'trust' | 'detail'> {
+  const p = byId.get(id);
+  const best = byId.get(group.best);
+  if (!p || !best) return {};
+  const v = groupVerdict(group, p, best, cos?.(id, best.id));
+  return v.detail ? { trust: v.trust, detail: v.detail } : { trust: v.trust };
+}
+
+/** A similar or duplicate group: the best one (keep), then the others (delete), in time order. `cos`: the vectors' cosine. */
+export function reviewGroup(group: Group, kept: Set<string>, byId: Map<string, Photo>, cos?: Cos): ReviewItem[] {
+  return group.ids.map(id => {
+    const keep = id === group.best || isProtected(byId.get(id) ?? { id }, kept);
+    return {
+      id,
+      suggest: keep ? 'keep' : 'delete',
+      reason: id === group.best ? (group.kind === 'similar' ? 'best' : group.kind === 'lookalike' ? 'bestTake' : 'original') : extraReason(group),
+      ...(keep ? {} : extraVerdict(group, id, byId, cos)),
+    };
+  });
 }
 
 /** The largest files: nothing suggested — a big file is often a precious one; the reason shows its size. */
@@ -44,40 +62,40 @@ export function reviewLarge(photos: Photo[]): ReviewItem[] {
 
 /** Screenshots: all suggested for deleting (the list holds no favourites and none the user kept). */
 export function reviewScreenshots(photos: Photo[]): ReviewItem[] {
-  return photos.map(p => ({ id: p.id, suggest: 'delete', reason: 'screenshot' }));
+  return photos.map(p => ({ id: p.id, suggest: 'delete', reason: 'screenshot', trust: screenshotTrust() }));
 }
 
 /** Utility photos the on-device AI found (receipts, documents, …): all suggested for deleting, each with its label. */
 export function reviewUtility(photos: Photo[]): ReviewItem[] {
-  return photos.map(p => ({ id: p.id, suggest: 'delete', reason: 'utility', label: utilityLabel(p) ?? undefined }));
+  return photos.map(p => ({ id: p.id, suggest: 'delete', reason: 'utility', label: utilityLabel(p) ?? undefined, trust: utilityTrust(p) }));
 }
 
 /** Too dark or too bright photos: all suggested for deleting, each with its reason. */
 export function reviewExposure(photos: Photo[], level: ExposureLevel): ReviewItem[] {
-  return photos.map(p => ({ id: p.id, suggest: 'delete', reason: level }));
+  return photos.map(p => ({ id: p.id, suggest: 'delete', reason: level, trust: exposureTrust(p) }));
 }
 
 /** Blurry photos: all suggested for deleting. */
 export function reviewBlurry(photos: Photo[]): ReviewItem[] {
-  return photos.map(p => ({ id: p.id, suggest: 'delete', reason: 'blurry', level: blurLevel(p) ?? undefined }));
+  return photos.map(p => ({ id: p.id, suggest: 'delete', reason: 'blurry', level: blurLevel(p) ?? undefined, trust: blurryTrust(p) }));
 }
 
 /** Everything the clean-up card counts: the extra shots of each group, then the blurry ones, the too dark and too bright ones, the old screenshots, then the utility photos — each photo once. */
 export function reviewCleanup(
   groups: Group[], blurry: Photo[], kept: Set<string>, byId: Map<string, Photo>, shots: Photo[] = [], utility: Photo[] = [],
-  exposure: Photo[] = [],
+  exposure: Photo[] = [], cos?: Cos,
 ): ReviewItem[] {
   const items: ReviewItem[] = [];
   for (const g of groups) {
     for (const id of g.ids) {
       if (id === g.best || isProtected(byId.get(id) ?? { id }, kept)) continue;
-      items.push({ id, suggest: 'delete', reason: extraReason(g) });
+      items.push({ id, suggest: 'delete', reason: extraReason(g), ...extraVerdict(g, id, byId, cos) });
     }
   }
   const seen = new Set<string>();
   return [
     ...items, ...reviewBlurry(blurry.filter(p => !isProtected(p, kept))),
-    ...exposure.filter(p => !isProtected(p, kept)).map(p => ({ id: p.id, suggest: 'delete' as const, reason: (exposureLevel(p) ?? 'dark') as Reason })),
+    ...exposure.filter(p => !isProtected(p, kept)).map(p => ({ id: p.id, suggest: 'delete' as const, reason: (exposureLevel(p) ?? 'dark') as Reason, trust: exposureTrust(p) })),
     ...reviewScreenshots(shots.filter(p => !isProtected(p, kept))),
     ...reviewUtility(utility.filter(p => !isProtected(p, kept))),
   ].filter(i => (seen.has(i.id) ? false : (seen.add(i.id), true)));
@@ -91,21 +109,21 @@ export function reviewCleanup(
  * delete, every other video → keep, its length and size shown.
  */
 export function reviewTrip(
-  ids: string[], groups: Group[], byId: Map<string, Photo>, kept: Set<string>, oldShot?: (p: Photo) => boolean,
+  ids: string[], groups: Group[], byId: Map<string, Photo>, kept: Set<string>, oldShot?: (p: Photo) => boolean, cos?: Cos,
 ): ReviewItem[] {
-  const extra = new Map<string, Reason>();
-  for (const g of groups) for (const id of g.ids) if (id !== g.best) extra.set(id, extraReason(g));
+  const extra = new Map<string, Group>();
+  for (const g of groups) for (const id of g.ids) if (id !== g.best) extra.set(id, g);
   return ids.map(id => {
     const p = byId.get(id);
     const level = p ? blurLevel(p) : null;
     const protectedPhoto = isProtected(p ?? { id }, kept);
-    const why = extra.get(id);
-    if (!protectedPhoto && why) return { id, suggest: 'delete', reason: why };
-    if (!protectedPhoto && (p?.shot || p?.rec) && oldShot?.(p)) return { id, suggest: 'delete', reason: 'screenshot' };
+    const g = extra.get(id);
+    if (!protectedPhoto && g) return { id, suggest: 'delete', reason: extraReason(g), ...extraVerdict(g, id, byId, cos) };
+    if (!protectedPhoto && (p?.shot || p?.rec) && oldShot?.(p)) return { id, suggest: 'delete', reason: 'screenshot', trust: screenshotTrust() };
     if (p?.video) return { id, suggest: 'keep', reason: 'video' };
     const exposure = p && !protectedPhoto ? exposureLevel(p) : null;
-    if (exposure) return { id, suggest: 'delete', reason: exposure };
-    if (!protectedPhoto && (level === 'high' || level === 'medium')) return { id, suggest: 'delete', reason: 'blurry', level };
+    if (exposure) return { id, suggest: 'delete', reason: exposure, trust: exposureTrust(p!) };
+    if (!protectedPhoto && (level === 'high' || level === 'medium')) return { id, suggest: 'delete', reason: 'blurry', level, trust: blurryTrust(p!) };
     return { id, suggest: 'keep', reason: 'trip' };
   });
 }

@@ -4,6 +4,7 @@ import { Check, Clock, FolderInput, Play, Plus, Shield, Trash2, Undo2, X } from 
 import type { Confidence, Photo } from '../types';
 import { Strings, bytes, fmt, num, plural } from '../translations';
 import { Decision, ReviewItem, Session, albumPlan, deleteSplit, isNewAlbum, laterIds, newAlbumKey, toDelete } from '../logic/review';
+import type { Detail, Trust } from '../logic/confidence';
 import { duration } from '../logic/large';
 import { BigNumber } from '../ui/Controls';
 import { Button, IconButton } from '../ui/Button';
@@ -161,8 +162,15 @@ function Card({ t, item, photo, debug, onDecide, onProtect, onPreview }: {
     video: photo ? `${duration(photo.dur ?? 0)} · ${bytes(t, photo.bytes)}` : '',
     lookalike: t.reasonLookalike, bestTake: t.reasonBestTake, app: t.reasonApp,
   };
+  const details: Record<Detail, string> = {
+    exactCopy: t.detailExactCopy, smallerCopy: t.detailSmallerCopy, alteredCopy: t.detailAlteredCopy, burstExtra: t.detailBurstExtra,
+    blurrier: t.detailBlurrier, eyesClosed: t.detailEyesClosed, worseLight: t.detailWorseLight, nearlySame: t.detailNearlySame,
+  };
+  const trusts: Record<Trust, string> = { sure: t.trustSure, likely: t.trustLikely, check: t.trustCheck };
   const chip = item.suggest === 'delete' ? t.suggestDelete : item.suggest === 'keep' ? t.suggestKeep : '';
-  const reason = reasons[item.reason];
+  // A group's extra shot says what is worse about it (blurrier, eyes closed, a smaller copy …), else why it was suggested.
+  const reason = item.suggest === 'delete' && item.detail ? details[item.detail] : reasons[item.reason];
+  const trust = item.suggest === 'delete' && item.trust ? trusts[item.trust] : '';
   const when = photo ? new Date(photo.t).toLocaleString(t.locale, { dateStyle: 'medium', timeStyle: 'short' }) : '';
 
   const fling = (d: Decision) => {
@@ -205,7 +213,7 @@ function Card({ t, item, photo, debug, onDecide, onProtect, onPreview }: {
         }}
         className="relative flex-1 min-h-[300px] rounded-lg overflow-hidden bg-surface shadow-e2 touch-none cursor-grab active:cursor-grabbing"
         role="img"
-        aria-label={[when, chip, reason].filter(Boolean).join('. ')}
+        aria-label={[when, chip, trust, reason].filter(Boolean).join('. ')}
       >
         <div className="absolute inset-0"><Thumb id={item.id} size={LARGE} className="!rounded-none !object-contain bg-surface-2" /></div>
         <motion.span style={{ opacity: delOpacity }} className="absolute top-6 right-6 px-4 py-2 rounded-[12px] border-[3px] border-neg bg-surface text-neg text-heading font-extrabold rotate-[8deg]" aria-hidden="true">
@@ -218,6 +226,12 @@ function Card({ t, item, photo, debug, onDecide, onProtect, onPreview }: {
           {t.keep}
         </motion.span>
         <span className="absolute bottom-3 start-3 px-2.5 py-1 rounded-full bg-veil text-on-color text-caption font-bold">{when}</span>
+        {trust && (
+          <span className="absolute bottom-3 end-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-veil text-on-color text-caption font-bold">
+            <span className={`w-2 h-2 rounded-full ${item.trust === 'check' ? 'bg-warn' : item.trust === 'sure' ? 'bg-keep' : 'bg-on-color'}`} aria-hidden="true" />
+            {trust}
+          </span>
+        )}
         {photo?.video && (
           <span className="absolute top-3 start-1/2 -translate-x-1/2 inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-veil text-on-color text-caption font-bold num">
             <Play className="w-3.5 h-3.5" fill="currentColor" strokeWidth={0} aria-hidden="true" />{t.videoBadge} · {duration(photo.dur ?? 0)}
@@ -234,7 +248,7 @@ function Card({ t, item, photo, debug, onDecide, onProtect, onPreview }: {
           </button>
         )}
         {debug && photo && (
-          <span className="absolute bottom-3 end-3 px-2 py-1 rounded-full bg-veil text-on-color text-micro font-bold num">
+          <span className="absolute top-3 end-3 px-2 py-1 rounded-full bg-veil text-on-color text-micro font-bold num">
             {fmt(t.sharpnessDebug, { s: photo.sharp ?? '–', c: photo.contrast ?? '–' })}
           </span>
         )}

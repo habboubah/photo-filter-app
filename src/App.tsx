@@ -29,6 +29,7 @@ import { protectedIds } from './logic/protect';
 import { batches, findCompressible, tally } from './logic/compress';
 import { APPS_TILE_MIN, groupBySource, reviewSource } from './logic/sources';
 import { cleanParts } from './logic/smartClean';
+import { type Verdict, groupVerdict } from './logic/confidence';
 import { streak } from './logic/streak';
 import { feedbackMail, openExternal, privacyUrl, rateUrl, systemFromAgent } from './links';
 import { devNative, isAndroid, isIos } from './platform';
@@ -129,7 +130,9 @@ export default function App() {
     () => (photos ? summarize(lib, groups, blurry, kept, old, utility, exposureAll) : null),
     [photos, lib, groups, blurry, kept, old, utility, exposureAll],
   );
-  const parts = useMemo(() => cleanParts(groups, blurry, old, kept, lib.byId, exposureAll), [groups, blurry, old, kept, lib, exposureAll]);
+  // Two photos' vectors' cosine (src/logic/vectors.ts): how sure the app is about a group's extra shot.
+  const cos = useCallback((a: string, b: string) => store.vectors.cos(a, b), [store.vectors]);
+  const parts = useMemo(() => cleanParts(groups, blurry, old, kept, lib.byId, exposureAll, cos), [groups, blurry, old, kept, lib, exposureAll, cos]);
   const months = useMemo(() => buildMonths(lib.photos), [lib]);
   const doneMonths = useMemo(() => new Set(state.months), [state.months]);
   /** The share of the library gone through month by month, whole percent (for home, the months and the widget). */
@@ -224,6 +227,18 @@ export default function App() {
 
   const trip = tripKey ? trips.find(x => x.key === tripKey) ?? null : null;
   const group = groupKey ? groups.find(g => g.key === groupKey) ?? null : null;
+  // The open group's other photos against its best one (with the iPhone's face scores laid on): their tiles' reasons.
+  const groupVerdicts = useMemo(() => {
+    const out = new Map<string, Verdict>();
+    if (!group) return out;
+    const withFaces = (id: string) => { const p = lib.byId.get(id); const f = store.faces.get(id); return p && f ? { ...p, ...f } : p; };
+    const best = withFaces(group.best);
+    for (const id of group.ids) {
+      const p = withFaces(id);
+      if (p && best && id !== group.best) out.set(id, groupVerdict(group, p, best, cos(id, group.best)));
+    }
+    return out;
+  }, [group, lib, store.faces, cos]);
 
   /** The decide-later pile after a review: what was put off joins it, what was decided leaves it. */
   const applyLater = (session: Session) => store.updateLater(laterIds(session), settledIds(session));
@@ -527,7 +542,7 @@ export default function App() {
   const isOld = (p: Photo) => isOldShot(p, now);
   const openMonth = (key: string) => {
     const m = months.find(x => x.key === key);
-    if (m) startReview(reviewTrip(m.ids, groups, lib.byId, kept, isOld), () => { store.markMonthDone(key); store.markDay(); });
+    if (m) startReview(reviewTrip(m.ids, groups, lib.byId, kept, isOld, cos), () => { store.markMonthDone(key); store.markDay(); });
   };
   const onDecide = (d: Decision) => setReview(r => (r ? { ...r, session: decide(r.session, d) } : r));
   const onUndo = () => setReview(r => (r ? { ...r, session: undo(r.session), finished: false } : r));
@@ -587,10 +602,10 @@ export default function App() {
     if (group) {
       return (
         <GroupView
-          t={t} group={group} byId={byId} kept={kept} debug={store.debug}
+          t={t} group={group} byId={byId} kept={kept} verdicts={groupVerdicts} debug={store.debug}
           onBack={() => setGroupKey(null)}
           onPick={id => store.setBest(group.key, id === group.suggested ? null : id)}
-          onReview={() => startReview(reviewGroup(group, kept, byId))}
+          onReview={() => startReview(reviewGroup(group, kept, byId, cos))}
           onDeleteOthers={ids => deletePhotos(ids, [], () => setGroupKey(null))}
           onKeepAll={() => {
             const ids = group.ids.filter(id => !state.kept.includes(id));
@@ -611,7 +626,7 @@ export default function App() {
           isSplit={!!state.trips.splits[base]}
           onBack={() => setTripKey(null)}
           onCreateAlbum={extras ? () => needUnlock(() => setAlbumFor(trip)) : undefined}
-          onReview={() => startReview(reviewTrip(trip.ids, groups, byId, kept))}
+          onReview={() => startReview(reviewTrip(trip.ids, groups, byId, kept, undefined, cos))}
           onRename={name => store.updateTrips(e => setName(e, trip.key, name))}
           onSplit={at => { store.updateTrips(e => addSplit(e, trip.key, at)); show(t.tripSplit); }}
           onMerge={other => {
@@ -677,7 +692,7 @@ export default function App() {
           t={t} parts={parts} storage={store.storage}
           onBack={() => setShowQuickClean(false)}
           onReview={ids => {
-            const reasons = new Map(reviewCleanup(groups, cleanupBlurry(blurry, kept), kept, byId, old, [], exposureAll).map(i => [i.id, i]));
+            const reasons = new Map(reviewCleanup(groups, cleanupBlurry(blurry, kept), kept, byId, old, [], exposureAll, cos).map(i => [i.id, i]));
             startReview(ids.map(id => reasons.get(id)).filter((i): i is ReviewItem => !!i));
           }}
           onDelete={ids => deletePhotos(ids, [], () => setShowQuickClean(false))}
@@ -733,7 +748,7 @@ export default function App() {
           onExposure={() => openFailed(exposure.dark.length ? 'dark' : 'bright')}
           onScreenshots={() => setShowScreenshots(true)}
           onUtility={() => setShowUtility(true)}
-          onReviewAll={() => startReview(reviewCleanup(groups, cleanupBlurry(blurry, kept), kept, byId, old, utility, exposureAll))}
+          onReviewAll={() => startReview(reviewCleanup(groups, cleanupBlurry(blurry, kept), kept, byId, old, utility, exposureAll, cos))}
           onQuickClean={() => setShowQuickClean(true)}
         />
       );
@@ -797,7 +812,7 @@ export default function App() {
           onThisDay={{ photos: today.ids.length, years: today.years, cover: today.ids[0] }}
           categories={cats.slice(0, 8).map(c => ({ label: c.label, count: c.photos.length, cover: c.photos[0].id }))}
           onSettings={() => setShowSettings(true)}
-          onOnThisDay={() => startReview(reviewTrip(today.ids, groups, byId, kept))}
+          onOnThisDay={() => startReview(reviewTrip(today.ids, groups, byId, kept, undefined, cos))}
           onTrips={() => setShowTrips(true)}
           onTrip={setTripKey}
           onCategory={setCategory}

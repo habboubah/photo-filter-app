@@ -98,7 +98,7 @@ describe('the clean-up card and the review', () => {
 
   it('suggests each utility photo for deleting, with its label, and never twice', () => {
     const a = seen('p1', { receipt: -1 });
-    expect(reviewUtility([a])).toEqual([{ id: 'p1', suggest: 'delete', reason: 'utility', label: 'receipt' }]);
+    expect(reviewUtility([a])).toEqual([{ id: 'p1', suggest: 'delete', reason: 'utility', label: 'receipt', trust: 'likely' }]);
     const items = reviewCleanup([], [], new Set(), new Map([[a.id, a]]), [], [a, a]);
     expect(items.map(i => i.id)).toEqual(['p1']);
   });

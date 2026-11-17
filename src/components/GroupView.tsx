@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { Star } from 'lucide-react';
 import type { Group, Photo } from '../types';
+import type { Detail, Verdict } from '../logic/confidence';
 import { Strings, bytes, fmt, plural } from '../translations';
 import { Dock, Screen } from '../ui/Screen';
 import { Button } from '../ui/Button';
@@ -15,11 +16,13 @@ import { tapLight } from '../ui/haptics';
  * one by one; "Keep all" keeps every photo and settles the group, so it is
  * not suggested again (with undo).
  */
-export function GroupView({ t, group, byId, kept, debug, onBack, onPick, onReview, onDeleteOthers, onKeepAll, onScoreFaces }: {
+export function GroupView({ t, group, byId, kept, verdicts, debug, onBack, onPick, onReview, onDeleteOthers, onKeepAll, onScoreFaces }: {
   t: Strings;
   group: Group;
   byId: Map<string, Photo>;
   kept: Set<string>;
+  /** Each other photo's verdict against the best one (src/logic/confidence.ts): a short reason on its tile. */
+  verdicts: Map<string, Verdict>;
   debug: boolean;
   onBack: () => void;
   onPick: (id: string) => void;
@@ -36,6 +39,10 @@ export function GroupView({ t, group, byId, kept, debug, onBack, onPick, onRevie
   const others = group.ids.filter(id => id !== group.best && !kept.has(id) && !byId.get(id)?.fav);
   const othersBytes = others.reduce((s, id) => s + (byId.get(id)?.bytes ?? 0), 0);
   const when = (id: string) => new Date(byId.get(id)?.t ?? 0).toLocaleString(t.locale, { dateStyle: 'medium', timeStyle: 'medium' });
+  const short: Partial<Record<Detail, string>> = {
+    blurrier: t.chipBlurrier, eyesClosed: t.detailEyesClosed, worseLight: t.detailWorseLight,
+    exactCopy: t.chipCopy, smallerCopy: t.chipCopy, alteredCopy: t.chipCopy, burstExtra: t.chipBurst,
+  };
 
   return (
     <Screen title={group.kind === 'duplicate' ? t.duplicatesTitle : group.kind === 'lookalike' ? t.lookalikeTitle : t.similarTitle} subtitle={plural(t, 'photos', group.ids.length)} onBack={onBack} backLabel={t.back} docked>
@@ -57,10 +64,12 @@ export function GroupView({ t, group, byId, kept, debug, onBack, onPick, onRevie
       <div className="grid grid-cols-3 gap-[6px]">
         {group.ids.map(id => {
           const isBest = id === group.best;
+          const v = isBest ? undefined : verdicts.get(id);
+          const tag = v?.detail ? short[v.detail] : undefined;
           return (
             <button
               key={id} type="button" aria-pressed={isBest}
-              aria-label={fmt(t.makeBest, { date: when(id) })}
+              aria-label={[fmt(t.makeBest, { date: when(id) }), tag, v?.trust === 'check' ? t.trustCheck : undefined].filter(Boolean).join('. ')}
               onClick={() => { tapLight(); onPick(id); }}
               className={`relative aspect-square rounded-[10px] overflow-hidden press focus-visible:ring-focus ${isBest ? 'ring-[3px] ring-keep ring-offset-2 ring-offset-bg' : ''}`}
             >
@@ -68,6 +77,14 @@ export function GroupView({ t, group, byId, kept, debug, onBack, onPick, onRevie
               {isBest && (
                 <span className="absolute top-1.5 start-1.5 w-6 h-6 rounded-full bg-keep text-keep-ink inline-flex items-center justify-center" aria-hidden="true">
                   <Star className="w-3.5 h-3.5" fill="currentColor" strokeWidth={0} />
+                </span>
+              )}
+              {(tag || v?.trust === 'check') && (
+                <span className="absolute bottom-1.5 start-1.5 end-1.5 flex" aria-hidden="true">
+                  <span className="max-w-full inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-veil text-on-color text-micro font-bold">
+                    {v?.trust === 'check' && <span className="shrink-0 w-1.5 h-1.5 rounded-full bg-warn" />}
+                    <span className="truncate">{tag ?? t.trustCheck}</span>
+                  </span>
                 </span>
               )}
             </button>
