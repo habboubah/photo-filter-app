@@ -1,12 +1,14 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { animate, motion, useMotionValue, useReducedMotion, useTransform } from 'motion/react';
-import { Check, Clock, Play, Shield, Trash2, Undo2, X } from 'lucide-react';
+import { Check, Clock, FolderInput, Play, Plus, Shield, Trash2, Undo2, X } from 'lucide-react';
 import type { Confidence, Photo } from '../types';
 import { Strings, bytes, fmt, num, plural } from '../translations';
-import { Decision, ReviewItem, Session, deleteSplit, laterIds, toDelete } from '../logic/review';
+import { Decision, ReviewItem, Session, albumPlan, deleteSplit, isNewAlbum, laterIds, newAlbumKey, toDelete } from '../logic/review';
 import { duration } from '../logic/large';
 import { Button, IconButton } from '../ui/Button';
 import { Thumb } from '../ui/Photo';
+import { Sheet } from '../ui/Sheet';
+import { Field } from '../ui/Field';
 import { LARGE, thumbUrl } from '../thumbs';
 import { notifyWarning, tapLight, tapMedium } from '../ui/haptics';
 
@@ -19,23 +21,38 @@ const THRESHOLD = 110;
  * the summary at the end offers "Delete N photos", which goes through the
  * system's own dialog.
  */
-export function ReviewView({ t, session, finished, byId, debug, onDecide, onProtect, onPreview, onUndo, onFinish, onDelete, onClose }: {
+/** What the end screen writes: the photos marked for deleting, and the photos filed into albums (Session.albums). */
+export interface ReviewOutcome { deleteIds: string[]; albums: { album: string; ids: string[] }[] }
+
+export function ReviewView({ t, session, finished, byId, debug, albums, android, onDecide, onFile, onProtect, onPreview, onUndo, onFinish, onDelete, onClose }: {
   t: Strings;
   session: Session;
   finished: boolean;
   byId: Map<string, Photo>;
   debug: boolean;
+  /** The albums for the chips, the last used first (iPhone albums / Android folders). */
+  albums: { id: string; title: string }[];
+  /** Android: filing moves the photos into the folder (said on the end screen). */
+  android: boolean;
   onDecide: (d: Decision) => void;
+  /** An album chip: the photo kept and filed into it (or `new:<title>`). */
+  onFile: (album: string) => void;
   /** The shield: the photo is kept and protected for good (src/logic/protect.ts). */
   onProtect: (id: string) => void;
   /** A video: played in the system's player over the app. */
   onPreview: (id: string) => void;
   onUndo: () => void;
   onFinish: () => void;
-  onDelete: (ids: string[]) => void;
+  onDelete: (outcome: ReviewOutcome) => void;
   onClose: () => void;
 }) {
   const item = session.items[session.index];
+  // Albums made in this review show as chips too, first.
+  const made = [...new Set(Object.values(session.albums).filter(isNewAlbum))].map(k => ({ id: k, title: k.slice(4) }));
+  const chips = [...made, ...albums];
+  const [naming, setNaming] = useState(false);
+  const [title, setTitle] = useState('');
+  const create = () => { const name = title.trim(); if (name) onFile(newAlbumKey(name)); setNaming(false); setTitle(''); };
   const done = finished || !item;
 
   // The next two photos are fetched before they are needed.
@@ -65,7 +82,7 @@ export function ReviewView({ t, session, finished, byId, debug, onDecide, onProt
         <IconButton label={t.undo} icon={Undo2} tone="bar" onClick={onUndo} disabled={!session.history.length} className={session.history.length ? '' : 'opacity-40'} />
       </header>
       {done
-        ? <Summary t={t} session={session} byId={byId} onDelete={onDelete} onClose={onClose} />
+        ? <Summary t={t} session={session} byId={byId} chips={chips} android={android} onDelete={onDelete} onClose={onClose} />
         : (
           <>
             <div className="px-[16px] pt-1">
@@ -74,6 +91,27 @@ export function ReviewView({ t, session, finished, byId, debug, onDecide, onProt
               </div>
             </div>
             <Card key={item.id} t={t} item={item} photo={byId.get(item.id)} debug={debug} onDecide={onDecide} onProtect={() => onProtect(item.id)} onPreview={() => onPreview(item.id)} />
+            <div role="group" aria-label={t.fileIntoAlbum} className="flex gap-2 overflow-x-auto px-[16px] pt-3 pb-1">
+              {chips.map(c => {
+                const on = session.albums[item.id] === c.id;
+                return (
+                  <button
+                    key={c.id} type="button" aria-pressed={on}
+                    onClick={() => { tapLight(); onFile(c.id); }}
+                    className={`shrink-0 min-h-[44px] px-3.5 inline-flex items-center gap-1.5 rounded-full text-label font-bold focus-visible:ring-focus press ${on ? 'bg-accent-fill text-accent-fill-ink' : 'bg-surface text-fg'}`}
+                  >
+                    <FolderInput className="w-4 h-4 shrink-0" aria-hidden="true" />
+                    <span className="max-w-[160px] truncate">{c.title}</span>
+                  </button>
+                );
+              })}
+              <button
+                type="button" onClick={() => { tapLight(); setNaming(true); }}
+                className="shrink-0 min-h-[44px] px-3.5 inline-flex items-center gap-1.5 rounded-full text-label font-bold text-accent bg-surface-2 focus-visible:ring-focus press"
+              >
+                <Plus className="w-4 h-4" aria-hidden="true" />{t.newAlbum}
+              </button>
+            </div>
             <div className="px-6 pb-safe-8 pt-3">
               <div className="flex justify-center items-end gap-6">
                 <RoundButton label={t.delete} tone="neg" icon={Trash2} onClick={() => onDecide('delete')} />
@@ -87,6 +125,9 @@ export function ReviewView({ t, session, finished, byId, debug, onDecide, onProt
             </div>
           </>
         )}
+      <Sheet open={naming} title={t.newAlbum} closeLabel={t.cancel} onClose={() => setNaming(false)} action={{ label: t.save, onClick: create, disabled: !title.trim() }}>
+        <Field label={t.albumName} value={title} onChange={setTitle} autoFocus maxLength={80} onKeyDown={e => { if (e.key === 'Enter') create(); }} />
+      </Sheet>
     </div>
   );
 }
@@ -212,10 +253,14 @@ function RoundButton({ label, tone, icon: Icon, onClick }: { label: string; tone
   );
 }
 
-function Summary({ t, session, byId, onDelete, onClose }: {
-  t: Strings; session: Session; byId: Map<string, Photo>; onDelete: (ids: string[]) => void; onClose: () => void;
+function Summary({ t, session, byId, chips, android, onDelete, onClose }: {
+  t: Strings; session: Session; byId: Map<string, Photo>; chips: { id: string; title: string }[]; android: boolean;
+  onDelete: (outcome: ReviewOutcome) => void; onClose: () => void;
 }) {
   const ids = toDelete(session);
+  const plan = albumPlan(session);
+  const filed = plan.reduce((n, a) => n + a.ids.length, 0);
+  const albumTitle = (key: string) => chips.find(c => c.id === key)?.title ?? (isNewAlbum(key) ? key.slice(4) : key);
   const split = deleteSplit(session, byId);
   const later = laterIds(session).length;
   const sizeOf = (list: string[]) => list.reduce((s, id) => s + (byId.get(id)?.bytes ?? 0), 0);
@@ -231,6 +276,17 @@ function Summary({ t, session, byId, onDelete, onClose }: {
         <p className="text-body text-fg-mute wrap-prose num">{fmt(t.reviewDoneVideos, { videos: plural(t, 'videos', split.videos.length), size: bytes(t, sizeOf(split.videos)) })}</p>
       )}
       {later > 0 && <p className="text-label text-accent font-bold num mt-1">{plural(t, 'laterSaved', later)}</p>}
+      {filed > 0 && (
+        <div className="mt-4 rounded-md card p-4 space-y-1.5">
+          <p className="text-body font-bold text-fg num">
+            {[ids.length ? plural(t, 'deleteN', ids.length) : null, fmt(t.filedSummary, { photos: plural(t, 'photos', filed), albums: plural(t, 'albums', plan.length) })].filter(Boolean).join(' · ')}
+          </p>
+          <ul className="text-caption text-fg-mute space-y-0.5">
+            {plan.map(a => <li key={a.album} className="num">{`${albumTitle(a.album)} · ${plural(t, 'photos', a.ids.length)}`}</li>)}
+          </ul>
+          {android && <p className="text-caption text-fg-mute wrap-prose">{t.filedMoveHint}</p>}
+        </div>
+      )}
       {ids.length > 0 && (
         <div className="grid grid-cols-4 gap-[4px] mt-6">
           {ids.slice(0, 12).map(id => <div key={id} className="aspect-square"><Thumb id={id} /></div>)}
@@ -239,11 +295,16 @@ function Summary({ t, session, byId, onDelete, onClose }: {
       <div className="flex-1 min-h-8" />
       {ids.length > 0 && (
         <>
-          <Button full size="lg" variant="destructive" icon={Trash2} onClick={() => onDelete(ids)}>
-            {split.videos.length ? plural(t, 'deleteFilesN', ids.length) : plural(t, 'deleteN', ids.length)}
+          <Button full size="lg" variant="destructive" icon={Trash2} onClick={() => onDelete({ deleteIds: ids, albums: plan })}>
+            {filed > 0 ? t.deleteAndFile : split.videos.length ? plural(t, 'deleteFilesN', ids.length) : plural(t, 'deleteN', ids.length)}
           </Button>
           <p className="text-caption text-fg-mute text-center mt-3 mb-4 wrap-prose">{t.deleteHint}</p>
         </>
+      )}
+      {!ids.length && filed > 0 && (
+        <Button full size="lg" icon={FolderInput} className="mb-3" onClick={() => onDelete({ deleteIds: [], albums: plan })}>
+          {fmt(t.fileNow, { photos: plural(t, 'photos', filed) })}
+        </Button>
       )}
       <Button full size="lg" variant="secondary" onClick={onClose}>{t.done}</Button>
     </main>

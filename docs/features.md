@@ -205,6 +205,15 @@ Every feature, as the user sees it (German labels, English in brackets).
   Deleted (iPhone) / the Trash (Android). Nothing is deleted before that.
   Needs the unlock.
 - Photos you kept against the suggestion are remembered and not suggested again.
+- **Into albums while swiping** (needs the unlock): a row of album chips
+  under the photo (the last used first) and *+ Neues Album* [New album]. A tap
+  keeps the photo, files it into that album and moves on; undo takes it out
+  again. Nothing is written during the review: the end screen lists
+  *3 Fotos löschen · 5 Fotos in 2 Alben* with each album, then does it all in
+  one go — iPhone: the photos are added to the albums (nothing moves);
+  Android: an album is a folder, so the photos move there after one system
+  dialog (*Die Fotos werden in den Ordner verschoben*). Albums made here show
+  up in Settings › Geschützt.
 - **Decide later**: photos swiped up land on a pile; the end screen says
   *3 für später gemerkt* [3 saved for later]. Home shows *Später entscheiden (3)*
   [Decide later] while the pile isn't empty; it goes through the pile with no

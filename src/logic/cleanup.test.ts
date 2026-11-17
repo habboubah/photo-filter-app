@@ -6,7 +6,7 @@ import { blurLevel } from './blur';
 import { findGroups } from './similar';
 import { emptyState, normalizeState, pruneLater, SCHEMA_VERSION } from './state';
 import {
-  decide, isDone, keptAgainstSuggestion, laterIds, reviewCleanup, reviewGroup, reviewLater, reviewTrip, settledIds, startSession, toDelete, undo,
+  albumPlan, decide, fileTo, isDone, isNewAlbum, keptAgainstSuggestion, laterIds, newAlbumKey, reviewCleanup, reviewGroup, reviewLater, reviewTrip, settledIds, startSession, toDelete, undo,
 } from './review';
 import { nearHash, prng } from './fixtures';
 
@@ -228,5 +228,39 @@ describe('the decide-later pile', () => {
     const pile = ['a', 'b', 'c'];
     expect(pruneLater(pile, id => id !== 'b')).toEqual(['a', 'c']);
     expect(pruneLater(pile, () => true)).toBe(pile);
+  });
+});
+
+describe('albums while swiping', () => {
+  const items = (ids: string[]) => ids.map(id => ({ id, suggest: 'keep' as const, reason: 'trip' as const }));
+
+  it('files the photo, keeps it and moves on; undo takes it out again', () => {
+    let s = startSession(items(['a', 'b', 'c']));
+    s = fileTo(s, 'album-1');
+    expect(s.index).toBe(1);
+    expect(s.decisions.a).toBe('keep');
+    s = fileTo(s, newAlbumKey(' Urlaub '));
+    s = decide(s, 'delete');
+    expect(albumPlan(s)).toEqual([{ album: 'album-1', ids: ['a'] }, { album: 'new:Urlaub', ids: ['b'] }]);
+    s = undo(s); // c
+    s = undo(s); // b: its filing goes with the undo
+    expect(s.albums.b).toBeUndefined();
+    expect(albumPlan(s)).toEqual([{ album: 'album-1', ids: ['a'] }]);
+  });
+
+  it('takes a photo out when it is filed into the same album again, and never files one marked for deleting', () => {
+    let s = startSession(items(['a', 'b']));
+    s = { ...s, albums: { a: 'x' } };
+    s = fileTo(s, 'x');
+    expect(s.index).toBe(0);
+    expect(s.albums).toEqual({});
+    s = { ...startSession(items(['a'])), albums: { a: 'x' }, decisions: { a: 'delete' } };
+    expect(albumPlan(s)).toEqual([]);
+    expect(isNewAlbum('new:Foo')).toBe(true);
+    expect(isNewAlbum('album-1')).toBe(false);
+  });
+
+  it('remembers the albums used, a few of them', () => {
+    expect(normalizeState({ recentAlbums: ['a', 'a', 'b', 4] }).recentAlbums).toEqual(['a', 'b']);
   });
 });

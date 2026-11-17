@@ -64,6 +64,7 @@ public class PhotoLibraryPlugin: CAPPlugin, CAPBridgedPlugin, PHPhotoLibraryChan
         CAPPluginMethod(name: "thumbnail", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "createAlbum", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "listAlbums", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "addToAlbums", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "preview", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "albumMembers", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "trash", returnType: CAPPluginReturnPromise),
@@ -643,6 +644,46 @@ public class PhotoLibraryPlugin: CAPPlugin, CAPBridgedPlugin, PHPhotoLibraryChan
                 player.player = AVPlayer(playerItem: AVPlayerItem(asset: avAsset))
                 presenter.present(player, animated: true) { player.player?.play() }
                 call.resolve()
+            }
+        }
+    }
+
+    /// Photos filed into albums while swiping, in one change: added to an album the user has (`albumId`) or a
+    /// new one (`title`). Adding only links a photo to the album — nothing is copied or moved.
+    @objc func addToAlbums(_ call: CAPPluginCall) {
+        let groups = (call.getArray("groups") as? [[String: Any]] ?? []).compactMap { g -> (albumId: String?, title: String?, ids: [String])? in
+            let ids = (g["ids"] as? [String] ?? []).filter { !$0.isEmpty }
+            let albumId = g["albumId"] as? String
+            let title = (g["title"] as? String).map { String($0.prefix(80)) }
+            return ids.isEmpty || (albumId == nil && (title ?? "").isEmpty) ? nil : (albumId, title, ids)
+        }
+        let dryRun = call.getBool("dryRun") ?? false
+        let total = groups.reduce(0) { $0 + $1.ids.count }
+        if dryRun || groups.isEmpty {
+            call.resolve(["done": total, "cancelled": false, "dryRun": dryRun])
+            return
+        }
+        var done = 0
+        PHPhotoLibrary.shared().performChanges({ [weak self] in
+            guard let self else { return }
+            for g in groups {
+                let assets = self.fetch(g.ids)
+                if let albumId = g.albumId {
+                    guard let album = PHAssetCollection.fetchAssetCollections(withLocalIdentifiers: [albumId], options: nil).firstObject,
+                          album.canPerform(.addContent), let change = PHAssetCollectionChangeRequest(for: album) else { continue }
+                    change.addAssets(assets)
+                } else if let title = g.title {
+                    PHAssetCollectionChangeRequest.creationRequestForAssetCollection(withTitle: title).addAssets(assets)
+                }
+                done += assets.count
+            }
+        }) { ok, error in
+            if ok {
+                call.resolve(["done": done, "cancelled": false, "dryRun": false])
+            } else if Self.isCancel(error) {
+                call.resolve(["done": 0, "cancelled": true, "dryRun": false])
+            } else {
+                call.reject(error?.localizedDescription ?? "Could not add to the albums")
             }
         }
     }

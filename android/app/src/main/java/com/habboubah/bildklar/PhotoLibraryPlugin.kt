@@ -587,6 +587,47 @@ class PhotoLibraryPlugin : Plugin() {
         }
     }
 
+    /**
+     * Photos filed into albums while swiping. On Android an album is a folder: the photos move into it
+     * (RELATIVE_PATH — an existing folder's path, or Pictures/<title>/ for a new one) after one
+     * createWriteRequest dialog for all of them. The files themselves are never changed or copied.
+     */
+    @PluginMethod
+    fun addToAlbums(call: PluginCall) {
+        val dryRun = call.getBoolean("dryRun", false) == true
+        val target = HashMap<String, String>()
+        val raw = call.getArray("groups") ?: JSArray()
+        for (i in 0 until raw.length()) {
+            val g = raw.optJSONObject(i) ?: continue
+            val path = g.optString("albumId").takeIf { it.isNotBlank() }
+                ?: g.optString("title").replace(Regex("[\\\\/:*?\"<>|\\p{Cntrl}]"), " ").trim().take(80).takeIf { it.isNotEmpty() }
+                    ?.let { "${Environment.DIRECTORY_PICTURES}/$it/" }
+                ?: continue
+            val ids = g.optJSONArray("ids") ?: continue
+            for (j in 0 until ids.length()) ids.optString(j).takeIf { it.contains(':') }?.let { target[it] = path }
+        }
+        if (dryRun || target.isEmpty()) {
+            call.resolve(JSObject().put("done", target.size).put("cancelled", false).put("dryRun", dryRun))
+            return
+        }
+        val byUri = target.keys.associateBy { contentUri(it) }
+        withConsent(byUri.keys.toList(), { MediaStore.createWriteRequest(context.contentResolver, it) }) { approved, cancelled ->
+            if (cancelled) {
+                call.resolve(JSObject().put("done", 0).put("cancelled", true).put("dryRun", false))
+                return@withConsent
+            }
+            io.execute {
+                var done = 0
+                for (uri in approved) {
+                    val path = byUri[uri]?.let { target[it] } ?: continue
+                    val values = ContentValues().apply { put(MediaStore.MediaColumns.RELATIVE_PATH, path) }
+                    try { if (context.contentResolver.update(uri, values, null, null) > 0) done++ } catch (_: Exception) { }
+                }
+                call.resolve(JSObject().put("done", done).put("cancelled", false).put("dryRun", false))
+            }
+        }
+    }
+
     /** A video (or photo) shown in the system's own player / viewer, with a read grant for its content URI. */
     @PluginMethod
     fun preview(call: PluginCall) {

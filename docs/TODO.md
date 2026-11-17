@@ -244,6 +244,11 @@ Everything in TypeScript is tested by `npm run check`; what needs a phone:
       thresholds: AUC and a precision of at least 95 % before 2.1.0 ships
       (docs/AI.md).
 
+- [ ] **Albums while swiping** (new native `addToAlbums`, not compiled in the
+      cloud): a dry run and one real run on each phone. iPhone: the photos
+      appear in the album and stay in Recents. Android: one dialog for all the
+      photos, then they are in Pictures/<name>/ (or the chosen folder).
+
 ## Known gaps (to decide later)
 
 - Arabic: the structure is there (RTL rules, the translation layout), the texts are not.

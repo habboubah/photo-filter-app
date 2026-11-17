@@ -4,7 +4,7 @@ import type { Album, Photo, Storage, ThemeMode } from './types';
 import translations, { DEFAULT_LANGUAGE, isLanguage, Language } from './translations';
 import { Access, PhotoLibrary, ScanProgress, loadAllFacts } from './native/photoLibrary';
 import { PRODUCT_ID, Purchases } from './native/purchases';
-import { AppState, SCHEMA_VERSION, emptyState, normalizeState, pruneLater } from './logic/state';
+import { AppState, RECENT_ALBUMS, SCHEMA_VERSION, emptyState, normalizeState, pruneLater } from './logic/state';
 import type { TripEdits } from './logic/trips';
 import { addDay } from './logic/streak';
 import type { SortKey } from './logic/sort';
@@ -150,6 +150,11 @@ export function useAppStore() {
     const albums = toggled(s.protect.albums, [id], on);
     return albums === s.protect.albums ? s : { ...s, protect: { ...s.protect, albums } };
   });
+  /** Albums just used while swiping: first in the chips next time. */
+  const useAlbums = (ids: string[]) => {
+    if (!ids.length) return;
+    setState(s => ({ ...s, recentAlbums: [...new Set([...ids, ...s.recentAlbums])].slice(0, RECENT_ALBUMS) }));
+  };
   /** A list screen's order (src/logic/sort.ts). */
   const setSort = (screen: string, key: SortKey) =>
     setState(s => (s.sort[screen] === key ? s : { ...s, sort: { ...s.sort, [screen]: key } }));
@@ -374,7 +379,7 @@ export function useAppStore() {
   return {
     language, setLanguage, themeMode, setThemeMode,
     debug, dryRunAvailable, dryRun, setDryRun,
-    state, stateReady, storageError, updateTrips, recordAlbum, setBest, addKept, updateLater, pruneLaterPile, setSort, protectPhotos, protectTrip, protectAlbum, albumMembers, markMonthDone, addFreed, markDay, countFree, resetDecisions, restoreState,
+    state, stateReady, storageError, updateTrips, recordAlbum, setBest, addKept, updateLater, pruneLaterPile, setSort, protectPhotos, protectTrip, protectAlbum, albumMembers, useAlbums, markMonthDone, addFreed, markDay, countFree, resetDecisions, restoreState,
     reminder, setReminder,
     owned: isOwned, setOwned,
     access, refreshAccess, accessGranted,

@@ -123,9 +123,45 @@ export interface Session {
   decisions: Record<string, Decision>;
   /** For undo: the indexes decided, newest last. */
   history: number[];
+  /**
+   * Photos filed into an album while swiping (paid): photo id → an album's id
+   * (PhotoLibrary.listAlbums) or `new:<title>` for one made in this review.
+   * Nothing is written during the review; the end screen does it in one go.
+   */
+  albums: Record<string, string>;
 }
 
-export const startSession = (items: ReviewItem[]): Session => ({ items, index: 0, decisions: {}, history: [] });
+export const startSession = (items: ReviewItem[]): Session => ({ items, index: 0, decisions: {}, history: [], albums: {} });
+
+/** A new album's key in Session.albums. */
+export const newAlbumKey = (title: string) => `new:${title.trim()}`;
+export const isNewAlbum = (key: string) => key.startsWith('new:');
+
+/**
+ * The shown photo filed into an album: kept, and on to the next one. Filed
+ * into the album it is already in (after an undo, say), it leaves it and stays.
+ */
+export function fileTo(s: Session, album: string): Session {
+  const item = s.items[s.index];
+  if (!item) return s;
+  if (s.albums[item.id] === album) {
+    const { [item.id]: _gone, ...albums } = s.albums;
+    return { ...s, albums };
+  }
+  return { ...decide(s, 'keep'), albums: { ...s.albums, [item.id]: album } };
+}
+
+/** What the end screen writes: each album with its photos (never one marked for deleting), in review order. */
+export function albumPlan(s: Session): { album: string; ids: string[] }[] {
+  const by = new Map<string, string[]>();
+  for (const i of s.items) {
+    const album = s.albums[i.id];
+    if (!album || s.decisions[i.id] === 'delete' || s.decisions[i.id] === 'later') continue;
+    const list = by.get(album);
+    if (list) list.push(i.id); else by.set(album, [i.id]);
+  }
+  return [...by.entries()].map(([album, ids]) => ({ album, ids }));
+}
 
 export function decide(s: Session, decision: Decision): Session {
   const item = s.items[s.index];
@@ -141,8 +177,10 @@ export function decide(s: Session, decision: Decision): Session {
 export function undo(s: Session): Session {
   const last = s.history[s.history.length - 1];
   if (last === undefined) return s;
-  const { [s.items[last].id]: _gone, ...decisions } = s.decisions;
-  return { ...s, index: last, decisions, history: s.history.slice(0, -1) };
+  const id = s.items[last].id;
+  const { [id]: _gone, ...decisions } = s.decisions;
+  const { [id]: _filed, ...albums } = s.albums ?? {};
+  return { ...s, index: last, decisions, albums, history: s.history.slice(0, -1) };
 }
 
 /** The photos put on the decide-later pile in this session. */
