@@ -248,6 +248,13 @@ export const SCREENS = [
       await pause(page, 500);
     },
   },
+  // Android only: "Aus Apps" (the iPhone has no tile; home is captured instead).
+  {
+    name: '38-apps', run: async (page, w) => {
+      const tile = page.locator(`button:has-text("${w.t.appsTile}")`);
+      if (await tile.count()) { await tile.click(); await pause(page, 700); }
+    },
+  },
   // Albums while swiping: the chips under the photo, two photos filed, then the end screen.
   {
     name: '36-album-chips', run: async (page, w) => {

@@ -149,7 +149,7 @@ function Card({ t, item, photo, debug, onDecide, onProtect, onPreview }: {
     utility: item.label ? fmt(t.reasonUtility, { label: t[`aiLabel_${item.label}`] }) : '',
     large: photo ? bytes(t, photo.bytes) : '', trip: '', later: t.reasonLater, dark: t.reasonDark, bright: t.reasonBright,
     video: photo ? `${duration(photo.dur ?? 0)} · ${bytes(t, photo.bytes)}` : '',
-    lookalike: t.reasonLookalike, bestTake: t.reasonBestTake,
+    lookalike: t.reasonLookalike, bestTake: t.reasonBestTake, app: t.reasonApp,
   };
   const chip = item.suggest === 'delete' ? t.suggestDelete : item.suggest === 'keep' ? t.suggestKeep : '';
   const reason = reasons[item.reason];

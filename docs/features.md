@@ -265,6 +265,20 @@ Every feature, as the user sees it (German labels, English in brackets).
   edits, best-shot picks, kept photos, the months marked as done (the
   "freed so far" count stays).
 
+## Photos from apps (*Aus Apps*, Android)
+- Photos and videos saved by messengers and other apps, told apart by their
+  folder: WhatsApp, Telegram, Signal, Instagram, Messenger / Facebook,
+  Snapchat, Downloads, and *Andere Apps* [Other apps] for any other folder
+  outside DCIM (not the screenshots, not Bildklar's own folders).
+- One card per app with the count and size; the sort menu sets the order
+  (newest or largest first) of the review a tap starts. Only memes, receipts,
+  documents and photos of screens (the AI's labels) are suggested for deleting;
+  everything else comes with no suggestion — a photo of the grandchildren sent
+  by the family is precious.
+- Home tile *Aus Apps · 1,8 GB* once those photos hold at least 100 MB.
+- **iPhone: not yet** — Photos doesn't record which app saved a photo; a test
+  decides whether the iPhone can tell well enough (docs/AI.md).
+
 ## Protected photos
 - **Geschützt** [Protected]: a protected photo is never suggested for
   deleting, by anything — duplicates, near-identical, failed shots, screenshots,

@@ -1,5 +1,5 @@
 import type React from 'react';
-import { Aperture, CalendarDays, ChevronRight, Clock, Copy, Minimize2, FileVideo, Focus, History, ImagePlus, Layers, MapPin, ReceiptText, RefreshCw, Settings, Smartphone, Sparkles } from 'lucide-react';
+import { Aperture, CalendarDays, ChevronRight, Clock, Copy, MessageCircle, Minimize2, FileVideo, Focus, History, ImagePlus, Layers, MapPin, ReceiptText, RefreshCw, Settings, Smartphone, Sparkles } from 'lucide-react';
 import type { CleanupSummary, Storage, Trip } from '../types';
 import type { Access } from '../native/photoLibrary';
 import type { ScanView } from '../store';
@@ -30,6 +30,9 @@ interface Props {
   /** "Fotos verkleinern" (src/logic/compress.ts): how many qualify and what they could save. */
   compress: { count: number; saving: number };
   onCompress: () => void;
+  /** "Aus Apps" (Android): shown once the apps' photos hold at least 100 MB. */
+  apps: { bytes: number } | null;
+  onApps: () => void;
   /** The on-device AI (src/logic/ai.ts): utility photos, shown once the AI has seen any photo, and the categories. */
   utility: { show: boolean; count: number; bytes: number };
   categories: { label: MemoryLabel; count: number; cover: string }[];
@@ -116,6 +119,7 @@ export function HomeView(p: Props) {
           <Tile hue="sky" icon={Smartphone} label={t.screenshotsTile} value={plural(t, 'photos', p.screenshotCount)} onClick={p.onScreenshots} />
           <Tile hue="stone" icon={FileVideo} label={t.largeTile} value={p.large.count ? `${plural(t, 'files', p.large.count)} · ${bytes(t, p.large.bytes)}` : plural(t, 'files', 0)} onClick={p.onLarge} />
           {p.compress.count > 0 && <Tile hue="sky" icon={Minimize2} label={t.compressPhotosTile} value={fmt(t.upTo, { size: bytes(t, p.compress.saving) })} onClick={p.onCompress} />}
+          {p.apps && <Tile hue="lilac" icon={MessageCircle} label={t.appsTile} value={bytes(t, p.apps.bytes)} onClick={p.onApps} />}
           {p.liveCount > 0 && <Tile hue="mint" icon={Aperture} label={t.liveTile} value={plural(t, 'photos', p.liveCount)} onClick={p.onLive} />}
           {p.utility.show && (
             <Tile hue="mint" icon={ReceiptText} label={t.utilityTile}

@@ -27,6 +27,7 @@ import { findExposure } from './logic/exposure';
 import { sortFor, type SortScreen } from './logic/sort';
 import { protectedIds } from './logic/protect';
 import { batches, findCompressible, tally } from './logic/compress';
+import { APPS_TILE_MIN, groupBySource, reviewSource } from './logic/sources';
 import { cleanParts } from './logic/smartClean';
 import { streak } from './logic/streak';
 import { feedbackMail, openExternal, privacyUrl, rateUrl, systemFromAgent } from './links';
@@ -64,6 +65,7 @@ const CleanupView = lazy(() => import('./components/CleanupView').then(m => ({ d
 const SimilarView = lazy(() => import('./components/SimilarView').then(m => ({ default: m.SimilarView })));
 const GroupView = lazy(() => import('./components/GroupView').then(m => ({ default: m.GroupView })));
 const ReviewView = lazy(() => import('./components/ReviewView').then(m => ({ default: m.ReviewView })));
+const AppsView = lazy(() => import('./components/AppsView').then(m => ({ default: m.AppsView })));
 const CompressView = lazy(() => import('./components/CompressView').then(m => ({ default: m.CompressView })));
 const ProtectedView = lazy(() => import('./components/ProtectedView').then(m => ({ default: m.ProtectedView })));
 const LicencesView = lazy(() => import('./components/SettingsView').then(m => ({ default: m.LicencesView })));
@@ -130,6 +132,9 @@ export default function App() {
   const large = useMemo(() => findLarge(lib.photos), [lib]);
   const live = useMemo(() => findLive(lib.photos), [lib]);
   const compressible = useMemo(() => findCompressible(lib.photos, kept), [lib, kept]);
+  // "Aus Apps" (src/logic/sources.ts): Android only — the iPhone can't tell which app saved a photo.
+  const sources = useMemo(() => (isAndroid() ? groupBySource(lib.photos) : []), [lib]);
+  const sourcesBytes = useMemo(() => sources.reduce((s, g) => s + g.bytes, 0), [sources]);
   const hasLocations = useMemo(() => lib.photos.some(p => p.lat !== undefined), [lib]);
   // The decide-later pile, without photos that are gone (a full scan's view of the library prunes it for good).
   const laterPile = useMemo(() => state.later.filter(id => lib.byId.has(id)), [state.later, lib]);
@@ -190,6 +195,7 @@ export default function App() {
   const [showLarge, setShowLarge] = useState(false);
   const [showLive, setShowLive] = useState(false);
   const [showCompress, setShowCompress] = useState(false);
+  const [showApps, setShowApps] = useState(false);
   const [showUtility, setShowUtility] = useState(false);
   const [category, setCategory] = useState<MemoryLabel | null>(null);
   const [showSettings, setShowSettings] = useState(false);
@@ -228,6 +234,7 @@ export default function App() {
     ['utility', showUtility, () => setShowUtility(false)],
     ['live', showLive, () => setShowLive(false)],
     ['compress', showCompress, () => setShowCompress(false)],
+    ['apps', showApps, () => setShowApps(false)],
     ['cleanup', showCleanup, () => setShowCleanup(false)],
     ['category', !!category, () => setCategory(null)],
     ['months', showMonths, () => setShowMonths(false)],
@@ -658,6 +665,15 @@ export default function App() {
         />
       );
     }
+    if (showApps) {
+      return (
+        <AppsView
+          t={t} groups={sources} {...sorting('apps')}
+          onBack={() => setShowApps(false)}
+          onReview={list => startReview(reviewSource(list, kept))}
+        />
+      );
+    }
     if (showCompress) {
       return (
         <CompressView
@@ -749,6 +765,8 @@ export default function App() {
         large={{ count: large.length, bytes: large.reduce((sum, p) => sum + p.bytes, 0) }} liveCount={isAndroid() ? 0 : live.length}
         compress={{ count: compressible.photos.length + compressible.screenshots.length, saving: compressible.saving }}
         onCompress={() => setShowCompress(true)}
+        apps={sourcesBytes >= APPS_TILE_MIN ? { bytes: sourcesBytes } : null}
+        onApps={() => setShowApps(true)}
         utility={{ show: aiSeen.seen > 0, count: utility.length, bytes: utility.reduce((sum, p) => sum + p.bytes, 0) }}
         categories={cats.slice(0, 8).map(c => ({ label: c.label, count: c.photos.length, cover: c.photos[0].id }))}
         storage={store.storage} freedBytes={state.freed.bytes} streak={streak(state.days, now)}
