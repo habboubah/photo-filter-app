@@ -225,6 +225,9 @@ LIVE = {'p051', 'p056', 'p057', 'p058', 'p059', 'p060', 'p061', 'p062', 'p067'}
 NOTES = [('receipt', datetime(2026, 3, 3, 18, 20)), ('letter', datetime(2026, 4, 14, 8, 5)),
          ('board', datetime(2026, 9, 23, 10, 40)), ('code', datetime(2026, 10, 2, 19, 15)),
          ('receipt', datetime(2026, 10, 18, 12, 30))]
+# Failed shots (src/logic/exposure.ts): one taken in a pocket (almost black,
+# a little sensor noise) and one washed out by the sun (almost white).
+ACCIDENTS = [('dark', datetime(2026, 9, 6, 15, 12)), ('bright', datetime(2026, 8, 30, 13, 40))]
 GOODS = 'Milch Brot Käse Äpfel Kaffee Nudeln Tomaten Butter Wasser Saft Eier Reis Tee Joghurt'.split()
 
 
@@ -298,6 +301,18 @@ def poster(img):
     return img.crop((0, top, W, top + W * 9 // 16))
 
 
+def accident(rnd, kind):
+    img = Image.new('RGB', (W, H), (8, 7, 9) if kind == 'dark' else (250, 251, 249))
+    d = ImageDraw.Draw(img)
+    for _ in range(2500):
+        x, y = rnd.randrange(W), rnd.randrange(H)
+        v = rnd.randint(0, 14) if kind == 'dark' else rnd.randint(236, 255)
+        d.point((x, y), (v, v, v))
+    if kind == 'bright':  # the faint edge of a window frame, burnt out
+        d.rectangle((0, H - 90, W, H), fill=(238, 238, 236))
+    return img.filter(ImageFilter.GaussianBlur(1.2))
+
+
 def extras(save):
     rnd = random.Random(4711)
     for original, when in COPIES:
@@ -313,6 +328,9 @@ def extras(save):
     notes = random.Random(815)
     for kind, when in NOTES:
         save(note(notes, kind), when, None, {'note': True})
+    oops = random.Random(1312)
+    for kind, when in ACCIDENTS:
+        save(accident(oops, kind), when, 'home', {'note': True})
 
 
 SCENES = {'paris': paris, 'garda': garda, 'amsterdam': amsterdam, 'vienna': vienna}

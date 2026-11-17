@@ -104,7 +104,7 @@ export async function openGroup(page, w) {
   await pause(page, 800);
 }
 export async function openBlurry(page, w) {
-  await page.click(`button:has-text("${w.t.blurryTile}")`);
+  await page.click(`button:has-text("${w.t.failedTile}")`);
   await pause(page, 700);
 }
 export async function openCleanupReview(page, w) {
@@ -238,6 +238,14 @@ export const SCREENS = [
     name: '30-category', run: async (page, w) => {
       await page.click(`section[aria-labelledby="categories-h"] button >> nth=0`);
       await pause(page, 700);
+    },
+  },
+  // Missglückt: the too dark photos (the demo's pocket shot).
+  {
+    name: '32-failed-dark', run: async (page, w) => {
+      await openBlurry(page, w);
+      await page.click(`button:has-text("${w.t.failedDark}")`);
+      await pause(page, 500);
     },
   },
   // The decide-later pile: two photos swiped up in a review, then the pile gone through from home.

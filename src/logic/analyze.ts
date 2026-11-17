@@ -1,6 +1,7 @@
 import type { CleanupSummary, Confidence, Group, Photo, Trip } from '../types';
 import { rankDuplicates, rankGroup } from './best';
 import { blurLevel, sortBlurry } from './blur';
+import { exposureLevel } from './exposure';
 import { CityIndex } from './geo';
 import { findHomes, Homes } from './home';
 import { tripDates, tripPlace } from './naming';
@@ -70,12 +71,17 @@ export function buildGroups(lib: Library, raw: RawGroup[], state: AppState, face
   }).sort((a, b) => (lib.byId.get(b.ids[0])?.t ?? 0) - (lib.byId.get(a.ids[0])?.t ?? 0));
 }
 
-/** The blurry photos worth listing, most certain first: not in a similar group (the group handles those), no favourites. */
+/**
+ * The blurry photos worth listing, most certain first: not in a similar group
+ * (the group handles those), no favourites, and none that is too dark or too
+ * bright (src/logic/exposure.ts lists those; the sharpness of a black frame
+ * means little).
+ */
 export function findBlurry(lib: Library, groups: Group[], levels: Confidence[] = ['high', 'medium', 'low']): Photo[] {
   const grouped = new Set(groups.flatMap(g => g.ids));
   const wanted = new Set(levels);
   return sortBlurry(lib.photos.filter(p => {
-    if (p.fav || grouped.has(p.id)) return false;
+    if (p.fav || grouped.has(p.id) || exposureLevel(p)) return false;
     const level = blurLevel(p);
     return level !== null && wanted.has(level);
   }));
@@ -83,13 +89,14 @@ export function findBlurry(lib: Library, groups: Group[], levels: Confidence[] =
 
 /**
  * What could go: each similar or duplicate group's extra shots, the blurry
- * photos the app is fairly sure about (high and medium), the old screenshots
+ * photos the app is fairly sure about (high and medium), the too dark and too
+ * bright ones (`exposure`: src/logic/exposure.ts), the old screenshots
  * (`shots`, already filtered: src/logic/screenshots.ts) and the utility
  * photos the on-device AI found (`utility`: src/logic/ai.ts) — each photo
  * counted once, never a favourite and never a photo the user already chose to keep.
  */
 export function summarize(
-  lib: Library, groups: Group[], blurry: Photo[], kept: Set<string>, shots: Photo[] = [], utility: Photo[] = [],
+  lib: Library, groups: Group[], blurry: Photo[], kept: Set<string>, shots: Photo[] = [], utility: Photo[] = [], exposure: Photo[] = [],
 ): CleanupSummary {
   const counted = new Set<string>();
   const tally = { similar: { count: 0, bytes: 0, groups: 0 }, duplicate: { count: 0, bytes: 0, groups: 0 } };
@@ -111,6 +118,12 @@ export function summarize(
     bc++; bb += p.bytes;
     counted.add(p.id);
   }
+  let ec = 0; let eb = 0;
+  for (const p of exposure) {
+    if (kept.has(p.id) || p.fav || counted.has(p.id)) continue;
+    ec++; eb += p.bytes;
+    counted.add(p.id);
+  }
   let sc = 0; let sb = 0;
   for (const p of shots) {
     if (kept.has(p.id) || p.fav) continue;
@@ -121,12 +134,13 @@ export function summarize(
     if (kept.has(p.id) || p.fav || counted.has(p.id)) continue;
     uc++; ub += p.bytes;
   }
-  const count = tally.similar.count + tally.duplicate.count + bc + sc + uc;
-  const bytes = tally.similar.bytes + tally.duplicate.bytes + bb + sb + ub;
+  const count = tally.similar.count + tally.duplicate.count + bc + ec + sc + uc;
+  const bytes = tally.similar.bytes + tally.duplicate.bytes + bb + eb + sb + ub;
   return {
     similar: tally.similar,
     duplicates: tally.duplicate,
     blurry: { count: bc, bytes: bb },
+    exposure: { count: ec, bytes: eb },
     screenshots: { count: sc, bytes: sb },
     utility: { count: uc, bytes: ub },
     total: { count, bytes },

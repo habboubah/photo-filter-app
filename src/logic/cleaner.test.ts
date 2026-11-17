@@ -140,7 +140,7 @@ describe('smart clean', () => {
   it('lists each kind once, never a best shot, a favourite, a kept photo or an unsure blurry one', () => {
     const parts = cleanParts(groups, [blurry, maybe], [shot], new Set(), byId);
     const by = Object.fromEntries(parts.map(p => [p.kind, p.ids]));
-    expect(by).toEqual({ duplicates: [copy.id], similar: [extra.id], blurry: [blurry.id], screenshots: [shot.id] });
+    expect(by).toEqual({ duplicates: [copy.id], similar: [extra.id], blurry: [blurry.id], exposure: [], screenshots: [shot.id] });
     expect(cleanParts(groups, [blurry], [shot], new Set([extra.id, shot.id]), byId).find(p => p.kind === 'similar')!.ids).toEqual([]);
   });
 

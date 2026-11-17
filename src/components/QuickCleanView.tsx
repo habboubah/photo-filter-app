@@ -24,7 +24,7 @@ export function QuickCleanView({ t, parts, storage, onBack, onReview, onDelete }
   const [on, setOn] = useState<Set<CleanKind>>(() => new Set(present.map(p => p.kind)));
   const chosen = selection(parts, on);
   const label: Record<CleanKind, string> = {
-    duplicates: t.cleanupDuplicates, similar: t.cleanupSimilar, blurry: t.cleanupBlurry, screenshots: t.cleanupScreenshots,
+    duplicates: t.cleanupDuplicates, similar: t.cleanupSimilar, blurry: t.cleanupBlurry, exposure: t.cleanupExposure, screenshots: t.cleanupScreenshots,
   };
   const toggle = (kind: CleanKind, v: boolean) => setOn(s => {
     const next = new Set(s);

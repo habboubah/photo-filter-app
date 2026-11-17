@@ -9,16 +9,20 @@ import { blurLevel } from './blur';
  * sure (high, medium); screenshots only the old ones (already filtered).
  * Nothing is deleted here — this only lists what the dialog will be asked for.
  */
-export type CleanKind = 'similar' | 'duplicates' | 'blurry' | 'screenshots';
-export const CLEAN_KINDS: CleanKind[] = ['duplicates', 'similar', 'blurry', 'screenshots'];
+export type CleanKind = 'similar' | 'duplicates' | 'blurry' | 'exposure' | 'screenshots';
+export const CLEAN_KINDS: CleanKind[] = ['duplicates', 'similar', 'blurry', 'exposure', 'screenshots'];
 
 export interface CleanPart { kind: CleanKind; ids: string[]; bytes: number }
 
-export function cleanParts(groups: Group[], blurry: Photo[], oldShots: Photo[], kept: Set<string>, byId: Map<string, Photo>): CleanPart[] {
+/** `exposure`: the too dark and too bright photos (src/logic/exposure.ts). */
+export function cleanParts(
+  groups: Group[], blurry: Photo[], oldShots: Photo[], kept: Set<string>, byId: Map<string, Photo>, exposure: Photo[] = [],
+): CleanPart[] {
   const parts: Record<CleanKind, CleanPart> = {
     duplicates: { kind: 'duplicates', ids: [], bytes: 0 },
     similar: { kind: 'similar', ids: [], bytes: 0 },
     blurry: { kind: 'blurry', ids: [], bytes: 0 },
+    exposure: { kind: 'exposure', ids: [], bytes: 0 },
     screenshots: { kind: 'screenshots', ids: [], bytes: 0 },
   };
   const seen = new Set<string>();
@@ -35,6 +39,7 @@ export function cleanParts(groups: Group[], blurry: Photo[], oldShots: Photo[], 
     const level = blurLevel(p);
     if (level === 'high' || level === 'medium') add('blurry', p);
   }
+  for (const p of exposure) add('exposure', p);
   for (const p of oldShots) add('screenshots', p);
   return CLEAN_KINDS.map(k => parts[k]);
 }

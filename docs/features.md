@@ -36,7 +36,7 @@ Every feature, as the user sees it (German labels, English in brackets).
   duplicates, near-identical and blurry photos and old screenshots, what
   Bildklar has freed so far (*Bisher freigegeben: 1,2 GB*), *Aufräumen* [Clean up].
 - Tiles: *Duplikate* [Duplicates] and *Fast gleiche* [Near-identical]
-  (groups), *Unscharfe* [Blurry], *Screenshots*, *Große Dateien* [Large files]
+  (groups), *Missglückt* [Failed shots: blurry, too dark, too bright], *Screenshots*, *Große Dateien* [Large files]
   (count and size) and, on the iPhone when there are any, *Live Photos*.
 - *3 Tage in Folge aufgeräumt* [3 days in a row of cleaning up] on the card
   once the streak is two days or more.
@@ -134,16 +134,27 @@ Every feature, as the user sees it (German labels, English in brackets).
 - A tap reviews the month: extra shots, blurry photos and old screenshots are
   suggested for deleting, the rest for keeping.
 
-## Blurry photos
-- Every photo's sharpness, as three levels: *Sehr wahrscheinlich*,
+## Failed shots (*Missglückt*)
+- The home tile *Missglückt* [Failed shots] opens one screen with three tabs:
+  *Unscharf · Zu dunkel · Zu hell* [Blurry · Too dark · Too bright].
+- **Blurry**: every photo's sharpness, as three levels: *Sehr wahrscheinlich*,
   *Wahrscheinlich*, *Vielleicht unscharf* [Very likely / Probably / Maybe
   blurry]. Photos with little to see (fog, a dark room) are judged more gently.
-- *Sicher* [Sure] shows the first two levels, *Alle* [All] all three, as a grid
+  *Sicher* [Sure] shows the first two levels, *Alle* [All] all three, as a grid
   with a coloured dot each. *Durchgehen* reviews them.
+- **Too dark / too bright**: photos with almost nothing to see — a pocket shot,
+  the lens cap, a picture washed out by the sun — from the brightness and
+  contrast the scan already measures. Night photos with lights stay out. The
+  on-device AI's *accidental* label lets a borderline photo in. Favourites,
+  photos with faces and photos you kept never come in. A photo counts once:
+  a black, blurry frame is listed as too dark, not as blurry.
+- They are part of the clean-up card (*Zu dunkel oder zu hell*), the quick
+  clean, *Alle durchgehen* and the reviews of a month, a trip and *An diesem Tag*.
+- The thresholds are provisional (`src/logic/exposure.ts`).
 
 ## Clean-up
 - *Aufräumen* lists what the card counts (duplicates, near-identical, blurry,
-  old screenshots, unimportant photos) with sizes, *Alle durchgehen* [Go through all] and
+  too dark or too bright, old screenshots, unimportant photos) with sizes, *Alle durchgehen* [Go through all] and
   **Schnell aufräumen** [Quick clean]: a switch per kind (all on), the
   free space, then *35 Fotos löschen · 91 MB* → the system's dialog — or
   *Durchgehen* [Review] for the same photos first. Needs the unlock.
