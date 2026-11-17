@@ -250,6 +250,11 @@ pass again after the update (that is expected). Android's unit tests pass;
       (`getVectors`) → send them to Claude. Then `npm run test:ios:ai`.
 - [ ] On both phones: after the AI pass, *Suchen* finds *Hund*, *Strand*,
       *Kassenzettel* in your library? *Ähnliche Fotos zeigen* in a review?
+- [ ] *Suchen* with your own photos: do the *In deinen Fotos* cards show
+      words you really have (*Baby*, *Kind* …), each with a fitting photo?
+      Any card with a wrong photo, or a word you miss → tell Claude (the
+      mark is `EXAMPLE_SURE` in `src/logic/search.ts`). Try the parent words:
+      *Baden*, *Schlafen*, *Schnuller*, *Fläschchen*, *Ultraschall*.
 - [ ] Near-identical groups: any group that is not one moment, or a series
       split in two? Duplicates: an edited copy found (*Bitte prüfen*)?
 - [ ] *Schnell aufräumen*: does it hold back the unsure photos (*Unsichere

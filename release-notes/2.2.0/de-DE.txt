@@ -2,7 +2,7 @@ Neu in Bildklar 2.2 – verlässlicher aufräumen:
 • Jeder Vorschlag sagt, wie sicher Bildklar ist, und warum: Kopie, unschärfer, Augen zu …
 • „Schnell aufräumen“ nimmt nur die sicheren Fotos, die unsicheren gehst du durch
 • Fast gleiche Fotos und bearbeitete Kopien genauer erkannt
-• Suchen: Fotos nach dem, was darauf ist – „Hund“, „Strand“, „Kassenzettel“
+• Suchen: „Baby“, „Hund“, „Strand“ – mit Vorschlägen aus deinen eigenen Fotos
 • Ähnliche Fotos zu jedem Foto
 • Ausweise und Bankkarten werden nie vorgeschlagen
 Die KI läuft auf deinem Handy. Nichts verlässt es.
