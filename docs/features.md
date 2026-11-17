@@ -19,14 +19,15 @@ Every feature, as the user sees it (German labels, English in brackets).
   (*12.340 von 48.210 Fotos angesehen*); the first time takes a few minutes and
   keeps the screen on.
 - **Resumable and incremental**: an interrupted scan continues; later scans
-  only look at new and changed photos (a quiet *wird aktualisiert …*), and drop
+  only look at new and changed photos (the rescan button spins), and drop
   deleted ones. It runs at every start, when coming back to the app after a
   while, and when photos change while the app is open.
-- *Neu durchsuchen* [Scan again] at the end of *Aufräumen*, with when the last
-  scan ran (*Durchsucht vor 5 Minuten*).
+- *Neu durchsuchen* [Scan again]: the round button at the top of *Aufräumen*,
+  beside search and settings; it spins while a scan runs, and its label says
+  when the last scan ran (*Durchsucht vor 5 Minuten*).
 - iCloud-only originals are never downloaded.
 - **The on-device AI** (docs/AI.md) looks at each photo after that: the
-  subtitle on *Aufräumen* counts along (*KI: 1.234 von 5.000 Fotos*), results show up
+  line above the card on *Aufräumen* counts along (*KI: 1.234 von 5.000 Fotos*), results show up
   every 480 photos, the app stays usable. It pauses when the phone runs hot
   and continues with the next scan. Nothing leaves the phone.
 
@@ -35,23 +36,24 @@ The root has two tabs in a floating bar at the bottom: **Aufräumen** [Clean up]
 and **Ordnen** [Organise]. Each keeps its scroll position; tapping the current
 tab again scrolls to its top; Android's back button goes from *Ordnen* to
 *Aufräumen* first. Settings is the round button at the top right of both;
-**Suchen** [Search], the magnifier beside it.
+**Suchen** [Search], the magnifier beside it; on *Aufräumen*, *Neu durchsuchen*
+[Scan again] beside that.
 
 ### Aufräumen [Clean up]
-- The number of photos under the title.
-- **The analysis**, inside the clean-up card under the bar: rows in two
-  columns, each with its icon, a count and its size. First *Gescannt*
-  (every photo and video scanned) and *In Ordnung* (what is not marked for
-  deleting: scanned less what the card counts) — facts, not buttons; then
-  six that open their screen — *Fotos* (all photos → *Monat für Monat*), *Videos* (all videos,
-  largest first), *Ähnliche Fotos* (near-identical photos that could go),
-  *Ähnliche Videos* (similar videos that could go), *Chats & Social*,
-  *Screenshots*.
-- **The clean-up card**: the space that could be freed (one big number), a
-  bar split into one segment per category (sized by the space it frees, in
-  the category's colour), the free space on the device (*2,4 GB von 128 GB
-  auf dem Gerät frei*), what Bildklar has freed so far (*Bisher freigegeben:
-  1,2 GB*), *Jetzt aufräumen* [Clean up now].
+- No large title: the clean-up card comes first. The AI's pass counts along
+  in one quiet line above it (*KI: 1.234 von 5.000 Fotos*).
+- **The clean-up card**: the space that could be freed (one big number) and
+  how much of it is photos and how much videos (*Fotos: 176 MB von 1,9 GB*,
+  *Videos: 2,2 MB von 169 MB*); a bar of the whole library — one segment per
+  category that could go (sized by the space it frees, in the category's
+  colour), then *Gute Fotos* and *Gute Videos*, paler — with its legend.
+- **The table** under the bar: a row for *Fotos* and one for *Videos*, each
+  with how many were scanned (*Gescannt*), how many are fine (*Gut*: not
+  marked for deleting) and how many could go (*Kann weg*). *Fotos* opens
+  *Monat für Monat*, *Videos* all videos, largest first.
+- Then the free space on the device (*2,4 GB von 128 GB auf dem Gerät frei*),
+  what Bildklar has freed so far (*Bisher freigegeben: 1,2 GB*), *Jetzt
+  aufräumen* [Clean up now].
 - *3 Tage in Folge aufgeräumt* [3 days in a row of cleaning up] on the card
   once the streak is two days or more.
 - **Vorschläge** [Suggestions]: photos and videos apart — *Duplikate*
@@ -374,7 +376,7 @@ tab again scrolls to its top; Android's back button goes from *Ordnen* to
   where iOS (and Android, once decided) lets the access change. With full
   access there is nothing to do; with none the app shows its permission
   screen instead. Settings holds only what can be changed: the storage, what was freed and *Fotos auswählen* are on
-  *Aufräumen*, so are *Geschützt* and *Neu durchsuchen* (its last rows).
+  *Aufräumen*, so are *Geschützt* (its last row) and *Neu durchsuchen* (at its top).
 - **Vollversion**: unlock or *Freigeschaltet*, restore.
 - **Darstellung**: language (Deutsch, English, العربية — right to left), appearance (system, light, dark).
 - **Nur in der Debug-Version**: *Probelauf* [Dry run] — on by default in debug

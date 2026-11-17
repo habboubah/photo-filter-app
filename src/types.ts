@@ -144,6 +144,8 @@ export interface CleanupSummary {
   /** Utility photos the on-device AI found (src/logic/ai.ts), not already counted above. */
   utility: { count: number; bytes: number };
   total: { count: number; bytes: number };
+  /** `total` split into photos and videos (the two add up to it). */
+  media: { photos: { count: number; bytes: number }; videos: { count: number; bytes: number } };
 }
 
 /** Free and total space on the phone, in bytes (PhotoLibrary.getStorage). */
