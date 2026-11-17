@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { BadgeCheck, FileText, FlaskConical, Globe, HardDrive, Images, Mail, Moon, RefreshCw, RotateCcw, Shield, ShieldCheck, Sparkles, Star, Unlock } from 'lucide-react';
-import type { Storage, ThemeMode } from '../types';
+import { BadgeCheck, FileText, FlaskConical, Globe, Images, Mail, Moon, RotateCcw, ShieldCheck, Star, Unlock } from 'lucide-react';
+import type { ThemeMode } from '../types';
 import type { Access } from '../native/photoLibrary';
-import { Language, Strings, bytes, fmt, languages, plural, stringsFor } from '../translations';
+import { Language, Strings, languages, plural, stringsFor } from '../translations';
 import { Away, Group, IconTile, MenuRow, Next, Row, Screen } from '../ui/Screen';
 import { Confirm } from '../ui/Sheet';
 import { SwitchRow } from '../ui/Controls';
@@ -23,19 +23,13 @@ interface Props {
   /** The dry run switch is shown (debug builds, or release while DRY_RUN_IN_RELEASE is on). */
   dryRunAvailable: boolean;
   dryRun: boolean;
-  storage: Storage | null;
-  freed: { count: number; bytes: number };
   reminder: boolean;
-  /** How much is protected (src/logic/protect.ts), for the row's line. */
-  protection: { albums: number; trips: number; photos: number };
-  onProtected: () => void;
   onReminder: (on: boolean) => void;
   onBack: () => void;
   onLanguage: (l: Language) => void;
   onTheme: (m: ThemeMode) => void;
-  onAddPhotos: () => void;
+  /** Opens the system's settings for this app, where the photo access is changed. */
   onOpenSettings: () => void;
-  onRescan: () => void;
   onUnlock: () => void;
   onRestore: () => void;
   onDryRun: (on: boolean) => void;
@@ -62,29 +56,7 @@ export function SettingsView(p: Props) {
       </section>
 
       <Group title={t.photosSection}>
-        <Row label={t.accessRow} leading={<IconTile icon={Images} hue="sky" />} trailing={<span className="text-label text-fg-mute">{accessLabel}</span>} />
-        {p.access === 'limited' && <Row label={t.addPhotos} leading={<IconTile icon={Images} hue="mint" />} trailing={<Next />} onClick={p.onAddPhotos} />}
-        <Row label={t.manageAccess} leading={<IconTile icon={ShieldCheck} hue="stone" />} trailing={<Away />} onClick={p.onOpenSettings} />
-        <Row
-          label={t.protectedRow}
-          sub={fmt(t.protectedRowSub, { albums: plural(t, 'albums', p.protection.albums), trips: plural(t, 'trips', p.protection.trips), photos: plural(t, 'photos', p.protection.photos) })}
-          leading={<IconTile icon={Shield} hue="mint" />} trailing={<Next />} onClick={p.onProtected}
-        />
-        {(p.access === 'full' || p.access === 'limited') && <Row label={t.rescan} leading={<IconTile icon={RefreshCw} hue="lilac" />} onClick={p.onRescan} />}
-        {p.storage && (
-          <Row
-            label={t.storageRow}
-            sub={fmt(t.storageValue, { free: bytes(t, p.storage.free), total: bytes(t, p.storage.total) })}
-            leading={<IconTile icon={HardDrive} hue="stone" />}
-          />
-        )}
-        {p.freed.count > 0 && (
-          <Row
-            label={t.freedRow}
-            sub={fmt(t.cleanupRowSub, { photos: plural(t, 'photos', p.freed.count), size: bytes(t, p.freed.bytes) })}
-            leading={<IconTile icon={Sparkles} hue="mint" />}
-          />
-        )}
+        <Row label={t.accessRow} sub={accessLabel} leading={<IconTile icon={Images} hue="sky" />} trailing={<Away />} onClick={p.onOpenSettings} />
       </Group>
 
       <Group title={t.reminderSection}>

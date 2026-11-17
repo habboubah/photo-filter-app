@@ -742,16 +742,12 @@ export default function App() {
       return (
         <SettingsView
           t={t} language={language} themeMode={store.themeMode} access={access} owned={store.owned} onSale={UNLOCK_ON_SALE} unlimited={unlimited} freeLeft={freeLeft(state.freeUsed)}
-          debug={store.debug} dryRunAvailable={store.dryRunAvailable} dryRun={store.dryRun} storage={store.storage} freed={state.freed}
+          debug={store.debug} dryRunAvailable={store.dryRunAvailable} dryRun={store.dryRun}
           reminder={store.reminder}
-          protection={{ albums: state.protect.albums.length, trips: state.protect.trips.length, photos: state.protect.ids.length }}
-          onProtected={() => setShowProtected(true)}
           onReminder={on => { void store.setReminder(on, t.reminderTitle, t.reminderBody).then(ok => { if (on && !ok) show(t.reminderDenied); }); }}
           onBack={() => setShowSettings(false)}
           onLanguage={store.setLanguage} onTheme={store.setThemeMode}
-          onAddPhotos={addPhotos}
           onOpenSettings={() => { void PhotoLibrary.openSettings(); }}
-          onRescan={() => { store.startScan(); setShowSettings(false); }}
           onUnlock={() => setPaywall(true)}
           onRestore={restore}
           onDryRun={store.setDryRun}
@@ -814,7 +810,10 @@ export default function App() {
         storage={store.storage} freedBytes={state.freed.bytes} streak={streak(state.days, now)}
         months={{ done: months.filter(m => doneMonths.has(m.key)).length, total: months.length, pct }}
         later={{ count: laterPile.length, cover: laterPile[0] }}
+        protection={{ albums: state.protect.albums.length, trips: state.protect.trips.length, photos: state.protect.ids.length }}
         onLater={() => startReview(reviewLater(laterPile))}
+        onProtected={() => setShowProtected(true)}
+        onRescan={() => store.startScan()}
         onSettings={() => setShowSettings(true)}
         onAddPhotos={addPhotos}
         onCleanup={() => setShowCleanup(true)}

@@ -386,7 +386,6 @@ const de = {
   accessFull: 'Alle Fotos',
   accessLimited: 'Ausgewählte Fotos',
   accessNone: 'Kein Zugriff',
-  manageAccess: 'Zugriff in den Einstellungen ändern',
   protectedRow: 'Geschützt',
   protectedRowSub: '{albums} · {trips} · {photos}',
   protectedTitle: 'Geschützt',
@@ -409,9 +408,7 @@ const de = {
   tripProtected: 'Fotos aus „{name}“ werden nie vorgeschlagen',
   albums_one: '1 Album',
   albums_other: '{n} Alben',
-  storageRow: 'Speicher auf dem Gerät',
   storageValue: '{free} von {total} frei',
-  freedRow: 'Mit Bildklar freigegeben',
   reminderSection: 'Erinnerung',
   reminderRow: 'Wöchentliche Erinnerung',
   reminderSub: 'Sonntags um 18 Uhr – auf deinem Gerät geplant, ohne Server.',
@@ -838,7 +835,6 @@ const en: Strings = {
   accessFull: 'All photos',
   accessLimited: 'Selected photos',
   accessNone: 'No access',
-  manageAccess: 'Change access in Settings',
   protectedRow: 'Protected',
   protectedRowSub: '{albums} · {trips} · {photos}',
   protectedTitle: 'Protected',
@@ -861,9 +857,7 @@ const en: Strings = {
   tripProtected: 'Photos from “{name}” are never suggested',
   albums_one: '1 album',
   albums_other: '{n} albums',
-  storageRow: 'Storage on this device',
   storageValue: '{free} of {total} free',
-  freedRow: 'Freed with Bildklar',
   reminderSection: 'Reminder',
   reminderRow: 'Weekly reminder',
   reminderSub: 'Sundays at 6 pm – scheduled on your device, no server.',
@@ -1061,4 +1055,17 @@ export function bytes(t: Strings, b: number): string {
   while (v >= 1000 && i < units.length - 1) { v /= 1000; i++; }
   const digits = v < 10 && i >= 2 ? 1 : 0;
   return `${v.toLocaleString(t.locale, { maximumFractionDigits: digits, minimumFractionDigits: digits })} ${units[i]}`;
+}
+
+/** How long ago, in the app's locale: "vor 5 Minuten", "gestern", "now". */
+export function ago(t: Strings, at: number, now: number): string {
+  const rtf = new Intl.RelativeTimeFormat(t.locale, { numeric: 'auto' });
+  const s = Math.round((at - now) / 1000);
+  const steps: [Intl.RelativeTimeFormatUnit, number][] = [['second', 60], ['minute', 60], ['hour', 24], ['day', 7], ['week', 4.35], ['month', 12]];
+  let v = s;
+  for (const [unit, size] of steps) {
+    if (Math.abs(v) < size) return rtf.format(unit === 'second' ? 0 : Math.round(v), unit);
+    v /= size;
+  }
+  return rtf.format(Math.round(v), 'year');
 }

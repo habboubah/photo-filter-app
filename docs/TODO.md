@@ -207,7 +207,7 @@ Everything in TypeScript is tested by `npm run check`; what needs a phone:
 
 - [ ] **Protected albums** — new native methods `listAlbums` and
       `albumMembers` (Swift and Kotlin, not compiled in the cloud): Xcode build,
-      then Settings › Geschützt on the iPhone lists your own albums with the
+      then Aufräumen › Geschützt on the iPhone lists your own albums with the
       right counts; switch one on and check its photos vanish from the
       suggestions. Android: the list shows your folders (Camera, WhatsApp
       Images, …).
