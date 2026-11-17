@@ -987,7 +987,7 @@ export default function App() {
         protection={{ albums: state.protect.albums.length, trips: state.protect.trips.length, photos: state.protect.ids.length }}
         onLater={() => startReview(reviewLater(laterPile))}
         onProtected={() => setShowProtected(true)}
-        onRescan={() => store.startScan()}
+        onRescan={() => void store.rescanAll()}
         onSettings={() => setShowSettings(true)}
         onSearch={aiSeen.seen > 0 ? () => setShowSearch(true) : undefined}
         onAddPhotos={addPhotos}

@@ -4,6 +4,7 @@ import type { Album, Photo, Storage, ThemeMode } from './types';
 import translations, { DEFAULT_LANGUAGE, isLanguage, Language, loadLanguage } from './translations';
 import { Access, PAGE, PhotoLibrary, ScanProgress, loadAllFacts } from './native/photoLibrary';
 import { Vectors } from './logic/vectors';
+import { forgetAllThumbs } from './thumbs';
 import { AI_VERSION, LABELS, type LabelModel, labelModel, scoreInto, scoreLabels, withScores } from './logic/ai';
 import { PRODUCT_ID, Purchases } from './native/purchases';
 import { AppState, RECENT_ALBUMS, SCHEMA_VERSION, emptyState, normalizeState, pruneLater } from './logic/state';
@@ -254,11 +255,14 @@ export function useAppStore() {
   const vectorsRef = useRef(vectors);
   vectorsRef.current = vectors;
   const fetchingVectors = useRef(false);
+  /** Moves on with every full rescan (rescanAll): what was fetched or loaded for the old cache is dropped. */
+  const generation = useRef(0);
   useEffect(() => {
     if (!facts || fetchingVectors.current) return;
     const missing = facts.filter(p => p.vv === AI_VERSION && !vectorsRef.current.has(p.id)).map(p => p.id);
     if (!missing.length) return;
     fetchingVectors.current = true;
+    const gen = generation.current;
     void (async () => {
       let next = vectorsRef.current;
       try {
@@ -268,7 +272,7 @@ export function useAppStore() {
         }
       } catch { /* an older native build: no vectors, the app works without them */ }
       fetchingVectors.current = false;
-      setVectors(next);
+      if (gen === generation.current) setVectors(next);
     })();
   }, [facts]);
   // The labels' vectors (src/logic/aiLabels.json) load apart from the main bundle.
@@ -309,13 +313,37 @@ export function useAppStore() {
   const reload = useCallback(async () => {
     if (loading.current) return;
     loading.current = true;
-    try { setPhotos(await loadAllFacts()); } catch { setPhotos(p => p ?? []); } finally { loading.current = false; }
+    const gen = generation.current;
+    try {
+      const rows = await loadAllFacts();
+      if (gen === generation.current) setPhotos(rows);
+    } catch { setPhotos(p => p ?? []); } finally { loading.current = false; }
   }, []);
 
   const startScan = useCallback(() => {
     setScan(s => ({ ...s, running: true }));
     PhotoLibrary.startScan().catch(() => setScan(s => ({ ...s, running: false })));
   }, []);
+
+  /**
+   * "Neu durchsuchen": every photo analysed again from the start, the AI's
+   * pass too. The native scan cache and its thumbnails are emptied first
+   * (clearCache stops a scan that runs); the app then shows a first scan.
+   * The user's decisions are a file of their own and stay.
+   */
+  const rescanAll = useCallback(async () => {
+    generation.current++;
+    setScan(s => ({ ...s, running: true, phase: 'list', done: 0, total: 0, lastScanAt: 0 }));
+    try { await PhotoLibrary.clearCache(); } catch { /* the scan below still finds what is new */ }
+    forgetAllThumbs();
+    const empty = Vectors.empty();
+    vectorsRef.current = empty;
+    setVectors(empty);
+    scoresRef.current = undefined;
+    setScores(null);
+    setPhotos([]);
+    startScan();
+  }, [startScan]);
 
   const refreshAccess = useCallback(async () => {
     const { access: a } = await PhotoLibrary.getAccess().catch(() => ({ access: 'denied' as Access }));
@@ -499,7 +527,7 @@ export function useAppStore() {
     reminder, setReminder,
     owned: isOwned, setOwned,
     access, refreshAccess, accessGranted,
-    photos, scan, startScan, reload, removePhotos, vectors,
+    photos, scan, startScan, rescanAll, reload, removePhotos, vectors,
     faces, scoreFaces,
     appAlbums,
     storage, refreshStorage,

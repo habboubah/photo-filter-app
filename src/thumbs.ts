@@ -48,6 +48,11 @@ export function thumbUrl(id: string, size: number): Promise<string> {
   return p;
 }
 
+/** After the native cache was emptied (a full rescan): no file remembered here exists any more. */
+export function forgetAllThumbs() {
+  done.clear();
+}
+
 /** A photo that is gone (deleted, moved out of reach) no longer has a thumbnail to remember. */
 export function forgetThumbs(ids: string[]) {
   for (const id of ids) { done.delete(key(id, SMALL)); done.delete(key(id, LARGE)); }

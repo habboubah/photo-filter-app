@@ -52,6 +52,8 @@ export const ar: Strings = {
   scanFirstHint: 'تستغرق المرة الأولى بضع دقائق. أبقِ التطبيق مفتوحًا في هذه الأثناء.',
   scanTitle: 'يتفحّص Bildklar صورك',
   rescan: 'فحص من جديد',
+  rescanAllTitle: 'فحص كل الصور من جديد؟',
+  rescanAllBody: 'يفحص Bildklar كل صورة مرة أخرى، وبالذكاء الاصطناعي أيضًا. مع كثرة الصور يستغرق ذلك بعض الوقت. ما احتفظت به أو حميته يبقى كما هو.',
   scanUpdating: 'جارٍ التحديث …',
   lastScan: 'آخر فحص {when}',
   emptyLibraryTitle: 'لم يُعثر على صور',
