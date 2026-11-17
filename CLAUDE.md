@@ -14,6 +14,7 @@ the root; every other document lives in `docs/` (only `README.md` stays here):
 | File | What it is for |
 |---|---|
 | `README.md` | Only the commands: setup, run, build, check, screenshots, release |
+| `docs/TECHNOLOGY.md` | An overview for readers: the stack, the tools, which AI runs, how and why |
 | `docs/PLAN.md` | The concept: architecture, data model, platform mapping, design, the decisions and why |
 | `docs/DEVELOPMENT.md` | The project layout, the single checks, the native tests, the demo library, the city table, icons |
 | `docs/features.md` | Every feature, as the user sees it |
