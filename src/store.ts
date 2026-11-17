@@ -64,6 +64,11 @@ export function useAppStore() {
 
   /* ------------------------------------------------ debug and the dry run */
 
+  // TEMPORARY (November 2026): the dry run switch in release builds, so Ahmad
+  // can test a TestFlight / Play build on his phone. Set back to false (or
+  // remove) before a build goes to review — release builds must never run dry.
+  const DRY_RUN_IN_RELEASE = true;
+
   const [debug, setDebug] = useState(false);
   // Safety (docs/PLAN.md): in a debug build the dry run is on until it is turned off by hand.
   const [dryRunPref, setDryRunPref] = useState<boolean | null>(() => {
@@ -73,8 +78,10 @@ export function useAppStore() {
   useEffect(() => {
     PhotoLibrary.isDebug().then(r => setDebug(r.debug)).catch(() => setDebug(false));
   }, []);
-  /** Release builds never run dry; debug builds do unless it was switched off. */
-  const dryRun = debug && dryRunPref !== false;
+  /** Release builds never run dry; debug builds do unless it was switched off.
+   *  While DRY_RUN_IN_RELEASE is on, release builds offer it too (for testing on a phone). */
+  const dryRunAvailable = debug || DRY_RUN_IN_RELEASE;
+  const dryRun = dryRunAvailable && dryRunPref !== false;
   const setDryRun = (on: boolean) => { setDryRunPref(on); write(K.dryRun, on ? '1' : '0'); };
 
   /* ------------------------------------------------------------ decisions */
@@ -317,7 +324,7 @@ export function useAppStore() {
 
   return {
     language, setLanguage, themeMode, setThemeMode,
-    debug, dryRun, setDryRun,
+    debug, dryRunAvailable, dryRun, setDryRun,
     state, stateReady, storageError, updateTrips, recordAlbum, setBest, addKept, markMonthDone, addFreed, markDay, countFree, resetDecisions, restoreState,
     reminder, setReminder,
     owned: isOwned, setOwned,

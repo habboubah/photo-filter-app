@@ -534,7 +534,7 @@ export default function App() {
       return (
         <SettingsView
           t={t} language={language} themeMode={store.themeMode} access={access} owned={store.owned} freeLeft={freeLeft(state.freeUsed)}
-          debug={store.debug} dryRun={store.dryRun} storage={store.storage} freed={state.freed}
+          debug={store.debug} dryRunAvailable={store.dryRunAvailable} dryRun={store.dryRun} storage={store.storage} freed={state.freed}
           reminder={store.reminder}
           onReminder={on => { void store.setReminder(on, t.reminderTitle, t.reminderBody).then(ok => { if (on && !ok) show(t.reminderDenied); }); }}
           onBack={() => setShowSettings(false)}

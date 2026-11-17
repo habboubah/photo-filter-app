@@ -3,6 +3,15 @@
 What only you can do: a Mac with Xcode, your phones, the stores, the photos.
 In order. (State: 16 November 2026, after the first build by Claude.)
 
+## 0. Temporary: the dry run in release builds
+
+- [ ] **Turn it off again after testing.** Release builds show the dry run
+      switch (Einstellungen → *Nur in der Debug-Version*) too, starting **on**,
+      so a TestFlight / Play build can be tried on the phone without touching
+      the photos. Done testing? Set `DRY_RUN_IN_RELEASE` in `src/store.ts` to
+      `false` (or ask Claude to remove it). **Never send a build to review
+      while it is `true`.**
+
 ## 1. Before anything else
 
 - [ ] **Reserve the name.** The app is now **Bildklar** (store name *Bildklar KI:

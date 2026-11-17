@@ -16,6 +16,8 @@ interface Props {
   /** Deletes left without the unlock. */
   freeLeft: number;
   debug: boolean;
+  /** The dry run switch is shown (debug builds, or release while DRY_RUN_IN_RELEASE is on). */
+  dryRunAvailable: boolean;
   dryRun: boolean;
   storage: Storage | null;
   freed: { count: number; bytes: number };
@@ -97,7 +99,7 @@ export function SettingsView(p: Props) {
         />
       </Group>
 
-      {p.debug && (
+      {p.dryRunAvailable && (
         <Group title={t.devSection}>
           <div className="flex items-start">
             <span className="ps-[16px] pt-[14px]"><IconTile icon={FlaskConical} hue="sand" /></span>
