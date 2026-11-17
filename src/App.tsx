@@ -931,13 +931,7 @@ export default function App() {
         onDuplicates={() => setShowDuplicates(true)}
         onVideoGroups={() => setShowVideoGroups(true)}
         onVideos={() => setShowVideos(true)}
-        analysis={{
-          photos: totals.photos, videos: totals.videos,
-          similarPhotos: summary ? { count: summary.similar.count, bytes: summary.similar.bytes } : { count: 0, bytes: 0 },
-          similarVideos: summary ? { count: summary.lookalike.count, bytes: summary.lookalike.bytes } : { count: 0, bytes: 0 },
-          chats: { count: sources.reduce((n, g) => n + g.photos.length, 0), bytes: sourcesBytes },
-          screenshots: { count: shots.length, bytes: shots.reduce((s, p) => s + p.bytes, 0) },
-        }}
+        analysis={{ photos: totals.photos, videos: totals.videos }}
         onScreenshots={() => setShowScreenshots(true)}
         onMonths={() => setShowMonths(true)}
         onLarge={() => setShowLarge(true)}

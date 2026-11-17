@@ -133,6 +133,9 @@ export function summarize(
   lib: Library, groups: Group[], blurry: Photo[], kept: Set<string>, shots: Photo[] = [], utility: Photo[] = [], exposure: Photo[] = [],
 ): CleanupSummary {
   const counted = new Set<string>();
+  // The same items again, photos apart from videos (the card's "Fotos: 120 MB von 1,9 GB").
+  const media = { photos: { count: 0, bytes: 0 }, videos: { count: 0, bytes: 0 } };
+  const add = (p: Photo) => { const m = p.video ? media.videos : media.photos; m.count++; m.bytes += p.bytes; };
   const tally = { similar: { count: 0, bytes: 0, groups: 0 }, duplicate: { count: 0, bytes: 0, groups: 0 }, lookalike: { count: 0, bytes: 0, groups: 0 } };
   for (const g of groups) {
     // Videos apart from photos: a copy of a video counts with the lookalike takes ("Ähnliche Videos").
@@ -142,7 +145,7 @@ export function summarize(
       const p = lib.byId.get(id);
       if (!p || id === g.best || isProtected(p, kept)) continue;
       into.count++; into.bytes += p.bytes; any = true;
-      counted.add(id);
+      counted.add(id); add(p);
     }
     if (any) into.groups++;
   }
@@ -151,23 +154,23 @@ export function summarize(
     const level = blurLevel(p);
     if (isProtected(p, kept) || (level !== 'high' && level !== 'medium')) continue;
     bc++; bb += p.bytes;
-    counted.add(p.id);
+    counted.add(p.id); add(p);
   }
   let ec = 0; let eb = 0;
   for (const p of exposure) {
     if (isProtected(p, kept) || counted.has(p.id)) continue;
     ec++; eb += p.bytes;
-    counted.add(p.id);
+    counted.add(p.id); add(p);
   }
   let sc = 0; let sb = 0;
   for (const p of shots) {
     if (isProtected(p, kept)) continue;
-    sc++; sb += p.bytes;
+    sc++; sb += p.bytes; add(p);
   }
   let uc = 0; let ub = 0;
   for (const p of utility) {
     if (isProtected(p, kept) || counted.has(p.id)) continue;
-    uc++; ub += p.bytes;
+    uc++; ub += p.bytes; add(p);
   }
   const count = tally.similar.count + tally.duplicate.count + tally.lookalike.count + bc + ec + sc + uc;
   const bytes = tally.similar.bytes + tally.duplicate.bytes + tally.lookalike.bytes + bb + eb + sb + ub;
@@ -180,6 +183,7 @@ export function summarize(
     screenshots: { count: sc, bytes: sb },
     utility: { count: uc, bytes: ub },
     total: { count, bytes },
+    media,
   };
 }
 

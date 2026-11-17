@@ -217,6 +217,7 @@ describe('photos apart from videos', () => {
     const s = summarize(lib, groups, [], new Set());
     expect(s.duplicates).toEqual({ count: 1, bytes: 2_000, groups: 1 });
     expect(s.lookalike).toEqual({ count: 1, bytes: 9_000, groups: 1 });
+    expect(s.media).toEqual({ photos: { count: 1, bytes: 2_000 }, videos: { count: 1, bytes: 9_000 } });
     const by = Object.fromEntries(cleanParts(groups, [], [], new Set(), lib.byId).map(p => [p.kind, p.ids]));
     expect(by.duplicates).toEqual(['p2']);
     expect(by.videos).toEqual(['v2']);
