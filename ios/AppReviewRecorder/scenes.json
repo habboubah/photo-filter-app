@@ -6,7 +6,7 @@
   "minVersion": "0.1.0"
  },
  "preflight": {
-  "mustSee": ["Your photos", "Deine Fotos"],
+  "mustSee": ["Clean up", "Aufräumen"],
   "reset": [
    {"tap": ["Settings", "Einstellungen"], "role": "button", "timeout": 20},
    {"pause": 0.5},
@@ -43,12 +43,14 @@
     {"launch": true},
     {"pause": 2},
     {"optional": [{"systemAlert": ["Limit Access…", "Zugriff beschränken …"], "timeout": 3}, {"note": "The photo permission dialog was shown: the test can't pick photos in the system's picker — give Limited Access by hand before recording (README.md)."}]},
-    {"see": "Your photos", "timeout": 30},
+    {"see": "Clean up", "timeout": 30},
     {"pause": 4},
     {"see": "Space you could free up", "timeout": 60},
     {"pause": 2}
   ]},
   { "name": "A trip becomes an album", "steps": [
+    {"tap": "Organise", "role": "button"},
+    {"pause": 1.5},
     {"tap": "Open Paris"},
     {"pause": 2},
     {"tap": "Create album", "role": "button"},
@@ -59,6 +61,8 @@
     {"see": "Album made on"},
     {"pause": 2},
     {"tap": "Back"},
+    {"pause": 1.5},
+    {"tap": "Clean up", "role": "button"},
     {"pause": 1.5}
   ]},
   { "name": "Near-identical photos and the best shot", "steps": [
@@ -76,7 +80,7 @@
     {"pause": 1.5}
   ]},
   { "name": "A review that deletes", "steps": [
-    {"tap": "Clean up", "role": "button"},
+    {"tap": "Clean up now", "role": "button"},
     {"pause": 1.5},
     {"tap": "Go through all"},
     {"pause": 2},
@@ -103,7 +107,7 @@
     {"scrollTo": "Privacy"},
     {"pause": 2},
     {"tap": "Back"},
-    {"see": "Your photos"},
+    {"see": "Clean up"},
     {"pause": 2},
     {"stopRecording": true}
   ]}

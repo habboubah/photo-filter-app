@@ -12,10 +12,10 @@ Bildklar's. Five scenes, from the icon on the home screen to the settings:
 
 | Scene | Shows |
 |---|---|
-| 1 Launch and the scan | The icon, the photo permission (*Limit Access…* if iOS asks), *Your photos* filling up, the clean-up card |
-| 2 A trip becomes an album | *Paris*, *Create album* → (the paywall and *Restore purchases*, only if the unlock isn't owned yet) → the confirmation → *Album made on …* |
+| 1 Launch and the scan | The icon, the photo permission (*Limit Access…* if iOS asks), the *Clean up* tab filling up, the clean-up card |
+| 2 A trip becomes an album | The *Organise* tab, *Paris*, *Create album* → (the paywall and *Restore purchases*, only if the unlock isn't owned yet) → the confirmation → *Album made on …* |
 | 3 Near-identical photos and the best shot | A group, the suggested best photo, picking another one as the best |
-| 4 A review that deletes | *Clean up* › *Go through all*: delete, keep, delete, *Finish*, *Delete 2 photos* → iOS's own *Delete* dialog → *2 photos deleted* |
+| 4 A review that deletes | *Clean up now* › *Go through all*: delete, keep, delete, *Finish*, *Delete 2 photos* → iOS's own *Delete* dialog → *2 photos deleted* |
 | 5 Settings and the end | The settings down to *Privacy*, back home |
 
 The review notes (`store/listing.md`, 2.5) describe what the video leaves out.

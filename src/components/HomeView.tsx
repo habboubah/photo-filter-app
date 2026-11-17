@@ -1,95 +1,119 @@
 import type React from 'react';
-import { Aperture, CalendarDays, ChevronRight, Clock, Copy, MessageCircle, Minimize2, FileVideo, Focus, History, ImagePlus, Layers, MapPin, ReceiptText, RefreshCw, Settings, Smartphone, Sparkles } from 'lucide-react';
-import type { CleanupSummary, Storage, Trip } from '../types';
+import { Aperture, CalendarDays, Check, Clock, FileVideo, ImagePlus, MessageCircle, Minimize2, Settings, Sparkles } from 'lucide-react';
+import type { CleanupSummary, Storage } from '../types';
 import type { Access } from '../native/photoLibrary';
 import type { ScanView } from '../store';
-import type { MemoryLabel } from '../logic/ai';
 import { Strings, bytes, fmt, num, percent, plural } from '../translations';
-import { Empty, Screen } from '../ui/Screen';
+import { Empty, Group, IconTile, Next, Row, Screen, SectionHead } from '../ui/Screen';
 import { Button, IconButton } from '../ui/Button';
 import { Progress } from '../ui/Controls';
+import { StorageBar } from '../ui/StorageBar';
 import { tapLight } from '../ui/haptics';
 import { Thumb } from '../ui/Photo';
-import { TripCard } from './TripCard';
+
+/** The categories that suggest photos to delete, each a photo card on home. */
+export type FoundKey = 'duplicates' | 'similar' | 'failed' | 'screenshots' | 'utility';
+
+/** One category: how many of it there are (groups or photos, as its screen counts), and a few of its photos. */
+export interface Found { items: number; covers: string[] }
 
 interface Props {
   t: Strings;
   access: Access | null;
   photoCount: number | null;
   scan: ScanView;
-  trips: Trip[];
-  hasLocations: boolean;
   summary: CleanupSummary | null;
-  groupCount: number;
-  duplicateCount: number;
-  /** Missglückt: blurry plus too dark and too bright. */
-  blurryCount: number;
-  screenshotCount: number;
-  large: { count: number; bytes: number };
+  /** Per category; `utility` only once the on-device AI has seen a photo. */
+  found: Partial<Record<FoundKey, Found>>;
+  large: { count: number; bytes: number; cover?: string };
   liveCount: number;
+  liveCover?: string;
   /** "Fotos verkleinern" (src/logic/compress.ts): how many qualify and what they could save. */
-  compress: { count: number; saving: number };
-  onCompress: () => void;
+  compress: { count: number; saving: number; cover?: string };
   /** "Aus Apps" (Android): shown once the apps' photos hold at least 100 MB. */
-  apps: { bytes: number } | null;
-  onApps: () => void;
-  /** The on-device AI (src/logic/ai.ts): utility photos, shown once the AI has seen any photo, and the categories. */
-  utility: { show: boolean; count: number; bytes: number };
-  categories: { label: MemoryLabel; count: number; cover: string }[];
+  apps: { bytes: number; cover?: string } | null;
   storage: Storage | null;
   freedBytes: number;
   streak: number;
   /** Months gone through, and the share of all photos in them (src/logic/months.ts progress). */
   months: { done: number; total: number; pct: number };
-  onThisDay: { photos: number; years: number[]; cover?: string };
   /** The decide-later pile (photos swiped up in a review). */
   later: { count: number; cover?: string };
   onLater: () => void;
   onSettings: () => void;
-  onRescan: () => void;
   onAddPhotos: () => void;
   onCleanup: () => void;
   onSimilar: () => void;
   onBlurry: () => void;
   onDuplicates: () => void;
   onScreenshots: () => void;
+  onUtility: () => void;
   onMonths: () => void;
   onLarge: () => void;
   onLive: () => void;
-  onUtility: () => void;
-  onCategory: (label: MemoryLabel) => void;
-  onOnThisDay: () => void;
-  onTrips: () => void;
-  onTrip: (key: string) => void;
+  onCompress: () => void;
+  onApps: () => void;
 }
 
-/** How many trips home shows before "All trips". */
-const HOME_TRIPS = 4;
-
+/**
+ * Home, the "Aufräumen" tab: the space that could be freed and where it comes
+ * from (one bar), then every category as a card with its own photos — the
+ * most space first — then the tools that make room without deleting, then
+ * what was left half done.
+ */
 export function HomeView(p: Props) {
-  const { t } = p;
-  const visible = p.trips.filter(x => !x.ignored);
+  const { t, summary } = p;
   const firstScan = p.scan.running && !p.scan.lastScanAt;
   const loaded = p.photoCount !== null;
+  const has = loaded && p.photoCount! > 0;
   // A rescan that only looks at a few new photos stays quiet: the card is for a first scan or a long one.
   const bigScan = p.scan.running && (firstScan || (p.scan.phase === 'analyse' && p.scan.total - p.scan.done > 50));
   // The AI's pass (docs/AI.md) runs after the scan and can take long: the app stays usable, the subtitle counts along.
   const aiPass = p.scan.running && p.scan.phase === 'ai' && p.scan.total > 0;
   const scanLine = aiPass ? fmt(t.scanAi, { done: num(t, p.scan.done), total: num(t, p.scan.total) }) : t.scanUpdating;
   const subtitle = loaded && !(p.photoCount === 0 && p.scan.running)
-    ? [plural(t, 'photos', p.photoCount!), visible.length ? plural(t, 'trips', visible.length) : null, p.scan.running && !bigScan ? scanLine : null]
+    ? [plural(t, 'photos', p.photoCount!), p.scan.running && !bigScan ? scanLine : null]
       .filter(Boolean).join(' · ')
     : t.loading;
 
+  // The categories, each with the space it would free (from the summary, so the bar and the cards agree).
+  const gain = (k: FoundKey) => {
+    if (!summary) return { bytes: 0, count: 0 };
+    switch (k) {
+      case 'duplicates': return { bytes: summary.duplicates.bytes + summary.lookalike.bytes, count: summary.duplicates.count + summary.lookalike.count };
+      case 'similar': return summary.similar;
+      case 'failed': return { bytes: summary.blurry.bytes + summary.exposure.bytes, count: summary.blurry.count + summary.exposure.count };
+      case 'screenshots': return summary.screenshots;
+      case 'utility': return summary.utility;
+    }
+  };
+  const meta: Record<FoundKey, { label: string; hue: string; unit: 'groups' | 'photos'; onClick: () => void }> = {
+    duplicates: { label: t.duplicatesTile, hue: 'rose', unit: 'groups', onClick: p.onDuplicates },
+    similar: { label: t.similarTile, hue: 'lilac', unit: 'groups', onClick: p.onSimilar },
+    failed: { label: t.failedTile, hue: 'sand', unit: 'photos', onClick: p.onBlurry },
+    screenshots: { label: t.screenshotsTile, hue: 'sky', unit: 'photos', onClick: p.onScreenshots },
+    utility: { label: t.utilityTile, hue: 'mint', unit: 'photos', onClick: p.onUtility },
+  };
+  const keys = (Object.keys(meta) as FoundKey[]).filter(k => p.found[k]);
+  const cards = keys.filter(k => p.found[k]!.items > 0)
+    .map(k => ({ key: k, ...meta[k], ...p.found[k]!, gain: gain(k) }))
+    .sort((a, b) => b.gain.bytes - a.gain.bytes || b.items - a.items);
+  const done = keys.filter(k => p.found[k]!.items === 0).map(k => meta[k].label);
+  const bar = keys.map(k => ({ key: k, hue: meta[k].hue, bytes: gain(k).bytes, label: meta[k].label }));
+
+  const tools: { key: string; label: string; value: string; cover?: string; icon: React.ComponentType<{ className?: string; strokeWidth?: number }>; hue: string; onClick: () => void }[] = [
+    { key: 'large', label: t.largeTile, value: p.large.count ? fmt(t.sizeAndCount, { size: bytes(t, p.large.bytes), count: plural(t, 'files', p.large.count) }) : plural(t, 'files', 0), cover: p.large.cover, icon: FileVideo, hue: 'stone', onClick: p.onLarge },
+    ...(p.compress.count > 0 ? [{ key: 'compress', label: t.compressPhotosTile, value: fmt(t.upTo, { size: bytes(t, p.compress.saving) }), cover: p.compress.cover, icon: Minimize2, hue: 'sky', onClick: p.onCompress }] : []),
+    ...(p.liveCount > 0 ? [{ key: 'live', label: t.liveTile, value: plural(t, 'photos', p.liveCount), cover: p.liveCover, icon: Aperture, hue: 'mint', onClick: p.onLive }] : []),
+    ...(p.apps ? [{ key: 'apps', label: t.appsTile, value: bytes(t, p.apps.bytes), cover: p.apps.cover, icon: MessageCircle, hue: 'lilac', onClick: p.onApps }] : []),
+  ];
+
   return (
     <Screen
-      title={t.homeTitle}
-      eyebrow={<span className="inline-flex items-center gap-2"><img src="/icon.png" alt="" className="w-5 h-5 rounded-[6px]" />{t.appName}</span>}
+      title={t.tabClean}
       subtitle={subtitle}
-      actions={<>
-        {!p.scan.running && loaded && <IconButton label={t.rescan} icon={RefreshCw} tone="bar" onClick={p.onRescan} />}
-        <IconButton label={t.settings} icon={Settings} tone="bar" onClick={p.onSettings} />
-      </>}
+      tabbed
+      actions={<IconButton label={t.settings} icon={Settings} tone="bar" onClick={p.onSettings} />}
     >
       {p.access === 'limited' && (
         <section className="rounded-md card p-4 flex items-center gap-3">
@@ -107,134 +131,127 @@ export function HomeView(p: Props) {
         <Empty title={t.emptyLibraryTitle} body={t.emptyLibraryBody} />
       )}
 
-      {loaded && p.photoCount! > 0 && p.summary && (
-        <CleanupCard t={t} summary={p.summary} storage={p.storage} freedBytes={p.freedBytes} streak={p.streak} onOpen={p.onCleanup} />
+      {has && summary && (
+        <CleanupCard t={t} summary={summary} bar={bar} storage={p.storage} freedBytes={p.freedBytes} streak={p.streak} onOpen={p.onCleanup} />
       )}
 
-      {loaded && p.photoCount! > 0 && (
-        <div className="grid grid-cols-2 gap-[12px]">
-          <Tile hue="rose" icon={Layers} label={t.duplicatesTile} value={plural(t, 'groups', p.duplicateCount)} onClick={p.onDuplicates} />
-          <Tile hue="lilac" icon={Copy} label={t.similarTile} value={plural(t, 'groups', p.groupCount)} onClick={p.onSimilar} />
-          <Tile hue="sand" icon={Focus} label={t.failedTile} value={plural(t, 'photos', p.blurryCount)} onClick={p.onBlurry} />
-          <Tile hue="sky" icon={Smartphone} label={t.screenshotsTile} value={plural(t, 'photos', p.screenshotCount)} onClick={p.onScreenshots} />
-          <Tile hue="stone" icon={FileVideo} label={t.largeTile} value={p.large.count ? `${plural(t, 'files', p.large.count)} · ${bytes(t, p.large.bytes)}` : plural(t, 'files', 0)} onClick={p.onLarge} />
-          {p.compress.count > 0 && <Tile hue="sky" icon={Minimize2} label={t.compressPhotosTile} value={fmt(t.upTo, { size: bytes(t, p.compress.saving) })} onClick={p.onCompress} />}
-          {p.apps && <Tile hue="lilac" icon={MessageCircle} label={t.appsTile} value={bytes(t, p.apps.bytes)} onClick={p.onApps} />}
-          {p.liveCount > 0 && <Tile hue="mint" icon={Aperture} label={t.liveTile} value={plural(t, 'photos', p.liveCount)} onClick={p.onLive} />}
-          {p.utility.show && (
-            <Tile hue="mint" icon={ReceiptText} label={t.utilityTile}
-              value={p.utility.count ? `${plural(t, 'photos', p.utility.count)} · ${bytes(t, p.utility.bytes)}` : plural(t, 'photos', 0)} onClick={p.onUtility} />
+      {has && (cards.length > 0 || done.length > 0) && (
+        <section aria-labelledby="found-h">
+          <SectionHead id="found-h" title={t.suggestionsTitle} />
+          {cards.length > 0 && (
+            <div className="grid grid-cols-2 gap-[12px]">
+              {cards.map((c, i) => (
+                <PhotoCard
+                  // An odd last card takes the whole row, wider and lower, so the grid never ends on a gap.
+                  wide={i === cards.length - 1 && cards.length % 2 === 1}
+                  key={c.key} hue={c.hue} label={c.label} covers={c.covers} onClick={c.onClick}
+                  value={c.gain.bytes > 0 ? bytes(t, c.gain.bytes) : plural(t, c.unit, c.items)}
+                  sub={c.gain.bytes > 0 ? plural(t, 'photos', c.gain.count) : undefined}
+                />
+              ))}
+            </div>
           )}
-        </div>
-      )}
-
-      {loaded && p.categories.length > 0 && (
-        <section aria-labelledby="categories-h">
-          <h2 id="categories-h" className="display text-title2 font-semibold text-fg px-1 pb-2">{t.categoriesTitle}</h2>
-          <div className="flex gap-[12px] overflow-x-auto -mx-[16px] px-[16px] pb-1">
-            {p.categories.map(c => (
-              <button
-                key={c.label} type="button" onClick={() => { tapLight(); p.onCategory(c.label); }}
-                className="shrink-0 w-[112px] rounded-md card p-[6px] text-start press focus-visible:ring-focus"
-              >
-                <span className="block w-full aspect-square rounded-[10px] overflow-hidden"><Thumb id={c.cover} className="!rounded-none" /></span>
-                <span className="block text-label font-bold text-fg mt-1.5 px-1 truncate">{t[`aiLabel_${c.label}`]}</span>
-                <span className="block text-caption text-fg-mute num px-1 pb-1">{num(t, c.count)}</span>
-              </button>
-            ))}
-          </div>
+          {done.length > 0 && (
+            <p className="mt-[12px] rounded-md card px-4 py-3 flex items-center gap-2.5 text-label text-fg-mute wrap-prose">
+              <span className="w-6 h-6 shrink-0 rounded-full bg-keep-dim text-keep inline-flex items-center justify-center" aria-hidden="true">
+                <Check className="w-3.5 h-3.5" strokeWidth={3} />
+              </span>
+              {fmt(t.doneCategories, { list: done.join(', ') })}
+            </p>
+          )}
         </section>
       )}
 
-      {loaded && p.photoCount! > 0 && p.onThisDay.photos > 0 && (
-        <button
-          type="button" onClick={() => { tapLight(); p.onOnThisDay(); }}
-          className="w-full rounded-md card p-[10px] flex items-center gap-3 text-start press focus-visible:ring-focus"
-        >
-          <span className="w-16 h-16 shrink-0 rounded-[12px] overflow-hidden">
-            {p.onThisDay.cover && <Thumb id={p.onThisDay.cover} className="!rounded-none" />}
-          </span>
-          <span className="min-w-0 flex-1">
-            <span className="flex items-center gap-1.5 text-body font-bold text-fg">
-              <History className="w-4 h-4 text-accent shrink-0" aria-hidden="true" />{t.onThisDay}
-            </span>
-            <span className="block text-caption text-fg-mute num wrap-compound">
-              {fmt(t.onThisDayBody, { photos: plural(t, 'photos', p.onThisDay.photos), years: p.onThisDay.years.map(y => String(y)).join(', ') })}
-            </span>
-          </span>
-          <span className="shrink-0 text-label font-bold text-accent pe-1">{t.onThisDayOpen}</span>
-        </button>
+      {has && (
+        <section aria-labelledby="tools-h">
+          <SectionHead id="tools-h" title={t.moreSpaceTitle} />
+          <Group>
+            {tools.map(x => (
+              <Row
+                key={x.key} label={x.label} sub={x.value} onClick={x.onClick}
+                leading={x.cover ? <RowPhoto id={x.cover} /> : <IconTile icon={x.icon} hue={x.hue} />} lead={x.cover ? 44 : undefined}
+                trailing={<Next />}
+              />
+            ))}
+          </Group>
+        </section>
       )}
 
-      {loaded && p.photoCount! > 0 && p.months.total > 0 && (
-        <button
-          type="button" onClick={() => { tapLight(); p.onMonths(); }}
-          className="w-full rounded-md card p-4 flex items-center gap-3 text-start press focus-visible:ring-focus"
-        >
-          <span data-hue="mint" className="w-10 h-10 shrink-0 rounded-[12px] bg-hue-bg text-hue-ink inline-flex items-center justify-center" aria-hidden="true">
-            <CalendarDays className="w-5 h-5" />
-          </span>
-          <span className="min-w-0 flex-1">
-            <span className="block text-body font-bold text-fg">{t.monthsCard}</span>
-            <span className="block text-caption text-fg-mute num">{fmt(t.progressDone, { pct: percent(t, p.months.pct) })}</span>
-            <span className="block mt-1.5 max-w-[160px]"><Progress thin value={p.months.pct / 100} label={fmt(t.progressDone, { pct: percent(t, p.months.pct) })} /></span>
-          </span>
-          <ChevronRight className="w-5 h-5 text-fg-faint shrink-0 rtl:rotate-180" aria-hidden="true" />
-        </button>
-      )}
-
-      {loaded && p.later.count > 0 && (
-        <button
-          type="button" onClick={() => { tapLight(); p.onLater(); }}
-          aria-label={`${t.laterCard} (${num(t, p.later.count)})`}
-          className="w-full rounded-md card p-[10px] flex items-center gap-3 text-start press focus-visible:ring-focus"
-        >
-          <span className="w-12 h-12 shrink-0 rounded-[10px] overflow-hidden">
-            {p.later.cover && <Thumb id={p.later.cover} className="!rounded-none" />}
-          </span>
-          <span className="min-w-0 flex-1">
-            <span className="flex items-center gap-1.5 text-body font-bold text-fg">
-              <Clock className="w-4 h-4 text-accent shrink-0" aria-hidden="true" />{t.laterCard} <span className="num text-fg-mute">({num(t, p.later.count)})</span>
-            </span>
-            <span className="block text-caption text-fg-mute wrap-prose">{t.laterCardBody}</span>
-          </span>
-          <ChevronRight className="w-5 h-5 text-fg-faint shrink-0 rtl:rotate-180" aria-hidden="true" />
-        </button>
-      )}
-
-      {loaded && p.photoCount! > 0 && (
-        <section aria-labelledby="trips-h">
-          <div className="flex items-baseline justify-between px-1 pb-2">
-            <h2 id="trips-h" className="display text-title2 font-semibold text-fg">{t.tripsSection}</h2>
-            {p.trips.length > HOME_TRIPS && (
-              <button type="button" onClick={() => { tapLight(); p.onTrips(); }} className="text-label font-bold text-accent hit-44 focus-visible:ring-focus rounded-full">
-                {t.allTrips} ({num(t, p.trips.length)})
-              </button>
+      {has && (p.later.count > 0 || p.months.total > 0) && (
+        <section aria-labelledby="continue-h">
+          <SectionHead id="continue-h" title={t.continueTitle} />
+          <Group>
+            {p.later.count > 0 && (
+              <Row
+                label={t.laterCard} sub={t.laterCardBody} onClick={p.onLater}
+                ariaLabel={`${t.laterCard} (${num(t, p.later.count)})`}
+                leading={p.later.cover ? <RowPhoto id={p.later.cover} /> : <IconTile icon={Clock} hue="sand" />} lead={p.later.cover ? 44 : undefined}
+                trailing={<Next value={num(t, p.later.count)} />}
+              />
             )}
-          </div>
-          {visible.length ? (
-            <div className="space-y-[10px]">
-              {visible.slice(0, HOME_TRIPS).map(trip => <TripCard key={trip.key} trip={trip} t={t} onOpen={() => p.onTrip(trip.key)} />)}
-            </div>
-          ) : (
-            <div className="rounded-md card p-5 flex gap-3">
-              <MapPin className="w-5 h-5 text-fg-mute shrink-0 mt-0.5" aria-hidden="true" />
-              <div>
-                <p className="text-body font-bold text-fg">{t.noTrips}</p>
-                <p className="text-label text-fg-mute mt-1 wrap-prose">{p.hasLocations ? t.noTripsBody : t.noLocation}</p>
-              </div>
-            </div>
-          )}
+            {p.months.total > 0 && (
+              <Row
+                label={t.monthsCard} onClick={p.onMonths}
+                sub={
+                  <span className="flex items-center gap-2.5">
+                    <span className="num">{fmt(t.progressDone, { pct: percent(t, p.months.pct) })}</span>
+                    <span className="block flex-1 max-w-[120px]"><Progress thin value={p.months.pct / 100} label={fmt(t.progressDone, { pct: percent(t, p.months.pct) })} /></span>
+                  </span>
+                }
+                leading={<IconTile icon={CalendarDays} hue="mint" />}
+                trailing={<Next />}
+              />
+            )}
+          </Group>
         </section>
       )}
     </Screen>
   );
 }
 
+/** A row's photo in front of its label (44 px, soft corners). */
+function RowPhoto({ id }: { id: string }) {
+  return <span className="w-11 h-11 shrink-0 rounded-[10px] overflow-hidden" aria-hidden="true"><Thumb id={id} className="!rounded-none" /></span>;
+}
+
+/**
+ * A category as a card: a few of its own photos on top (one, two side by
+ * side, one large and two small, or four), then its name with its dot — the
+ * hue of its segment in the bar above — and the space it would free.
+ */
+function PhotoCard({ hue, label, value, sub, covers, wide, onClick }: {
+  hue: string; label: string; value: string; sub?: string; covers: string[]; wide?: boolean; onClick: () => void;
+}) {
+  const ids = covers.slice(0, 4);
+  const layout = ids.length >= 4 ? 'grid-cols-2 grid-rows-2'
+    : ids.length === 3 ? 'grid-cols-2 grid-rows-2 [&>*:first-child]:row-span-2'
+      : ids.length === 2 ? 'grid-cols-2' : 'grid-cols-1';
+  return (
+    <button
+      type="button" onClick={() => { tapLight(); onClick(); }}
+      className={`rounded-md card p-[6px] text-start press focus-visible:ring-focus flex flex-col ${wide ? 'col-span-2' : ''}`}
+    >
+      <span data-hue={hue} className={`grid gap-[2px] w-full ${wide ? 'aspect-[2/1]' : 'aspect-[4/3]'} rounded-[14px] overflow-hidden ${ids.length ? 'bg-surface' : 'bg-hue-bg'} ${layout}`} aria-hidden="true">
+        {ids.map(id => <Thumb key={id} id={id} className="!rounded-none" />)}
+      </span>
+      <span className="block px-2 pt-2.5 pb-1.5">
+        <span className="flex items-center gap-1.5 text-body font-bold text-fg">
+          <span data-hue={hue} className="w-2.5 h-2.5 rounded-full bg-hue-ink shrink-0" aria-hidden="true" />
+          <span className="min-w-0 wrap-compound">{label}</span>
+        </span>
+        <span className="block text-label num mt-0.5">
+          <span className="font-bold text-fg">{value}</span>
+          {sub && <span className="text-fg-mute"> · {sub}</span>}
+        </span>
+      </span>
+    </button>
+  );
+}
+
 function ScanCard({ t, scan, first }: { t: Strings; scan: ScanView; first: boolean }) {
   const analysing = scan.phase === 'analyse' && scan.total > 0;
   return (
-    <section className="rounded-md card p-5 space-y-3" aria-live="polite">
+    <section className="rounded-lg card p-5 space-y-3" aria-live="polite">
       <div className="flex items-center gap-3">
         <span data-hue="mint" className="w-10 h-10 shrink-0 rounded-[12px] bg-hue-bg text-hue-ink inline-flex items-center justify-center" aria-hidden="true">
           <Sparkles className="w-5 h-5" />
@@ -252,12 +269,13 @@ function ScanCard({ t, scan, first }: { t: Strings; scan: ScanView; first: boole
   );
 }
 
-function CleanupCard({ t, summary, storage, freedBytes, streak, onOpen }: {
-  t: Strings; summary: CleanupSummary; storage: Storage | null; freedBytes: number; streak: number; onOpen: () => void;
+function CleanupCard({ t, summary, bar, storage, freedBytes, streak, onOpen }: {
+  t: Strings; summary: CleanupSummary; bar: { key: string; hue: string; bytes: number; label: string }[];
+  storage: Storage | null; freedBytes: number; streak: number; onOpen: () => void;
 }) {
   const facts = (
     <>
-      {storage && <p className="text-caption text-fg-mute num mt-1">{fmt(t.storageFree, { free: bytes(t, storage.free), total: bytes(t, storage.total) })}</p>}
+      {storage && <p className="text-caption text-fg-mute num mt-3">{fmt(t.storageFree, { free: bytes(t, storage.free), total: bytes(t, storage.total) })}</p>}
       {freedBytes > 0 && <p className="text-caption text-keep font-bold num mt-1">{fmt(t.freedSoFar, { size: bytes(t, freedBytes) })}</p>}
       {streak >= 2 && <p className="text-caption text-accent font-bold num mt-1">{fmt(t.streakLine, { n: num(t, streak) })}</p>}
     </>
@@ -265,55 +283,23 @@ function CleanupCard({ t, summary, storage, freedBytes, streak, onOpen }: {
   if (summary.total.count === 0) {
     return (
       <section className="rounded-lg card p-6">
-        <p className="display text-title2 font-semibold text-fg">{t.cleanupNone}</p>
-        <p className="text-label text-fg-mute mt-1">{t.cleanupNoneBody}</p>
+        <span className="w-10 h-10 rounded-full bg-keep-dim text-keep inline-flex items-center justify-center mb-3" aria-hidden="true">
+          <Check className="w-5 h-5" strokeWidth={2.6} />
+        </span>
+        <p className="title-face text-title2 font-bold text-fg">{t.cleanupNone}</p>
+        <p className="text-label text-fg-mute mt-1 wrap-prose">{t.cleanupNoneBody}</p>
         {facts}
       </section>
     );
   }
-  const lines: [string, number, string][] = [
-    [t.cleanupDuplicates, summary.duplicates.count, 'rose'],
-    [t.lookalikeTitle, summary.lookalike.count, 'rose'],
-    [t.cleanupSimilar, summary.similar.count, 'lilac'],
-    [t.cleanupBlurry, summary.blurry.count, 'sand'],
-    [t.cleanupExposure, summary.exposure.count, 'stone'],
-    [t.cleanupScreenshots, summary.screenshots.count, 'sky'],
-    [t.cleanupUtility, summary.utility.count, 'mint'],
-  ];
+  const shown = bar.filter(b => b.bytes > 0);
   return (
     <section className="rounded-lg card p-6" aria-labelledby="cleanup-h">
       <p id="cleanup-h" className="eyebrow text-fg-mute">{t.cleanupCard}</p>
-      <p className="display text-display font-semibold text-fg num mt-1">{bytes(t, summary.total.bytes)}</p>
+      <p className="display text-display font-semibold text-fg num mt-1 mb-4">{bytes(t, summary.total.bytes)}</p>
+      <StorageBar parts={shown} label={fmt(t.storageBarLabel, { list: shown.map(b => `${b.label} ${bytes(t, b.bytes)}`).join(', ') })} />
       {facts}
-      <dl className="mt-4 space-y-2">
-        {lines.filter(([, n]) => n > 0).map(([label, n, hue]) => <Line key={label} label={label} value={plural(t, label === t.lookalikeTitle ? 'videos' : 'photos', n)} hue={hue} />)}
-      </dl>
       <Button full size="lg" className="mt-5" onClick={onOpen}>{t.cleanupButton}</Button>
     </section>
-  );
-}
-
-function Line({ label, value, hue }: { label: string; value: string; hue: string }) {
-  return (
-    <div className="flex items-center gap-2.5">
-      <span data-hue={hue} className="w-2.5 h-2.5 rounded-full bg-hue-ink shrink-0" aria-hidden="true" />
-      <dt className="flex-1 text-label text-fg">{label}</dt>
-      <dd className="text-label font-bold text-fg num">{value}</dd>
-    </div>
-  );
-}
-
-function Tile({ hue, icon: Icon, label, value, onClick }: {
-  hue: string; icon: React.ComponentType<{ className?: string }>; label: string; value: string; onClick: () => void;
-}) {
-  return (
-    <button type="button" onClick={() => { tapLight(); onClick(); }} data-hue={hue}
-      className="rounded-md bg-hue-bg p-4 text-start press focus-visible:ring-focus min-h-[112px] flex flex-col justify-between">
-      <Icon className="w-6 h-6 text-hue-ink" aria-hidden="true" />
-      <span>
-        <span className="block text-body font-bold text-hue-ink">{label}</span>
-        <span className="block text-caption text-hue-ink num">{value}</span>
-      </span>
-    </button>
   );
 }

@@ -214,6 +214,9 @@
 @utility pb-safe-8 { padding-bottom: calc(2rem + var(--safe-area-inset-bottom, env(safe-area-inset-bottom))); }
 /* Clears a docked button (ui/Screen Dock), which floats above the home indicator. */
 @utility pb-safe-dock { padding-bottom: calc(132px + var(--safe-area-inset-bottom, env(safe-area-inset-bottom))); }
+/* The tab bar (ui/TabBar) floats like the dock; pb-safe-tabs clears it. */
+@utility pb-tabbar { padding-bottom: calc(max(var(--safe-area-inset-bottom, env(safe-area-inset-bottom)) - 6px, 14px) + 4px); }
+@utility pb-safe-tabs { padding-bottom: calc(112px + var(--safe-area-inset-bottom, env(safe-area-inset-bottom))); }
 @utility pb-dock { padding-bottom: calc(max(var(--safe-area-inset-bottom, env(safe-area-inset-bottom)) - 6px, 14px) + 6px); }
 
 @utility scrim { background-color: var(--t-scrim); }

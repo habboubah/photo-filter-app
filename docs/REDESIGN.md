@@ -50,3 +50,10 @@ Review recording and the docs.
 4. The list screens. 5. Review and end screen. 6. Paywall, permission,
    settings. 7. Store screenshots, App Review scenes, `CLAUDE.md`,
    `docs/PLAN.md`, `docs/features.md`, What's New.
+
+## Open for the store phase
+
+- `.claude/skills/store-screenshot-studio/config/screenshots.config.json` lifts
+  the mark `trip-1` from `02-home`; trips now live on *Ordnen* (`39-organize`).
+  Point that frame at `39-organize` (and give it a `trip-1` mark) before the
+  next `npm run screenshots` / `npm run store-screenshots`.

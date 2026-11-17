@@ -18,6 +18,8 @@ interface Props {
   trailing?: React.ReactNode;
   /** Extra bottom padding for a docked bar. */
   docked?: boolean;
+  /** Extra bottom padding for the tab bar (the root screens). */
+  tabbed?: boolean;
   /** The screen brings its cards in itself: no rise of the shell's own. */
   still?: boolean;
   /** Shown first, above the large title (home's app card). */
@@ -35,7 +37,7 @@ interface Props {
  * bar it fades out (a gradient, never a blur — backdrop-filter over a
  * scrolling list is too expensive in a WebView).
  */
-export function Screen({ title, eyebrow, subtitle, onBack, backLabel, actions, leading, trailing, docked, still, top, hideTitle, children }: Props) {
+export function Screen({ title, eyebrow, subtitle, onBack, backLabel, actions, leading, trailing, docked, tabbed, still, top, hideTitle, children }: Props) {
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
     const on = () => setScrolled(window.scrollY > 44);
@@ -45,7 +47,7 @@ export function Screen({ title, eyebrow, subtitle, onBack, backLabel, actions, l
   }, []);
 
   return (
-    <div className={`relative isolate mx-auto w-full max-w-xl min-h-screen ${docked ? 'pb-safe-dock' : 'pb-16'}`}>
+    <div className={`relative isolate mx-auto w-full max-w-xl min-h-screen ${docked ? 'pb-safe-dock' : tabbed ? 'pb-safe-tabs' : 'pb-16'}`}>
       <header className="sticky top-0 z-30 safe-top bg-bg">
         {/* Sides size to their content and the title takes what is left, so a
             wide action can never sit on top of it. */}
@@ -93,6 +95,16 @@ export function Screen({ title, eyebrow, subtitle, onBack, backLabel, actions, l
 
       {/* Its cards rise into place one after another as the screen appears (index.css: rise-children). */}
       <main className={`px-[16px] space-y-6 ${still ? '' : 'rise-children'}`}>{children}</main>
+    </div>
+  );
+}
+
+/** A section's heading on a page: Figtree, bold; an optional link at the end ("Alle Reisen"). */
+export function SectionHead({ id, title, action }: { id?: string; title: string; action?: React.ReactNode }) {
+  return (
+    <div className="flex items-baseline justify-between gap-3 px-1 pb-2.5">
+      <h2 id={id} className="title-face text-title2 font-bold text-fg wrap-compound">{title}</h2>
+      {action}
     </div>
   );
 }
