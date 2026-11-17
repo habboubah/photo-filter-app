@@ -178,11 +178,10 @@ tests pass — **but it has not run on a phone.**
       through every screen: trips, *An diesem Tag*, similar and blurry photos,
       duplicates, screenshots, videos, the AI's categories. Android:
       `npm run test-photos:android`. **Never on your own phone.**
-- [ ] **Demo photos for the store**: the test library's photos are CC0 (free
-      for the screenshots and the preview video, no credit needed); use those
-      marked `store = yes` in `test-photos/credits.csv`. Then: Claude puts them
-      into the web demo (replacing the drawn ones) for the screenshots and the
-      preview video.
+- [x] **Demo photos for the store** (17 November 2026): the web demo shows
+      real CC0 photos now (`scripts/demo-real.py`; no identifiable people).
+      Make the screenshots, the preview video and the App Review rehearsal
+      again on the Mac (below) — they still show the drawn ones.
 - [ ] `npm run screenshots && npm run store-screenshots` on the Mac; look at the
       contact sheets. While nothing is for sale the set has seven screens (no
       album, no paywall) and shows the app as a new user sees it. The studio's headlines are in
