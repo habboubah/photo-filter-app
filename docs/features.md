@@ -43,7 +43,9 @@ Every feature, as the user sees it (German labels, English in brackets).
 - **An diesem Tag** [On this day]: when photos were taken on today's date in
   earlier years, a card with one of them and the years; *Ansehen* [Look back]
   reviews them (extra shots and blurry ones suggested for deleting).
-- **Monat für Monat** [Month by month]: how many months are gone through.
+- **Monat für Monat** [Month by month]: *38 % durchgesehen* [38 % gone through]
+  with a thin bar — the photos in months gone through, as a share of all photos
+  (rounded down, so 100 % only once every month is done).
 - **Später entscheiden** [Decide later] with the number of photos on the pile (see *Review*).
 - **Trips**: the newest four as cards (a mosaic of their photos, the name,
   photos and size, *Album erstellt* once made); *Alle Reisen* [All trips].
@@ -129,6 +131,7 @@ Every feature, as the user sees it (German labels, English in brackets).
   pets, food, landscapes) with a cover and a count; a tap shows the photos.
 
 ## Month by month
+- The header shows the same figure: *38 % durchgesehen · 7 von 18 Monaten* and the bar.
 - Every month of the library, newest first, with a photo, the number of photos
   and the size; a month gone through to its end is marked *Durchgesehen* [Done].
 - A tap reviews the month: extra shots, blurry photos and old screenshots are
@@ -195,7 +198,8 @@ Every feature, as the user sees it (German labels, English in brackets).
 ## Widget and reminder
 - **Widget** (iPhone home screen, small and medium; Android app widget): *An
   diesem Tag* with a photo from an earlier year, else the space that could be
-  freed and the free space. The app updates it whenever that changes; a tap
+  freed and the free space — or, with nothing to clean up, *38 % deiner Fotos
+  durchgesehen* [38 % of your photos gone through]. The app updates it whenever that changes; a tap
   opens the app.
 - **Wöchentliche Erinnerung** [Weekly reminder] in Settings (off by default):
   the system asks once for notifications, then one notification every Sunday

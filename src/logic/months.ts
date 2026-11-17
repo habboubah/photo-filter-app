@@ -45,6 +45,21 @@ export function buildMonths(photos: Photo[]): Month[] {
   return [...out.values()].sort((a, b) => (a.key < b.key ? 1 : -1));
 }
 
+/**
+ * How much of the library is gone through: the photos in months marked done
+ * (AppState.months) as a share of all photos, in whole percent rounded down —
+ * 100 % only when every month is done. An empty library is 0 %.
+ */
+export function progress(months: Month[], done: Set<string>): number {
+  let all = 0;
+  let seen = 0;
+  for (const m of months) {
+    all += m.ids.length;
+    if (done.has(m.key)) seen += m.ids.length;
+  }
+  return all ? Math.floor((seen * 100) / all) : 0;
+}
+
 export interface OnThisDay {
   /** Photos in time order, newest year first. */
   ids: string[];

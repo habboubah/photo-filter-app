@@ -3,7 +3,7 @@ import type { Photo } from '../types';
 import { buildGroups, findBlurry, makeLibrary, summarize } from './analyze';
 import { rankDuplicates } from './best';
 import { nearHash, prng } from './fixtures';
-import { buildMonths, monthKey, onThisDay } from './months';
+import { buildMonths, monthKey, onThisDay, progress } from './months';
 import { reviewCleanup, reviewGroup, reviewScreenshots, reviewTrip } from './review';
 import { findScreenshots, isOldShot, oldShots } from './screenshots';
 import { findGroups } from './similar';
@@ -182,5 +182,21 @@ describe('stored decisions, new fields', () => {
     expect(s.freed).toEqual({ count: 12, bytes: 3e9 });
     expect(normalizeState({ freed: { count: -1, bytes: 'a' } }).freed).toEqual({ count: 0, bytes: 0 });
     expect(normalizeState({}).months).toEqual([]);
+  });
+});
+
+describe('the progress figure', () => {
+  const m = (key: string, n: number) => ({ key, year: 2026, month: 0, ids: Array.from({ length: n }, (_, i) => `${key}-${i}`), bytes: 0 });
+
+  it('is 0 for an empty library and 100 once every month is done', () => {
+    expect(progress([], new Set())).toBe(0);
+    expect(progress([m('2026-01', 3), m('2026-02', 5)], new Set(['2026-01', '2026-02']))).toBe(100);
+  });
+
+  it('counts photos, not months, and rounds down', () => {
+    // 38 of 100 photos: 38 %; 2 of 3 photos: 66 %, never 67 % before it is reached.
+    expect(progress([m('2026-01', 38), m('2026-02', 62)], new Set(['2026-01']))).toBe(38);
+    expect(progress([m('2026-01', 2), m('2026-02', 1)], new Set(['2026-01']))).toBe(66);
+    expect(progress([m('2026-01', 999), m('2026-02', 1)], new Set(['2026-01']))).toBe(99);
   });
 });
