@@ -263,11 +263,14 @@ class PhotoLibraryPlugin : Plugin() {
         val known = store.stamps()
         val seen = HashSet<String>(known.size + 1024)
         val changed = ArrayList<ScanStore.Meta>()
+        // Rows cached before schema 4: their format and folder are filled now, without analysing them again.
+        val noDir = store.withoutDir()
+        val filled = ArrayList<ScanStore.Meta>()
         val projection = arrayOf(
             MediaStore.Images.Media._ID, MediaStore.MediaColumns.VOLUME_NAME,
             MediaStore.Images.Media.DATE_TAKEN, MediaStore.MediaColumns.DATE_MODIFIED, MediaStore.MediaColumns.GENERATION_MODIFIED,
             MediaStore.MediaColumns.SIZE, MediaStore.MediaColumns.WIDTH, MediaStore.MediaColumns.HEIGHT, MediaStore.MediaColumns.ORIENTATION,
-            MediaStore.MediaColumns.IS_FAVORITE, MediaStore.MediaColumns.RELATIVE_PATH,
+            MediaStore.MediaColumns.IS_FAVORITE, MediaStore.MediaColumns.RELATIVE_PATH, MediaStore.MediaColumns.MIME_TYPE,
         )
         val uri = MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
         context.contentResolver.query(uri, projection, null, null, "${MediaStore.Images.Media._ID} ASC")?.use { c ->
@@ -286,15 +289,19 @@ class PhotoLibraryPlugin : Plugin() {
                     val h = c.getInt(7)
                     val path = c.getString(10) ?: ""
                     changed.add(ScanStore.Meta(id, taken, stamp, c.getLong(5), if (rotated) h else w, if (rotated) w else h,
-                        c.getInt(9) == 1, path.contains("Screenshots", ignoreCase = true)))
+                        c.getInt(9) == 1, path.contains("Screenshots", ignoreCase = true), fmt = format(c.getString(11)), dir = path))
                     if (changed.size >= 1000) { store.upsert(changed); changed.clear() }
+                } else if (id in noDir) {
+                    filled.add(ScanStore.Meta(id, 0, stamp, 0, 0, 0, false, false, fmt = format(c.getString(11)), dir = c.getString(10) ?: ""))
+                    if (filled.size >= 1000) { store.fillMeta(filled); filled.clear() }
                 }
                 if (++n % 2000 == 0) progress("list", n, total)
             }
             progress("list", total, total)
         }
         if (cancelled.get()) return
-        listVideos(known, seen, changed)
+        store.fillMeta(filled)
+        listVideos(known, seen, changed, noDir)
         if (cancelled.get()) return
         store.upsert(changed)
         store.delete(known.keys.filter { it !in seen })
@@ -305,7 +312,8 @@ class PhotoLibraryPlugin : Plugin() {
      * collection is asked again later. Without READ_MEDIA_VIDEO MediaStore
      * simply answers with no rows.
      */
-    private fun listVideos(known: Map<String, Long>, seen: HashSet<String>, changed: ArrayList<ScanStore.Meta>) {
+    private fun listVideos(known: Map<String, Long>, seen: HashSet<String>, changed: ArrayList<ScanStore.Meta>, noDir: Set<String>) {
+        val filled = ArrayList<ScanStore.Meta>()
         val projection = arrayOf(
             MediaStore.Video.Media._ID, MediaStore.MediaColumns.VOLUME_NAME,
             MediaStore.Video.Media.DATE_TAKEN, MediaStore.MediaColumns.DATE_MODIFIED, MediaStore.MediaColumns.GENERATION_MODIFIED,
@@ -322,7 +330,10 @@ class PhotoLibraryPlugin : Plugin() {
                     val id = "$volume:v${c.getLong(0)}"
                     seen.add(id)
                     val stamp = c.getLong(4)
-                    if (known[id] == stamp) continue
+                    if (known[id] == stamp) {
+                        if (id in noDir) filled.add(ScanStore.Meta(id, 0, stamp, 0, 0, 0, false, false, video = true, dir = c.getString(10) ?: ""))
+                        continue
+                    }
                     val taken = c.getLong(2).takeIf { it > 0 } ?: (c.getLong(3) * 1000)
                     val rotated = c.getInt(8) % 180 != 0
                     val w = c.getInt(6)
@@ -331,12 +342,25 @@ class PhotoLibraryPlugin : Plugin() {
                     // Screen recordings: each maker names the folder its own way (Screen recordings, ScreenRecorder, Screenrecords …).
                     val rec = where.contains("screenrecord")
                     changed.add(ScanStore.Meta(id, taken, stamp, c.getLong(5), if (rotated) h else w, if (rotated) w else h,
-                        c.getInt(9) == 1, false, video = true, dur = c.getLong(11), rec = rec))
+                        c.getInt(9) == 1, false, video = true, dur = c.getLong(11), rec = rec, dir = c.getString(10) ?: ""))
                     if (changed.size >= 1000) { store.upsert(changed); changed.clear() }
                 }
             }
         } catch (_: SecurityException) {
             // No access to videos: photos only.
+        }
+        store.fillMeta(filled)
+    }
+
+    /** MediaStore's MIME type as the scan's format: jpeg, heic, png, raw (DNG and makers' raw types) or other. */
+    private fun format(mime: String?): String {
+        val m = mime?.lowercase(Locale.ROOT) ?: return "other"
+        return when {
+            m == "image/jpeg" || m == "image/jpg" -> "jpeg"
+            m == "image/heic" || m == "image/heif" || m == "image/heic-sequence" || m == "image/heif-sequence" -> "heic"
+            m == "image/png" -> "png"
+            m.contains("dng") || m.contains("raw") || m.startsWith("image/x-") -> "raw"
+            else -> "other"
         }
     }
 
@@ -415,18 +439,23 @@ class PhotoLibraryPlugin : Plugin() {
             if (power.currentThermalStatus >= android.os.PowerManager.THERMAL_STATUS_SEVERE) break
             val ids = store.aiPending(AI_BATCH)
             if (ids.isEmpty()) break
-            val results = ArrayList<Pair<String, IntArray?>>(ids.size)
+            val results = ArrayList<ScanStore.AIResult>(ids.size)
             for (id in ids) {
                 if (cancelled.get()) break
-                val scores = try {
+                val video = isVideo(id)
+                val result = try {
+                    // A video's thumbnail is its poster frame: only its embedding is kept (lookalike videos), no labels.
                     val bmp = context.contentResolver.loadThumbnail(contentUri(id), Size(FeatureMath.LONG_SIDE, FeatureMath.LONG_SIDE), null)
                     val fitted = fit(bmp)
-                    try { model.scores(fitted) } finally {
+                    try {
+                        if (video) ScanStore.AIResult(id, null, ImageEmbedder.packed(model.embed(fitted)))
+                        else ScanStore.AIResult(id, model.scores(fitted))
+                    } finally {
                         if (fitted !== bmp) fitted.recycle()
                         bmp.recycle()
                     }
-                } catch (_: Exception) { null }
-                results.add(Pair(id, scores))
+                } catch (_: Exception) { ScanStore.AIResult(id, null) }
+                results.add(result)
             }
             store.storeAI(results)
             done += results.size

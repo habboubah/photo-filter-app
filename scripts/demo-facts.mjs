@@ -18,10 +18,40 @@ const manifest = JSON.parse(fs.readFileSync(path.join(demo, 'manifest.json'), 'u
 const aiFile = path.join(demo, 'ai.json');
 const ai = fs.existsSync(aiFile) ? JSON.parse(fs.readFileSync(aiFile, 'utf8')).photos : {};
 
+/*
+ * Scan schema 4's facts, as a phone would report them: the file format
+ * (iPhone stills are HEIC when they are Live Photos, the rest JPEG;
+ * screenshots PNG), one edited photo (never made smaller), the folder each
+ * file lies in (Android's RELATIVE_PATH: the camera, the screenshots, the
+ * messenger copies in WhatsApp's folder) and, for videos, the picture of
+ * their poster frame (`emb`). The embeddings are made up — a seeded unit
+ * vector per scene, so the cake video saved twice matches itself and the
+ * others don't — not the model's (the demo has no model to run).
+ */
+const EDITED = new Set(['p063']);
+const SCENE = { p089: 'cake', p090: 'cake', p091: 'garda', p092: 'paris' };
+function sceneVector(name, jitter = 0) {
+  let s = [...name].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 17);
+  const next = () => { s = (s * 1103515245 + 12345) % 2 ** 31; return s / 2 ** 31 - 0.5; };
+  const v = Array.from({ length: 768 }, next);
+  if (jitter) { let j = jitter * 7919; for (let i = 0; i < v.length; i++) { j = (j * 1103515245 + 12345) % 2 ** 31; v[i] += (j / 2 ** 31 - 0.5) * 0.35; } }
+  const top = Math.max(...v.map(Math.abs));
+  return Buffer.from(Int8Array.from(v.map(x => Math.round((x * 127) / top)))).toString('base64');
+}
+export function schema4(entry) {
+  const out = {};
+  if (!entry.video) out.fmt = entry.shot ? 'png' : entry.live ? 'heic' : 'jpeg';
+  if (EDITED.has(entry.id)) out.edited = true;
+  out.dir = entry.rec ? 'Movies/Screen recordings/' : entry.shot ? 'Pictures/Screenshots/'
+    : entry.copy ? 'Android/media/com.whatsapp/WhatsApp/Media/WhatsApp Images/' : 'DCIM/Camera/';
+  if (entry.video && !entry.rec && SCENE[entry.id]) out.emb = sceneVector(SCENE[entry.id]);
+  return out;
+}
+
 let seed = 7;
 const rand = () => { seed = (seed * 1103515245 + 12345) % 2 ** 31; return seed / 2 ** 31; };
 
-const facts = manifest.map(entry => {
+const facts = process.argv[1]?.endsWith('demo-facts.mjs') ? manifest.map(entry => {
   const buf = fs.readFileSync(path.join(grey, `${entry.id}.pgm`));
   const m = /^P5\s+(\d+)\s+(\d+)\s+255\s/.exec(buf.subarray(0, 64).toString('latin1'));
   const w = Number(m[1]);
@@ -31,7 +61,7 @@ const facts = manifest.map(entry => {
   const { copy, note, ...rest } = entry;
   const scores = ai[entry.id] ? { ai: ai[entry.id] } : {};
   // A picture of a receipt or a letter: a phone photo, sized without the random source so the photos after it keep their numbers.
-  if (note) return { ...rest, w: 4032, h: 3024, bytes: 2_400_000, exact: true, ...f, ...scores };
+  if (note) return { ...rest, w: 4032, h: 3024, bytes: 2_400_000, exact: true, ...f, ...scores, ...schema4(entry) };
   // A video: about 0.4 bytes per pixel and second (what the iPhone's estimate assumes too); a Live Photo carries about 3 MB of video.
   const r = rand();
   const photo = entry.video
@@ -43,7 +73,9 @@ const facts = manifest.map(entry => {
       : copy
         ? { ...rest, w: 1600, h: 1200, bytes: Math.round(250_000 + r * 200_000) }
         : { ...rest, w: 4032, h: 3024, bytes: Math.round(1_800_000 + r * 2_400_000) + (entry.live ? 3_000_000 : 0) };
-  return { ...photo, exact: true, ...f, ...scores };
-});
-fs.writeFileSync(path.join(demo, 'facts.json'), JSON.stringify(facts) + '\n');
-console.log(`${facts.length} photos → src/native/demo/facts.json`);
+  return { ...photo, exact: true, ...f, ...scores, ...schema4(entry) };
+}) : null;
+if (facts) {
+  fs.writeFileSync(path.join(demo, 'facts.json'), JSON.stringify(facts) + '\n');
+  console.log(`${facts.length} photos → src/native/demo/facts.json`);
+}

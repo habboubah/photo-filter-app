@@ -217,6 +217,14 @@ Everything in TypeScript is tested by `npm run check`; what needs a phone:
       add Bildklar (the line, the gauge, the inline text). Check the numbers
       match home, then add a screenshot of it to docs/features.md.
 
+- [ ] **Scan schema 4** (Swift and Kotlin, not compiled in the cloud): on
+      both phones, update over the 2.0.x build (don't reinstall) and check the
+      rescan doesn't analyse every photo again — only a short pass, then the
+      AI looks at the videos' poster frames. Note how long it took for your
+      library. Then: does a JPEG show as `fmt: jpeg`, an edited iPhone photo
+      as `edited`? (debug build: the facts are in the review's debug badge only
+      for sharpness — check via Safari's Web Inspector, `PhotoLibrary.getFacts`).
+
 ## Known gaps (to decide later)
 
 - Arabic: the structure is there (RTL rules, the translation layout), the texts are not.
