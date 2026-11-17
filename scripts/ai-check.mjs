@@ -26,9 +26,9 @@ const report = (pass, msg) => { console.log(`  ${pass ? '✓' : '✗'} ${msg}`);
 console.log('AI check');
 
 const assets = path.join(root, 'ai-assets');
-const files = ['image.onnx', 'compact.bin', 'vectors.json', 'LICENSES.md'];
+const files = ['image.onnx', 'compact.bin', 'vectors.json', 'faces.onnx', 'LICENSES.md'];
 const missing = files.filter(f => !fs.existsSync(path.join(assets, f)));
-report(missing.length === 0, missing.length ? `ai-assets is missing ${missing.join(', ')}` : 'ai-assets has the model, the projection and the licences');
+report(missing.length === 0, missing.length ? `ai-assets is missing ${missing.join(', ')}` : 'ai-assets has the model, the projection, the face detector and the licences');
 
 const meta = JSON.parse(read('ai-assets/vectors.json'));
 const labelFile = JSON.parse(read('src/logic/aiLabels.json'));

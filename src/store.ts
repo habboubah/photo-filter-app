@@ -415,7 +415,7 @@ export function useAppStore() {
     return () => { alive = false; };
   }, [photos]);
 
-  /** iPhone: face scores for a similar group, worked out on demand and laid over the photos for ranking. */
+  /** Face scores for a similar group (iPhone: Vision; Android: YuNet), worked out on demand and laid over the photos for ranking. */
   const scoreFaces = useCallback(async (ids: string[]) => {
     const missing = ids.filter(id => !faces.has(id));
     if (!missing.length) return;
@@ -427,7 +427,7 @@ export function useAppStore() {
         for (const r of rows) next.set(r.id, { faces: r.faces, faceQ: r.faceQ, eyes: r.eyes });
         return next;
       });
-    } catch { /* Android, or the photo is gone: rank without faces */ }
+    } catch { /* an older native build, or the photo is gone: rank without faces */ }
   }, [faces]);
 
   /* --------------------------------------------------- weekly reminder */

@@ -32,7 +32,7 @@ export function GroupView({ t, group, byId, kept, verdicts, debug, onBack, onPic
   onKeepAll: () => void;
   onScoreFaces: (ids: string[]) => void;
 }) {
-  // iPhone: faces and open eyes refine the pick; asked for once per group.
+  // Faces (and on the iPhone open eyes) refine the pick; asked for once per group.
   useEffect(() => { onScoreFaces(group.ids); }, [group.key]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const best = byId.get(group.best);

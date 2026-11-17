@@ -16,6 +16,12 @@ search vectors (src/logic/aiLabels.json, src/search/words.json) are
 embeddings of Bildklar's own prompts made with the model's text encoder. All
 are derived from the original model.
 
+## YuNet (Android's face detector)
+
+`faces.onnx` is `face_detection_yunet_2023mar.onnx` from the OpenCV Zoo
+(https://github.com/opencv/opencv_zoo/tree/main/models/face_detection_yunet),
+unchanged. Copyright (c) 2020 Shiqi Yu. Licensed under the MIT License.
+
 ## ONNX Runtime
 
 Copyright (c) Microsoft Corporation. Licensed under the MIT License.

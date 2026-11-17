@@ -54,6 +54,7 @@ android {
             it.systemProperty 'fixtures', file('../../fixtures/features').absolutePath
             it.systemProperty 'aiFixtures', file('../../fixtures/ai').absolutePath
             it.systemProperty 'aiAssets', file('../../ai-assets').absolutePath
+            it.systemProperty 'faceFixtures', file('../../fixtures/faces').absolutePath
         }
     }
     // The on-device AI's model and label vectors (docs/AI.md): one copy in the repository (ai-assets/),
@@ -64,7 +65,7 @@ android {
 }
 
 def copyAiAssets = tasks.register('copyAiAssets', Copy) {
-    from('../../ai-assets') { include 'image.onnx', 'compact.bin', 'vectors.json', 'LICENSES.md' }
+    from('../../ai-assets') { include 'image.onnx', 'compact.bin', 'vectors.json', 'faces.onnx', 'LICENSES.md' }
     into(layout.buildDirectory.dir('generated/ai-assets/ai'))
 }
 preBuild.dependsOn(copyAiAssets)

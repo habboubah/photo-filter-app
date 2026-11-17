@@ -149,7 +149,7 @@
   {
    "name": "SigLIP 2",
    "licence": "Apache-2.0",
-   "notice": "google/siglip2-base-patch32-256 — Copyright 2025 Google LLC. Bildklar ships the image encoder, exported to ONNX and quantised to 8-bit weights, and label vectors made with the text encoder.",
+   "notice": "google/siglip2-base-patch32-256 — Copyright 2025 Google LLC. Bildklar ships the image encoder, exported to ONNX with its weights quantised to 4 bits, a projection of its embeddings, and label and search vectors made with the text encoder.",
    "text": "@Apache-2.0"
   },
   {
@@ -157,6 +157,15 @@
    "version": "2.8.1",
    "licence": "0BSD",
    "text": "Copyright (c) Microsoft Corporation.\n\nPermission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE."
+  },
+  {
+   "name": "YuNet",
+   "licence": "MIT",
+   "platforms": [
+    "android"
+   ],
+   "notice": "face_detection_yunet_2023mar from the OpenCV Zoo — the face detector for the best shot on Android.",
+   "text": "MIT License\n\nCopyright (c) Shiqi Yu\n\nPermission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the \"Software\"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE."
   }
  ]
 }

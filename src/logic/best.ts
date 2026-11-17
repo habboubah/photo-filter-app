@@ -4,7 +4,8 @@ import type { Photo } from '../types';
  * The best shot of a similar group: the sharpest, well exposed one, with the
  * best face and open eyes where the iPhone could tell, and — on iOS 18+ —
  * the one Vision finds best composed (its aesthetics score, stored by the
- * scan's AI pass: docs/AI.md). Android scores sharpness and exposure only.
+ * scan's AI pass: docs/AI.md). Android scores sharpness, exposure and its
+ * faces' sharpness (FaceDetector.kt, YuNet) — no open eyes, no aesthetics.
  * A favourite always wins — the user already said which one they like.
  *
  * score = 0.55 · sharpness + 0.20 · exposure [+ 0.15 · face + 0.10 · eyes] [+ 0.20 · aesthetics],

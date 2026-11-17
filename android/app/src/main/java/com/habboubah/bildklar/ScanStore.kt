@@ -24,7 +24,8 @@ class ScanStore(context: Context) : SQLiteOpenHelper(context, "bildklar-scan.db"
         /**
          * 2: videos and screen recordings; 3: the on-device AI's columns (November 2026); 4: the file
          * format (MIME_TYPE), the folder (RELATIVE_PATH) and a video's picture (its poster frame's embedding);
-         * 5: every photo's compact vector (the AI's version 2: labels, look-alikes and search come from it).
+         * 5: every photo's compact vector (the AI's version 2: labels, look-alikes and search come from it) and
+         * its faces (FaceDetector, asked for a similar group's photos).
          */
         const val SCHEMA = 5
         /**
@@ -48,7 +49,8 @@ class ScanStore(context: Context) : SQLiteOpenHelper(context, "bildklar-scan.db"
                 fv INTEGER NOT NULL DEFAULT 0,
                 hash TEXT, sharp REAL, contrast REAL, expo REAL, clip REAL,
                 av INTEGER NOT NULL DEFAULT 0, ai TEXT,
-                fmt TEXT, dir TEXT, emb TEXT, vec TEXT
+                fmt TEXT, dir TEXT, emb TEXT, vec TEXT,
+                faces INTEGER, faceq REAL
             )"""
         )
         db.execSQL("CREATE INDEX asset_t ON asset(t, id)")
@@ -67,6 +69,8 @@ class ScanStore(context: Context) : SQLiteOpenHelper(context, "bildklar-scan.db"
                 db.execSQL("ALTER TABLE asset ADD COLUMN emb TEXT")
             }
             db.execSQL("ALTER TABLE asset ADD COLUMN vec TEXT")
+            db.execSQL("ALTER TABLE asset ADD COLUMN faces INTEGER")
+            db.execSQL("ALTER TABLE asset ADD COLUMN faceq REAL")
             return
         }
         // A cache: when its shape changes it is simply built again.
@@ -209,6 +213,40 @@ class ScanStore(context: Context) : SQLiteOpenHelper(context, "bildklar-scan.db"
         }
     }
 
+    /** Faces worked out for a similar group's photos (FaceDetector): how many, and the best one's quality (null: none). */
+    fun storeFaces(rows: List<Triple<String, Int, Double?>>) {
+        val db = writableDatabase
+        db.beginTransaction()
+        try {
+            val v = ContentValues()
+            for ((id, faces, q) in rows) {
+                v.clear()
+                v.put("faces", faces)
+                if (q != null) v.put("faceq", q) else v.putNull("faceq")
+                db.update("asset", v, "id = ?", arrayOf(id))
+            }
+            db.setTransactionSuccessful()
+        } finally {
+            db.endTransaction()
+        }
+    }
+
+    /** The face scores already worked out for some of these photos, as rows for the web layer. */
+    fun faces(ids: List<String>): Map<String, JSObject> {
+        val out = HashMap<String, JSObject>()
+        val db = readableDatabase
+        for (id in ids) {
+            db.rawQuery("SELECT faces, faceq FROM asset WHERE id = ? AND faces IS NOT NULL", arrayOf(id)).use { c ->
+                if (c.moveToFirst()) {
+                    val o = JSObject().put("id", id).put("faces", c.getInt(0))
+                    if (!c.isNull(1)) o.put("faceQ", c.getDouble(1))
+                    out[id] = o
+                }
+            }
+        }
+        return out
+    }
+
     /** The compact vectors of these photos (PhotoLibrary.getVectors): only rows of the current AI version. */
     fun vectors(ids: List<String>): JSArray {
         val rows = JSArray()
@@ -253,7 +291,7 @@ class ScanStore(context: Context) : SQLiteOpenHelper(context, "bildklar-scan.db"
     fun facts(offset: Int, limit: Int): JSArray {
         val rows = JSArray()
         readableDatabase.rawQuery(
-            "SELECT id, t, lat, lon, bytes, w, h, fav, shot, fv, hash, sharp, contrast, expo, clip, video, dur, rec, av, vec IS NOT NULL, fmt, dir, emb FROM asset ORDER BY t, id LIMIT ? OFFSET ?",
+            "SELECT id, t, lat, lon, bytes, w, h, fav, shot, fv, hash, sharp, contrast, expo, clip, video, dur, rec, av, vec IS NOT NULL, fmt, dir, emb, faces, faceq FROM asset ORDER BY t, id LIMIT ? OFFSET ?",
             arrayOf(limit.toString(), offset.toString())
         ).use { c ->
             while (c.moveToNext()) {
@@ -277,6 +315,10 @@ class ScanStore(context: Context) : SQLiteOpenHelper(context, "bildklar-scan.db"
                 if (c.getInt(18) == ImageEmbedder.AI_VERSION && !c.isNull(22)) o.put("emb", c.getString(22))
                 if (!c.isNull(20)) o.put("fmt", c.getString(20))
                 if (!c.isNull(21) && c.getString(21).isNotEmpty()) o.put("dir", c.getString(21))
+                if (!c.isNull(23)) {
+                    o.put("faces", c.getInt(23))
+                    if (!c.isNull(24)) o.put("faceQ", c.getDouble(24))
+                }
                 rows.put(o)
             }
         }

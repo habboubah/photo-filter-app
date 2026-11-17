@@ -31,14 +31,15 @@ class ImageEmbedder(directory: File) : AutoCloseable {
         /** Bump with src/logic/ai.ts AI_VERSION, vectors.json and ImageEmbedder.swift: every photo gets its AI pass again. */
         const val AI_VERSION = 2
         private const val ASSETS = "ai"
-        private val FILES = listOf("image.onnx", "compact.bin", "vectors.json")
+        private val FILES = listOf("image.onnx", "compact.bin", "vectors.json", "faces.onnx")
 
         /**
-         * The model from the APK. ONNX Runtime opens a file by path (reading 76 MB into
-         * memory instead would double what the model costs), so the assets are copied to
-         * the app's files once per app version.
+         * The AI's files from the APK, in the app's files. ONNX Runtime opens a model by path
+         * (reading 76 MB into memory instead would double what the model costs), so the assets
+         * are copied there once per app version. The face detector (FaceDetector) uses the same folder.
          */
-        fun fromAssets(context: Context, appVersion: Long): ImageEmbedder {
+        @Synchronized
+        fun assetsDir(context: Context, appVersion: Long): File {
             val dir = File(context.filesDir, "ai")
             val stamp = File(dir, "version")
             if (!stamp.exists() || stamp.readText() != "$appVersion") {
@@ -50,8 +51,11 @@ class ImageEmbedder(directory: File) : AutoCloseable {
                 }
                 stamp.writeText("$appVersion")
             }
-            return ImageEmbedder(dir)
+            return dir
         }
+
+        /** The model from the APK (see assetsDir). */
+        fun fromAssets(context: Context, appVersion: Long): ImageEmbedder = ImageEmbedder(assetsDir(context, appVersion))
 
         /**
          * A vector as int8 values in base64 (768 bytes → 1,024 characters; a compact vector 256 → 344), each
