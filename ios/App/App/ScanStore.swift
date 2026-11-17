@@ -23,8 +23,14 @@ final class ScanStore {
             throw NSError(domain: "ScanStore", code: 1, userInfo: [NSLocalizedDescriptionKey: "Cannot open the scan cache"])
         }
         exec("PRAGMA journal_mode = WAL")
-        // A cache: when its shape changes it is simply built again (the next scan fills it).
-        if userVersion() < Self.schema {
+        // A cache: when its shape changes it is simply built again (the next scan fills it) —
+        // except from 3 to 4, whose new columns are filled without analysing a photo again.
+        if userVersion() == 3 {
+            exec("ALTER TABLE asset ADD COLUMN fmt TEXT")
+            exec("ALTER TABLE asset ADD COLUMN edited INTEGER")
+            exec("ALTER TABLE asset ADD COLUMN emb TEXT")
+            exec("PRAGMA user_version = \(Self.schema)")
+        } else if userVersion() < Self.schema {
             exec("DROP TABLE IF EXISTS asset")
             exec("DROP TABLE IF EXISTS meta")
             exec("PRAGMA user_version = \(Self.schema)")
@@ -43,7 +49,8 @@ final class ScanStore {
               fv INTEGER NOT NULL DEFAULT 0,
               hash TEXT, sharp REAL, contrast REAL, expo REAL, clip REAL,
               faces INTEGER, faceq REAL, eyes REAL,
-              av INTEGER NOT NULL DEFAULT 0, ai TEXT, aes REAL, util INTEGER
+              av INTEGER NOT NULL DEFAULT 0, ai TEXT, aes REAL, util INTEGER,
+              fmt TEXT, edited INTEGER, emb TEXT
             )
             """)
         exec("CREATE INDEX IF NOT EXISTS asset_t ON asset(t, id)")
@@ -54,8 +61,9 @@ final class ScanStore {
 
     deinit { sqlite3_close(db) }
 
-    /// 2: videos, screen recordings, Live Photos and bursts; 3: the on-device AI's columns (November 2026).
-    private static let schema: Int64 = 3
+    /// 2: videos, screen recordings, Live Photos and bursts; 3: the on-device AI's columns (November 2026);
+    /// 4: the file format, whether a photo was edited, and a video's picture (the AI's embedding of its poster frame).
+    private static let schema: Int64 = 4
 
     private func userVersion() -> Int64 {
         guard let stmt = prepare("PRAGMA user_version") else { return 0 }
@@ -167,8 +175,32 @@ final class ScanStore {
     func count() -> Int { count("SELECT COUNT(*) FROM asset") }
     func pendingCount() -> Int { count("SELECT COUNT(*) FROM asset WHERE fv < \(FeatureMath.featureVersion)") }
 
-    /// The photos the AI still has to look at, newest first: analysed photos with a local copy (a hash), no videos, no screenshots.
-    private static let aiWanted = "av < ? AND fv > 0 AND hash IS NOT NULL AND video = 0 AND shot = 0"
+    /// What the AI still has to look at, newest first: analysed photos with a local copy (a hash), no screenshots;
+    /// videos too (their poster frame, for lookalike videos — only the embedding is kept), not screen recordings.
+    private static let aiWanted = "av < ? AND fv > 0 AND hash IS NOT NULL AND shot = 0 AND rec = 0"
+
+    /// Photos whose file format is not known yet: new or changed ones, and every photo cached before schema 4.
+    func formatPending(limit: Int) -> [String] {
+        guard let stmt = prepare("SELECT id FROM asset WHERE fmt IS NULL AND video = 0 LIMIT ?") else { return [] }
+        defer { sqlite3_finalize(stmt) }
+        bind(stmt, 1, Int64(limit))
+        var out: [String] = []
+        while sqlite3_step(stmt) == SQLITE_ROW { out.append(String(cString: sqlite3_column_text(stmt, 0))) }
+        return out
+    }
+
+    /// The file format (jpeg, heic, png, raw, other) and whether the photo was edited in Photos.
+    func storeFormats(_ rows: [(id: String, fmt: String, edited: Bool)]) {
+        guard let stmt = prepare("UPDATE asset SET fmt = ?, edited = ? WHERE id = ?") else { return }
+        defer { sqlite3_finalize(stmt) }
+        transaction {
+            for r in rows {
+                sqlite3_reset(stmt)
+                bind(stmt, 1, r.fmt); bind(stmt, 2, Int64(r.edited ? 1 : 0)); bind(stmt, 3, r.id)
+                sqlite3_step(stmt)
+            }
+        }
+    }
 
     func aiPending(limit: Int) -> [String] {
         guard let stmt = prepare("SELECT id FROM asset WHERE \(Self.aiWanted) ORDER BY t DESC LIMIT ?") else { return [] }
@@ -193,11 +225,13 @@ final class ScanStore {
         /// Vision's aesthetics score and utility flag (iOS 18+).
         let aes: Double?
         let util: Bool?
+        /// A video's picture: its poster frame's embedding, packed (ImageEmbedder.packed). Photos keep only their scores.
+        var emb: String? = nil
     }
 
     /// The AI's pass over some photos; `av` moves on either way, so an unreadable photo isn't tried again and again.
     func storeAI(_ results: [AIResult]) {
-        guard let stmt = prepare("UPDATE asset SET av = ?, ai = ?, aes = ?, util = ? WHERE id = ?") else { return }
+        guard let stmt = prepare("UPDATE asset SET av = ?, ai = ?, aes = ?, util = ?, emb = ? WHERE id = ?") else { return }
         defer { sqlite3_finalize(stmt) }
         transaction {
             for r in results {
@@ -206,7 +240,8 @@ final class ScanStore {
                 if let s = r.scores { bind(stmt, 2, s.map(String.init).joined(separator: ",")) } else { sqlite3_bind_null(stmt, 2) }
                 bind(stmt, 3, r.aes)
                 if let u = r.util { bind(stmt, 4, Int64(u ? 1 : 0)) } else { sqlite3_bind_null(stmt, 4) }
-                bind(stmt, 5, r.id)
+                if let e = r.emb { bind(stmt, 5, e) } else { sqlite3_bind_null(stmt, 5) }
+                bind(stmt, 6, r.id)
                 sqlite3_step(stmt)
             }
         }
@@ -265,7 +300,7 @@ final class ScanStore {
     func facts(offset: Int, limit: Int) -> [[String: Any]] {
         guard let stmt = prepare("""
             SELECT id, t, lat, lon, bytes, w, h, fav, shot, fv, hash, sharp, contrast, expo, clip, faces, faceq, eyes,
-                   video, dur, rec, live, burst, pick, av, ai, aes, util
+                   video, dur, rec, live, burst, pick, av, ai, aes, util, fmt, edited, emb
             FROM asset ORDER BY t, id LIMIT ? OFFSET ?
             """) else { return [] }
         defer { sqlite3_finalize(stmt) }
@@ -312,7 +347,10 @@ final class ScanStore {
                 }
                 if sqlite3_column_type(stmt, 26) != SQLITE_NULL { o["aes"] = sqlite3_column_double(stmt, 26) }
                 if sqlite3_column_type(stmt, 27) != SQLITE_NULL { o["util"] = sqlite3_column_int64(stmt, 27) == 1 }
+                if sqlite3_column_type(stmt, 30) != SQLITE_NULL { o["emb"] = String(cString: sqlite3_column_text(stmt, 30)) }
             }
+            if sqlite3_column_type(stmt, 28) != SQLITE_NULL { o["fmt"] = String(cString: sqlite3_column_text(stmt, 28)) }
+            if sqlite3_column_int64(stmt, 29) == 1 { o["edited"] = true }
             rows.append(o)
         }
         return rows

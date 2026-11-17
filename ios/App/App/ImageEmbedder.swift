@@ -120,6 +120,21 @@ final class ImageEmbedder {
     }
 
     /// What the scan stores for a picture: the logits × 10, rounded (Photo.ai); nil when the picture can't be read.
+    /// The picture's embedding (a video's poster frame: lookalike videos, src/logic/lookalike.ts).
+    func embed(_ cg: CGImage) -> [Float]? {
+        guard let px = pixels(cg) else { return nil }
+        return try? embedding(px)
+    }
+
+    /// An embedding as int8 values in base64 (768 bytes → 1,024 characters). Each vector is scaled by its own
+    /// largest value, which the cosine between two vectors does not notice. Matches ImageEmbedder.kt `packed`.
+    static func packed(_ e: [Float]) -> String {
+        let top = e.reduce(Float(0)) { max($0, abs($1)) }
+        let k: Float = top > 0 ? 127 / top : 0
+        let bytes = e.map { UInt8(bitPattern: Int8(clamping: Int(($0 * k).rounded()))) }
+        return Data(bytes).base64EncodedString()
+    }
+
     func scores(_ cg: CGImage) -> [Int]? {
         guard let px = pixels(cg), let emb = try? embedding(px) else { return nil }
         return logits(emb).map { Int(($0 * 10).rounded()) }

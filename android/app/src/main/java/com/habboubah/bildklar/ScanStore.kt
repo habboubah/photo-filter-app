@@ -21,10 +21,16 @@ import com.getcapacitor.JSObject
 class ScanStore(context: Context) : SQLiteOpenHelper(context, "bildklar-scan.db", null, SCHEMA) {
 
     companion object {
-        /** 2: videos and screen recordings; 3: the on-device AI's columns (November 2026). */
-        const val SCHEMA = 3
-        /** The photos the AI still has to look at: analysed, readable (a hash), no videos, no screenshots. */
-        private const val AI_WANTED = "av < ? AND fv > 0 AND hash IS NOT NULL AND video = 0 AND shot = 0"
+        /**
+         * 2: videos and screen recordings; 3: the on-device AI's columns (November 2026); 4: the file
+         * format (MIME_TYPE), the folder (RELATIVE_PATH) and a video's picture (its poster frame's embedding).
+         */
+        const val SCHEMA = 4
+        /**
+         * What the AI still has to look at: analysed, readable (a hash), no screenshots; videos too (their
+         * poster frame, for lookalike videos — only the embedding is kept), not screen recordings.
+         */
+        private const val AI_WANTED = "av < ? AND fv > 0 AND hash IS NOT NULL AND shot = 0 AND rec = 0"
     }
 
     override fun onCreate(db: SQLiteDatabase) {
@@ -40,7 +46,8 @@ class ScanStore(context: Context) : SQLiteOpenHelper(context, "bildklar-scan.db"
                 video INTEGER NOT NULL DEFAULT 0, dur INTEGER NOT NULL DEFAULT 0, rec INTEGER NOT NULL DEFAULT 0,
                 fv INTEGER NOT NULL DEFAULT 0,
                 hash TEXT, sharp REAL, contrast REAL, expo REAL, clip REAL,
-                av INTEGER NOT NULL DEFAULT 0, ai TEXT
+                av INTEGER NOT NULL DEFAULT 0, ai TEXT,
+                fmt TEXT, dir TEXT, emb TEXT
             )"""
         )
         db.execSQL("CREATE INDEX asset_t ON asset(t, id)")
@@ -50,6 +57,13 @@ class ScanStore(context: Context) : SQLiteOpenHelper(context, "bildklar-scan.db"
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
+        // From 3 to 4 the rows stay: the new columns are filled by the next listing, nothing is analysed again.
+        if (oldVersion == 3 && newVersion == 4) {
+            db.execSQL("ALTER TABLE asset ADD COLUMN fmt TEXT")
+            db.execSQL("ALTER TABLE asset ADD COLUMN dir TEXT")
+            db.execSQL("ALTER TABLE asset ADD COLUMN emb TEXT")
+            return
+        }
         // A cache: when its shape changes it is simply built again.
         db.execSQL("DROP TABLE IF EXISTS asset")
         db.execSQL("DROP TABLE IF EXISTS meta")
@@ -73,7 +87,35 @@ class ScanStore(context: Context) : SQLiteOpenHelper(context, "bildklar-scan.db"
         val id: String, val t: Long, val stamp: Long, val bytes: Long, val w: Int, val h: Int, val fav: Boolean, val shot: Boolean,
         /** A video, its length in ms, and whether it is a screen recording. */
         val video: Boolean = false, val dur: Long = 0, val rec: Boolean = false,
+        /** The file format (jpeg, heic, png, raw, other; photos only) and the folder it lies in (RELATIVE_PATH, "" when unknown). */
+        val fmt: String? = null, val dir: String = "",
     )
+
+    /** Rows listed before schema 4 (no folder yet): filled by the next listing without being analysed again. */
+    fun withoutDir(): HashSet<String> {
+        val out = HashSet<String>()
+        readableDatabase.rawQuery("SELECT id FROM asset WHERE dir IS NULL", null).use { c -> while (c.moveToNext()) out.add(c.getString(0)) }
+        return out
+    }
+
+    /** The format and the folder of unchanged rows (the step from schema 3 to 4). */
+    fun fillMeta(rows: List<Meta>) {
+        if (rows.isEmpty()) return
+        val db = writableDatabase
+        db.beginTransaction()
+        try {
+            val v = ContentValues()
+            for (r in rows) {
+                v.clear()
+                if (r.fmt != null) v.put("fmt", r.fmt) else v.putNull("fmt")
+                v.put("dir", r.dir)
+                db.update("asset", v, "id = ?", arrayOf(r.id))
+            }
+            db.setTransactionSuccessful()
+        } finally {
+            db.endTransaction()
+        }
+    }
 
     /** New or changed photos: their metadata, and `fv = 0` so they are analysed (again). */
     fun upsert(rows: List<Meta>) {
@@ -86,6 +128,8 @@ class ScanStore(context: Context) : SQLiteOpenHelper(context, "bildklar-scan.db"
                 v.put("id", r.id); v.put("t", r.t); v.put("stamp", r.stamp); v.put("bytes", r.bytes)
                 v.put("w", r.w); v.put("h", r.h); v.put("fav", if (r.fav) 1 else 0); v.put("shot", if (r.shot) 1 else 0)
                 v.put("video", if (r.video) 1 else 0); v.put("dur", r.dur); v.put("rec", if (r.rec) 1 else 0)
+                if (r.fmt != null) v.put("fmt", r.fmt) else v.putNull("fmt")
+                v.put("dir", r.dir)
                 v.put("fv", 0)
                 db.insertWithOnConflict("asset", null, v, SQLiteDatabase.CONFLICT_REPLACE)
             }
@@ -136,16 +180,21 @@ class ScanStore(context: Context) : SQLiteOpenHelper(context, "bildklar-scan.db"
         readableDatabase.rawQuery("SELECT COUNT(*) FROM asset WHERE $AI_WANTED", arrayOf(ImageEmbedder.AI_VERSION.toString()))
             .use { c -> if (c.moveToFirst()) c.getInt(0) else 0 }
 
-    /** The AI's pass over some photos: the labels' logits × 10 (null: unreadable). `av` moves on either way. */
-    fun storeAI(results: List<Pair<String, IntArray?>>) {
+    /** One photo's (or video's) AI pass: the labels' logits × 10 for a photo, the packed embedding for a video; null: unreadable. */
+    data class AIResult(val id: String, val scores: IntArray?, val emb: String? = null)
+
+    /** The AI's pass over some photos and videos. `av` moves on either way. */
+    fun storeAI(results: List<AIResult>) {
         val db = writableDatabase
         db.beginTransaction()
         try {
             val v = ContentValues()
-            for ((id, scores) in results) {
+            for (r in results) {
+                val id = r.id
                 v.clear()
                 v.put("av", ImageEmbedder.AI_VERSION)
-                if (scores != null) v.put("ai", scores.joinToString(",")) else v.putNull("ai")
+                if (r.scores != null) v.put("ai", r.scores.joinToString(",")) else v.putNull("ai")
+                if (r.emb != null) v.put("emb", r.emb) else v.putNull("emb")
                 db.update("asset", v, "id = ?", arrayOf(id))
             }
             db.setTransactionSuccessful()
@@ -186,7 +235,7 @@ class ScanStore(context: Context) : SQLiteOpenHelper(context, "bildklar-scan.db"
     fun facts(offset: Int, limit: Int): JSArray {
         val rows = JSArray()
         readableDatabase.rawQuery(
-            "SELECT id, t, lat, lon, bytes, w, h, fav, shot, fv, hash, sharp, contrast, expo, clip, video, dur, rec, av, ai FROM asset ORDER BY t, id LIMIT ? OFFSET ?",
+            "SELECT id, t, lat, lon, bytes, w, h, fav, shot, fv, hash, sharp, contrast, expo, clip, video, dur, rec, av, ai, fmt, dir, emb FROM asset ORDER BY t, id LIMIT ? OFFSET ?",
             arrayOf(limit.toString(), offset.toString())
         ).use { c ->
             while (c.moveToNext()) {
@@ -210,6 +259,9 @@ class ScanStore(context: Context) : SQLiteOpenHelper(context, "bildklar-scan.db"
                     for (part in c.getString(19).split(',')) part.toIntOrNull()?.let { ai.put(it) }
                     o.put("ai", ai)
                 }
+                if (c.getInt(18) == ImageEmbedder.AI_VERSION && !c.isNull(22)) o.put("emb", c.getString(22))
+                if (!c.isNull(20)) o.put("fmt", c.getString(20))
+                if (!c.isNull(21) && c.getString(21).isNotEmpty()) o.put("dir", c.getString(21))
                 rows.put(o)
             }
         }

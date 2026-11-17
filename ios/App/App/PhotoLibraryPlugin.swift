@@ -232,6 +232,7 @@ public class PhotoLibraryPlugin: CAPPlugin, CAPBridgedPlugin, PHPhotoLibraryChan
             emit("scanDone", scanState())
         }
         listPhotos(store)
+        readFormats(store)
         analyse(store)
         analyseAI(store)
         if !cancelled { store.setMeta(Self.lastScanKey, String(Int64(Date().timeIntervalSince1970 * 1000))) }
@@ -340,6 +341,39 @@ public class PhotoLibraryPlugin: CAPPlugin, CAPBridgedPlugin, PHPhotoLibraryChan
 
     /// Phase 3: the on-device AI over each analysed photo it has not seen (docs/AI.md). Stops for now when the phone gets
     /// hot (thermal state serious or worse) — the next scan goes on where this one stopped.
+    /// Phase 1½ (scan schema 4): each photo's file format and whether it was edited, from its resources —
+    /// metadata only, no picture is read, so photos cached before schema 4 are filled without analysing them again.
+    private func readFormats(_ store: ScanStore) {
+        while !cancelled {
+            let ids = store.formatPending(limit: 500)
+            if ids.isEmpty { break }
+            var rows: [(id: String, fmt: String, edited: Bool)] = []
+            var found = Set<String>()
+            fetch(ids).enumerateObjects { asset, _, _ in
+                let resources = PHAssetResource.assetResources(for: asset)
+                // An edit leaves its instructions (adjustment data) and a rendered full-size picture next to the original.
+                let edited = resources.contains { $0.type == .adjustmentData || $0.type == .fullSizePhoto }
+                rows.append((asset.localIdentifier, Self.format(resources), edited))
+                found.insert(asset.localIdentifier)
+            }
+            // Gone since the list was read: marked, so it isn't asked again (the next scan drops the row).
+            for id in ids where !found.contains(id) { rows.append((id, "other", false)) }
+            store.storeFormats(rows)
+        }
+    }
+
+    /// The original's file format: raw (RAW, ProRAW, a RAW+JPEG pair), heic, jpeg, png or other.
+    static func format(_ resources: [PHAssetResource]) -> String {
+        let originals = resources.filter { $0.type == .photo || $0.type == .alternatePhoto }.map { $0.uniformTypeIdentifier.lowercased() }
+        if originals.contains(where: { $0.contains("raw") || $0.contains("dng") }) { return "raw" }
+        switch resources.first(where: { $0.type == .photo })?.uniformTypeIdentifier.lowercased() {
+        case "public.jpeg": return "jpeg"
+        case "public.heic", "public.heif": return "heic"
+        case "public.png": return "png"
+        default: return "other"
+        }
+    }
+
     private func analyseAI(_ store: ScanStore) {
         if !embedderTried {
             embedderTried = true
@@ -367,6 +401,11 @@ public class PhotoLibraryPlugin: CAPPlugin, CAPBridgedPlugin, PHPhotoLibraryChan
                     let fit = FeatureMath.fitSize(asset.pixelWidth, asset.pixelHeight)
                     guard let image = requestImage(asset, size: CGSize(width: fit.w, height: fit.h)), let cg = image.cgImage else {
                         results.append(.init(id: id, scores: nil, aes: nil, util: nil))
+                        return
+                    }
+                    // A video: only its poster frame's embedding (lookalike videos), no labels.
+                    if asset.mediaType == .video {
+                        results.append(.init(id: id, scores: nil, aes: nil, util: nil, emb: embedder.embed(cg).map(ImageEmbedder.packed)))
                         return
                     }
                     let vision = aesthetics(cg, orientation: CGImagePropertyOrientation(image.imageOrientation))

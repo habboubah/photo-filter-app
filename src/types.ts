@@ -57,7 +57,20 @@ export interface Photo {
   /** iPhone with iOS 18+: Vision's aesthetics score (−1 … 1) and its "utility photo" flag. */
   aes?: number;
   util?: boolean;
+  /**
+   * Scan schema 4 (17 November 2026). The original's file format (photos
+   * only): what "Fotos verkleinern" may re-save (src/logic/compress.ts).
+   */
+  fmt?: PhotoFormat;
+  /** iPhone: edited in Photos (re-saving would bake the edit in). Android can't tell (unset). */
+  edited?: boolean;
+  /** Android: the folder the file lies in (MediaStore RELATIVE_PATH, "DCIM/Camera/") — where it came from (src/logic/sources.ts). */
+  dir?: string;
+  /** Videos: their poster frame's embedding from the on-device AI, 768 int8 values in base64 (lookalike videos). */
+  emb?: string;
 }
+
+export type PhotoFormat = 'jpeg' | 'heic' | 'png' | 'raw' | 'other';
 
 /** How sure the app is that a photo is blurry. */
 export type Confidence = 'high' | 'medium' | 'low';

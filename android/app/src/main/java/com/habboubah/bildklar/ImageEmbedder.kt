@@ -53,6 +53,18 @@ class ImageEmbedder(directory: File) : AutoCloseable {
         }
 
         /** ARGB pixels (row-major, `size` × `size`) → [3, size, size], (x / 255 − 0.5) / 0.5. */
+        /**
+         * An embedding as int8 values in base64 (768 bytes → 1,024 characters), each vector scaled by its
+         * own largest value — the cosine between two vectors does not notice. Matches ImageEmbedder.swift `packed`.
+         */
+        fun packed(e: FloatArray): String {
+            var top = 0f
+            for (x in e) top = maxOf(top, kotlin.math.abs(x))
+            val k = if (top > 0f) 127f / top else 0f
+            val bytes = ByteArray(e.size) { i -> Math.round(e[i] * k).coerceIn(-128, 127).toByte() }
+            return android.util.Base64.encodeToString(bytes, android.util.Base64.NO_WRAP)
+        }
+
         fun normalise(argb: IntArray, size: Int): FloatArray {
             val plane = size * size
             val out = FloatArray(3 * plane)
@@ -149,6 +161,9 @@ class ImageEmbedder(directory: File) : AutoCloseable {
     }
 
     /** What the scan stores for a picture: the logits × 10, rounded (Photo.ai). */
+    /** The picture's embedding (a video's poster frame: lookalike videos, src/logic/lookalike.ts). */
+    fun embed(bmp: Bitmap): FloatArray = embedding(pixels(bmp))
+
     fun scores(bmp: Bitmap): IntArray = logits(embedding(pixels(bmp))).let { z -> IntArray(z.size) { Math.round(z[it] * 10) } }
 
     override fun close() {

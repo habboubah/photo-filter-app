@@ -104,8 +104,17 @@ are worked out on demand for a similar group and cached.
 | `fv` | feature version, 0 = to analyse |
 | `hash`, `sharp`, `contrast`, `expo`, `clip` | the features |
 | `faces`, `faceq`, `eyes` | iPhone only, on demand |
+| `av`, `ai`, `aes`, `util` | the on-device AI (docs/AI.md) |
+| `fmt` | schema 4: the original's file format — `jpeg`, `heic`, `png`, `raw`, `other` (iPhone `PHAssetResource.uniformTypeIdentifier`, Android `MIME_TYPE`) |
+| `edited` | schema 4, iPhone: edited in Photos (an adjustment-data or full-size-photo resource) |
+| `dir` | schema 4, Android: the folder (`RELATIVE_PATH`) — where a photo came from is worked out from it in TypeScript (`src/logic/sources.ts`) |
+| `emb` | schema 4, videos: the AI's embedding of the poster frame, 768 int8 in base64 (lookalike videos) |
 
-plus `meta(key, value)` (`lastScanAt`).
+plus `meta(key, value)` (`lastScanAt`). The scan schema is `PRAGMA
+user_version` (iPhone) / the database version (Android): **4** since
+17 November 2026. From 3 to 4 the rows stay and the new columns are filled
+without analysing a photo again (iPhone: a pass over the photos' resources;
+Android: the next listing); older caches are rebuilt.
 
 **The user's decisions** — one JSON document (`src/logic/state.ts`,
 `SCHEMA_VERSION` 1, read through `normalizeState()`): trip names, cuts,
