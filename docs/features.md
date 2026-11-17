@@ -201,6 +201,11 @@ Every feature, as the user sees it (German labels, English in brackets).
   freed and the free space — or, with nothing to clean up, *38 % deiner Fotos
   durchgesehen* [38 % of your photos gone through]. The app updates it whenever that changes; a tap
   opens the app.
+- **Lock Screen widget** (iPhone, iOS 16+): three shapes — a line
+  *Bildklar · 2,4 GB frei machbar · 38 % durchgesehen*, a round gauge of the
+  progress figure, and one line beside the clock. Monochrome, so never a
+  photo; a tap opens the app on home. Android phones have no Lock Screen
+  widgets: the home-screen widget stays the only one there.
 - **Wöchentliche Erinnerung** [Weekly reminder] in Settings (off by default):
   the system asks once for notifications, then one notification every Sunday
   at 18:00, scheduled on the phone — no server.

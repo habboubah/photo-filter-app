@@ -212,6 +212,11 @@ Everything in TypeScript is tested by `npm run check`; what needs a phone:
       suggestions. Android: the list shows your folders (Camera, WhatsApp
       Images, …).
 
+- [ ] **Lock Screen widget** (Swift, not compiled in the cloud): build the
+      app and the widget in Xcode; long-press the Lock Screen › Customize ›
+      add Bildklar (the line, the gauge, the inline text). Check the numbers
+      match home, then add a screenshot of it to docs/features.md.
+
 ## Known gaps (to decide later)
 
 - Arabic: the structure is there (RTL rules, the translation layout), the texts are not.

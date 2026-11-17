@@ -1,3 +1,6 @@
 "widgetName" = "Bildklar";
-"widgetDescription" = "On this day – or how much space you could free.";
+"widgetDescription" = "On this day – or how much space you could free. For the Lock Screen too.";
 "widgetOpen" = "Open Bildklar once and something appears here.";
+"lockFreeable" = "%@ to free";
+"lockProgress" = "%@ gone through";
+"lockNothing" = "Nothing to clean up";

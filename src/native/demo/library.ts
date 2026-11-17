@@ -190,7 +190,7 @@ export class DemoLibrary extends WebPlugin implements PhotoLibraryPlugin {
   }
 
   /** No home screen in a browser: the widget's content is only kept, for a look in the dev tools. */
-  async setWidget(options: { title: string; line: string; photoId?: string }) {
+  async setWidget(options: { title: string; line: string; photoId?: string; freeable?: number; pct?: number }) {
     set('bildklar-demo-widget', JSON.stringify(options));
   }
 

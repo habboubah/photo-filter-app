@@ -778,12 +778,18 @@ public class PhotoLibraryPlugin: CAPPlugin, CAPBridgedPlugin, PHPhotoLibraryChan
         let title = call.getString("title") ?? "Bildklar"
         let line = call.getString("line") ?? ""
         let photoId = call.getString("photoId")
+        // For the Lock Screen widget: the bytes that could be freed and the share gone through (0–100).
+        let freeable = call.getDouble("freeable").map { Int64($0) }
+        let pct = call.getInt("pct")
         io.async { [weak self] in
             guard let self, let dir = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: Self.appGroup) else {
                 call.resolve()
                 return
             }
-            if let json = try? JSONSerialization.data(withJSONObject: ["title": title, "line": line]) {
+            var stored: [String: Any] = ["title": title, "line": line]
+            if let freeable { stored["freeable"] = freeable }
+            if let pct { stored["pct"] = pct }
+            if let json = try? JSONSerialization.data(withJSONObject: stored) {
                 try? json.write(to: dir.appendingPathComponent("widget.json"), options: .atomic)
             }
             let imageURL = dir.appendingPathComponent("widget.jpg")

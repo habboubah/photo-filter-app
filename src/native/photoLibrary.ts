@@ -109,8 +109,11 @@ export interface PhotoLibraryPlugin {
    * What the home-screen widget shows (iPhone: WidgetKit, through the App
    * Group folder; Android: the app widget): a title and a line in the app's
    * language, and a photo for "On this day". The widget redraws at once.
+   * The iPhone's Lock Screen widget also shows `freeable` (bytes that could be
+   * freed) and `pct` (the share of the library gone through, 0–100); Android's
+   * widget ignores them.
    */
-  setWidget(options: { title: string; line: string; photoId?: string }): Promise<void>;
+  setWidget(options: { title: string; line: string; photoId?: string; freeable?: number; pct?: number }): Promise<void>;
   /** True in a debug build: the dry run is on by default there. */
   isDebug(): Promise<{ debug: boolean }>;
 
