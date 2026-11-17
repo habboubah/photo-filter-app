@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'motion/react';
 import { App as CapacitorApp } from '@capacitor/app';
 import { StatusBar, Style } from '@capacitor/status-bar';
@@ -17,12 +17,13 @@ import { folderName } from './logic/naming';
 import { addMerge, addSplit, removeMerge, removeSplits, setIgnored, setName } from './logic/trips';
 import {
   Decision, ReviewItem, Session, decide, isDone, keptAgainstSuggestion, laterIds, reviewBlurry, reviewCleanup, reviewGroup,
-  reviewLarge, reviewLater, reviewScreenshots, reviewTrip, reviewUtility, settledIds, startSession, undo,
+  reviewExposure, reviewLarge, reviewLater, reviewScreenshots, reviewTrip, reviewUtility, settledIds, startSession, undo,
 } from './logic/review';
 import { aiProgress, categories, findUtility, type MemoryLabel } from './logic/ai';
 import { findScreenshots, isOldShot, oldShots } from './logic/screenshots';
 import { findLarge, findLive } from './logic/large';
 import { buildMonths, onThisDay } from './logic/months';
+import { findExposure } from './logic/exposure';
 import { cleanParts } from './logic/smartClean';
 import { streak } from './logic/streak';
 import { feedbackMail, openExternal, privacyUrl, rateUrl, systemFromAgent } from './links';
@@ -32,25 +33,34 @@ import { Confirm } from './ui/Sheet';
 import { notifySuccess } from './ui/haptics';
 import { PermissionView } from './components/PermissionView';
 import { HomeView } from './components/HomeView';
-import { TripsView } from './components/TripsView';
+
 import { TripView } from './components/TripView';
 import { CleanupView } from './components/CleanupView';
 import { SimilarView } from './components/SimilarView';
 import { GroupView } from './components/GroupView';
-import { BlurryView } from './components/BlurryView';
-import { ScreenshotsView } from './components/ScreenshotsView';
-import { QuickCleanView } from './components/QuickCleanView';
-import { MonthsView } from './components/MonthsView';
-import { LargeView } from './components/LargeView';
-import { LiveView } from './components/LiveView';
-import { UtilityView } from './components/UtilityView';
-import { CategoryView } from './components/CategoryView';
+import type { FailedTab } from './components/FailedView';
 import { Progress } from './ui/Controls';
 import { Sheet } from './ui/Sheet';
 import { ReviewView } from './components/ReviewView';
 import { PaywallSheet, type FreeInfo } from './components/PaywallSheet';
 import { freeDelete, freeLeft } from './logic/allowance';
-import { LicencesView, SettingsView } from './components/SettingsView';
+
+/*
+ * Screens opened less often are loaded on first use (the main bundle has a
+ * budget: scripts/perf-check.mjs). They come from local files on the phone,
+ * so the wait is a frame or two.
+ */
+const FailedView = lazy(() => import('./components/FailedView').then(m => ({ default: m.FailedView })));
+const ScreenshotsView = lazy(() => import('./components/ScreenshotsView').then(m => ({ default: m.ScreenshotsView })));
+const QuickCleanView = lazy(() => import('./components/QuickCleanView').then(m => ({ default: m.QuickCleanView })));
+const MonthsView = lazy(() => import('./components/MonthsView').then(m => ({ default: m.MonthsView })));
+const LargeView = lazy(() => import('./components/LargeView').then(m => ({ default: m.LargeView })));
+const LiveView = lazy(() => import('./components/LiveView').then(m => ({ default: m.LiveView })));
+const UtilityView = lazy(() => import('./components/UtilityView').then(m => ({ default: m.UtilityView })));
+const CategoryView = lazy(() => import('./components/CategoryView').then(m => ({ default: m.CategoryView })));
+const TripsView = lazy(() => import('./components/TripsView').then(m => ({ default: m.TripsView })));
+const SettingsView = lazy(() => import('./components/SettingsView').then(m => ({ default: m.SettingsView })));
+const LicencesView = lazy(() => import('./components/SettingsView').then(m => ({ default: m.LicencesView })));
 
 /** `onDone`: what happens once the review was gone through to its end (a month marked as done). */
 interface Review { session: Session; finished: boolean; onDone?: () => void }
@@ -82,6 +92,9 @@ export default function App() {
   );
   const kept = useMemo(() => new Set(state.kept), [state.kept]);
   const blurry = useMemo(() => findBlurry(lib, groups).filter(p => !kept.has(p.id)), [lib, groups, kept]);
+  // Too dark and too bright (src/logic/exposure.ts): with the blurry ones on the "Missglückt" screen.
+  const exposure = useMemo(() => findExposure(lib.photos, new Set(groups.flatMap(g => g.ids)), kept), [lib, groups, kept]);
+  const exposureAll = useMemo(() => [...exposure.dark, ...exposure.bright], [exposure]);
   const similarGroups = useMemo(() => groups.filter(g => g.kind === 'similar'), [groups]);
   const dupGroups = useMemo(() => groups.filter(g => g.kind === 'duplicate'), [groups]);
   // "Now" for the screenshots' age and "On this day": taken again whenever the photos change.
@@ -93,10 +106,10 @@ export default function App() {
   const cats = useMemo(() => categories(lib.photos), [lib]);
   const aiSeen = useMemo(() => aiProgress(lib.photos), [lib]);
   const summary = useMemo(
-    () => (photos ? summarize(lib, groups, blurry, kept, old, utility) : null),
-    [photos, lib, groups, blurry, kept, old, utility],
+    () => (photos ? summarize(lib, groups, blurry, kept, old, utility, exposureAll) : null),
+    [photos, lib, groups, blurry, kept, old, utility, exposureAll],
   );
-  const parts = useMemo(() => cleanParts(groups, blurry, old, kept, lib.byId), [groups, blurry, old, kept, lib]);
+  const parts = useMemo(() => cleanParts(groups, blurry, old, kept, lib.byId, exposureAll), [groups, blurry, old, kept, lib, exposureAll]);
   const months = useMemo(() => buildMonths(lib.photos), [lib]);
   const doneMonths = useMemo(() => new Set(state.months), [state.months]);
   const today = useMemo(() => onThisDay(lib.photos, now), [lib, now]);
@@ -148,6 +161,8 @@ export default function App() {
   const [similarShown, setSimilarShown] = useState(40);
   const [groupKey, setGroupKey] = useState<string | null>(null);
   const [showBlurry, setShowBlurry] = useState(false);
+  const [failedTab, setFailedTab] = useState<FailedTab>('blurry');
+  const openFailed = (tab: FailedTab) => { setFailedTab(tab); setShowBlurry(true); };
   const [showDuplicates, setShowDuplicates] = useState(false);
   const [duplicatesShown, setDuplicatesShown] = useState(40);
   const [showScreenshots, setShowScreenshots] = useState(false);
@@ -467,7 +482,14 @@ export default function App() {
       );
     }
     if (showBlurry) {
-      return <BlurryView t={t} photos={blurry} onBack={() => setShowBlurry(false)} onReview={(list: Photo[]) => startReview(reviewBlurry(list))} />;
+      return (
+        <FailedView
+          t={t} blurry={blurry} dark={exposure.dark} bright={exposure.bright} tab={failedTab}
+          onBack={() => setShowBlurry(false)}
+          onReviewBlurry={(list: Photo[]) => startReview(reviewBlurry(list))}
+          onReviewExposure={(list, level) => startReview(reviewExposure(list, level))}
+        />
+      );
     }
     if (showScreenshots) {
       return (
@@ -483,7 +505,7 @@ export default function App() {
           t={t} parts={parts} storage={store.storage}
           onBack={() => setShowQuickClean(false)}
           onReview={ids => {
-            const reasons = new Map(reviewCleanup(groups, cleanupBlurry(blurry, kept), kept, byId, old).map(i => [i.id, i]));
+            const reasons = new Map(reviewCleanup(groups, cleanupBlurry(blurry, kept), kept, byId, old, [], exposureAll).map(i => [i.id, i]));
             startReview(ids.map(id => reasons.get(id)).filter((i): i is ReviewItem => !!i));
           }}
           onDelete={ids => deletePhotos(ids, [], () => setShowQuickClean(false))}
@@ -517,10 +539,11 @@ export default function App() {
         <CleanupView
           t={t} summary={summary} onBack={() => setShowCleanup(false)}
           onDuplicates={() => setShowDuplicates(true)}
-          onSimilar={() => setShowSimilar(true)} onBlurry={() => setShowBlurry(true)}
+          onSimilar={() => setShowSimilar(true)} onBlurry={() => openFailed('blurry')}
+          onExposure={() => openFailed(exposure.dark.length ? 'dark' : 'bright')}
           onScreenshots={() => setShowScreenshots(true)}
           onUtility={() => setShowUtility(true)}
-          onReviewAll={() => startReview(reviewCleanup(groups, cleanupBlurry(blurry, kept), kept, byId, old, utility))}
+          onReviewAll={() => startReview(reviewCleanup(groups, cleanupBlurry(blurry, kept), kept, byId, old, utility, exposureAll))}
           onQuickClean={() => setShowQuickClean(true)}
         />
       );
@@ -584,7 +607,7 @@ export default function App() {
         t={t} access={access} photoCount={photos ? photos.length : null} scan={store.scan}
         trips={trips} hasLocations={hasLocations} summary={summary}
         groupCount={similarGroups.length} duplicateCount={dupGroups.length}
-        blurryCount={blurry.length} screenshotCount={shots.length}
+        blurryCount={blurry.length + exposureAll.length} screenshotCount={shots.length}
         large={{ count: large.length, bytes: large.reduce((sum, p) => sum + p.bytes, 0) }} liveCount={isAndroid() ? 0 : live.length}
         utility={{ show: aiSeen.seen > 0, count: utility.length, bytes: utility.reduce((sum, p) => sum + p.bytes, 0) }}
         categories={cats.slice(0, 8).map(c => ({ label: c.label, count: c.photos.length, cover: c.photos[0].id }))}
@@ -598,7 +621,7 @@ export default function App() {
         onAddPhotos={addPhotos}
         onCleanup={() => setShowCleanup(true)}
         onSimilar={() => setShowSimilar(true)}
-        onBlurry={() => setShowBlurry(true)}
+        onBlurry={() => openFailed('blurry')}
         onDuplicates={() => setShowDuplicates(true)}
         onScreenshots={() => setShowScreenshots(true)}
         onMonths={() => setShowMonths(true)}
@@ -630,7 +653,7 @@ export default function App() {
         animate={{ x: 0, opacity: 1 }}
         transition={{ duration: 0.35, ease: [0.32, 0.72, 0, 1] }}
       >
-        {content()}
+        <Suspense fallback={<div className="min-h-screen" aria-busy="true" />}>{content()}</Suspense>
       </motion.div>
 
       {store.dryRun && (

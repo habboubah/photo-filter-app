@@ -111,6 +111,8 @@ export interface CleanupSummary {
   similar: { count: number; bytes: number; groups: number };
   duplicates: { count: number; bytes: number; groups: number };
   blurry: { count: number; bytes: number };
+  /** Too dark or too bright (src/logic/exposure.ts), not already counted above. */
+  exposure: { count: number; bytes: number };
   /** Screenshots older than OLD_SHOT_DAYS (src/logic/screenshots.ts). */
   screenshots: { count: number; bytes: number };
   /** Utility photos the on-device AI found (src/logic/ai.ts), not already counted above. */

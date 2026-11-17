@@ -1,17 +1,18 @@
-import { Copy, Focus, Layers, ReceiptText, Smartphone } from 'lucide-react';
+import { Copy, Focus, Layers, ReceiptText, Smartphone, SunMoon } from 'lucide-react';
 import type { CleanupSummary } from '../types';
 import { Strings, bytes, fmt, plural } from '../translations';
 import { Dock, Group, IconTile, Next, Row, Screen } from '../ui/Screen';
 import { Button } from '../ui/Button';
 
 /** What the clean-up card counts, by kind, and the ways on: a review of all of it, or the quick clean. */
-export function CleanupView({ t, summary, onBack, onDuplicates, onSimilar, onBlurry, onScreenshots, onUtility, onReviewAll, onQuickClean }: {
+export function CleanupView({ t, summary, onBack, onDuplicates, onSimilar, onBlurry, onExposure, onScreenshots, onUtility, onReviewAll, onQuickClean }: {
   t: Strings;
   summary: CleanupSummary;
   onBack: () => void;
   onDuplicates: () => void;
   onSimilar: () => void;
   onBlurry: () => void;
+  onExposure: () => void;
   onScreenshots: () => void;
   onUtility: () => void;
   onReviewAll: () => void;
@@ -43,6 +44,15 @@ export function CleanupView({ t, summary, onBack, onDuplicates, onSimilar, onBlu
           trailing={<Next />}
           onClick={onBlurry}
         />
+        {summary.exposure.count > 0 && (
+          <Row
+            label={t.cleanupExposure}
+            sub={sub(summary.exposure.count, summary.exposure.bytes)}
+            leading={<IconTile icon={SunMoon} hue="stone" />}
+            trailing={<Next />}
+            onClick={onExposure}
+          />
+        )}
         <Row
           label={t.cleanupScreenshots}
           sub={sub(summary.screenshots.count, summary.screenshots.bytes)}

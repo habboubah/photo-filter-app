@@ -9,7 +9,8 @@ import facts from './facts.json';
  * (scripts/demo-facts.mjs) — a home near Hanau and trips to Amsterdam,
  * Vienna, Paris and Lake Garda, with bursts, blurry shots, screenshots, three
  * copies "saved again from a messenger" (the duplicates), four videos (one
- * saved twice), a screen recording and Live Photos in Paris. It drives
+ * saved twice), a screen recording, Live Photos in Paris and two failed shots
+ * (one too dark, one too bright). It drives
  * `npm run dev`, the privacy check, the screenshots, the preview video and
  * the App Review rehearsal; native builds never contain it (vite.config.ts).
  *

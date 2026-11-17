@@ -193,6 +193,18 @@ Swift side has not been compiled** (no Xcode in the cloud).
       AI pass in the background while charging, the store texts and
       screenshots for the AI.
 
+## 8. The next ten features (plan of 17 November 2026, version 2.1.0)
+
+Built step by step from the plan *Bildklar — plan for the next 10 features*.
+Everything in TypeScript is tested by `npm run check`; what needs a phone:
+
+- [ ] **Decide later**: swipe up in a review on both phones (the card follows
+      the finger upwards too; the photo grid behind must not scroll).
+- [ ] **Too dark / too bright**: look at *Missglückt › Zu dunkel / Zu hell*
+      on your own library. Any night photo that shouldn't be there? Any pocket
+      shot missing? Tune `DARK_*` / `BRIGHT_*` in `src/logic/exposure.ts`
+      (provisional, like the AI thresholds) and write what you chose in docs/AI.md.
+
 ## Known gaps (to decide later)
 
 - Arabic: the structure is there (RTL rules, the translation layout), the texts are not.

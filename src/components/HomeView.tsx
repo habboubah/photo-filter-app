@@ -22,6 +22,7 @@ interface Props {
   summary: CleanupSummary | null;
   groupCount: number;
   duplicateCount: number;
+  /** Missglückt: blurry plus too dark and too bright. */
   blurryCount: number;
   screenshotCount: number;
   large: { count: number; bytes: number };
@@ -107,7 +108,7 @@ export function HomeView(p: Props) {
         <div className="grid grid-cols-2 gap-[12px]">
           <Tile hue="rose" icon={Layers} label={t.duplicatesTile} value={plural(t, 'groups', p.duplicateCount)} onClick={p.onDuplicates} />
           <Tile hue="lilac" icon={Copy} label={t.similarTile} value={plural(t, 'groups', p.groupCount)} onClick={p.onSimilar} />
-          <Tile hue="sand" icon={Focus} label={t.blurryTile} value={plural(t, 'photos', p.blurryCount)} onClick={p.onBlurry} />
+          <Tile hue="sand" icon={Focus} label={t.failedTile} value={plural(t, 'photos', p.blurryCount)} onClick={p.onBlurry} />
           <Tile hue="sky" icon={Smartphone} label={t.screenshotsTile} value={plural(t, 'photos', p.screenshotCount)} onClick={p.onScreenshots} />
           <Tile hue="stone" icon={FileVideo} label={t.largeTile} value={p.large.count ? `${plural(t, 'files', p.large.count)} · ${bytes(t, p.large.bytes)}` : plural(t, 'files', 0)} onClick={p.onLarge} />
           {p.liveCount > 0 && <Tile hue="mint" icon={Aperture} label={t.liveTile} value={plural(t, 'photos', p.liveCount)} onClick={p.onLive} />}
@@ -264,6 +265,7 @@ function CleanupCard({ t, summary, storage, freedBytes, streak, onOpen }: {
     [t.cleanupDuplicates, summary.duplicates.count, 'rose'],
     [t.cleanupSimilar, summary.similar.count, 'lilac'],
     [t.cleanupBlurry, summary.blurry.count, 'sand'],
+    [t.cleanupExposure, summary.exposure.count, 'stone'],
     [t.cleanupScreenshots, summary.screenshots.count, 'sky'],
     [t.cleanupUtility, summary.utility.count, 'mint'],
   ];

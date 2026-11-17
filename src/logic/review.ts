@@ -1,6 +1,7 @@
 import type { Confidence, Group, Photo } from '../types';
 import { utilityLabel, type UtilityLabel } from './ai';
 import { blurLevel } from './blur';
+import { exposureLevel, type ExposureLevel } from './exposure';
 
 /*
  * A review: photos shown one by one, each with the app's suggestion, swiped
@@ -13,7 +14,7 @@ import { blurLevel } from './blur';
 export type Decision = 'keep' | 'delete' | 'later';
 /** What the app suggests: `none` for the decide-later pile, where the user already hesitated. */
 export type Suggestion = 'keep' | 'delete' | 'none';
-export type Reason = 'best' | 'original' | 'similar' | 'duplicate' | 'blurry' | 'screenshot' | 'utility' | 'large' | 'trip' | 'later';
+export type Reason = 'best' | 'original' | 'similar' | 'duplicate' | 'blurry' | 'screenshot' | 'utility' | 'large' | 'trip' | 'later' | 'dark' | 'bright';
 
 export interface ReviewItem {
   id: string;
@@ -50,14 +51,20 @@ export function reviewUtility(photos: Photo[]): ReviewItem[] {
   return photos.map(p => ({ id: p.id, suggest: 'delete', reason: 'utility', label: utilityLabel(p) ?? undefined }));
 }
 
+/** Too dark or too bright photos: all suggested for deleting, each with its reason. */
+export function reviewExposure(photos: Photo[], level: ExposureLevel): ReviewItem[] {
+  return photos.map(p => ({ id: p.id, suggest: 'delete', reason: level }));
+}
+
 /** Blurry photos: all suggested for deleting. */
 export function reviewBlurry(photos: Photo[]): ReviewItem[] {
   return photos.map(p => ({ id: p.id, suggest: 'delete', reason: 'blurry', level: blurLevel(p) ?? undefined }));
 }
 
-/** Everything the clean-up card counts: the extra shots of each group, then the blurry ones, the old screenshots, then the utility photos — each photo once. */
+/** Everything the clean-up card counts: the extra shots of each group, then the blurry ones, the too dark and too bright ones, the old screenshots, then the utility photos — each photo once. */
 export function reviewCleanup(
   groups: Group[], blurry: Photo[], kept: Set<string>, byId: Map<string, Photo>, shots: Photo[] = [], utility: Photo[] = [],
+  exposure: Photo[] = [],
 ): ReviewItem[] {
   const items: ReviewItem[] = [];
   for (const g of groups) {
@@ -68,14 +75,16 @@ export function reviewCleanup(
   }
   const seen = new Set<string>();
   return [
-    ...items, ...reviewBlurry(blurry), ...reviewScreenshots(shots.filter(p => !kept.has(p.id) && !p.fav)),
+    ...items, ...reviewBlurry(blurry),
+    ...exposure.filter(p => !kept.has(p.id) && !p.fav).map(p => ({ id: p.id, suggest: 'delete' as const, reason: (exposureLevel(p) ?? 'dark') as Reason })),
+    ...reviewScreenshots(shots.filter(p => !kept.has(p.id) && !p.fav)),
     ...reviewUtility(utility.filter(p => !kept.has(p.id) && !p.fav)),
   ].filter(i => (seen.has(i.id) ? false : (seen.add(i.id), true)));
 }
 
 /**
  * A run of photos in time order — a trip, a month, this day in earlier years:
- * extra shots, blurry photos and (when `oldShot` says so) old screenshots
+ * extra shots, too dark or too bright photos, blurry photos and (when `oldShot` says so) old screenshots
  * suggested for deleting, the rest kept.
  */
 export function reviewTrip(
@@ -90,6 +99,8 @@ export function reviewTrip(
     const why = extra.get(id);
     if (!protectedPhoto && why) return { id, suggest: 'delete', reason: why };
     if (!protectedPhoto && p?.shot && oldShot?.(p)) return { id, suggest: 'delete', reason: 'screenshot' };
+    const exposure = p && !protectedPhoto ? exposureLevel(p) : null;
+    if (exposure) return { id, suggest: 'delete', reason: exposure };
     if (!protectedPhoto && (level === 'high' || level === 'medium')) return { id, suggest: 'delete', reason: 'blurry', level };
     return { id, suggest: 'keep', reason: 'trip' };
   });
