@@ -7,6 +7,7 @@ import { PRODUCT_ID, Purchases } from './native/purchases';
 import { AppState, SCHEMA_VERSION, emptyState, normalizeState, pruneLater } from './logic/state';
 import type { TripEdits } from './logic/trips';
 import { addDay } from './logic/streak';
+import type { SortKey } from './logic/sort';
 import { LocalNotifications } from '@capacitor/local-notifications';
 
 /*
@@ -132,6 +133,9 @@ export function useAppStore() {
   /** Photos no longer in the library leave the pile. */
   const pruneLaterPile = (exists: (id: string) => boolean) =>
     setState(s => { const later = pruneLater(s.later, exists); return later === s.later ? s : { ...s, later }; });
+  /** A list screen's order (src/logic/sort.ts). */
+  const setSort = (screen: string, key: SortKey) =>
+    setState(s => (s.sort[screen] === key ? s : { ...s, sort: { ...s.sort, [screen]: key } }));
   /** Photos deleted without the unlock: counted against the free ones. */
   const countFree = (n: number) => {
     if (n > 0) setState(s => ({ ...s, freeUsed: s.freeUsed + n }));
@@ -340,7 +344,7 @@ export function useAppStore() {
   return {
     language, setLanguage, themeMode, setThemeMode,
     debug, dryRunAvailable, dryRun, setDryRun,
-    state, stateReady, storageError, updateTrips, recordAlbum, setBest, addKept, updateLater, pruneLaterPile, markMonthDone, addFreed, markDay, countFree, resetDecisions, restoreState,
+    state, stateReady, storageError, updateTrips, recordAlbum, setBest, addKept, updateLater, pruneLaterPile, setSort, markMonthDone, addFreed, markDay, countFree, resetDecisions, restoreState,
     reminder, setReminder,
     owned: isOwned, setOwned,
     access, refreshAccess, accessGranted,

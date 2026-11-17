@@ -4,6 +4,8 @@ import { LIVE_VIDEO_BYTES } from '../logic/large';
 import { Dock, Empty, Screen } from '../ui/Screen';
 import { Button } from '../ui/Button';
 import { PhotoGrid } from '../ui/Photo';
+import { sortPhotos, type SortKey } from '../logic/sort';
+import { SortButton } from './SortButton';
 
 /**
  * iPhone: the Live Photos. Each carries a short video next to the picture;
@@ -11,16 +13,20 @@ import { PhotoGrid } from '../ui/Photo';
  * favourite flag and albums, and the Live Photo goes to Recently Deleted
  * through the system's dialog. The saving is an estimate (≈ 3 MB each).
  */
-export function LiveView({ t, photos, onBack, onConvert }: {
+export function LiveView({ t, photos: all, sort, onSort, onBack, onConvert }: {
   t: Strings;
   photos: Photo[];
+  sort: SortKey;
+  onSort: (key: SortKey) => void;
   onBack: () => void;
   onConvert: (photos: Photo[]) => void;
 }) {
+  const photos = sortPhotos(all, sort);
   const byId = new Map(photos.map(p => [p.id, p]));
   const saving = photos.length * LIVE_VIDEO_BYTES;
   return (
-    <Screen title={t.liveTitle} subtitle={`${plural(t, 'photos', photos.length)} · ≈ ${bytes(t, saving)}`} onBack={onBack} backLabel={t.back} docked={photos.length > 0}>
+    <Screen title={t.liveTitle} subtitle={`${plural(t, 'photos', photos.length)} · ≈ ${bytes(t, saving)}`} onBack={onBack} backLabel={t.back} docked={photos.length > 0}
+      actions={<SortButton t={t} value={sort} onChange={onSort} />}>
       <p className="text-label text-fg-mute px-1 -mt-2 wrap-prose">{t.liveIntro}</p>
       {photos.length === 0 ? <Empty title={t.noLive} body={t.noLiveBody} /> : (
         <PhotoGrid

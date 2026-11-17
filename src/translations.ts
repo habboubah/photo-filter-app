@@ -247,6 +247,10 @@ const de = {
   monthDone: 'Durchgesehen',
   monthsDone: '{done} von {total} durchgesehen',
   showMore: 'Mehr zeigen',
+  sortLabel: 'Sortieren',
+  sort_newest: 'Neueste zuerst',
+  sort_oldest: 'Älteste zuerst',
+  sort_largest: 'Größte zuerst',
 
   // Review
   reviewTitle: 'Durchgehen',
@@ -607,6 +611,10 @@ const en: Strings = {
   monthDone: 'Done',
   monthsDone: '{done} of {total} done',
   showMore: 'Show more',
+  sortLabel: 'Sort',
+  sort_newest: 'Newest first',
+  sort_oldest: 'Oldest first',
+  sort_largest: 'Largest first',
 
   reviewTitle: 'Go through',
   reviewProgress: '{i} of {n}',

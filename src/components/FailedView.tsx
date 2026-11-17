@@ -7,6 +7,8 @@ import { Dock, Empty, Screen } from '../ui/Screen';
 import { Button } from '../ui/Button';
 import { Segmented } from '../ui/Controls';
 import { PhotoGrid } from '../ui/Photo';
+import { sortPhotos, type SortKey } from '../logic/sort';
+import { SortButton } from './SortButton';
 
 export type FailedTab = 'blurry' | ExposureLevel;
 
@@ -14,20 +16,22 @@ export type FailedTab = 'blurry' | ExposureLevel;
  * Missglückt [Failed shots]: the blurry photos (most certain first, each with
  * how sure the app is), the too dark and the too bright ones — one tab each.
  */
-export function FailedView({ t, blurry, dark, bright, tab: initialTab = 'blurry', onBack, onReviewBlurry, onReviewExposure }: {
+export function FailedView({ t, blurry, dark, bright, tab: initialTab = 'blurry', sort, onSort, onBack, onReviewBlurry, onReviewExposure }: {
   t: Strings;
   blurry: Photo[];
   dark: Photo[];
   bright: Photo[];
   tab?: FailedTab;
+  sort: SortKey;
+  onSort: (key: SortKey) => void;
   onBack: () => void;
   onReviewBlurry: (photos: Photo[]) => void;
   onReviewExposure: (photos: Photo[], level: ExposureLevel) => void;
 }) {
   const [tab, setTab] = useState<FailedTab>(initialTab);
   const [filter, setFilter] = useState<'sure' | 'all'>('sure');
-  const list = tab === 'dark' ? dark : tab === 'bright' ? bright
-    : filter === 'all' ? blurry : blurry.filter(p => { const l = blurLevel(p); return l === 'high' || l === 'medium'; });
+  const list = sortPhotos(tab === 'dark' ? dark : tab === 'bright' ? bright
+    : filter === 'all' ? blurry : blurry.filter(p => { const l = blurLevel(p); return l === 'high' || l === 'medium'; }), sort);
   const byId = new Map(list.map(p => [p.id, p]));
   const levelText: Record<Confidence, string> = { high: t.levelHigh, medium: t.levelMedium, low: t.levelLow };
   const total = list.reduce((s, p) => s + p.bytes, 0);
@@ -39,7 +43,8 @@ export function FailedView({ t, blurry, dark, bright, tab: initialTab = 'blurry'
   const review = () => (tab === 'blurry' ? onReviewBlurry(list) : onReviewExposure(list, tab));
 
   return (
-    <Screen title={t.failedTitle} subtitle={`${plural(t, 'photos', list.length)} · ${bytes(t, total)}`} onBack={onBack} backLabel={t.back} docked={list.length > 0}>
+    <Screen title={t.failedTitle} subtitle={`${plural(t, 'photos', list.length)} · ${bytes(t, total)}`} onBack={onBack} backLabel={t.back} docked={list.length > 0}
+      actions={<SortButton t={t} value={sort} onChange={onSort} />}>
       <Segmented
         label={t.failedTitle} value={tab} onChange={setTab}
         options={[

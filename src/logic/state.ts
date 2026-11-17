@@ -1,5 +1,6 @@
 import type { Album } from '../types';
 import { NO_EDITS, TripEdits } from './trips';
+import { isSortKey, type SortKey } from './sort';
 
 /*
  * The user's own decisions — everything the app cannot work out again from
@@ -33,6 +34,8 @@ export interface AppState {
   freeUsed: number;
   /** The decide-later pile: photos swiped up in a review, in the order they were put off (src/logic/review.ts). */
   later: string[];
+  /** The order the user chose for each list screen (src/logic/sort.ts SORT_DEFAULT keys). */
+  sort: Record<string, SortKey>;
 }
 
 export const emptyState = (): AppState => ({
@@ -46,6 +49,7 @@ export const emptyState = (): AppState => ({
   days: [],
   freeUsed: 0,
   later: [],
+  sort: {},
 });
 
 const isObj = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
@@ -93,6 +97,7 @@ export function normalizeState(raw: unknown): AppState {
   s.best = stringMap(raw.best);
   s.kept = [...new Set(strings(raw.kept))];
   s.later = [...new Set(strings(raw.later))];
+  if (isObj(raw.sort)) for (const [k, v] of Object.entries(raw.sort)) if (isSortKey(v)) s.sort[k] = v;
   s.owned = raw.owned === true;
   s.months = [...new Set(strings(raw.months).filter(k => /^\d{4}-\d{2}$/.test(k)))];
   if (isObj(raw.freed)) {

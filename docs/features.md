@@ -219,3 +219,8 @@ Every feature, as the user sees it (German labels, English in brackets).
 - Dark mode, Larger Text (iPhone Dynamic Type; Android's font scale), VoiceOver
   / TalkBack labels on every photo and button, reduced motion.
 - Android words it Android's way (folders, the Trash, Google Play).
+- **Sorting lists**: Screenshots, Large files, Live Photos, Failed shots,
+  Unimportant photos and a category have a sort menu at the top right —
+  *Neueste zuerst · Älteste zuerst · Größte zuerst* [Newest · Oldest · Largest
+  first]. The choice is remembered per screen; a review started from the list
+  follows its order. Large files start with the largest, the rest with the newest.

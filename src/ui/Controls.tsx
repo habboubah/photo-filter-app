@@ -1,4 +1,5 @@
 import React from 'react';
+import { ArrowDownUp } from 'lucide-react';
 import { tapLight } from './haptics';
 
 /** A progress track; without a total it shows a soft sweep instead. */
@@ -69,4 +70,32 @@ export function Badge({ tone = 'accent', children, className = '' }: { tone?: 'a
     veil: 'bg-veil text-on-color',
   };
   return <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-micro font-extrabold ${tones[tone]} ${className}`}>{children}</span>;
+}
+
+/**
+ * The sort menu at the top right of a list: a round bar button whose tap
+ * opens the system's own picker (a native select lies invisibly over it), so
+ * VoiceOver reads one pop-up button with the current order.
+ */
+export function SortMenu<V extends string>({ label, value, options, onChange }: {
+  label: string;
+  value: V;
+  options: { value: V; label: string }[];
+  onChange: (value: V) => void;
+}) {
+  const current = options.find(o => o.value === value)?.label ?? '';
+  return (
+    <label className="relative h-tap w-tap shrink-0 inline-flex items-center justify-center rounded-full bg-surface text-fg press focus-within:ring-focus">
+      <ArrowDownUp className="w-[20px] h-[20px]" strokeWidth={2.1} aria-hidden="true" />
+      {/* 17px: WebKit zooms the page into a focused control under 16px. */}
+      <select
+        aria-label={`${label}: ${current}`}
+        value={value}
+        onChange={e => { tapLight(); onChange(e.target.value as V); }}
+        className="absolute inset-0 w-full h-full opacity-0 appearance-none cursor-pointer text-body"
+      >
+        {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+      </select>
+    </label>
+  );
 }
