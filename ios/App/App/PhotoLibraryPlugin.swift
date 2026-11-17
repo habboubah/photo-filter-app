@@ -60,6 +60,8 @@ public class PhotoLibraryPlugin: CAPPlugin, CAPBridgedPlugin, PHPhotoLibraryChan
         CAPPluginMethod(name: "scoreFaces", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "thumbnail", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "createAlbum", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "listAlbums", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "albumMembers", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "trash", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "getState", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "setState", returnType: CAPPluginReturnPromise),
@@ -575,6 +577,37 @@ public class PhotoLibraryPlugin: CAPPlugin, CAPBridgedPlugin, PHPhotoLibraryChan
             } else {
                 call.reject(error?.localizedDescription ?? "Could not create the album")
             }
+        }
+    }
+
+    /// The user's own albums (Settings › Geschützt): regular albums only — no smart albums, no shared ones.
+    @objc func listAlbums(_ call: CAPPluginCall) {
+        io.async { [weak self] in
+            guard let self else { return }
+            var out: [[String: Any]] = []
+            let albums = PHAssetCollection.fetchAssetCollections(with: .album, subtype: .albumRegular, options: nil)
+            albums.enumerateObjects { album, _, _ in
+                let count = PHAsset.fetchAssets(in: album, options: self.fetchOptions()).count
+                out.append(["id": album.localIdentifier, "title": album.localizedTitle ?? "", "count": count])
+            }
+            call.resolve(["albums": out])
+        }
+    }
+
+    /// The photos in these albums, each once (asked once per load, for the protected albums only).
+    @objc func albumMembers(_ call: CAPPluginCall) {
+        let list = ids(call)
+        io.async { [weak self] in
+            guard let self else { return }
+            var seen = Set<String>()
+            var out: [String] = []
+            let albums = PHAssetCollection.fetchAssetCollections(withLocalIdentifiers: list, options: nil)
+            albums.enumerateObjects { album, _, _ in
+                PHAsset.fetchAssets(in: album, options: self.fetchOptions()).enumerateObjects { asset, _, _ in
+                    if seen.insert(asset.localIdentifier).inserted { out.append(asset.localIdentifier) }
+                }
+            }
+            call.resolve(["ids": out])
         }
     }
 

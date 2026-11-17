@@ -131,6 +131,25 @@ export class DemoLibrary extends WebPlugin implements PhotoLibraryPlugin {
     return { done: ids.length, cancelled: false, dryRun };
   }
 
+  /** Two made-up albums: the family photos at home and the Lake Garda summer. */
+  private albums(): { id: string; title: string; members: string[] }[] {
+    const all = this.photos().filter(p => !p.shot && !p.video);
+    const near = (p: Photo, lat: number, lon: number) => p.lat !== undefined && Math.abs(p.lat - lat) < 0.1 && Math.abs((p.lon ?? 0) - lon) < 0.1;
+    return [
+      { id: 'demo-album-family', title: 'Familie', members: all.filter(p => near(p, 50.132, 8.917) && p.expo !== undefined && (p.expo ?? 0) > 0.1 && (p.expo ?? 1) < 0.9).slice(0, 12).map(p => p.id) },
+      { id: 'demo-album-garda', title: 'Gardasee 2026', members: all.filter(p => near(p, 45.886, 10.842)).map(p => p.id) },
+    ];
+  }
+
+  async listAlbums() {
+    return { albums: this.albums().map(a => ({ id: a.id, title: a.title, count: a.members.length })) };
+  }
+
+  async albumMembers({ ids }: { ids: string[] }) {
+    const wanted = new Set(ids);
+    return { ids: [...new Set(this.albums().filter(a => wanted.has(a.id)).flatMap(a => a.members))] };
+  }
+
   async trash({ ids, dryRun }: { ids: string[]; dryRun: boolean }) {
     await wait(400);
     if (!dryRun) {

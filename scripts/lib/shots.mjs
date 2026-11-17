@@ -248,6 +248,16 @@ export const SCREENS = [
       await pause(page, 500);
     },
   },
+  // Settings › Geschützt: one album switched on (the demo's family album).
+  {
+    name: '33-protected', run: async (page, w) => {
+      await openSettings(page, w);
+      await page.click(`main button:has-text("${w.t.protectedRow}")`);
+      await pause(page, 900);
+      await page.locator('main [role="switch"]').first().check({ force: true });
+      await pause(page, 400);
+    },
+  },
   // The decide-later pile: two photos swiped up in a review, then the pile gone through from home.
   {
     name: '31-later', run: async (page, w) => {

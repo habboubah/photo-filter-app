@@ -2,6 +2,7 @@ import type { Confidence, Group, Photo } from '../types';
 import { utilityLabel, type UtilityLabel } from './ai';
 import { blurLevel } from './blur';
 import { exposureLevel, type ExposureLevel } from './exposure';
+import { isProtected } from './protect';
 
 /*
  * A review: photos shown one by one, each with the app's suggestion, swiped
@@ -31,7 +32,7 @@ const extraReason = (g: Group): Reason => (g.kind === 'duplicate' ? 'duplicate' 
 export function reviewGroup(group: Group, kept: Set<string>, byId: Map<string, Photo>): ReviewItem[] {
   return group.ids.map(id => ({
     id,
-    suggest: id === group.best || kept.has(id) || byId.get(id)?.fav ? 'keep' : 'delete',
+    suggest: id === group.best || isProtected(byId.get(id) ?? { id }, kept) ? 'keep' : 'delete',
     reason: id === group.best ? (group.kind === 'duplicate' ? 'original' : 'best') : extraReason(group),
   }));
 }
@@ -69,16 +70,16 @@ export function reviewCleanup(
   const items: ReviewItem[] = [];
   for (const g of groups) {
     for (const id of g.ids) {
-      if (id === g.best || kept.has(id) || byId.get(id)?.fav) continue;
+      if (id === g.best || isProtected(byId.get(id) ?? { id }, kept)) continue;
       items.push({ id, suggest: 'delete', reason: extraReason(g) });
     }
   }
   const seen = new Set<string>();
   return [
-    ...items, ...reviewBlurry(blurry),
-    ...exposure.filter(p => !kept.has(p.id) && !p.fav).map(p => ({ id: p.id, suggest: 'delete' as const, reason: (exposureLevel(p) ?? 'dark') as Reason })),
-    ...reviewScreenshots(shots.filter(p => !kept.has(p.id) && !p.fav)),
-    ...reviewUtility(utility.filter(p => !kept.has(p.id) && !p.fav)),
+    ...items, ...reviewBlurry(blurry.filter(p => !isProtected(p, kept))),
+    ...exposure.filter(p => !isProtected(p, kept)).map(p => ({ id: p.id, suggest: 'delete' as const, reason: (exposureLevel(p) ?? 'dark') as Reason })),
+    ...reviewScreenshots(shots.filter(p => !isProtected(p, kept))),
+    ...reviewUtility(utility.filter(p => !isProtected(p, kept))),
   ].filter(i => (seen.has(i.id) ? false : (seen.add(i.id), true)));
 }
 
@@ -95,7 +96,7 @@ export function reviewTrip(
   return ids.map(id => {
     const p = byId.get(id);
     const level = p ? blurLevel(p) : null;
-    const protectedPhoto = kept.has(id) || p?.fav;
+    const protectedPhoto = isProtected(p ?? { id }, kept);
     const why = extra.get(id);
     if (!protectedPhoto && why) return { id, suggest: 'delete', reason: why };
     if (!protectedPhoto && p?.shot && oldShot?.(p)) return { id, suggest: 'delete', reason: 'screenshot' };

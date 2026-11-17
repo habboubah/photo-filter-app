@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { animate, motion, useMotionValue, useReducedMotion, useTransform } from 'motion/react';
-import { Check, Clock, Play, Trash2, Undo2, X } from 'lucide-react';
+import { Check, Clock, Play, Shield, Trash2, Undo2, X } from 'lucide-react';
 import type { Confidence, Photo } from '../types';
 import { Strings, bytes, fmt, num, plural } from '../translations';
 import { Decision, ReviewItem, Session, laterIds, toDelete } from '../logic/review';
@@ -19,13 +19,15 @@ const THRESHOLD = 110;
  * the summary at the end offers "Delete N photos", which goes through the
  * system's own dialog.
  */
-export function ReviewView({ t, session, finished, byId, debug, onDecide, onUndo, onFinish, onDelete, onClose }: {
+export function ReviewView({ t, session, finished, byId, debug, onDecide, onProtect, onUndo, onFinish, onDelete, onClose }: {
   t: Strings;
   session: Session;
   finished: boolean;
   byId: Map<string, Photo>;
   debug: boolean;
   onDecide: (d: Decision) => void;
+  /** The shield: the photo is kept and protected for good (src/logic/protect.ts). */
+  onProtect: (id: string) => void;
   onUndo: () => void;
   onFinish: () => void;
   onDelete: (ids: string[]) => void;
@@ -69,7 +71,7 @@ export function ReviewView({ t, session, finished, byId, debug, onDecide, onUndo
                 <div className="h-full bg-accent-fill rounded-full transition-[width] duration-300" style={{ width: `${(session.index / session.items.length) * 100}%` }} />
               </div>
             </div>
-            <Card key={item.id} t={t} item={item} photo={byId.get(item.id)} debug={debug} onDecide={onDecide} />
+            <Card key={item.id} t={t} item={item} photo={byId.get(item.id)} debug={debug} onDecide={onDecide} onProtect={() => onProtect(item.id)} />
             <div className="px-6 pb-safe-8 pt-3">
               <div className="flex justify-center items-end gap-6">
                 <RoundButton label={t.delete} tone="neg" icon={Trash2} onClick={() => onDecide('delete')} />
@@ -87,8 +89,8 @@ export function ReviewView({ t, session, finished, byId, debug, onDecide, onUndo
   );
 }
 
-function Card({ t, item, photo, debug, onDecide }: {
-  t: Strings; item: ReviewItem; photo?: Photo; debug: boolean; onDecide: (d: Decision) => void;
+function Card({ t, item, photo, debug, onDecide, onProtect }: {
+  t: Strings; item: ReviewItem; photo?: Photo; debug: boolean; onDecide: (d: Decision) => void; onProtect: () => void;
 }) {
   const reduce = useReducedMotion();
   const x = useMotionValue(0);
@@ -127,7 +129,13 @@ function Card({ t, item, photo, debug, onDecide }: {
             {chip}
           </span>
         )}
-        {reason && <span className="text-caption text-fg-mute truncate">{reason}</span>}
+        {reason && <span className="text-caption text-fg-mute truncate flex-1 min-w-0">{reason}</span>}
+        <button
+          type="button" onClick={() => { tapLight(); onProtect(); }}
+          className="ms-auto shrink-0 min-h-[44px] -my-2 inline-flex items-center gap-1.5 px-3 rounded-full text-caption font-bold text-accent focus-visible:ring-focus press"
+        >
+          <Shield className="w-4 h-4" strokeWidth={2.4} aria-hidden="true" />{t.protect}
+        </button>
       </div>
       <motion.div
         drag

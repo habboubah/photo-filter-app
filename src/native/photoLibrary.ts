@@ -34,6 +34,16 @@ export interface ScanState {
   lastScanAt: number;
 }
 
+/** An album the user made (iPhone) or a folder that holds photos (Android), for Settings › Geschützt. */
+export interface AlbumInfo {
+  /** iPhone: PHAssetCollection.localIdentifier; Android: the folder's RELATIVE_PATH ("DCIM/Camera/"). */
+  id: string;
+  /** The album's name; on Android the folder's last part ("Camera"). */
+  title: string;
+  /** Photos and videos in it. */
+  count: number;
+}
+
 export interface PhotoLibraryPlugin {
   getAccess(): Promise<{ access: Access }>;
   /** Shows the system's permission dialog (only when not asked yet). */
@@ -61,6 +71,10 @@ export interface PhotoLibraryPlugin {
    * With `dryRun` nothing is written; the answer says what would have happened.
    */
   createAlbum(options: { title: string; ids: string[]; dryRun: boolean }): Promise<{ done: number; cancelled: boolean; dryRun: boolean }>;
+  /** iPhone: the user's own albums (not smart albums, not shared ones). Android: every folder that holds photos or videos. */
+  listAlbums(): Promise<{ albums: AlbumInfo[] }>;
+  /** The photo ids in these albums / folders (asked once per load, for the protected albums only). */
+  albumMembers(options: { ids: string[] }): Promise<{ ids: string[] }>;
   /** Moves photos to Recently Deleted (iPhone) / the Trash (Android) after the system's own dialog. Never deletes for good. */
   trash(options: { ids: string[]; dryRun: boolean }): Promise<{ trashed: string[]; cancelled: boolean; dryRun: boolean }>;
 

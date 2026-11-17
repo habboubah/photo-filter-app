@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BadgeCheck, FileText, FlaskConical, Globe, HardDrive, Images, Mail, Moon, RefreshCw, RotateCcw, ShieldCheck, Sparkles, Star, Unlock } from 'lucide-react';
+import { BadgeCheck, FileText, FlaskConical, Globe, HardDrive, Images, Mail, Moon, RefreshCw, RotateCcw, Shield, ShieldCheck, Sparkles, Star, Unlock } from 'lucide-react';
 import type { Storage, ThemeMode } from '../types';
 import type { Access } from '../native/photoLibrary';
 import { Language, Strings, bytes, fmt, languages, plural, stringsFor } from '../translations';
@@ -22,6 +22,9 @@ interface Props {
   storage: Storage | null;
   freed: { count: number; bytes: number };
   reminder: boolean;
+  /** How much is protected (src/logic/protect.ts), for the row's line. */
+  protection: { albums: number; trips: number; photos: number };
+  onProtected: () => void;
   onReminder: (on: boolean) => void;
   onBack: () => void;
   onLanguage: (l: Language) => void;
@@ -58,6 +61,11 @@ export function SettingsView(p: Props) {
         <Row label={t.accessRow} leading={<IconTile icon={Images} hue="sky" />} trailing={<span className="text-label text-fg-mute">{accessLabel}</span>} />
         {p.access === 'limited' && <Row label={t.addPhotos} leading={<IconTile icon={Images} hue="mint" />} trailing={<Next />} onClick={p.onAddPhotos} />}
         <Row label={t.manageAccess} leading={<IconTile icon={ShieldCheck} hue="stone" />} trailing={<Away />} onClick={p.onOpenSettings} />
+        <Row
+          label={t.protectedRow}
+          sub={fmt(t.protectedRowSub, { albums: plural(t, 'albums', p.protection.albums), trips: plural(t, 'trips', p.protection.trips), photos: plural(t, 'photos', p.protection.photos) })}
+          leading={<IconTile icon={Shield} hue="mint" />} trailing={<Next />} onClick={p.onProtected}
+        />
         {(p.access === 'full' || p.access === 'limited') && <Row label={t.rescan} leading={<IconTile icon={RefreshCw} hue="lilac" />} onClick={p.onRescan} />}
         {p.storage && (
           <Row

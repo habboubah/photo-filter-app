@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Check, EyeOff, Eye, FolderPlus, ImagePlus, Merge, MoreHorizontal, Pencil, Scissors, Undo2 } from 'lucide-react';
+import { Check, EyeOff, Eye, FolderPlus, ImagePlus, Merge, MoreHorizontal, Pencil, Scissors, Shield, ShieldOff, Undo2 } from 'lucide-react';
 import type { Photo, Trip } from '../types';
 import { Strings, bytes, fmt, plural } from '../translations';
 import { tripDays } from '../logic/trips';
@@ -26,6 +26,9 @@ interface Props {
   onUndoSplit: () => void;
   onUndoMerge: () => void;
   onIgnore: (ignored: boolean) => void;
+  /** Marked "Nie vorschlagen": none of its photos is ever suggested for deleting (src/logic/protect.ts). */
+  isProtected: boolean;
+  onProtect: (on: boolean) => void;
 }
 
 type SheetKind = null | 'actions' | 'rename' | 'split' | 'merge';
@@ -91,6 +94,11 @@ export function TripView(p: Props) {
           </Group>
           <Group>
             {trip.album && <Row label={t.createAgain} leading={<IconTile icon={AlbumIcon} hue="mint" />} onClick={() => { close(); p.onCreateAlbum(); }} />}
+            <Row
+              label={p.isProtected ? t.neverSuggestOn : t.neverSuggest}
+              leading={<IconTile icon={p.isProtected ? ShieldOff : Shield} hue="mint" />}
+              onClick={() => { p.onProtect(!p.isProtected); close(); }}
+            />
             <Row
               label={trip.ignored ? t.unignore : t.ignore}
               leading={<IconTile icon={trip.ignored ? Eye : EyeOff} hue="rose" />}

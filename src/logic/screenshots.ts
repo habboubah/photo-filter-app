@@ -1,4 +1,5 @@
 import type { Photo } from '../types';
+import { isProtected } from './protect';
 
 /*
  * Screenshots (iPhone: PHAssetMediaSubtype.photoScreenshot; Android: a file in
@@ -20,7 +21,7 @@ export const isCapture = (p: Photo) => !!(p.shot || p.rec);
 
 /** Every screenshot and screen recording that could go, newest first. */
 export function findScreenshots(photos: Photo[], kept: Set<string>): Photo[] {
-  return photos.filter(p => isCapture(p) && !p.fav && !kept.has(p.id)).sort((a, b) => b.t - a.t);
+  return photos.filter(p => isCapture(p) && !isProtected(p, kept)).sort((a, b) => b.t - a.t);
 }
 
 /** The ones the clean-up card counts. */

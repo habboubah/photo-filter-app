@@ -8,6 +8,7 @@ import { AppState, SCHEMA_VERSION, emptyState, normalizeState, pruneLater } from
 import type { TripEdits } from './logic/trips';
 import { addDay } from './logic/streak';
 import type { SortKey } from './logic/sort';
+import { toggled } from './logic/protect';
 import { LocalNotifications } from '@capacitor/local-notifications';
 
 /*
@@ -133,6 +134,22 @@ export function useAppStore() {
   /** Photos no longer in the library leave the pile. */
   const pruneLaterPile = (exists: (id: string) => boolean) =>
     setState(s => { const later = pruneLater(s.later, exists); return later === s.later ? s : { ...s, later }; });
+  /** Photos protected by hand (the shield in the review), or no longer. Protected ones count as kept; lifting it lifts both. */
+  const protectPhotos = (ids: string[], on: boolean) => setState(s => {
+    const list = toggled(s.protect.ids, ids, on);
+    const kept = toggled(s.kept, ids, on);
+    return list === s.protect.ids && kept === s.kept ? s : { ...s, kept, protect: { ...s.protect, ids: list } };
+  });
+  /** A trip marked "Nie vorschlagen" [Never suggest], or no longer. */
+  const protectTrip = (key: string, on: boolean) => setState(s => {
+    const trips = toggled(s.protect.trips, [key], on);
+    return trips === s.protect.trips ? s : { ...s, protect: { ...s.protect, trips } };
+  });
+  /** An album (iPhone) / folder (Android) whose photos are never suggested, or no longer. */
+  const protectAlbum = (id: string, on: boolean) => setState(s => {
+    const albums = toggled(s.protect.albums, [id], on);
+    return albums === s.protect.albums ? s : { ...s, protect: { ...s.protect, albums } };
+  });
   /** A list screen's order (src/logic/sort.ts). */
   const setSort = (screen: string, key: SortKey) =>
     setState(s => (s.sort[screen] === key ? s : { ...s, sort: { ...s.sort, [screen]: key } }));
@@ -275,6 +292,19 @@ export function useAppStore() {
     setPhotos(p => (p ? p.filter(x => !gone.has(x.id)) : p));
   };
 
+  // The photos of the protected albums: asked once per load of the facts, and when the albums chosen change.
+  const [albumMembers, setAlbumMembers] = useState<Set<string>>(() => new Set());
+  const protectedAlbums = state.protect.albums.join('\n');
+  useEffect(() => {
+    const ids = protectedAlbums ? protectedAlbums.split('\n') : [];
+    if (!ids.length || !photos) { setAlbumMembers(m => (m.size ? new Set() : m)); return; }
+    let alive = true;
+    PhotoLibrary.albumMembers({ ids })
+      .then(r => { if (alive) setAlbumMembers(new Set(r.ids)); })
+      .catch(() => { /* an older native build, or no access: the albums protect nothing until it answers */ });
+    return () => { alive = false; };
+  }, [protectedAlbums, photos]);
+
   /** iPhone: face scores for a similar group, worked out on demand and laid over the photos for ranking. */
   const scoreFaces = useCallback(async (ids: string[]) => {
     const missing = ids.filter(id => !faces.has(id));
@@ -344,7 +374,7 @@ export function useAppStore() {
   return {
     language, setLanguage, themeMode, setThemeMode,
     debug, dryRunAvailable, dryRun, setDryRun,
-    state, stateReady, storageError, updateTrips, recordAlbum, setBest, addKept, updateLater, pruneLaterPile, setSort, markMonthDone, addFreed, markDay, countFree, resetDecisions, restoreState,
+    state, stateReady, storageError, updateTrips, recordAlbum, setBest, addKept, updateLater, pruneLaterPile, setSort, protectPhotos, protectTrip, protectAlbum, albumMembers, markMonthDone, addFreed, markDay, countFree, resetDecisions, restoreState,
     reminder, setReminder,
     owned: isOwned, setOwned,
     access, refreshAccess, accessGranted,

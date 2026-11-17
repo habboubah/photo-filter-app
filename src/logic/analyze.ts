@@ -2,6 +2,7 @@ import type { CleanupSummary, Confidence, Group, Photo, Trip } from '../types';
 import { rankDuplicates, rankGroup } from './best';
 import { blurLevel, sortBlurry } from './blur';
 import { exposureLevel } from './exposure';
+import { isProtected } from './protect';
 import { CityIndex } from './geo';
 import { findHomes, Homes } from './home';
 import { tripDates, tripPlace } from './naming';
@@ -57,13 +58,17 @@ export function buildTrips(lib: Library, raw: RawTrip[], state: AppState, index:
   });
 }
 
-/** `faces`: face scores the iPhone worked out after the scan (PhotoLibrary.scoreFaces), laid over the photos for ranking. */
-export function buildGroups(lib: Library, raw: RawGroup[], state: AppState, faces?: Map<string, Partial<Photo>>): Group[] {
+/**
+ * `faces`: face scores the iPhone worked out after the scan (PhotoLibrary.scoreFaces), laid over the photos for ranking.
+ * `guard`: the protected photos (src/logic/protect.ts) — they rank like a favourite, so one can become the best shot.
+ */
+export function buildGroups(lib: Library, raw: RawGroup[], state: AppState, faces?: Map<string, Partial<Photo>>, guard?: Set<string>): Group[] {
   return raw.map(g => {
     const photos = g.ids.map(id => {
       const p = lib.byId.get(id);
       const f = faces?.get(id);
-      return p && f ? { ...p, ...f } : p;
+      const ranked = p && f ? { ...p, ...f } : p;
+      return ranked && !ranked.fav && guard?.has(id) ? { ...ranked, fav: true } : ranked;
     }).filter((p): p is Photo => !!p);
     const suggested = (g.kind === 'duplicate' ? rankDuplicates(photos) : rankGroup(photos))[0]?.id ?? g.ids[0];
     const picked = state.best[g.key];
@@ -105,7 +110,7 @@ export function summarize(
     let any = false;
     for (const id of g.ids) {
       const p = lib.byId.get(id);
-      if (!p || id === g.best || p.fav || kept.has(id)) continue;
+      if (!p || id === g.best || isProtected(p, kept)) continue;
       into.count++; into.bytes += p.bytes; any = true;
       counted.add(id);
     }
@@ -114,24 +119,24 @@ export function summarize(
   let bc = 0; let bb = 0;
   for (const p of blurry) {
     const level = blurLevel(p);
-    if (kept.has(p.id) || (level !== 'high' && level !== 'medium')) continue;
+    if (isProtected(p, kept) || (level !== 'high' && level !== 'medium')) continue;
     bc++; bb += p.bytes;
     counted.add(p.id);
   }
   let ec = 0; let eb = 0;
   for (const p of exposure) {
-    if (kept.has(p.id) || p.fav || counted.has(p.id)) continue;
+    if (isProtected(p, kept) || counted.has(p.id)) continue;
     ec++; eb += p.bytes;
     counted.add(p.id);
   }
   let sc = 0; let sb = 0;
   for (const p of shots) {
-    if (kept.has(p.id) || p.fav) continue;
+    if (isProtected(p, kept)) continue;
     sc++; sb += p.bytes;
   }
   let uc = 0; let ub = 0;
   for (const p of utility) {
-    if (kept.has(p.id) || p.fav || counted.has(p.id)) continue;
+    if (isProtected(p, kept) || counted.has(p.id)) continue;
     uc++; ub += p.bytes;
   }
   const count = tally.similar.count + tally.duplicate.count + bc + ec + sc + uc;
