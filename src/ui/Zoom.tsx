@@ -77,7 +77,7 @@ export function ZoomView({ id, alt, labels, onClose, onLike }: {
   return createPortal(
     <motion.div
       ref={panel} role="dialog" aria-modal="true" aria-label={alt}
-      className="fixed inset-0 z-[58] flex flex-col bg-bg"
+      className="fixed inset-0 z-[58] flex flex-col bg-bg [&>*]:w-full [&>*]:max-w-column [&>*]:mx-auto"
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}
     >
       <div className="relative z-10 safe-top px-[12px] min-h-[54px] pt-1 flex items-center justify-between gap-2">

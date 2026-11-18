@@ -121,7 +121,7 @@ export function CompareView({ a, b, series, ratio, labels, onPickB, onKeep, onCl
   return createPortal(
     <motion.div
       ref={panel} role="dialog" aria-modal="true" aria-label={labels.title}
-      className="fixed inset-0 z-[58] flex flex-col bg-bg"
+      className="fixed inset-0 z-[58] flex flex-col bg-bg [&>*]:w-full [&>*]:max-w-column [&>*]:mx-auto"
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}
     >
       <div className="relative z-10 safe-top px-[12px] min-h-[54px] pt-1 grid grid-cols-[48px_minmax(0,1fr)_48px] items-center gap-2">

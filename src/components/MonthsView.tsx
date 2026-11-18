@@ -47,7 +47,7 @@ export function MonthsView({ t, months, done, at, byId, shown, onMore, onBack, o
         </Ring>
       }
     >
-      <div data-tip="tip.months" className="grid grid-cols-2 @lg/page:grid-cols-3 @3xl/page:grid-cols-4 gap-x-3 gap-y-5">
+      <div data-tip="tip.months" className="grid grid-cols-2 gap-x-3 gap-y-5">
         {visible.map(m => (
           <MonthTile key={m.key} t={t} month={m} done={done.has(m.key)} share={monthShare(m, done.has(m.key), at[m.key], time)} byId={byId} onOpen={() => onOpen(m.key)} />
         ))}

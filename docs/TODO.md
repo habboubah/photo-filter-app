@@ -5,7 +5,8 @@ In order. (State: 16 November 2026, after the first build by Claude.)
 
 ## 000. The layout adapts to the screen (18 November 2026, night): check it
 
-Built on the branch `adaptive-layout` and merged; what changed is in
+Built on the branch `adaptive-layout` and merged (the wide layout taken
+out again the same night: the app never grows past a phone); what changed is in
 `docs/CHANGELOG.md` and `docs/DESIGN.md` (*Adaptive layout*). Checked here:
 type check, the tests, the build, the privacy, performance and contrast
 checks, and screenshots at 320 × 568, 375 × 667, 820 × 1180 and 932 × 430 in
@@ -15,9 +16,9 @@ the demo. Not run on a phone — please:
       split screen): a review shows *Behalten*, *Später* and *Beenden*
       without scrolling; the trips sit three to a row; nothing is cut.
 - [ ] **An Android foldable or tablet** (or the *Resizable* emulator): the
-      app opens wide and in landscape (Android 16 ignores the portrait lock
-      there); the page is wider, grids have more photos per row, the dock and
-      the tab bar stay centred.
+      app may open in landscape (Android 16 ignores the portrait lock there);
+      it shows the phone layout, centred, with the dock and the tab bar
+      centred under it.
 - [ ] **Release notes**: the next version's notes could add a line such as
       *Passt sich jedem Bildschirm an – vom kleinsten Handy bis zum Tablet*
       (2.4.0's German notes are at 457 of 500 characters).

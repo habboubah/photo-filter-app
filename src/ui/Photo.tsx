@@ -31,8 +31,8 @@ export function Thumb({ id, size = SMALL, className = '', alt = '' }: { id: stri
  * A grid of photos for any number of them: only the rows on screen (and a
  * few around) are in the DOM, positioned absolutely in a box as tall as all
  * rows. Scrolls with the page, like every screen here. `columns` is the
- * count on a phone; the grid fits as many photos of that size as its width
- * holds (logic/layout.ts: three on the narrowest phones, more on a foldable).
+ * count on a phone (logic/layout.ts: a grid of four shows three on the
+ * narrowest phones).
  */
 export function PhotoGrid({ ids, columns = 3, gap = 4, label, onOpen, overlay, selected, onSelect, selectLabel }: {
   ids: string[];

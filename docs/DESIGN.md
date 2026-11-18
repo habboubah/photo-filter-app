@@ -45,29 +45,29 @@ colour: the warm palette is the palette.
 
 ## Adaptive layout
 
-One layout on every screen size, from a 320 px phone to a foldable open or a
-tablet (Android 16 runs the app there at any size and either way round, even
-though it asks for portrait). It adapts through tokens and container
-queries, never through a fork of a screen (`src/index.css`, *Adaptive layout*).
+One phone layout on every screen size. Below 360 px it tightens; above a
+large phone it does not grow: on a tablet, a foldable open (Android 16 runs
+the app there at any size and either way round), a laptop's browser or a
+wide window the app stays a phone, centred on the page (the decision of
+18 November 2026 — a wider layout looked strange on a laptop). It adapts
+through tokens and container queries, never through a fork of a screen
+(`src/index.css`, *Adaptive layout*).
 
 | Width | Who | What changes |
 |---|---|---|
 | **narrow**, < 360 px | iPhone SE (1st gen.), small Android phones, split screen | page margin 12 px (16 beside a large title, 20 on a first-run step); `title` 28, `title1` 24, `title2` 20 px; grids of four show three; two-by-two where four stats sat in a row; the review's end tiles become rows |
-| **phone**, 360–699 px | every current iPhone and most Android phones | the design as drawn; the page column at most 36 rem |
-| **wide**, ≥ 700 px | a foldable open, a tablet, a wide window | the page column grows to 44 rem (50 rem from 1000 px); grids add columns, photos keep their phone size |
+| **phone**, ≥ 360 px | every phone, and everything wider | the design as drawn; the page column at most 28 rem (448 px), centred; sheets, *Nebeneinander* and *Groß ansehen* keep the same width |
 
 - **The page column** is `max-w-column` (`--container-column`); the page's
   margins are `px-page` / `px-title` / `px-step` (`--spacing-*`). Never a
   literal `max-w-xl` or `px-[16px]` on a screen's shell.
 - **Grids count their columns by their own width**, not the screen's: the
-  page's `<main>` is `@container/page` (`ui/Screen`), so a tile grid is
-  `grid-cols-3 @xs/page:grid-cols-4 @lg/page:grid-cols-5 @2xl/page:grid-cols-6`
-  (the trips, the albums), the categories and the word cards add one or two
-  from `@lg` / `@md`, the months go to three. The container sizes are rem, so
-  with Larger Text a grid shows fewer, larger tiles. A `PhotoGrid` takes its
-  phone count as `columns` and fits as many photos of that size as its width
-  holds (`gridColumns`, `src/logic/layout.ts`: never fewer than three, at
-  most twice the phone count).
+  page's `<main>` is `@container/page` (`ui/Screen`), so the trips and the
+  albums are `grid-cols-3 @xs/page:grid-cols-4` — three on the narrowest
+  phones and with Larger Text (the container sizes are rem), four otherwise.
+  A `PhotoGrid` takes its phone count as `columns` (`gridColumns`,
+  `src/logic/layout.ts`: a grid of four shows three when narrow, never more
+  than the phone count).
 - **Heights**: `short:` (< 640 px tall — the first SE, split screen) for a
   screen that is one fixed picture: the review's photo takes what is left
   down to a floor (`clamp(150px, 36vh, 300px)`) and its round buttons are a
@@ -76,7 +76,7 @@ queries, never through a fork of a screen (`src/index.css`, *Adaptive layout*).
 - `narrow:` and `short:` are for the rare component that changes shape
   there; everything else follows the tokens.
 - `npm run ui-review` shows every screen at 320 × 568 (`de-light-320`) and
-  840 × 1000 (`en-android-wide`) too.
+  in a laptop's window, 1280 × 800 (`de-light-laptop`: the phone, centred).
 
 ## Colour tokens
 

@@ -145,7 +145,7 @@ export function SearchView({ t, lang, vectors, byId, aiSeen, onBack, onOpen, onR
       )}
 
       {!typed.trim() && !tokens.length && ready && cards === null && (
-        <div className="grid grid-cols-3 @md/page:grid-cols-4 @2xl/page:grid-cols-5 gap-[8px]" aria-hidden="true">
+        <div className="grid grid-cols-3 gap-[8px]" aria-hidden="true">
           {[0, 1, 2, 3, 4, 5].map(i => <div key={i} className="aspect-square rounded-sm bg-surface" />)}
         </div>
       )}
@@ -153,7 +153,7 @@ export function SearchView({ t, lang, vectors, byId, aiSeen, onBack, onOpen, onR
       {!typed.trim() && !tokens.length && ready && cards !== null && cards.length > 0 && (
         <section className="space-y-2" aria-labelledby="search-yours-h">
           <h2 id="search-yours-h" className="eyebrow text-fg-mute px-1">{t.searchYours}</h2>
-          <div className="grid grid-cols-3 @md/page:grid-cols-4 @2xl/page:grid-cols-5 gap-[8px]">
+          <div className="grid grid-cols-3 gap-[8px]">
             {cards.map(c => (
               <button
                 key={c.concept} type="button" onClick={() => add(c.concept)}

@@ -3,6 +3,15 @@
 What changed and what left, newest first — so `docs/features.md` can say
 only how the app is now. (Started 18 November 2026; older history is in git.)
 
+## 18 November 2026, late night — never wider than a phone
+
+- The wide layout of an hour before is gone: on a laptop it looked strange.
+  The page column now stops at a large phone's width (28 rem, 448 px; it was
+  36 rem before the adaptive layout), and grids never add columns. Sheets
+  stay bottom sheets at that width (they became centred dialogs from 640 px),
+  *Nebeneinander* and *Groß ansehen* keep it too. The narrow-phone and
+  short-screen changes stay.
+
 ## 18 November 2026, night — the layout adapts to the screen
 
 - **Narrow phones** (under 360 px: the first iPhone SE, small Android phones,
