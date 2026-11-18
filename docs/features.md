@@ -296,17 +296,26 @@ then *Mehr Platz* and *Geschützt*.
   similar videos and on each of its series (picking the one to keep stays the
   tile's tap), and any video tile in a grid that opens nothing else (a
   category, screen recordings, …) — those tiles carry ▶ and the length.
-- iPhone: the system's player over the app (AVPlayerViewController), from the
-  phone only — a video that is only in iCloud is never downloaded: *Das Video
-  ist nicht auf diesem Gerät – es liegt nur in der Cloud.*
-- Android: a full-screen player of the app's own (the platform's VideoView and
-  its controls: a tap shows play / pause and the timeline), closed with Back or
-  its round close button; the screen stays on while it plays. Never handed to
-  another app. A file the phone can't play: *Dieses Video lässt sich hier nicht
-  abspielen.*
-- In the browser (`npm run dev`) the test library's videos play full screen
-  over the app with the browser's controls; the curated demo has pictures
-  only, so its videos say *Dieses Video lässt sich hier nicht abspielen.*
+- **It starts as a window**, not full screen (since 18 November 2026): over the
+  dimmed app, about the size of a large photo and in the video's own shape,
+  with a round close button; a tap beside it closes it too. **Größer**
+  [Bigger] lets it fill the screen, **Kleiner** [Smaller] brings the window
+  back.
+- iPhone: the system's player inline in that window (AVPlayerViewController)
+  with all of AVKit's controls — play / pause, the scrubber and time, volume,
+  the playback speed, picture in picture and its own full-screen button (that
+  is Größer / Kleiner there). From the phone only — a video that is only in
+  iCloud is never downloaded: *Das Video ist nicht auf diesem Gerät – es liegt
+  nur in der Cloud.*
+- Android: the platform's VideoView in the window with its controls (a tap
+  shows play / pause, rewind / forward and the timeline) and the app's
+  *Größer* / *Kleiner* button; Back or the close button ends it; the screen
+  stays on while it plays. Never handed to another app. A file the phone
+  can't play: *Dieses Video lässt sich hier nicht abspielen.*
+- In the browser (`npm run dev`) the test library's videos play the same way,
+  with the browser's controls (play, time, volume, full screen, speed); the
+  curated demo has pictures only, so its videos say *Dieses Video lässt sich
+  hier nicht abspielen.*
 
 ## Smaller photos (*Fotos verkleinern*, free for now, later the unlock)
 - Home tile *Fotos verkleinern · bis zu 3,1 GB* [Smaller photos · up to …]

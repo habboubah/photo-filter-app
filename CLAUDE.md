@@ -93,8 +93,11 @@ scenes follow the switch (docs/PLAN.md, *Pricing*).
   files the native side writes; `<img>` loads them via `fileUrl()` (`Capacitor.convertFileSrc`).
 - **Grids are virtualised** (`PhotoGrid`). Never render a list of every photo.
 - **Videos play inside the app**: `PlayerContext` (`src/ui/play.tsx`, provided
-  in `App.tsx`) → `PhotoLibrary.preview` — iPhone AVPlayerViewController,
-  Android `VideoPlayer.kt` (a full-screen VideoView). Never hand a video to
+  in `App.tsx`) → `PhotoLibrary.preview` — a window over the dimmed app,
+  not full screen, that can be made bigger and smaller: iPhone
+  `VideoWindowController` (AVPlayerViewController inline, in
+  `PhotoLibraryPlugin.swift`), Android `VideoPlayer.kt` (a VideoView in a
+  window), the browser `src/native/demo/player.ts`. Never hand a video to
   another app (no `ACTION_VIEW`). A big picture of a video takes `<PlayOver>`;
   a `PhotoGrid` without `onOpen` plays its video tiles by itself.
 - **The first run** (docs/DESIGN.md): the welcome (`WelcomeView`), the first

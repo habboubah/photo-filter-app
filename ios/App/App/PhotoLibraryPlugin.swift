@@ -653,9 +653,9 @@ public class PhotoLibraryPlugin: CAPPlugin, CAPBridgedPlugin, PHPhotoLibraryChan
                     call.reject("The video is not on this iPhone", "CLOUD")
                     return
                 }
-                let player = AVPlayerViewController()
-                player.player = AVPlayer(playerItem: AVPlayerItem(asset: avAsset))
-                presenter.present(player, animated: true) { player.player?.play() }
+                // A window over the dimmed app, not full screen; AVKit's own controls make it bigger and smaller.
+                let window = VideoWindowController(asset: avAsset, closeLabel: call.getString("closeLabel") ?? "Close")
+                presenter.present(window, animated: true) { window.play() }
                 call.resolve()
             }
         }
@@ -1058,3 +1058,95 @@ private extension CGImagePropertyOrientation {
         }
     }
 }
+
+/// A video inside the app, as a WINDOW over the dimmed app (about the size of a large photo, in the video's own
+/// shape) rather than full screen. The AVPlayerViewController sits inline in it, so AVKit shows its full set of
+/// controls — play / pause, the scrubber, the time, volume, the playback speed, picture in picture — and its own
+/// full-screen button, which makes the video bigger and, from full screen, smaller again. A round close button or a
+/// tap beside the window ends it. Nothing leaves the phone; the file is never handed to another app.
+final class VideoWindowController: UIViewController, UIGestureRecognizerDelegate {
+    private let player: AVPlayer
+    private let ratio: CGFloat
+    private let closeLabel: String
+    private let playerController = AVPlayerViewController()
+
+    init(asset: AVAsset, closeLabel: String) {
+        player = AVPlayer(playerItem: AVPlayerItem(asset: asset))
+        // The shape as shown: the track's size turned by its transform (a portrait video is stored on its side).
+        var r: CGFloat = 16.0 / 9.0
+        if let track = asset.tracks(withMediaType: .video).first {
+            let size = track.naturalSize.applying(track.preferredTransform)
+            if abs(size.height) > 0 { r = abs(size.width) / abs(size.height) }
+        }
+        ratio = r
+        self.closeLabel = closeLabel
+        super.init(nibName: nil, bundle: nil)
+        modalPresentationStyle = .overFullScreen
+        modalTransitionStyle = .crossDissolve
+    }
+
+    required init?(coder: NSCoder) { fatalError("init(coder:) is not used") }
+
+    func play() { player.play() }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        view.backgroundColor = UIColor.black.withAlphaComponent(0.62)
+        // A tap beside the window closes it; taps on the player and its controls stay the player's.
+        let dismissTap = UITapGestureRecognizer(target: self, action: #selector(close))
+        dismissTap.delegate = self
+        view.addGestureRecognizer(dismissTap)
+
+        playerController.player = player
+        playerController.entersFullScreenWhenPlaybackBegins = false
+        playerController.exitsFullScreenWhenPlaybackEnds = false
+        addChild(playerController)
+        let box = playerController.view!
+        box.translatesAutoresizingMaskIntoConstraints = false
+        box.layer.cornerRadius = 20
+        box.layer.cornerCurve = .continuous
+        box.clipsToBounds = true
+        box.backgroundColor = .black
+        view.addSubview(box)
+        playerController.didMove(toParent: self)
+
+        let guide = view.safeAreaLayoutGuide
+        let wide = box.widthAnchor.constraint(equalTo: guide.widthAnchor, constant: -32)
+        wide.priority = .defaultHigh
+        NSLayoutConstraint.activate([
+            box.centerXAnchor.constraint(equalTo: guide.centerXAnchor),
+            box.centerYAnchor.constraint(equalTo: guide.centerYAnchor),
+            box.widthAnchor.constraint(lessThanOrEqualTo: guide.widthAnchor, constant: -32),
+            box.heightAnchor.constraint(lessThanOrEqualTo: guide.heightAnchor, multiplier: 0.7),
+            box.widthAnchor.constraint(equalTo: box.heightAnchor, multiplier: ratio),
+            wide,
+        ])
+
+        var config = UIButton.Configuration.filled()
+        config.image = UIImage(systemName: "xmark", withConfiguration: UIImage.SymbolConfiguration(pointSize: 16, weight: .bold))
+        config.baseBackgroundColor = UIColor.black.withAlphaComponent(0.55)
+        config.baseForegroundColor = .white
+        config.cornerStyle = .capsule
+        let closeButton = UIButton(configuration: config)
+        closeButton.accessibilityLabel = closeLabel
+        closeButton.translatesAutoresizingMaskIntoConstraints = false
+        closeButton.addTarget(self, action: #selector(close), for: .touchUpInside)
+        view.addSubview(closeButton)
+        NSLayoutConstraint.activate([
+            closeButton.widthAnchor.constraint(equalToConstant: 44),
+            closeButton.heightAnchor.constraint(equalToConstant: 44),
+            closeButton.leadingAnchor.constraint(equalTo: guide.leadingAnchor, constant: 16),
+            closeButton.bottomAnchor.constraint(equalTo: box.topAnchor, constant: -12),
+        ])
+    }
+
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+        touch.view === view
+    }
+
+    @objc private func close() {
+        player.pause()
+        dismiss(animated: true)
+    }
+}
+

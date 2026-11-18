@@ -106,6 +106,17 @@ in docs/ux-research.md). Nothing native changed, but nothing ran on a phone.
       welcome and the reveal changed); `npm run rehearse:app-review` (the bin's
       dock is *Review selection* now — scene 4 was updated).
 
+## 0a5. The video player as a window (18 November 2026, evening)
+
+- [ ] **iPhone: build in Xcode** (`npm run build:ios`) — `VideoWindowController`
+      in `PhotoLibraryPlugin.swift` is new Swift that could not be compiled in
+      the cloud. Then play a video: it should open as a window over the dimmed
+      app; AVKit's full-screen button makes it bigger and smaller; a tap beside
+      the window or ✕ closes it.
+- [ ] **Android**: play a video — a window with the controls, *Größer* fills
+      the screen, *Kleiner* brings the window back, Back closes. Portrait and
+      landscape videos, light and dark, TalkBack names the three buttons.
+
 ## 0b. The launch phase: free first, sell later
 
 Since 17 November 2026 nothing is for sale (`UNLOCK_ON_SALE = false` in

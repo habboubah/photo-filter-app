@@ -188,12 +188,12 @@ export class DemoLibrary extends WebPlugin implements PhotoLibraryPlugin {
    * can't be played. Either way the demo remembers what it was asked to play
    * (the checks look at it).
    */
-  async preview({ id, closeLabel }: { id: string; closeLabel?: string }) {
+  async preview({ id, closeLabel, biggerLabel, smallerLabel }: { id: string; closeLabel?: string; biggerLabel?: string; smallerLabel?: string }) {
     set('bildklar-demo-preview', id);
     await ready;
     const url = data.clipOf?.(id);
     if (!url) throw Object.assign(new Error('The demo has no file for this video'), { code: 'PLAYBACK' });
-    await playInBrowser(url, closeLabel ?? 'Close');
+    await playInBrowser(url, { close: closeLabel ?? 'Close', bigger: biggerLabel, smaller: smallerLabel });
   }
 
   /** Albums the demo made while swiping (remembered like the deleted photos). */
