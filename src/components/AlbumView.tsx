@@ -43,7 +43,7 @@ export function AlbumView({ t, title, photos: all, loading, sort, onSort, onBack
 
   return (
     <Screen title={title} subtitle={loading ? t.loading : `${count(list)} · ${bytes(t, total)}`} onBack={onBack} backLabel={t.back}
-      info={{ label: t.aboutScreen, close: t.close, body: t.albumIntro }} docked={list.length > 0}
+      info={{ label: t.aboutScreen, close: t.close, how: t.infoHow, body: t.albumIntro }} docked={list.length > 0}
       actions={<SortButton t={t} value={sort} onChange={onSort} />}>
       {!loading && list.length === 0 ? <Empty title={t.noPhotosHere} body={t.noPhotosHereBody} back={{ label: t.emptyBack, onClick: onBack }} /> : list.length > 0 && (
         <>

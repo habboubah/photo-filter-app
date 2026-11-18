@@ -48,7 +48,7 @@ export function UtilityView({ t, photos, progress, sort, onSort, onBack, onRevie
   const when = (id: string) => new Date(byId.get(id)!.t).toLocaleString(t.locale, { dateStyle: 'medium', timeStyle: 'short' });
 
   return (
-    <Screen title={t.utilityTitle} subtitle={`${plural(t, 'photos', shown.length)} · ${bytes(t, total)}`} onBack={onBack} backLabel={t.back} info={{ label: t.aboutScreen, close: t.close, body: t.utilityIntro }} docked={shown.length > 0}
+    <Screen title={t.utilityTitle} subtitle={`${plural(t, 'photos', shown.length)} · ${bytes(t, total)}`} onBack={onBack} backLabel={t.back} info={{ label: t.aboutScreen, close: t.close, how: t.infoHow, body: t.utilityIntro }} docked={shown.length > 0}
       actions={<SortButton t={t} value={sort} onChange={onSort} />}>
       {checking && (
         <p className="text-caption text-fg-mute px-1 num" aria-live="polite">

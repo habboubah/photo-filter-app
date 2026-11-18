@@ -48,7 +48,7 @@ export function ProtectedView({ t, loadAlbums, albums: chosen, trips, photos, ph
   const sorted = (list ?? []).slice().sort((a, b) => Number(on.has(b.id)) - Number(on.has(a.id)) || a.title.localeCompare(b.title, t.locale));
 
   return (
-    <Screen title={t.protectedTitle} onBack={onBack} backLabel={t.back} info={{ label: t.aboutScreen, close: t.close, body: t.protectedIntro }}>
+    <Screen title={t.protectedTitle} onBack={onBack} backLabel={t.back} info={{ label: t.aboutScreen, close: t.close, how: t.infoHow, body: t.protectedIntro }}>
 
       <Group title={t.protectedAlbums} footer={t.protectedAlbumsHint}>
         {list === null && <Row label={t.loading} leading={<IconTile icon={FolderLock} hue="mint" />} />}

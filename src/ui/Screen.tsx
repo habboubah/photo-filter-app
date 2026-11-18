@@ -15,7 +15,12 @@ interface Props {
   /** Header-right controls. Keep to two (with `info`). */
   actions?: React.ReactNode;
   /** What the screen is for, in a few sentences: behind an (i) in the bar, in a sheet — never a paragraph above the content. */
-  info?: { label: string; close: string; body: React.ReactNode };
+  /**
+   * The (i) sheet: what the screen is for and how to use it. A text body's
+   * first line says what it is; each further line is a step, numbered under
+   * `how` ("So geht's").
+   */
+  info?: { label: string; close: string; body: React.ReactNode; how?: string };
   /** Something shown left of the large title (a list's picture). */
   leading?: React.ReactNode;
   /** Something shown right of it (a list's progress ring). */
@@ -106,7 +111,7 @@ export function Screen({ title, eyebrow, subtitle, onBack, backLabel, actions, i
 
       {info && (
         <Sheet open={about} title={title} closeLabel={info.close} onClose={() => setAbout(false)}>
-          <p className="text-body text-fg wrap-prose pb-2">{info.body}</p>
+          <InfoBody body={info.body} how={info.how} />
         </Sheet>
       )}
     </div>
@@ -336,5 +341,25 @@ export function Dock({ children }: { children: React.ReactNode }) {
       </div>
     </div>,
     document.body,
+  );
+}
+
+/** The (i) sheet's text: what the screen is for, then its steps as a numbered list (one per line of the text). */
+function InfoBody({ body, how }: { body: React.ReactNode; how?: string }) {
+  if (typeof body !== 'string' || !body.includes('\n')) return <p className="text-body text-fg wrap-prose pb-2">{body}</p>;
+  const [what, ...steps] = body.split('\n').map(x => x.trim()).filter(Boolean);
+  return (
+    <div className="pb-2">
+      <p className="text-body text-fg wrap-prose">{what}</p>
+      {how && <h3 className="mt-5 mb-2 text-label font-bold text-fg-mute">{how}</h3>}
+      <ol className={`space-y-2.5 ${how ? '' : 'mt-4'}`}>
+        {steps.map((step, i) => (
+          <li key={i} className="flex gap-3">
+            <span className="shrink-0 w-6 h-6 mt-px rounded-full bg-accent-fill text-accent-fill-ink text-caption font-bold num inline-flex items-center justify-center" aria-hidden="true">{i + 1}</span>
+            <span className="min-w-0 flex-1 text-body text-fg wrap-prose">{step}</span>
+          </li>
+        ))}
+      </ol>
+    </div>
   );
 }

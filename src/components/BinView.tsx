@@ -49,7 +49,7 @@ export function BinView({ t, photos, safetySeen, onSafetySeen, onBack, onRestore
   return (
     <Screen
       title={t.binTitle} subtitle={photos.length ? `${count(photos)} · ${bytes(t, total)}` : undefined}
-      onBack={onBack} backLabel={t.back} info={{ label: t.aboutScreen, close: t.close, body: t.binIntro }} docked={photos.length > 0}
+      onBack={onBack} backLabel={t.back} info={{ label: t.aboutScreen, close: t.close, how: t.infoHow, body: t.binIntro }} docked={photos.length > 0}
     >
       {photos.length === 0 ? <Empty icon={Archive} tone="accent" title={t.binEmpty} body={t.binEmptyBody} back={{ label: t.emptyBack, onClick: onBack }} /> : (
         <>

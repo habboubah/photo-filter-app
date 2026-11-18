@@ -49,7 +49,7 @@ export function LargeView({ t, photos, videosOnly, canCompress, sort, onSort, on
   const size = (p: Photo) => `${p.exact ? '' : '≈ '}${bytes(t, p.bytes)}`;
 
   return (
-    <Screen title={videosOnly ? t.videosTitle : t.largeTitle} subtitle={`${plural(t, 'files', list.length)} · ${approx ? '≈ ' : ''}${bytes(t, total)}`} onBack={onBack} backLabel={t.back} info={{ label: t.aboutScreen, close: t.close, body: canCompress ? `${t.largeIntro} ${t.largeCompressNote}` : t.largeIntro }} docked={list.length > 0}
+    <Screen title={videosOnly ? t.videosTitle : t.largeTitle} subtitle={`${plural(t, 'files', list.length)} · ${approx ? '≈ ' : ''}${bytes(t, total)}`} onBack={onBack} backLabel={t.back} info={{ label: t.aboutScreen, close: t.close, how: t.infoHow, body: canCompress ? `${t.largeIntro}\n${t.largeCompressNote}` : t.largeIntro }} docked={list.length > 0}
       actions={<SortButton t={t} value={sort} onChange={onSort} />}>
       {!videosOnly && (
         <Segmented

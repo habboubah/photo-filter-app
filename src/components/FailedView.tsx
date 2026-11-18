@@ -56,7 +56,7 @@ export function FailedView({ t, blurry, dark, bright, tab: initialTab = 'blurry'
   const review = () => (tab === 'blurry' ? onReviewBlurry(list) : onReviewExposure(list, tab));
 
   return (
-    <Screen title={t.failedTitle} subtitle={`${plural(t, 'photos', list.length)} · ${bytes(t, total)}`} onBack={onBack} backLabel={t.back} info={{ label: t.aboutScreen, close: t.close, body: intro }} docked={list.length > 0}
+    <Screen title={t.failedTitle} subtitle={`${plural(t, 'photos', list.length)} · ${bytes(t, total)}`} onBack={onBack} backLabel={t.back} info={{ label: t.aboutScreen, close: t.close, how: t.infoHow, body: intro }} docked={list.length > 0}
       actions={<SortButton t={t} value={sort} onChange={onSort} />}>
       <Segmented
         label={t.failedTitle} value={tab} onChange={setTab}

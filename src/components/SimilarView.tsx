@@ -129,7 +129,7 @@ export function SimilarView({ t, kind = 'similar', groups, byId, kept, shown, on
     );
   };
   return (
-    <Screen title={words.title} subtitle={plural(t, 'groups', groups.length)} onBack={onBack} backLabel={t.back} info={{ label: t.aboutScreen, close: t.close, body: words.intro }}>
+    <Screen title={words.title} subtitle={plural(t, 'groups', groups.length)} onBack={onBack} backLabel={t.back} info={{ label: t.aboutScreen, close: t.close, how: t.infoHow, body: words.intro }}>
       {groups.length === 0 ? <Empty title={words.none} body={words.noneBody} back={{ label: t.emptyBack, onClick: onBack }} /> : (
         <>
           <div className="space-y-[10px]">{visible.map(card)}</div>

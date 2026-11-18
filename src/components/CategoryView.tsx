@@ -43,7 +43,7 @@ export function CategoryView({ t, label, photos: all, sort, onSort, onBack, onAl
   const AlbumIcon = isAndroid() ? FolderPlus : ImagePlus;
 
   return (
-    <Screen title={name} subtitle={`${plural(t, 'photos', photos.length)} · ${bytes(t, total)}`} onBack={onBack} backLabel={t.back} info={{ label: t.aboutScreen, close: t.close, body: t.categoryIntro }}
+    <Screen title={name} subtitle={`${plural(t, 'photos', photos.length)} · ${bytes(t, total)}`} onBack={onBack} backLabel={t.back} info={{ label: t.aboutScreen, close: t.close, how: t.infoHow, body: t.categoryIntro }}
       docked={!!onAlbum && photos.length > 0}
       actions={<SortButton t={t} value={sort} onChange={onSort} />}>
       {onAlbum && photos.length > 0 && (
