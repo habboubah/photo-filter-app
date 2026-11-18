@@ -131,7 +131,8 @@ export async function openSimilar(page, w) {
 }
 export async function openGroup(page, w) {
   await openSimilar(page, w);
-  await page.click('main button >> nth=0');
+  // The first group's photos (the Fotos · Videos switch, when there are similar videos, comes before the cards).
+  await page.click('main .card button >> nth=0');
   await pause(page, 800);
 }
 export async function openBlurry(page, w) {
@@ -231,8 +232,7 @@ export const SCREENS = [
   { name: '11-denied', prefs: { access: 'denied', scanned: false } },
   { name: '12-limited', prefs: { access: 'limited' } },
   { name: '13-similar', run: openSimilar },
-  { name: '14-cleanup', run: async (page, w) => { await page.click(`button:has-text("${w.t.cleanupButton}")`); await pause(page, 600); } },
-  {
+    {
     name: '15-review-done', run: async (page, w) => {
       await openCleanupReview(page, w);
       for (let i = 0; i < 3; i++) { await page.click(`button${aria(w.t.aside)}`); await pause(page, 120); }
@@ -254,12 +254,25 @@ export const SCREENS = [
   {
     name: '23-quick-clean', run: async (page, w) => {
       await page.click(`button:has-text("${w.t.cleanupButton}")`);
-      await pause(page, 500);
-      await page.click(`button:has-text("${w.t.quickClean}")`);
       await pause(page, 700);
     },
   },
   { name: '24-months', run: async (page, w) => { await page.click(`button:has-text("${w.t.monthsCard}")`); await pause(page, 700); } },
+  // Coming back after a while (src/useNudges.ts): the card of what is new since the last visit (and a new trip, when one ended lately).
+  {
+    name: '46-coming-back', run: async page => {
+      // Off the app first: leaving it records a visit (now), which would overwrite the old one set here.
+      const origin = new URL(page.url()).origin;
+      await page.goto(`${origin}/__blank`, { waitUntil: 'domcontentloaded' }).catch(() => {});
+      await page.evaluate(() => {
+        localStorage.setItem('bildklar-last-visit', String(Date.now() - 140 * 86_400_000));
+        localStorage.setItem('bildklar-trips-seen', '[]');
+        localStorage.removeItem('bildklar-since-done');
+      });
+      await page.goto(`${origin}/`, { waitUntil: 'networkidle' });
+      await pause(page, 1500);
+    },
+  },
   {
     // A month left part-way: three photos kept, the review closed — the tile shows the share and "Continue".
     name: '45-months-resume', run: async (page, w) => {
@@ -303,9 +316,10 @@ export const SCREENS = [
   { name: '40-organize-end', run: async (page, w) => { await openOrganize(page, w); await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight)); await pause(page, 400); } },
   // Missglückt: the too dark photos (the demo's pocket shot).
   {
+    // One grid since 18 November 2026: "Alle" adds the photos that are only maybe blurry to the dark and bright ones.
     name: '32-failed-dark', run: async (page, w) => {
       await openBlurry(page, w);
-      await page.click(`button:has-text("${w.t.failedDark}")`);
+      await page.click(`main button[role="radio"]:has-text("${w.t.filterAll}")`);
       await pause(page, 500);
     },
   },
@@ -387,19 +401,21 @@ export const SCREENS = [
     },
     marks: () => ({ photo: 'main figure' }),
   },
-  // Ähnliche Videos: the demo's two takes at Lake Garda and a copied video — their own screen, apart from the photos.
+  // Ähnliche Videos: the demo's two takes at Lake Garda and a copied video — the Videos switch on the near-identical screen.
   {
     name: '35-lookalike', run: async (page, w) => {
-      await page.click(`main button:has-text("${w.t.lookalikeTitle}")`);
+      await openSimilar(page, w);
+      await page.click(`main button[role="radio"]:has-text("${w.t.statVideos}")`);
       await pause(page, 800);
     },
   },
   // One series of similar videos: the one to keep plays from its picture (inside the app), each take from its own button.
   {
     name: '44-lookalike-group', run: async (page, w) => {
-      await page.click(`main button:has-text("${w.t.lookalikeTitle}")`);
+      await openSimilar(page, w);
+      await page.click(`main button[role="radio"]:has-text("${w.t.statVideos}")`);
       await pause(page, 800);
-      await page.locator('main button').first().click();
+      await page.locator('main .card button').first().click();
       await pause(page, 900);
       // The demo has no player: it remembers what it was asked to play.
       await page.locator(`main figure ${aria(w.t.playVideo.split('{')[0]).replace('aria-label=', 'aria-label^=')}`).click();
@@ -408,7 +424,7 @@ export const SCREENS = [
     },
   },
   // Fotos verkleinern: the photos that qualify, the largest saving first.
-  { name: '34-compress', run: async (page, w) => { await page.click(`button:has-text("${w.t.compressPhotosTile}")`); await pause(page, 800); } },
+  { name: '34-compress', run: async (page, w) => { await page.click(`button:has-text("${w.t.largeTile}")`); await pause(page, 700); await page.click(`button:has-text("${w.t.compressPhotosTile}")`); await pause(page, 800); } },
   // Aufräumen › Geschützt (the last rows of home): one album switched on (the demo's family album).
   {
     name: '33-protected', run: async (page, w) => {

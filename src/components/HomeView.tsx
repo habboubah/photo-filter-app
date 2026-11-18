@@ -1,6 +1,6 @@
 import type React from 'react';
 import { useState } from 'react';
-import { Aperture, Archive, CalendarDays, Check, ChevronRight, Clock, FileVideo, Image as ImageIcon, ImagePlus, MessageCircle, Minimize2, RefreshCw, Search, Settings, Shield, Sparkles, Video } from 'lucide-react';
+import { Aperture, Archive, CalendarDays, MapPin, X, Check, ChevronRight, Clock, FileVideo, Image as ImageIcon, ImagePlus, MessageCircle, RefreshCw, Search, Settings, Shield, Sparkles, Video } from 'lucide-react';
 import type { CleanupSummary, Storage } from '../types';
 import type { Access } from '../native/photoLibrary';
 import type { ScanView } from '../store';
@@ -14,6 +14,7 @@ import { Progress } from '../ui/Controls';
 import { StorageBar } from '../ui/StorageBar';
 import { tapLight } from '../ui/haptics';
 import { Thumb } from '../ui/Photo';
+import { isAndroid } from '../platform';
 import { Confirm } from '../ui/Sheet';
 
 export type { Found, FoundKey } from '../logic/nextStep';
@@ -35,8 +36,6 @@ interface Props {
   large: { count: number; bytes: number; cover?: string };
   liveCount: number;
   liveCover?: string;
-  /** "Fotos verkleinern" (src/logic/compress.ts): how many qualify and what they could save. */
-  compress: { count: number; saving: number; cover?: string };
   /** "Aus Apps" (Android): shown once the apps' photos hold at least 100 MB. */
   apps: { bytes: number; cover?: string } | null;
   storage: Storage | null;
@@ -49,6 +48,10 @@ interface Props {
   bin: { count: number; bytes: number; covers: string[] };
   /** Every photo and every video scanned. */
   analysis: { photos: Stat; videos: Stat };
+  /** What came in since the last visit (src/logic/nudges.ts sinceLast): a card on top until it is gone through or closed. */
+  since?: { when: string; photos: number; bytes: number; groups: number; covers: string[]; onReview: () => void; onClose: () => void } | null;
+  /** A trip found since the last look (src/logic/nudges.ts newTrip). */
+  newTrip?: { title: string; photos: number; cover?: string; onOpen: () => void; onClose: () => void } | null;
   /** How much is protected (src/logic/protect.ts): never suggested for deleting. */
   protection: { albums: number; trips: number; photos: number };
   onLater: () => void;
@@ -64,8 +67,6 @@ interface Props {
   onSimilar: () => void;
   onBlurry: () => void;
   onDuplicates: () => void;
-  /** The similar videos (lookalike takes and copies of a video). */
-  onVideoGroups: () => void;
   /** Every video of the library. */
   onVideos: () => void;
   onScreenshots: () => void;
@@ -73,7 +74,6 @@ interface Props {
   onMonths: () => void;
   onLarge: () => void;
   onLive: () => void;
-  onCompress: () => void;
   onApps: () => void;
 }
 
@@ -168,7 +168,7 @@ export function HomeView(p: Props) {
   const meta: Record<FoundKey, { label: string; icon: React.ComponentType<{ className?: string; strokeWidth?: number }>; hue: string; unit: 'groups' | 'photos'; onClick: () => void }> = {
     duplicates: { ...words.duplicates, icon: Sparkles, hue: 'rose', onClick: p.onDuplicates },
     similar: { ...words.similar, icon: Sparkles, hue: 'lilac', onClick: p.onSimilar },
-    videos: { ...words.videos, icon: Video, hue: 'cyan', onClick: p.onVideoGroups },
+    videos: { ...words.videos, icon: Video, hue: 'cyan', onClick: p.onSimilar },
     failed: { ...words.failed, icon: Sparkles, hue: 'sand', onClick: p.onBlurry },
     screenshots: { ...words.screenshots, icon: Sparkles, hue: 'sky', onClick: p.onScreenshots },
     utility: { ...words.utility, icon: Sparkles, hue: 'mint', onClick: p.onUtility },
@@ -180,7 +180,6 @@ export function HomeView(p: Props) {
   const pctText = percent(t, p.months.pct);
   const tools: { key: string; label: string; value: string; cover?: string; icon: React.ComponentType<{ className?: string; strokeWidth?: number }>; hue: string; onClick: () => void }[] = [
     { key: 'large', label: t.largeTile, value: p.large.count ? fmt(t.sizeAndCount, { size: bytes(t, p.large.bytes), count: plural(t, 'files', p.large.count) }) : plural(t, 'files', 0), cover: p.large.cover, icon: FileVideo, hue: 'stone', onClick: p.onLarge },
-    ...(p.compress.count > 0 ? [{ key: 'compress', label: t.compressPhotosTile, value: fmt(t.upTo, { size: bytes(t, p.compress.saving) }), cover: p.compress.cover, icon: Minimize2, hue: 'sky', onClick: p.onCompress }] : []),
     ...(p.liveCount > 0 ? [{ key: 'live', label: t.liveTile, value: plural(t, 'photos', p.liveCount), cover: p.liveCover, icon: Aperture, hue: 'mint', onClick: p.onLive }] : []),
     ...(p.apps ? [{ key: 'apps', label: t.appsTile, value: bytes(t, p.apps.bytes), cover: p.apps.cover, icon: MessageCircle, hue: 'lilac', onClick: p.onApps }] : []),
   ];
@@ -219,6 +218,23 @@ export function HomeView(p: Props) {
       )}
 
       {(bigScan || aiPass) && <ScanCard t={t} scan={p.scan} first={firstScan} />}
+
+      {/* Coming back: what is new since the last visit, and a trip found since — each closes for good. */}
+      {has && p.since && (
+        <NewsCard
+          t={t} covers={p.since.covers} eyebrow={fmt(t.sinceTitle, { when: p.since.when })}
+          title={fmt(t.sinceBody, { photos: plural(t, 'photos', p.since.photos), size: bytes(t, p.since.bytes) })}
+          sub={p.since.groups > 0 ? fmt(t.sinceGroups, { groups: plural(t, 'groups', p.since.groups) }) : undefined}
+          button={t.sinceButton} onGo={p.since.onReview} onClose={p.since.onClose}
+        />
+      )}
+      {has && p.newTrip && (
+        <NewsCard
+          t={t} covers={p.newTrip.cover ? [p.newTrip.cover] : []} eyebrow={t.tripNewEyebrow} icon={MapPin}
+          title={p.newTrip.title} sub={plural(t, 'photos', p.newTrip.photos)}
+          button={t.tripNewButton} onGo={p.newTrip.onOpen} onClose={p.newTrip.onClose}
+        />
+      )}
 
       {/* The facts are still being read: the page's shape, quietly, instead of blank space. */}
       {!loaded && !bigScan && !aiPass && <HomeSkeleton label={t.loading} />}
@@ -297,6 +313,37 @@ export function HomeView(p: Props) {
         onConfirm={() => { setAskRescan(false); p.onRescan(); }} onCancel={() => setAskRescan(false)}
       />
     </Screen>
+  );
+}
+
+/**
+ * A card that comes and goes (since the last visit, a new trip): its photos —
+ * a strip of four, or one wide — what it is in a word, one button, and a
+ * close button. Quiet glass, no colour of its own: news, not an alarm.
+ */
+function NewsCard({ t, covers, eyebrow, icon: Icon, title, sub, button, onGo, onClose }: {
+  t: Strings; covers: string[]; eyebrow: string; icon?: React.ComponentType<{ className?: string; strokeWidth?: number }>;
+  title: string; sub?: string; button: string; onGo: () => void; onClose: () => void;
+}) {
+  const strip = covers.slice(0, 4);
+  return (
+    <section className="relative rounded-lg card overflow-hidden" aria-label={eyebrow}>
+      {strip.length > 1 && (
+        <div className="grid grid-cols-4 gap-[3px]" aria-hidden="true">
+          {strip.map(id => <span key={id} className="aspect-square overflow-hidden"><Thumb id={id} className="!rounded-none" /></span>)}
+        </div>
+      )}
+      {strip.length === 1 && <div className="aspect-[2/1] overflow-hidden" aria-hidden="true"><Thumb id={strip[0]} className="!rounded-none" /></div>}
+      <IconButton label={t.newsClose} icon={X} tone="bar" onClick={onClose} className="absolute top-2 end-2" />
+      <div className="px-5 pt-4 pb-4">
+        <p className="flex items-center gap-1.5 text-caption font-bold text-accent wrap-compound">
+          {Icon && <Icon className="w-4 h-4 shrink-0" strokeWidth={2.4} />}{eyebrow}
+        </p>
+        <p className="title-face text-heading font-bold text-fg mt-0.5 num wrap-compound">{title}</p>
+        {sub && <p className="text-label text-fg-mute num wrap-prose">{sub}</p>}
+        <Button full variant="secondary" className="mt-3 !shadow-none glass-flat" onClick={onGo}>{button}</Button>
+      </div>
+    </section>
   );
 }
 
@@ -458,6 +505,8 @@ function CleanupSection({ t, summary, cats, done, countOf, library, storage, fre
               <div>
                 <p className="title-face text-title2 font-bold text-fg num wrap-compound">{fmt(t.cleanupCanGo, { size: bytes(t, canGo) })}</p>
                 {libraryBytes > 0 && <p className="text-label text-fg-mute mt-0.5 num wrap-prose">{fmt(t.cleanupOfLibrary, { total: bytes(t, libraryBytes) })}</p>}
+                {/* iPhone: with "Optimise iPhone Storage" some originals are only in iCloud — deleting those frees iCloud, not the phone. */}
+                {!isAndroid() && <p className="text-caption text-fg-mute mt-1 wrap-prose">{t.cleanupCloudNote}</p>}
               </div>
             )}
             {parts.length > 0 && !nothing && (
@@ -503,6 +552,8 @@ function CleanupSection({ t, summary, cats, done, countOf, library, storage, fre
                 {freedBytes > 0 && <span className="rounded-full bg-keep-dim text-keep font-bold px-2.5 py-0.5">{fmt(t.freedSoFar, { size: bytes(t, freedBytes) })}</span>}
               </p>
             )}
+            {/* Honest about when: deleted photos wait 30 days in "Zuletzt gelöscht" / the Trash and still take their space. */}
+            {freedBytes > 0 && <p className="px-1 text-caption text-fg-mute wrap-prose">{t.freedNote}</p>}
           </div>
         )}
 

@@ -67,3 +67,10 @@ describe('the first group to compare', () => {
     expect(firstGroup([], time)).toBeNull();
   });
 });
+
+describe('the similar videos', () => {
+  it('count with the near-identical photos (one row, a switch on its screen)', () => {
+    const s = summary({ similar: { count: 4, bytes: 100, groups: 2 }, lookalike: { count: 1, bytes: 400, groups: 1 } });
+    expect(gainOf(s, 'similar')).toEqual({ count: 5, bytes: 500 });
+  });
+});

@@ -55,6 +55,8 @@ export interface PhotoLibraryPlugin {
   addMorePhotos(): Promise<{ access: Access }>;
   /** The app's page in the system settings. */
   openSettings(): Promise<void>;
+  /** iPhone only: asks iOS for its own rating prompt (iOS decides whether to show it; at most three times a year). Android has no such call here. */
+  requestReview(): Promise<void>;
 
   /** Starts (or continues) a scan in the background; resolves at once. Progress comes as `scanProgress` events, the end as `scanDone`. */
   startScan(): Promise<void>;

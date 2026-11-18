@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { animate, motion, useMotionValue, useReducedMotion } from 'motion/react';
-import { X, ZoomIn, ZoomOut } from 'lucide-react';
+import { Images, X, ZoomIn, ZoomOut } from 'lucide-react';
 import { LARGE, ZOOM } from '../thumbs';
 import { useThumb } from './Photo';
 import { useDialog } from './useDialog';
@@ -19,14 +19,18 @@ export const zoomLayoutId = (id: string) => `zoom-${id}`;
  * again); zoomed in, a drag moves the photo. The picture grows out of the
  * tile it was opened from (a shared element) and goes back into it. Closed
  * by its button, Escape or the system's back. Asks for a larger picture
- * than the review shows, and shows that one until it is there.
+ * than the review shows, and shows that one until it is there. `onLike`
+ * adds *Ähnliche Fotos zeigen* at its foot (from a review: it left the
+ * review's card on 18 November 2026, to keep the busiest screen calm).
  */
-export function ZoomView({ id, alt, labels, onClose }: {
+export function ZoomView({ id, alt, labels, onClose, onLike }: {
   id: string;
   /** What the photo is, for screen readers (its date). */
   alt: string;
-  labels: { close: string; zoomIn: string; zoomOut: string; hint: string };
+  labels: { close: string; zoomIn: string; zoomOut: string; hint: string; like?: string };
   onClose: () => void;
+  /** Every photo like this one (Ähnliche Fotos), shown with `labels.like`. */
+  onLike?: () => void;
 }) {
   const reduce = useReducedMotion();
   const large = useThumb(id, LARGE);
@@ -104,7 +108,17 @@ export function ZoomView({ id, alt, labels, onClose }: {
           {url && <img src={url} alt={alt} draggable={false} decoding="async" className="absolute inset-0 w-full h-full object-contain" />}
         </motion.div>
       </div>
-      <p className="relative z-10 text-caption text-fg-mute text-center px-6 pt-3 pb-safe-8" aria-hidden="true">{labels.hint}</p>
+      <div className="relative z-10 px-6 pt-3 pb-safe-8 flex flex-col items-center gap-2">
+        {onLike && labels.like && (
+          <button
+            type="button" onClick={() => { tapLight(); onLike(); }}
+            className="min-h-tap px-4 inline-flex items-center gap-2 rounded-full glass text-label font-bold text-fg press focus-visible:ring-focus"
+          >
+            <Images className="w-5 h-5" aria-hidden="true" />{labels.like}
+          </button>
+        )}
+        <p className="text-caption text-fg-mute text-center" aria-hidden="true">{labels.hint}</p>
+      </div>
     </motion.div>,
     document.body,
   );

@@ -3,9 +3,41 @@
 What only you can do: a Mac with Xcode, your phones, the stores, the photos.
 In order. (State: 16 November 2026, after the first build by Claude.)
 
+## 00. The review and improvement plan (18 November 2026, evening): check it
+
+Built on the branch `app-review-plan` and merged; what changed is in
+`docs/CHANGELOG.md`. Checked here: type check, 234 tests, the build, the
+privacy, performance, contrast, listing and AI checks, and screenshots of
+every changed screen in the demo. Not run on a phone — please:
+
+- [ ] **iPhone: build in Xcode** (`npm run build:ios`): `requestReview` in
+      `PhotoLibraryPlugin.swift` (StoreKit's `AppStore.requestReview`) is new
+      Swift that couldn't be compiled here.
+- [ ] **On both phones**: home → *Jetzt aufräumen* opens quick clean (and
+      *Alle durchgehen* is at its foot); *Missglückt* is one grid with a chip
+      per photo; *Fast gleiche* has *Fotos · Videos*; a review has no swipe up
+      any more (*Später* is the button), and the hint line under the buttons
+      is gone once the two gestures are learned; *Groß ansehen* has *Ähnliche
+      Fotos zeigen*; *Große Dateien* has *Fotos verkleinern* at its top.
+- [ ] **Coming back**: leave the app for more than 12 hours, take a few
+      photos, open it — the *Seit …* card. Finish a month — the reminder is
+      offered once. The rating never shows in a debug build: try it in a
+      release build after two real deletes (iOS shows its prompt in a
+      release build on your phone, never in TestFlight).
+- [ ] **Read the Arabic store texts** in `store/listing.md` (2.1, 2.2, 2.3,
+      3.1, 3.2) and `release-notes/2.0.16/ar.txt`, then add Arabic in both
+      consoles if you want the Arabic listing.
+- [ ] **The new subtitle** *Doppelte & Reisen · privat* (was *Reisen &
+      Doppelte finden*) — keep it or say which you prefer.
+- [ ] Once the app is live on the App Store: `APP_STORE_ID` in
+      `src/links.ts` (the Settings row *Bildklar bewerten* appears then).
+- [ ] The App Review recording (`npm run rehearse:app-review`): scene 1 now
+      waits for *could go*; the rehearsal passed here in the browser.
+
 ## 0. Temporary: the dry run in release builds
 
-- [ ] **Turn it off again after testing.** Release builds show the dry run
+- [x] **Turned off again** on 18 November 2026 (`DRY_RUN_IN_RELEASE = false`).
+- [ ] ~~Turn it off again after testing.~~ Release builds show the dry run
       switch (Einstellungen → *Nur in der Debug-Version*) too, starting **on**,
       so a TestFlight / Play build can be tried on the phone without touching
       the photos. Done testing? Set `DRY_RUN_IN_RELEASE` in `src/store.ts` to

@@ -1,21 +1,21 @@
 import { motion, useReducedMotion } from 'motion/react';
-import { ArrowLeft, ArrowRight, ArrowUp, Pointer, X } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Pointer, X } from 'lucide-react';
 import type { Gesture } from '../logic/firstRun';
 import { GESTURES } from '../logic/firstRun';
 import type { Decision } from '../logic/review';
 import { Strings, fmt, num } from '../translations';
 import { tapLight } from '../ui/haptics';
 
-/** The decision each gesture makes. */
-export const GESTURE_OF: Record<Decision, Gesture> = { keep: 'swipeRight', delete: 'swipeLeft', later: 'swipeUp' };
+/** The gesture each decision is (deciding later is a button, not a gesture). */
+export const GESTURE_OF: Record<Decision, Gesture | null> = { keep: 'swipeRight', delete: 'swipeLeft', later: null };
 
 /** What the guided review needs from App.tsx: the gesture to teach now, and what to tell it. */
 export interface Guide {
-  /** The gesture hinted on the current card, or null once all three were done. */
+  /** The gesture hinted on the current card, or null once both were done. */
   gesture: Gesture | null;
   /** The user made this decision — by a swipe, a button or a key: its gesture counts as learned. */
   onDid: (g: Gesture) => void;
-  /** "Hinweise ausblenden": all three count as learned. */
+  /** "Hinweise ausblenden": both count as learned. */
   onSkip: () => void;
 }
 
@@ -26,7 +26,7 @@ export function saidFor(t: Strings, d: Decision): string {
 
 /**
  * The guided review's hint over the first real cards: a hand that makes the
- * gesture — right keeps, left marks for deletion, up decides later — and
+ * gesture — right keeps, left marks for deletion — and
  * says so in words, one gesture per card until the user has done it once.
  * It lies over the card without taking a touch (only its small close button
  * does), disappears the moment the card is touched, and is a still arrow
@@ -35,9 +35,9 @@ export function saidFor(t: Strings, d: Decision): string {
  */
 export function GestureHint({ t, gesture, hidden, onSkip }: { t: Strings; gesture: Gesture; hidden: boolean; onSkip: () => void }) {
   const reduce = useReducedMotion();
-  const words = gesture === 'swipeRight' ? t.guideRight : gesture === 'swipeLeft' ? t.guideLeft : t.guideUp;
-  const Arrow = gesture === 'swipeRight' ? ArrowRight : gesture === 'swipeLeft' ? ArrowLeft : ArrowUp;
-  const to = gesture === 'swipeRight' ? { x: 84, y: 0, rotate: 8 } : gesture === 'swipeLeft' ? { x: -84, y: 0, rotate: -8 } : { x: 0, y: -84, rotate: 0 };
+  const words = gesture === 'swipeRight' ? t.guideRight : t.guideLeft;
+  const Arrow = gesture === 'swipeRight' ? ArrowRight : ArrowLeft;
+  const to = gesture === 'swipeRight' ? { x: 84, y: 0, rotate: 8 } : { x: -84, y: 0, rotate: -8 };
   const step = GESTURES.indexOf(gesture) + 1;
   return (
     <motion.div

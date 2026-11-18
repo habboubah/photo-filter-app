@@ -16,7 +16,8 @@ export const MOMENTS = {
   firstScan: 'firstScan',
   /** The overview after the first scan. */
   reveal: 'reveal',
-  /** The guided review's three gestures, each performed once. */
+  /** The guided review's two gestures, each performed once. (Up to decide later was a third until
+   *  18 November 2026; "Später" is a button now. The key stays so old installs read their file.) */
   swipeRight: 'swipeRight',
   swipeLeft: 'swipeLeft',
   swipeUp: 'swipeUp',
@@ -27,7 +28,7 @@ export const MOMENTS = {
 } as const;
 
 /** The guided review's gestures, in the order they are taught. */
-export const GESTURES = ['swipeRight', 'swipeLeft', 'swipeUp'] as const;
+export const GESTURES = ['swipeRight', 'swipeLeft'] as const;
 export type Gesture = (typeof GESTURES)[number];
 
 export function parseSeen(raw: string | null): Set<string> {

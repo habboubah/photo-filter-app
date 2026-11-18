@@ -84,7 +84,7 @@ export const marks = w => ({
   'create-album': textButton(w.t.createAlbum),
   'confirm-album': `[role="alertdialog"] ${textButton(w.t.createAlbum)}`,
   similar: textButton(w.t.similarTile),
-  'first-group': 'main button >> nth=0',
+  'first-group': 'main .card button >> nth=0',
   'cleanup-button': textButton(w.t.cleanupButton),
   'review-all': textButton(w.t.reviewAll),
   keep: button(w.t.keep),

@@ -3,7 +3,7 @@ import { Archive, Minimize2, Play } from 'lucide-react';
 import type { Photo } from '../types';
 import { Strings, bytes, fmt, plural } from '../translations';
 import { COMPRESS_MIN, LargeFilter, duration } from '../logic/large';
-import { Dock, Empty, Screen } from '../ui/Screen';
+import { Dock, Empty, Group, IconTile, Next, Row, Screen } from '../ui/Screen';
 import { Button } from '../ui/Button';
 import { Segmented } from '../ui/Controls';
 import { SelectBar } from '../ui/SelectBar';
@@ -18,8 +18,9 @@ import { PlayOver } from '../ui/play';
  * The largest photos and videos, biggest first. Nothing is suggested for
  * deleting here: a tap opens one file with what can be done with it — make a
  * video smaller (a copy, the original stays until it is deleted), or delete it.
+ * *Fotos verkleinern* opens from a row at its top (on home until 18 November 2026).
  */
-export function LargeView({ t, photos, videosOnly, canCompress, sort, onSort, onBack, onReview, onCompress, onDelete, onAside }: {
+export function LargeView({ t, photos, videosOnly, canCompress, sort, onSort, onBack, onReview, onCompress, onDelete, onAside, smaller }: {
   t: Strings;
   photos: Photo[];
   /** Every video of the library (the analysis' "Videos"), not the large files: its own title, no filter. */
@@ -33,6 +34,8 @@ export function LargeView({ t, photos, videosOnly, canCompress, sort, onSort, on
   onDelete: (photo: Photo) => void;
   /** The selected files into "Zum Löschen vorgemerkt" (nothing is deleted). */
   onAside: (photos: Photo[]) => void;
+  /** *Fotos verkleinern* (src/logic/compress.ts), when there is something to gain: what it could save, and the way there. */
+  smaller?: { saving: number; onOpen: () => void } | null;
 }) {
   const [filter, setFilter] = useState<LargeFilter>('all');
   const [open, setOpen] = useState<Photo | null>(null);
@@ -51,6 +54,14 @@ export function LargeView({ t, photos, videosOnly, canCompress, sort, onSort, on
   return (
     <Screen title={videosOnly ? t.videosTitle : t.largeTitle} subtitle={`${plural(t, 'files', list.length)} · ${approx ? '≈ ' : ''}${bytes(t, total)}`} onBack={onBack} backLabel={t.back} info={{ label: t.aboutScreen, close: t.close, how: t.infoHow, body: canCompress ? `${t.largeIntro}\n${t.largeCompressNote}` : t.largeIntro }} docked={list.length > 0}
       actions={<SortButton t={t} value={sort} onChange={onSort} />}>
+      {smaller && (
+        <Group>
+          <Row
+            label={t.compressPhotosTile} sub={fmt(t.upTo, { size: bytes(t, smaller.saving) })}
+            leading={<IconTile icon={Minimize2} hue="sky" />} trailing={<Next />} onClick={smaller.onOpen}
+          />
+        </Group>
+      )}
       {!videosOnly && (
         <Segmented
           label={t.largeTitle} value={filter} onChange={setFilter}

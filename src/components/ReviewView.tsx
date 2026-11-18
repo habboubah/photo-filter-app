@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { AnimatePresence, animate, motion, useMotionValue, useReducedMotion, useTransform } from 'motion/react';
-import { Archive, Check, ChevronRight, Clock, FolderInput, FolderPlus, Images, Play, Plus, Shield, Trash2, Undo2, X, ZoomIn } from 'lucide-react';
+import { Archive, Check, ChevronRight, Clock, FolderInput, FolderPlus, Play, Plus, Shield, Trash2, Undo2, X, ZoomIn } from 'lucide-react';
 import type { Confidence, Photo } from '../types';
 import { Strings, bytes, fmt, num, plural } from '../translations';
 import { Decision, ReviewItem, Session, albumPlan, deleteSplit, isNewAlbum, laterIds, newAlbumKey, toDelete } from '../logic/review';
@@ -93,7 +93,8 @@ export function ReviewView({ t, session, finished, byId, debug, bin = false, alb
   const onDecide = (d: Decision) => {
     const short = d === 'keep' ? (bin ? t.binRestore : t.keep) : d === 'delete' ? (bin ? t.delete : t.summaryMarked) : t.later;
     setSaid({ key: Date.now(), text: guide?.gesture ? saidFor(t, d) : short });
-    guide?.onDid(GESTURE_OF[d]);
+    const g = GESTURE_OF[d];
+    if (g) guide?.onDid(g);
     decideRaw(d);
   };
   const undoNow = () => { setSaid(null); onUndo(); };
@@ -186,7 +187,10 @@ export function ReviewView({ t, session, finished, byId, debug, bin = false, alb
                 <RoundButton label={t.keep} tone="keep" icon={Check} onClick={() => onDecide('keep')} />
               </div>
               <div className="flex flex-wrap justify-between items-center gap-x-3 mt-4">
-                <p className="text-caption text-fg-mute wrap-prose flex-1 min-w-[12rem]">{bin ? t.swipeHintBin : t.swipeHint}</p>
+                {/* The swipe in words while it is being learned (and in the bin, where left deletes for real); then the labelled buttons say it. */}
+                {bin || guide?.gesture
+                  ? <p className="text-caption text-fg-mute wrap-prose flex-1 min-w-[12rem]">{bin ? t.swipeHintBin : t.swipeHint}</p>
+                  : <span className="flex-1" />}
                 <Button variant="ghost" onClick={onFinish}>{t.finishReview}</Button>
               </div>
             </div>
@@ -243,7 +247,6 @@ function Card({ t, item, photo, debug, bin, guide, said, onUndo, onDecide, onPro
   const rotate = useTransform(x, [-240, 0, 240], [-10, 0, 10]);
   const delOpacity = useTransform(x, [-THRESHOLD, -20, 0], [1, 0, 0]);
   const keepOpacity = useTransform(x, [0, 20, THRESHOLD], [0, 0, 1]);
-  const laterOpacity = useTransform(y, [-THRESHOLD, -20, 0], [1, 0, 0]);
   const levelText: Record<Confidence, string> = { high: t.levelHigh, medium: t.levelMedium, low: t.levelLow };
   const reasons: Record<ReviewItem['reason'], string> = {
     best: t.reasonBest, original: t.reasonOriginal, similar: t.reasonSimilar, duplicate: t.reasonDuplicate,
@@ -299,16 +302,15 @@ function Card({ t, item, photo, debug, bin, guide, said, onUndo, onDecide, onPro
       {/* Full-bleed: the photo takes the whole width of the screen. */}
       <div className="relative flex-1 min-h-[300px] -mx-[12px]">
       <motion.div
-        drag
+        drag="x"
         dragSnapToOrigin
         dragElastic={0.9}
         style={{ x, y, rotate }}
         onDragStart={() => setTouched(true)}
         onDragEnd={(_, info) => {
           setTouched(false);
-          const up = -info.offset.y > Math.abs(info.offset.x);
-          if (up && (info.offset.y < -THRESHOLD || info.velocity.y < -700)) fling('later', info.velocity.y);
-          else if (info.offset.x < -THRESHOLD || info.velocity.x < -700) fling('delete', info.velocity.x);
+          // Left and right only: deciding later is the button between them (a swipe up until 18 November 2026).
+          if (info.offset.x < -THRESHOLD || info.velocity.x < -700) fling('delete', info.velocity.x);
           else if (info.offset.x > THRESHOLD || info.velocity.x > 700) fling('keep', info.velocity.x);
         }}
         className="absolute inset-0 overflow-hidden bg-surface-2 touch-none cursor-grab active:cursor-grabbing"
@@ -319,23 +321,10 @@ function Card({ t, item, photo, debug, bin, guide, said, onUndo, onDecide, onPro
         <motion.span style={{ opacity: delOpacity }} className={`absolute top-6 right-6 px-4 py-2 rounded-[12px] border-[3px] bg-surface text-heading font-extrabold rotate-[8deg] ${bin ? 'border-neg text-neg' : 'border-fg text-fg'}`} aria-hidden="true">
           {bin ? t.delete : t.aside}
         </motion.span>
-        <motion.span style={{ opacity: laterOpacity }} className="absolute top-6 start-1/2 -translate-x-1/2 px-4 py-2 rounded-[12px] border-[3px] border-accent bg-surface text-accent text-heading font-extrabold" aria-hidden="true">
-          {t.later}
-        </motion.span>
         <motion.span style={{ opacity: keepOpacity }} className="absolute top-6 left-6 px-4 py-2 rounded-[12px] border-[3px] border-keep bg-surface text-keep text-heading font-extrabold -rotate-[8deg]" aria-hidden="true">
           {t.keep}
         </motion.span>
         <span className="absolute bottom-3 start-3 px-2.5 py-1 rounded-full bg-veil text-on-color text-caption font-bold">{when}</span>
-        {onLike && !photo?.video && (
-          <button
-            type="button" aria-label={t.likeOpen}
-            onPointerDownCapture={e => e.stopPropagation()}
-            onClick={() => { tapLight(); onLike(); }}
-            className="absolute top-3 start-3 w-11 h-11 rounded-full glass text-fg inline-flex items-center justify-center press focus-visible:ring-focus"
-          >
-            <Images className="w-5 h-5" aria-hidden="true" />
-          </button>
-        )}
         {trust && (
           <span className="absolute bottom-3 end-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-veil text-on-color text-caption font-bold">
             <span className={`w-2 h-2 rounded-full ${item.trust === 'check' ? 'bg-warn' : item.trust === 'sure' ? 'bg-keep' : 'bg-on-color'}`} aria-hidden="true" />
@@ -391,8 +380,9 @@ function Card({ t, item, photo, debug, bin, guide, said, onUndo, onDecide, onPro
         {zoom && (
           <ZoomView
             key="zoom" id={item.id} alt={when}
-            labels={{ close: t.close, zoomIn: t.zoomIn, zoomOut: t.zoomOut, hint: t.zoomHint }}
+            labels={{ close: t.close, zoomIn: t.zoomIn, zoomOut: t.zoomOut, hint: t.zoomHint, like: t.likeOpen }}
             onClose={() => setZoom(false)}
+            onLike={onLike ? () => { setZoom(false); onLike(); } : undefined}
           />
         )}
       </AnimatePresence>

@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Check, ChevronRight, Star, Trash2 } from 'lucide-react';
+import { Archive, Check, ChevronRight, Star } from 'lucide-react';
 import type { Group, GroupKind, Photo } from '../types';
 import { Strings, fmt, num, plural } from '../translations';
 import { Empty, Screen } from '../ui/Screen';
+import { Segmented } from '../ui/Controls';
 import { Thumb } from '../ui/Photo';
 import { tapLight } from '../ui/haptics';
 
@@ -17,14 +18,18 @@ const PAGE = 40;
  * has a grey star the user can switch on to keep it too. *Alle behalten*
  * keeps the whole group (it leaves the list); *Ohne Stern zum Löschen
  * vormerken* puts every photo without a star into *Zum Löschen vorgemerkt*
- * and keeps the starred ones — both with undo. Its red is Ahmad's call (18
- * November 2026): it reads as "these go"; still nothing is deleted here. A
- * tap on the photos opens the group to compare.
+ * and keeps the starred ones — both with undo. It is teal with the archive,
+ * like every other marking button: nothing is deleted here (red stayed only
+ * a few hours on 18 November 2026). A tap on the photos opens the group to
+ * compare. The near-identical photos carry the similar videos too, behind a
+ * *Fotos · Videos* switch (their own screen until 18 November 2026).
  */
-export function SimilarView({ t, kind = 'similar', groups, byId, kept, shown, onMore, onBack, onOpen, onKeepAll, onAsideOthers }: {
+export function SimilarView({ t, kind = 'similar', groups: photoGroups, videoGroups = [], byId, kept, shown, onMore, onBack, onOpen, onKeepAll, onAsideOthers }: {
   t: Strings;
   kind?: GroupKind;
   groups: Group[];
+  /** Near-identical only: the similar videos (lookalike takes and copies of a video), behind a switch. */
+  videoGroups?: Group[];
   byId: Map<string, Photo>;
   kept: Set<string>;
   shown: number;
@@ -37,7 +42,8 @@ export function SimilarView({ t, kind = 'similar', groups, byId, kept, shown, on
   onAsideOthers: (group: Group, ids: string[], keep: string[]) => void;
 }) {
   const dup = kind === 'duplicate';
-  const videos = kind === 'lookalike';
+  const [part, setPart] = useState<'photos' | 'videos'>(() => (kind === 'similar' && !photoGroups.length && videoGroups.length ? 'videos' : 'photos'));
+  const groups = kind === 'similar' && part === 'videos' ? videoGroups : photoGroups;
   const visible = groups.slice(0, Math.max(PAGE, shown));
   // Stars the user switched on, per group: more photos to keep than the app's pick.
   const [stars, setStars] = useState<Record<string, string[]>>({});
@@ -45,7 +51,7 @@ export function SimilarView({ t, kind = 'similar', groups, byId, kept, shown, on
     const list = s[key] ?? [];
     return { ...s, [key]: list.includes(id) ? list.filter(x => x !== id) : [...list, id] };
   });
-  const words = videos
+  const words = kind === 'lookalike'
     ? { title: t.lookalikeTitle, intro: t.lookalikeIntro, none: t.noLookalike, noneBody: t.noLookalikeBody }
     : dup
       ? { title: t.duplicatesTitle, intro: t.duplicatesIntro, none: t.noDuplicates, noneBody: t.noDuplicatesBody }
@@ -119,10 +125,10 @@ export function SimilarView({ t, kind = 'similar', groups, byId, kept, shown, on
             type="button" disabled={!extra}
             onClick={() => { tapLight(); onAsideOthers(g, others, mine.filter(id => g.ids.includes(id))); setStars(s => { const { [g.key]: _, ...rest } = s; return rest; }); }}
             aria-label={`${t.groupAsideShort}, ${plural(t, unit, extra)}`}
-            className="min-w-0 min-h-[44px] -me-1 px-1 py-1 rounded-full text-label font-bold text-neg inline-flex items-center justify-center gap-1.5 press focus-visible:ring-focus disabled:opacity-40"
+            className="min-w-0 min-h-[44px] -me-1 px-1 py-1 rounded-full text-label font-bold text-accent inline-flex items-center justify-center gap-1.5 press focus-visible:ring-focus disabled:opacity-40"
           >
-            {/* Ahmad's choice: red words and the delete icon, though nothing is deleted yet ("Zum Löschen vorgemerkt"). */}
-            <Trash2 className="w-4 h-4 shrink-0" strokeWidth={2.4} aria-hidden="true" /><span className="wrap-prose leading-tight text-start">{t.groupAsideShort}</span>
+            {/* Into "Zum Löschen vorgemerkt": nothing is deleted yet, so teal and the archive — red is only for what really deletes. */}
+            <Archive className="w-4 h-4 shrink-0" strokeWidth={2.4} aria-hidden="true" /><span className="wrap-prose leading-tight text-start">{t.groupAsideShort}</span>
           </button>
         </div>
       </div>
@@ -130,6 +136,15 @@ export function SimilarView({ t, kind = 'similar', groups, byId, kept, shown, on
   };
   return (
     <Screen title={words.title} subtitle={plural(t, 'groups', groups.length)} onBack={onBack} backLabel={t.back} info={{ label: t.aboutScreen, close: t.close, how: t.infoHow, body: words.intro }}>
+      {kind === 'similar' && videoGroups.length > 0 && (
+        <Segmented
+          label={words.title} value={part} onChange={setPart}
+          options={[
+            { value: 'photos', label: `${t.statPhotos} · ${num(t, photoGroups.length)}` },
+            { value: 'videos', label: `${t.statVideos} · ${num(t, videoGroups.length)}` },
+          ]}
+        />
+      )}
       {groups.length === 0 ? <Empty title={words.none} body={words.noneBody} back={{ label: t.emptyBack, onClick: onBack }} /> : (
         <>
           <div className="space-y-[10px]">{visible.map(card)}</div>

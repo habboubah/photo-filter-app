@@ -5,10 +5,9 @@ import { StatusBar, Style } from '@capacitor/status-bar';
 import { KeepAwake } from '@capacitor-community/keep-awake';
 import { AlertTriangle, FlaskConical, Images, Sparkles } from 'lucide-react';
 import { useAppStore } from './store';
-import { bytes, fmt, loadFirstRun, percent, plural, stringsFor } from './translations';
+import { bytes, fmt, loadFirstRun, plural, stringsFor } from './translations';
 import type { Photo, Trip, Group } from './types';
-import { PhotoLibrary, fileUrl, type AlbumInfo } from './native/photoLibrary';
-import type { AlbumTarget } from './components/AlbumPickSheet';
+import { PhotoLibrary, fileUrl } from './native/photoLibrary';
 import { PRODUCT_ID, Purchases } from './native/purchases';
 import { loadCities } from './cities';
 import { forgetThumbs } from './thumbs';
@@ -17,7 +16,7 @@ import { buildGroups, buildTrips, cleanupBlurry, detect, findBlurry, makeLibrary
 import { folderName } from './logic/naming';
 import { addMerge, addSplit, removeMerge, removeSplits, setIgnored, setName } from './logic/trips';
 import {
-  Decision, ReviewItem, Session, decide, fileTo, isDone, isNewAlbum, keptAgainstSuggestion, laterIds, toDelete, reviewBlurry, reviewCleanup, reviewGroup,
+  Decision, ReviewItem, Session, decide, fileTo, isDone, keptAgainstSuggestion, laterIds, toDelete, reviewBlurry, reviewCleanup, reviewGroup,
   reviewBin, reviewExposure, reviewFound, reviewLarge, reviewLater, reviewScreenshots, reviewTrip, reviewUtility, settledIds, startSession, undo,
 } from './logic/review';
 import { aiProgress, categories, findSensitive, findUtility, type MemoryLabel } from './logic/ai';
@@ -27,7 +26,7 @@ import { buildMonths, monthRest, monthShare, onThisDay, progress } from './logic
 import { findExposure } from './logic/exposure';
 import { sortFor, type SortScreen } from './logic/sort';
 import { likeProtected, protectedIds } from './logic/protect';
-import { batches, findCompressible, tally } from './logic/compress';
+import { findCompressible } from './logic/compress';
 import { APPS_TILE_MIN, groupBySource, reviewSource } from './logic/sources';
 import { cleanParts } from './logic/smartClean';
 import { type Verdict, groupVerdict } from './logic/confidence';
@@ -44,11 +43,14 @@ import { GESTURES, MOMENTS, hasSeen, nextGesture, nextTip } from './logic/firstR
 import { TIPS, TIP_IDS } from './tips';
 import { type FoundKey, firstGroup, nextStepKind, rankCategories } from './logic/nextStep';
 import { TabBar } from './ui/TabBar';
+import { useAlbums } from './useAlbums';
+import { useMediaTools } from './useMediaTools';
+import { useWidget } from './useWidget';
+import { useNudges } from './useNudges';
+import { sinceWords } from './logic/nudges';
 
-import type { FailedTab } from './components/FailedView';
 import { Progress } from './ui/Controls';
 import { Sheet } from './ui/Sheet';
-import type { ReviewOutcome } from './components/ReviewView';
 import { PaywallSheet, type FreeInfo } from './components/PaywallSheet';
 import type { TaskDone, TaskNext } from './components/FirstTaskSheet';
 import { UNLOCK_ON_SALE, deletesUnlimited, extrasFree, freeDelete, freeLeft } from './logic/allowance';
@@ -77,7 +79,6 @@ const CategoryView = lazy(() => import('./components/CategoryView').then(m => ({
 const TripsView = lazy(() => import('./components/TripsView').then(m => ({ default: m.TripsView })));
 const SettingsView = lazy(() => import('./components/SettingsView').then(m => ({ default: m.SettingsView })));
 const TripView = lazy(() => import('./components/TripView').then(m => ({ default: m.TripView })));
-const CleanupView = lazy(() => import('./components/CleanupView').then(m => ({ default: m.CleanupView })));
 const SimilarView = lazy(() => import('./components/SimilarView').then(m => ({ default: m.SimilarView })));
 const GroupView = lazy(() => import('./components/GroupView').then(m => ({ default: m.GroupView })));
 const ReviewView = lazy(() => withFirstRun(import('./components/ReviewView')).then(m => ({ default: m.ReviewView })));
@@ -208,37 +209,9 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [photos, store.access, store.scan.running, store.stateReady, all]);
 
-  /* ------------------------------------------------------------- widget */
+  /* ------------------------------------------------- widget (src/useWidget.ts) */
 
-  // The home-screen widget shows "On this day" (with its first photo) or the space that could be freed;
-  // sent again only when what it shows changes.
-  const widgetSent = useRef('');
-  useEffect(() => {
-    if (!photos || !summary) return;
-    const storage = store.storage;
-    const data = today.ids.length
-      ? {
-        title: t.onThisDay,
-        line: fmt(t.onThisDayBody, { photos: plural(t, 'photos', today.ids.length), years: today.years.map(y => String(y)).join(', ') }),
-        photoId: today.ids[0],
-      }
-      : {
-        title: summary.total.count ? t.cleanupCard : t.cleanupNone,
-        // With nothing to clean up, the progress figure says something instead (when there is one).
-        line: [summary.total.count ? bytes(t, summary.total.bytes) : pct > 0 ? fmt(t.widgetProgress, { pct: percent(t, pct) }) : null,
-          storage ? fmt(t.storageValue, { free: bytes(t, storage.free), total: bytes(t, storage.total) }) : null].filter(Boolean).join(' · '),
-      };
-    // The Lock Screen widget (iPhone): the space that could be freed and the share gone through.
-    const lock = { freeable: summary.total.bytes, pct };
-    const key = JSON.stringify({ ...data, ...lock });
-    if (key === widgetSent.current) return;
-    const timer = window.setTimeout(() => {
-      widgetSent.current = key;
-      void PhotoLibrary.setWidget({ ...data, ...lock }).catch(() => {});
-    }, 1500);
-    return () => window.clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [photos, summary, today, store.storage, language, pct]);
+  useWidget({ t, language, ready: !!photos, summary, today, storage: store.storage, pct });
 
   /* ---------------------------------------------------------- navigation */
 
@@ -255,7 +228,6 @@ export default function App() {
 
   const [showTrips, setShowTrips] = useState(false);
   const [tripKey, setTripKey] = useState<string | null>(null);
-  const [showCleanup, setShowCleanup] = useState(false);
   const [showSimilar, setShowSimilar] = useState(false);
   const [similarShown, setSimilarShown] = useState(40);
   const [groupKey, setGroupKey] = useState<string | null>(null);
@@ -264,11 +236,7 @@ export default function App() {
   const [firstTask, setFirstTask] = useState(false);
   const [taskDone, setTaskDone] = useState<(TaskDone & { undo: () => void }) | null>(null);
   const [showBlurry, setShowBlurry] = useState(false);
-  const [failedTab, setFailedTab] = useState<FailedTab>('blurry');
-  const openFailed = (tab: FailedTab) => { setFailedTab(tab); setShowBlurry(true); };
   const [showDuplicates, setShowDuplicates] = useState(false);
-  const [showVideoGroups, setShowVideoGroups] = useState(false);
-  const [videoGroupsShown, setVideoGroupsShown] = useState(40);
   const [showVideos, setShowVideos] = useState(false);
   const [duplicatesShown, setDuplicatesShown] = useState(40);
   const [showScreenshots, setShowScreenshots] = useState(false);
@@ -353,17 +321,16 @@ export default function App() {
     ['trip', !!trip, () => setTripKey(null)],
     ['similar', showSimilar, () => setShowSimilar(false)],
     ['duplicates', showDuplicates, () => setShowDuplicates(false)],
-    ['videoGroups', showVideoGroups, () => setShowVideoGroups(false)],
     ['blurry', showBlurry, () => setShowBlurry(false)],
     ['screenshots', showScreenshots, () => setShowScreenshots(false)],
     ['quickClean', showQuickClean, () => setShowQuickClean(false)],
+    // Fotos verkleinern opens from the large files: above them in the stack.
+    ['compress', showCompress, () => setShowCompress(false)],
     ['large', showLarge, () => setShowLarge(false)],
     ['videos', showVideos, () => setShowVideos(false)],
     ['utility', showUtility, () => setShowUtility(false)],
     ['live', showLive, () => setShowLive(false)],
-    ['compress', showCompress, () => setShowCompress(false)],
     ['apps', showApps, () => setShowApps(false)],
-    ['cleanup', showCleanup, () => setShowCleanup(false)],
     ['album', !!albumKey, () => setAlbumKey(null)],
     ['category', !!category, () => setCategory(null)],
     ['months', showMonths, () => setShowMonths(false)],
@@ -408,6 +375,14 @@ export default function App() {
   // The two tabs and the first run's steps are one screen for the stack, but each its own for the
   // transition: going from one to the next crossfades (dir 2) instead of sliding.
   const screenKey = screen !== 'home' ? screen : root === 'home' ? `home-${tab}` : `root-${root}`;
+
+  // Coming back (src/useNudges.ts): what is new since the last visit, a new trip, the reminder offered once, the rating after a win.
+  const nudges = useNudges({
+    photos: photos ? lib.photos : null, groups, trips, ready: scanFinished,
+    atHome: screen === 'home' && root === 'home', debug: store.debug, reminderOn: store.reminder,
+  });
+  // A trip looked at is no news any more, wherever it was opened.
+  useEffect(() => { if (tripKey) nudges.seeTrip(tripKey); }, [tripKey]); // eslint-disable-line react-hooks/exhaustive-deps
   const isRoot = (key: string) => key.startsWith('home-') || key.startsWith('root-');
 
   const nav = useRef({ screen: screenKey, depth: 0, dir: 0 });
@@ -489,9 +464,10 @@ export default function App() {
       if (r.dryRun) { show(fmt(t.dryRunDelete, { photos: plural(t, 'photos', ids.length) })); return true; }
       store.addFreed(r.trashed.length, r.trashed.reduce((sum, id) => sum + (all.byId.get(id)?.bytes ?? 0), 0));
       store.binRemove(r.trashed);
-      store.markDay();
       if (free) store.countFree(r.trashed.length);
       store.removePhotos(r.trashed);
+      // Space was freed: one step towards asking for a rating (src/logic/nudges.ts).
+      if (r.trashed.length) nudges.win();
       forgetThumbs(r.trashed);
       store.refreshStorage();
       notifySuccess();
@@ -557,88 +533,19 @@ export default function App() {
     }
   };
 
-  /* ----------------------------------------------- videos and Live Photos */
+  /* ------------------------- videos, smaller photos, Live Photos (src/useMediaTools.ts) */
 
-  // Making a video smaller: progress while it runs, then the question whether the original may go.
-  const [compressing, setCompressing] = useState<{ id: string; progress: number } | null>(null);
-  const [afterCompress, setAfterCompress] = useState<{ id: string; before: number; after: number } | null>(null);
-  // Photos made smaller, in batches: where the run is (the progress events count within one batch).
-  const [photoRun, setPhotoRun] = useState<{ total: number; progress: number } | null>(null);
-  const [afterPhotos, setAfterPhotos] = useState<{ from: string[]; saved: number } | null>(null);
-  const run = useRef({ batch: 0, batches: 1, stop: false });
-  useEffect(() => {
-    const handle = PhotoLibrary.addListener('compressProgress', e => {
-      if (e.id === 'photos') {
-        const r = run.current;
-        setPhotoRun(p => (p ? { ...p, progress: Math.min(1, (r.batch + e.progress) / r.batches) } : p));
-        return;
-      }
-      setCompressing(c => (c && c.id === e.id ? { ...c, progress: e.progress } : c));
-    });
-    // Into the background: the run stops after the batch it is in (iOS would pause it anyway).
-    const away = CapacitorApp.addListener('appStateChange', ({ isActive }) => { if (!isActive) run.current.stop = true; });
-    return () => { for (const h of [handle, away]) void h.then(x => x.remove()).catch(() => {}); };
-  }, []);
-  const compressPhotos = async (list: Photo[]) => {
-    const parts = batches(list.map(p => p.id));
-    run.current = { batch: 0, batches: parts.length, stop: false };
-    setPhotoRun({ total: list.length, progress: 0 });
-    const results: { from: string; to: string; before: number; after: number }[] = [];
-    let failed = false;
-    try {
-      for (const [i, part] of parts.entries()) {
-        if (run.current.stop) break;
-        run.current.batch = i;
-        const r = await PhotoLibrary.compressPhotos({ ids: part, dryRun: store.dryRun });
-        results.push(...r.results);
-        setPhotoRun(p => (p ? { ...p, progress: (i + 1) / parts.length } : p));
-      }
-    } catch {
-      failed = true;
-    } finally {
-      setPhotoRun(null);
-    }
-    const { count, saved } = tally(results);
-    if (store.dryRun) { show(fmt(t.dryRunCompressPhotos, { photos: plural(t, 'photos', count), size: bytes(t, saved) })); return; }
-    if (!count) { show(failed ? t.compressFailed : t.compressPhotosNone); return; }
-    store.startScan();
-    store.markDay();
-    if (run.current.stop) show(fmt(t.compressPhotosStopped, { photos: plural(t, 'photos', count) }));
-    setShowCompress(false);
-    setAfterPhotos({ from: results.map(r => r.from), saved });
-  };
-  const compress = async (p: Photo) => {
-    setCompressing({ id: p.id, progress: 0 });
-    try {
-      const r = await PhotoLibrary.compressVideo({ id: p.id, dryRun: store.dryRun });
-      if (r.dryRun) { show(fmt(t.dryRunCompress, { before: bytes(t, r.before), after: bytes(t, r.after) })); return; }
-      if (!r.created) { show(t.compressNoGain); return; }
-      store.startScan();
-      store.markDay();
-      setAfterCompress({ id: p.id, before: r.before, after: r.after });
-    } catch {
-      show(t.compressFailed);
-    } finally {
-      setCompressing(null);
-    }
-  };
+  const { compressing, afterCompress, setAfterCompress, photoRun, afterPhotos, setAfterPhotos, compressPhotos, compress, liveConfirm, setLiveConfirm, convertLive } = useMediaTools({
+    t, store, show, trash, onPhotosDone: () => setShowCompress(false), onLiveDone: () => setShowLive(false),
+  });
 
-  const [liveConfirm, setLiveConfirm] = useState<Photo[] | null>(null);
-  const convertLive = async (list: Photo[]) => {
-    setLiveConfirm(null);
-    try {
-      const r = await PhotoLibrary.convertLive({ ids: list.map(p => p.id), dryRun: store.dryRun });
-      if (r.dryRun) { show(fmt(t.dryRunLive, { photos: plural(t, 'photos', r.converted.length) })); return; }
-      if (!r.converted.length) { show(t.liveFailed); return; }
-      store.startScan();
-      store.markDay();
-      const ok = await trash(r.converted.map(c => c.from));
-      if (!ok) show(t.liveKeptBoth);
-      else setShowLive(false);
-    } catch {
-      show(t.liveFailed);
-    }
-  };
+  /* -------------------------------------------- albums (src/useAlbums.ts) */
+
+  const { albumList, setAlbumList, chips, fileAlbums, organizeAlbums, albumMembers, albumPick, setAlbumPick, fileInto } = useAlbums({
+    t, store, show, recent: state.recentAlbums, byId: lib.byId,
+    want: (tab === 'organize' && !!photos) || !!albumKey || !!category,
+  });
+  const onFile = (album: string) => needUnlock(() => setReview(r => (r ? { ...r, session: fileTo(r.session, album) } : r)));
 
   /* -------------------------------------------------------------- review */
 
@@ -652,103 +559,13 @@ export default function App() {
     if (!albumList) void PhotoLibrary.listAlbums().then(r => setAlbumList(r.albums)).catch(() => setAlbumList([]));
   };
 
-  /* -------------------------------------------- albums while swiping */
-
-  // The chips: the albums (iPhone) / folders (Android), the last used first, then by name. Asked when a review opens.
-  const [albumList, setAlbumList] = useState<AlbumInfo[] | null>(null);
-  const chips = useMemo(() => {
-    const recent = state.recentAlbums;
-    const rank = (id: string) => { const i = recent.indexOf(id); return i === -1 ? Infinity : i; };
-    return (albumList ?? []).slice().sort((a, b) => rank(a.id) - rank(b.id) || a.title.localeCompare(b.title, t.locale))
-      .map(a => ({ id: a.id, title: a.title }));
-  }, [albumList, state.recentAlbums, t.locale]);
-  const onFile = (album: string) => needUnlock(() => setReview(r => (r ? { ...r, session: fileTo(r.session, album) } : r)));
-  /** The end screen's albums: one native call for all of them (Android: one dialog). True when done (or nothing to do). */
-  const fileAlbums = async (plan: ReviewOutcome['albums']): Promise<boolean> => {
-    if (!plan.length) return true;
-    const filed = plan.reduce((n, a) => n + a.ids.length, 0);
-    try {
-      const r = await PhotoLibrary.addToAlbums({
-        groups: plan.map(a => (isNewAlbum(a.album) ? { title: a.album.slice(4), ids: a.ids } : { albumId: a.album, ids: a.ids })),
-        dryRun: store.dryRun,
-      });
-      if (r.cancelled) { show(t.filedCancelled); return false; }
-      if (r.dryRun) { show(fmt(t.dryRunFiled, { photos: plural(t, 'photos', filed) })); return true; }
-      store.useAlbums(plan.map(a => a.album).filter(a => !isNewAlbum(a)));
-      setAlbumList(null);
-      if (isAndroid()) store.startScan();
-      notifySuccess();
-      show(fmt(t.filedDone, { photos: plural(t, 'photos', r.done) }));
-      return true;
-    } catch {
-      show(t.filedFailed);
-      return false;
-    }
-  };
-  /* ------------------------------------- Ordnen › Alben, and photos into an album */
-
-  // The albums of the phone for Ordnen, asked while it (or an album) is open; each album's members once, for
-  // its cover and its screen. Filing anything sets the list back to null, so both are asked again.
-  const [albumMembers, setAlbumMembers] = useState<Record<string, string[]> | null>(null);
-  const wantAlbums = (tab === 'organize' && !!photos) || !!albumKey || !!category;
-  useEffect(() => {
-    if (!wantAlbums || albumList) return;
-    void PhotoLibrary.listAlbums().then(r => setAlbumList(r.albums)).catch(() => setAlbumList([]));
-  }, [wantAlbums, albumList]);
-  useEffect(() => {
-    setAlbumMembers(null);
-    if (!albumList?.length) return;
-    let live = true;
-    void (async () => {
-      const out: Record<string, string[]> = {};
-      for (const a of albumList.filter(x => x.count > 0)) {
-        out[a.id] = await PhotoLibrary.albumMembers({ ids: [a.id] }).then(r => r.ids).catch(() => []);
-        if (!live) return;
-      }
-      setAlbumMembers(out);
-    })();
-    return () => { live = false; };
-  }, [albumList]);
-  const organizeAlbums = useMemo(() => {
-    if (!albumList) return null;
-    const recent = state.recentAlbums;
-    const rank = (id: string) => { const i = recent.indexOf(id); return i === -1 ? Infinity : i; };
-    const newest = (ids: string[] | undefined) => {
-      let best: Photo | undefined;
-      for (const id of ids ?? []) { const p = lib.byId.get(id); if (p && (!best || p.t > best.t)) best = p; }
-      return best?.id;
-    };
-    return albumList.filter(a => a.count > 0)
-      .sort((a, b) => rank(a.id) - rank(b.id) || b.count - a.count || a.title.localeCompare(b.title, t.locale))
-      .map(a => ({ id: a.id, title: a.title, count: a.count, cover: newest(albumMembers?.[a.id]) }));
-  }, [albumList, albumMembers, state.recentAlbums, lib.byId, t.locale]);
-
-  // Photos picked for an album (a category's): the sheet that asks which one, then one native call.
-  const [albumPick, setAlbumPick] = useState<{ ids: string[]; name?: string } | null>(null);
-  const fileInto = async (ids: string[], target: AlbumTarget) => {
-    setAlbumPick(null);
-    const albumId = 'albumId' in target ? target.albumId : undefined;
-    try {
-      const r = await PhotoLibrary.addToAlbums({ groups: [albumId ? { albumId, ids } : { title: folderName(target.title), ids }], dryRun: store.dryRun });
-      if (r.cancelled) { show(t.filedCancelled); return; }
-      if (r.dryRun) { show(fmt(t.dryRunFiled, { photos: plural(t, 'photos', ids.length) })); return; }
-      if (albumId) store.useAlbums([albumId]);
-      setAlbumList(null);
-      if (isAndroid()) store.startScan();
-      notifySuccess();
-      show(albumId ? fmt(t.filedDone, { photos: plural(t, 'photos', r.done) }) : fmt(t.albumCreated, { name: folderName(target.title) }));
-    } catch {
-      show(t.filedFailed);
-    }
-  };
-
   const isOld = (p: Photo) => isOldShot(p, now);
   const openMonth = (key: string) => {
     const m = months.find(x => x.key === key);
     if (!m) return;
     // A month left part-way goes on after the last photo decided (AppState.monthAt).
     const ids = monthRest(m, state.monthAt[key], id => lib.byId.get(id)?.t);
-    startReview(reviewTrip(ids, groups, lib.byId, kept, isOld, cos), () => { store.markMonthDone(key); store.markDay(); }, false, key);
+    startReview(reviewTrip(ids, groups, lib.byId, kept, isOld, cos), () => { store.markMonthDone(key); nudges.offerReminder(); }, false, key);
   };
   const onDecide = (d: Decision) => setReview(r => (r ? { ...r, session: decide(r.session, d) } : r));
   const onUndo = () => setReview(r => (r ? { ...r, session: undo(r.session), finished: false } : r));
@@ -805,8 +622,8 @@ export default function App() {
   const failedAll = [...blurry, ...exposureAll];
   const found: Partial<Record<FoundKey, { items: number; covers: string[] }>> = {
     duplicates: { items: dupGroups.length, covers: dupGroups.slice(0, 4).map(g => g.ids.find(id => id !== g.suggested) ?? g.ids[0]) },
-    videos: { items: videoGroups.length, covers: videoGroups.slice(0, 4).map(g => g.ids.find(id => id !== g.suggested) ?? g.ids[0]) },
-    similar: { items: similarGroups.length, covers: similarGroups.slice(0, 4).map(g => g.suggested) },
+    // The similar videos are a switch on the near-identical screen (since 18 November 2026): one row for both.
+    similar: { items: similarGroups.length + videoGroups.length, covers: [...similarGroups, ...videoGroups].slice(0, 4).map(g => g.suggested) },
     failed: { items: failedAll.length, covers: failedAll.slice(0, 4).map(x => x.id) },
     screenshots: { items: shots.length, covers: shots.slice(0, 4).map(x => x.id) },
     ...(aiSeen.seen > 0 ? { utility: { items: utility.length, covers: utility.slice(0, 4).map(x => x.id) } } : {}),
@@ -830,7 +647,7 @@ export default function App() {
   const reviewCategory = (key: FoundKey) => {
     const series = (list: typeof groups) => list.flatMap(g => reviewGroup(g, kept, byId, cos));
     startReview(
-      key === 'similar' ? series(similarGroups)
+      key === 'similar' ? series([...similarGroups, ...videoGroups])
         : key === 'duplicates' ? series(dupGroups)
           : key === 'videos' ? series(videoGroups)
             : key === 'failed' ? reviewCleanup([], cleanupBlurry(blurry, kept), kept, byId, [], [], exposureAll, cos)
@@ -1046,7 +863,7 @@ export default function App() {
     if (showSimilar) {
       return (
         <SimilarView
-          t={t} groups={similarGroups} byId={byId} kept={kept} shown={similarShown}
+          t={t} groups={similarGroups} videoGroups={videoGroups} byId={byId} kept={kept} shown={similarShown}
           onMore={() => setSimilarShown(n => n + 40)}
           onBack={() => setShowSimilar(false)} onOpen={setGroupKey}
           onKeepAll={keepGroup} onAsideOthers={(_, ids, keep) => toBin(ids, keep)}
@@ -1063,23 +880,16 @@ export default function App() {
         />
       );
     }
-    if (showVideoGroups) {
-      return (
-        <SimilarView
-          t={t} kind="lookalike" groups={videoGroups} byId={byId} kept={kept} shown={videoGroupsShown}
-          onMore={() => setVideoGroupsShown(n => n + 40)}
-          onBack={() => setShowVideoGroups(false)} onOpen={setGroupKey}
-          onKeepAll={keepGroup} onAsideOthers={(_, ids, keep) => toBin(ids, keep)}
-        />
-      );
-    }
     if (showBlurry) {
       return (
         <FailedView
-          t={t} {...sorting('failed')} blurry={blurry} dark={exposure.dark} bright={exposure.bright} tab={failedTab}
+          t={t} {...sorting('failed')} blurry={blurry} dark={exposure.dark} bright={exposure.bright}
           onBack={() => setShowBlurry(false)}
-          onReviewBlurry={(list: Photo[]) => startReview(reviewBlurry(list))}
-          onReviewExposure={(list, level) => startReview(reviewExposure(list, level))}
+          onReview={(list: Photo[]) => {
+            // In the grid's order, each photo with its own reason (blurry, too dark, too bright).
+            const dark = new Set(exposure.dark.map(p => p.id)), bright = new Set(exposure.bright.map(p => p.id));
+            startReview(list.flatMap(p => (dark.has(p.id) ? reviewExposure([p], 'dark') : bright.has(p.id) ? reviewExposure([p], 'bright') : reviewBlurry([p]))));
+          }}
           onAside={list => toBin(list.map(p => p.id))}
         />
       );
@@ -1103,6 +913,16 @@ export default function App() {
             startReview(ids.map(id => reasons.get(id)).filter((i): i is ReviewItem => !!i));
           }}
           onDelete={ids => toBin(ids, [], () => setShowQuickClean(false))}
+          onReviewAll={() => startReview(reviewCleanup(groups, cleanupBlurry(blurry, kept), kept, byId, old, utility, exposureAll, cos))}
+        />
+      );
+    }
+    if (showCompress) {
+      return (
+        <CompressView
+          t={t} photos={compressible.photos} screenshots={compressible.screenshots}
+          onBack={() => setShowCompress(false)}
+          onRun={list => needUnlock(() => { void compressPhotos(list); })}
         />
       );
     }
@@ -1110,6 +930,7 @@ export default function App() {
       return (
         <LargeView
           t={t} {...sorting('large')} photos={large} canCompress
+          smaller={compressible.photos.length + compressible.screenshots.length > 0 ? { saving: compressible.saving, onOpen: () => setShowCompress(true) } : null}
           onBack={() => setShowLarge(false)}
           onReview={(list: Photo[]) => startReview(reviewLarge(list))}
           onCompress={p => needUnlock(() => { void compress(p); })}
@@ -1148,32 +969,8 @@ export default function App() {
         />
       );
     }
-    if (showCompress) {
-      return (
-        <CompressView
-          t={t} photos={compressible.photos} screenshots={compressible.screenshots}
-          onBack={() => setShowCompress(false)}
-          onRun={list => needUnlock(() => { void compressPhotos(list); })}
-        />
-      );
-    }
     if (showLive) {
       return <LiveView t={t} {...sorting('live')} photos={live} onBack={() => setShowLive(false)} onConvert={list => needUnlock(() => setLiveConfirm(list))} />;
-    }
-    if (showCleanup && summary) {
-      return (
-        <CleanupView
-          t={t} summary={summary} onBack={() => setShowCleanup(false)}
-          onDuplicates={() => setShowDuplicates(true)}
-          onVideoGroups={() => setShowVideoGroups(true)}
-          onSimilar={() => setShowSimilar(true)} onBlurry={() => openFailed('blurry')}
-          onExposure={() => openFailed(exposure.dark.length ? 'dark' : 'bright')}
-          onScreenshots={() => setShowScreenshots(true)}
-          onUtility={() => setShowUtility(true)}
-          onReviewAll={() => startReview(reviewCleanup(groups, cleanupBlurry(blurry, kept), kept, byId, old, utility, exposureAll, cos))}
-          onQuickClean={() => setShowQuickClean(true)}
-        />
-      );
     }
     if (albumKey) {
       const a = albumList?.find(x => x.id === albumKey);
@@ -1301,8 +1098,6 @@ export default function App() {
         found={found}
         large={{ count: large.length, bytes: large.reduce((sum, x) => sum + x.bytes, 0), cover: large[0]?.id }}
         liveCount={isAndroid() ? 0 : live.length} liveCover={live[0]?.id}
-        compress={{ count: compressible.photos.length + compressible.screenshots.length, saving: compressible.saving, cover: (compressible.photos[0] ?? compressible.screenshots[0])?.id }}
-        onCompress={() => setShowCompress(true)}
         apps={sourcesBytes >= APPS_TILE_MIN ? { bytes: sourcesBytes, cover: sources[0]?.photos[0]?.id } : null}
         onApps={() => setShowApps(true)}
         storage={store.storage} freedBytes={state.freed.bytes}
@@ -1310,6 +1105,17 @@ export default function App() {
         later={{ count: laterPile.length, cover: laterPile[0] }}
         bin={{ count: binned.length, bytes: binBytes, covers: binned.slice(0, 4).map(x => x.id) }}
         onBin={() => setShowBin(true)}
+        since={nudges.since && nudges.sinceFrom ? {
+          when: sinceWords(nudges.sinceFrom, Date.now(), t.locale),
+          photos: nudges.since.ids.length, bytes: nudges.since.bytes, groups: nudges.since.groups,
+          covers: nudges.since.ids.filter(id => !byId.get(id)?.shot).slice(0, 4),
+          onReview: () => { const ids = nudges.since?.ids ?? []; nudges.closeSince(); startReview(reviewTrip(ids, groups, byId, kept, isOld, cos)); },
+          onClose: nudges.closeSince,
+        } : null}
+        newTrip={nudges.trip ? {
+          title: nudges.trip.title, photos: nudges.trip.ids.length, cover: nudges.trip.ids[Math.floor(nudges.trip.ids.length / 2)],
+          onOpen: () => setTripKey(nudges.trip!.key), onClose: () => nudges.seeTrip(nudges.trip!.key),
+        } : null}
         protection={{ albums: state.protect.albums.length, trips: state.protect.trips.length, photos: state.protect.ids.length }}
         onLater={() => startReview(reviewLater(laterPile))}
         onProtected={() => setShowProtected(true)}
@@ -1317,11 +1123,10 @@ export default function App() {
         onSettings={() => setShowSettings(true)}
         onSearch={() => setShowSearch(true)}
         onAddPhotos={addPhotos}
-        onCleanup={() => setShowCleanup(true)}
+        onCleanup={() => setShowQuickClean(true)}
         onSimilar={() => setShowSimilar(true)}
-        onBlurry={() => openFailed('blurry')}
+        onBlurry={() => setShowBlurry(true)}
         onDuplicates={() => setShowDuplicates(true)}
-        onVideoGroups={() => setShowVideoGroups(true)}
         onVideos={() => setShowVideos(true)}
         analysis={{ photos: totals.photos, videos: totals.videos }}
         onScreenshots={() => setShowScreenshots(true)}
@@ -1399,6 +1204,23 @@ export default function App() {
         onCancel={() => setAlbumFor(null)}
       />
 
+      {/* Offered once, after the first month gone through (src/useNudges.ts). */}
+      <Confirm
+        open={nudges.askReminder} title={t.reminderAskTitle} body={t.reminderAskBody}
+        confirmLabel={t.reminderAskYes} cancelLabel={t.reminderAskNo}
+        onConfirm={() => {
+          nudges.closeReminder();
+          void store.setReminder(true, t.reminderTitle, t.reminderBody).then(ok => show(ok ? t.reminderOnToast : t.reminderDenied));
+        }}
+        onCancel={nudges.closeReminder}
+      />
+      {/* Android's rating: a plain question that opens Google Play (iOS has its own prompt). */}
+      <Confirm
+        open={nudges.rateSheet} title={t.rateAskTitle} body={t.rateAskBody}
+        confirmLabel={t.rateAskYes} cancelLabel={t.rateAskLater}
+        onConfirm={() => { nudges.closeRateSheet(); if (rate) openExternal(rate); }}
+        onCancel={nudges.closeRateSheet}
+      />
       <Confirm
         open={!!liveConfirm}
         title={t.liveConfirmTitle}
@@ -1450,7 +1272,7 @@ export default function App() {
       {/* The one tip that is due: loaded (with its words) only when there is one. */}
       {due && !taskDone && <Suspense fallback={null}><TipHost t={t} tip={due} onSeen={store.markSeen} /></Suspense>}
 
-      <Toast toast={toast} onDone={hide} raised={screen === 'bin' ? 'high' : ['trip', 'group', 'blurry', 'screenshots', 'utility', 'quickClean', 'large', 'live', 'compress', 'cleanup', 'review', 'search', 'like'].includes(screen)} />
+      <Toast toast={toast} onDone={hide} raised={screen === 'bin' ? 'high' : ['trip', 'group', 'blurry', 'screenshots', 'utility', 'quickClean', 'large', 'live', 'compress', 'review', 'search', 'like'].includes(screen)} />
     </div>
     </PlayerContext.Provider>
   );

@@ -10,6 +10,7 @@ import WidgetKit
 import CryptoKit
 import ImageIO
 import UniformTypeIdentifiers
+import StoreKit
 import Capacitor
 
 /// The app's own bridge view controller, so it can register our own plugins.
@@ -56,6 +57,7 @@ public class PhotoLibraryPlugin: CAPPlugin, CAPBridgedPlugin, PHPhotoLibraryChan
         CAPPluginMethod(name: "requestAccess", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "addMorePhotos", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "openSettings", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "requestReview", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "startScan", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "cancelScan", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "getScanState", returnType: CAPPluginReturnPromise),
@@ -160,6 +162,19 @@ public class PhotoLibraryPlugin: CAPPlugin, CAPBridgedPlugin, PHPhotoLibraryChan
     @objc func openSettings(_ call: CAPPluginCall) {
         DispatchQueue.main.async {
             if let url = URL(string: UIApplication.openSettingsURLString) { UIApplication.shared.open(url) }
+            call.resolve()
+        }
+    }
+
+    /// Asks iOS for its own rating prompt, after a clean-up that freed space (src/useNudges.ts).
+    /// iOS decides whether it appears (at most three times a year; never in TestFlight); nothing
+    /// goes over the network from here — the system's sheet talks to the App Store itself.
+    @objc func requestReview(_ call: CAPPluginCall) {
+        DispatchQueue.main.async {
+            if let scene = UIApplication.shared.connectedScenes
+                .first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene {
+                AppStore.requestReview(in: scene)
+            }
             call.resolve()
         }
     }
