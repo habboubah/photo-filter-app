@@ -1135,6 +1135,7 @@ export default function App() {
         <UtilityView
           t={t} {...sorting('utility')} photos={utility} progress={aiSeen} onBack={() => setShowUtility(false)}
           onReview={(list: Photo[]) => startReview(reviewUtility(list))}
+          onAside={list => toBin(list.map(p => p.id))}
         />
       );
     }

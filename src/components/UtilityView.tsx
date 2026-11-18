@@ -1,10 +1,14 @@
 import { useState } from 'react';
+import { AnimatePresence } from 'motion/react';
+import { Archive } from 'lucide-react';
 import type { Photo } from '../types';
 import { Strings, bytes, fmt, num, plural } from '../translations';
 import { groupUtility, type UtilityLabel } from '../logic/ai';
 import { Dock, Empty, Screen } from '../ui/Screen';
 import { Button } from '../ui/Button';
 import { PhotoGrid } from '../ui/Photo';
+import { SelectBar } from '../ui/SelectBar';
+import { ZoomView } from '../ui/Zoom';
 import { tapLight } from '../ui/haptics';
 import { sortPhotos, type SortKey } from '../logic/sort';
 import { SortButton } from './SortButton';
@@ -12,10 +16,12 @@ import { SortButton } from './SortButton';
 /**
  * The utility photos the on-device AI found (src/logic/ai.ts): receipts,
  * documents, QR codes, photos of screens … newest first, filtered by what the
- * AI took them for, and "Go through" into the review. The AI only suggests:
- * nothing goes without the review and the system's own dialog.
+ * AI took them for, and "Go through" into the review. A tap opens a photo
+ * large; its circle picks it, and the picked ones go to "Zum Löschen
+ * vorgemerkt" at once. The AI only suggests: nothing is deleted without the
+ * bin's sheet and the system's own dialog.
  */
-export function UtilityView({ t, photos, progress, sort, onSort, onBack, onReview }: {
+export function UtilityView({ t, photos, progress, sort, onSort, onBack, onReview, onAside }: {
   t: Strings;
   /** Already without kept photos and favourites, newest first (findUtility). */
   photos: Photo[];
@@ -25,13 +31,21 @@ export function UtilityView({ t, photos, progress, sort, onSort, onBack, onRevie
   onSort: (key: SortKey) => void;
   onBack: () => void;
   onReview: (photos: Photo[]) => void;
+  /** The picked photos into "Zum Löschen vorgemerkt" (nothing is deleted). */
+  onAside: (photos: Photo[]) => void;
 }) {
+  const [open, setOpen] = useState<string | null>(null);
+  const [picked, setPicked] = useState<Set<string>>(() => new Set());
+  const toggle = (id: string) => setPicked(old => { const next = new Set(old); if (next.has(id)) next.delete(id); else next.add(id); return next; });
   const groups = groupUtility(photos);
   const [filter, setFilter] = useState<UtilityLabel | 'all'>('all');
   const shown = sortPhotos(filter === 'all' ? photos : groups.find(g => g.label === filter)?.photos ?? [], sort);
   const byId = new Map(shown.map(p => [p.id, p]));
   const total = shown.reduce((s, p) => s + p.bytes, 0);
   const checking = progress.total > 0 && progress.seen < progress.total;
+  const chosen = shown.filter(p => picked.has(p.id));
+  const chosenBytes = chosen.reduce((s, p) => s + p.bytes, 0);
+  const when = (id: string) => new Date(byId.get(id)!.t).toLocaleString(t.locale, { dateStyle: 'medium', timeStyle: 'short' });
 
   return (
     <Screen title={t.utilityTitle} subtitle={`${plural(t, 'photos', shown.length)} · ${bytes(t, total)}`} onBack={onBack} backLabel={t.back} info={{ label: t.aboutScreen, close: t.close, body: t.utilityIntro }} docked={shown.length > 0}
@@ -56,15 +70,44 @@ export function UtilityView({ t, photos, progress, sort, onSort, onBack, onRevie
         </div>
       )}
       {shown.length === 0 ? <Empty title={t.noUtility} body={t.noUtilityBody} back={{ label: t.emptyBack, onClick: onBack }} /> : (
-        <PhotoGrid
-          ids={shown.map(p => p.id)}
-          columns={4}
-          label={id => new Date(byId.get(id)!.t).toLocaleString(t.locale, { dateStyle: 'medium', timeStyle: 'short' })}
-        />
+        <>
+          <SelectBar
+            text={chosen.length ? plural(t, 'binPicked', chosen.length) : t.selectHint}
+            all={chosen.length === shown.length} none={chosen.length === 0}
+            onAll={() => setPicked(old => new Set([...old, ...shown.map(p => p.id)]))} onNone={() => setPicked(new Set())}
+            labels={{ all: t.pickAll, none: t.pickNone }}
+          />
+          <PhotoGrid
+            ids={shown.map(p => p.id)}
+            columns={4}
+            label={when}
+            onOpen={setOpen}
+            selected={picked} onSelect={toggle}
+            selectLabel={id => fmt(t.selectTile, { item: when(id) })}
+          />
+        </>
       )}
       {shown.length > 0 && (
-        <Dock><Button full size="lg" onClick={() => onReview(shown)}>{`${t.reviewUtility} · ${plural(t, 'photos', shown.length)} · ${bytes(t, total)}`}</Button></Dock>
+        <Dock>
+          {chosen.length > 0 ? (
+            // Into "Zum Löschen vorgemerkt": nothing is deleted here, so teal and the archive, never red.
+            <Button full size="lg" icon={Archive} onClick={() => { onAside(chosen); setPicked(new Set()); }}>
+              {`${t.aside} · ${plural(t, 'photos', chosen.length)} · ${bytes(t, chosenBytes)}`}
+            </Button>
+          ) : (
+            <Button full size="lg" onClick={() => onReview(shown)}>{`${t.reviewUtility} · ${plural(t, 'photos', shown.length)} · ${bytes(t, total)}`}</Button>
+          )}
+        </Dock>
       )}
+      <AnimatePresence>
+        {open && byId.has(open) && (
+          <ZoomView
+            key="zoom" id={open} alt={when(open)}
+            labels={{ close: t.close, zoomIn: t.zoomIn, zoomOut: t.zoomOut, hint: t.zoomHint }}
+            onClose={() => setOpen(null)}
+          />
+        )}
+      </AnimatePresence>
     </Screen>
   );
 }
