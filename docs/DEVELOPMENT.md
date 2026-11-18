@@ -49,8 +49,9 @@ npm run test:android     # FeatureMath.kt against fixtures/features (JUnit)
   resolves the Swift packages.
 - **Android:** `npm run build:android` (Android Studio) or `npm run android:debug`
   (an APK to install with `adb install`).
-- Both use `vite build --mode native`: without the demo library. A debug build
-  starts with the **dry run** on — switch it off in Settings to really write.
+- Both use `vite build --mode native`: without the demo library. There is no
+  dry run: a debug build really moves photos to Recently Deleted / the Trash
+  (after the system's dialog), so test on photos you can get back.
 
 ## The demo library
 
@@ -78,8 +79,7 @@ The demo's state lives in localStorage: `bildklar-demo-access`
 `bildklar-demo-scanned`, `bildklar-demo-owned`, `bildklar-demo-trashed`,
 `bildklar-demo-restorable`, `bildklar-demo-scan-step` (ms per step of a first
 scan; the scan screenshot slows it down). `bildklar-dev-platform` = `android`
-gives a development or demo build Android's words. In dev the app is a "debug build": the dry run is
-on until `bildklar-dry-run` is `0`.
+gives a development or demo build Android's words.
 
 ## The test library
 

@@ -2,7 +2,7 @@
  * Without the unlock, the first FREE_DELETES photos (or videos) may be moved to
  * Recently Deleted / the Trash anyway — enough to see that Bildklar's
  * suggestions are good before paying. Counted when the system's dialog was
- * confirmed (never in a dry run), kept with the user's decisions (so a reset
+ * confirmed, kept with the user's decisions (so a reset
  * of the decisions does not hand out new ones; a reinstall does). Albums,
  * smaller videos and Live Photo conversions are part of the unlock once it
  * is for sale.

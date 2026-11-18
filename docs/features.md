@@ -336,8 +336,7 @@ then *Mehr Platz* and *Geschützt*.
   in the same albums. Android: HEIC through HeifWriter where the phone has an
   HEVC encoder, else JPEG at quality 82; EXIF, date taken and folder kept.
 - A copy is kept only when it is at least 30 % smaller. Works in batches of 20
-  and stops cleanly when the app goes to the background. The dry run encodes
-  but writes nothing.
+  and stops cleanly when the app goes to the background.
 
 ## Live Photos (iPhone)
 - Every Live Photo, newest first, with the estimated saving (≈ 3 MB each).
@@ -668,8 +667,6 @@ then *Mehr Platz* and *Geschützt*.
   is suggested), *Alle Tipps wieder zeigen*; *Drei Sicherheitsnetze* and
   *Fotos schützen* to read at any time; *Alle Hinweise ausblenden*.
 - **Darstellung**: language (Deutsch, English, العربية — right to left), appearance (system, light, dark).
-- **Nur in der Debug-Version**: *Probelauf* [Dry run] — on by default in debug
-  builds: nothing in the photo library changes, the app says what it would have done.
 - **Über die App**: rate (once the App Store id is set), feedback by mail,
   privacy policy, *Lizenzen*: every open-source part the app ships (npm
   packages, ONNX Runtime, the SigLIP 2 model, the fonts, GeoNames; on Android

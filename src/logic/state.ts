@@ -39,7 +39,7 @@ export interface AppState {
    * 18 November 2026 (older files have none).
    */
   monthAt: Record<string, number>;
-  /** What the app has moved to Recently Deleted / the Trash so far (not in a dry run). */
+  /** What the app has moved to Recently Deleted / the Trash so far. */
   freed: { count: number; bytes: number };
   /** Photos deleted without the unlock (src/logic/allowance.ts). */
   freeUsed: number;

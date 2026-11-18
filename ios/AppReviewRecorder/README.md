@@ -65,8 +65,7 @@ and 5 are done.
    *Create album* for everyone — the scenes don't tap it (the album scene can
    come back: git history, "A trip becomes an album"). When the unlock goes
    on sale, buy it once with the TestFlight build again.
-4. **Debug only:** a debug build has the dry run on, so nothing would be
-   deleted — record with the TestFlight build, as App Review sees it.
+4. **Record with the TestFlight build**, as App Review sees it.
 
 ## Every recording
 

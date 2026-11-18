@@ -93,7 +93,7 @@ glass and on a photo's shade).
 | `accent-dim` | a teal tint behind an icon or a pressed ghost button |
 | `keep` (+ `-dim`, `-ink`) | green: keep, the photo that stays, done |
 | `neg` (+ `-dim`, `-ink`) | red: only what really deletes |
-| `warn` (+ `-dim`) | amber: blurry, "check this one", the dry run banner |
+| `warn` (+ `-dim`) | amber: blurry, "check this one" |
 | `on-color`, `veil`, `shade` | white ink on a photo, the dark chip under it, the shade at a photo card's foot |
 | `data-hue` → `hue-bg`, `hue-ink`, `hue-solid` | a category's colour: its icon tile, its dot, its segment of the storage bar (sky, sand, mint, rose, lilac, stone, cyan, pink) |
 

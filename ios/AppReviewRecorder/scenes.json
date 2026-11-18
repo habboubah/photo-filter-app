@@ -39,7 +39,6 @@
   "localStorage": {
    "bildklar-demo-access": "full",
    "bildklar-demo-scanned": "1",
-   "bildklar-dry-run": "0",
    "bildklar-welcome": "1",
    "bildklar-seen": "[\"*\"]",
    "bildklar-demo-restorable": "1"

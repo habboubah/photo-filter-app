@@ -3,6 +3,19 @@
 What changed and what left, newest first — so `docs/features.md` can say
 only how the app is now. (Started 18 November 2026; older history is in git.)
 
+## 18 November 2026, last — ready for production
+
+- **The dry run is gone**: the *Probelauf* switch (Einstellungen › Nur in der
+  Debug-Version), the amber banner, its toasts and `DRY_RUN_IN_RELEASE`;
+  `dryRun` left every native write (iPhone, Android, the demo library). Every
+  build writes for real. The suggestion ledger in Settings shows in debug
+  builds only.
+- **Behalten on the lists**: *Unwichtige Fotos*, *Bildschirmfotos* and
+  *Missglückt* offer *Behalten* under *Zum Löschen vormerken* for the picked
+  photos — kept, off the list, never suggested again (undo in the toast).
+- **The group card's buttons** sit side by side under the date as two tinted
+  pills: *Alle behalten* green, *Ohne Stern vormerken* red (Ahmad's choice).
+
 ## 18 November 2026, late night — never wider than a phone
 
 - The wide layout of an hour before is gone: on a laptop it looked strange.

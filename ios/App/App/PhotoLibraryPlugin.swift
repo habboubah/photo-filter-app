@@ -45,9 +45,6 @@ class MainViewController: CAPBridgeViewController {
 ///   then Recently Deleted.
 /// - the user's decisions: a JSON file in Application Support (not the web
 ///   view's localStorage, which iOS may clear when the phone runs short of space).
-///
-/// Every write to the photo library honours `dryRun`: nothing is written, the
-/// answer says what would have happened.
 @objc(PhotoLibraryPlugin)
 public class PhotoLibraryPlugin: CAPPlugin, CAPBridgedPlugin, PHPhotoLibraryChangeObserver {
     public let identifier = "PhotoLibraryPlugin"
@@ -637,9 +634,8 @@ public class PhotoLibraryPlugin: CAPPlugin, CAPBridgedPlugin, PHPhotoLibraryChan
     @objc func createAlbum(_ call: CAPPluginCall) {
         let title = String((call.getString("title") ?? "Bildklar").prefix(80))
         let list = ids(call)
-        let dryRun = call.getBool("dryRun") ?? false
-        if dryRun || list.isEmpty {
-            call.resolve(["done": list.count, "cancelled": false, "dryRun": dryRun])
+        if list.isEmpty {
+            call.resolve(["done": 0, "cancelled": false])
             return
         }
         let assets = fetch(list)
@@ -650,9 +646,9 @@ public class PhotoLibraryPlugin: CAPPlugin, CAPBridgedPlugin, PHPhotoLibraryChan
             request.addAssets(assets)
         }) { ok, error in
             if ok {
-                call.resolve(["done": count, "cancelled": false, "dryRun": false])
+                call.resolve(["done": count, "cancelled": false])
             } else if Self.isCancel(error) {
-                call.resolve(["done": 0, "cancelled": true, "dryRun": false])
+                call.resolve(["done": 0, "cancelled": true])
             } else {
                 call.reject(error?.localizedDescription ?? "Could not create the album")
             }
@@ -720,10 +716,8 @@ public class PhotoLibraryPlugin: CAPPlugin, CAPBridgedPlugin, PHPhotoLibraryChan
             let title = (g["title"] as? String).map { String($0.prefix(80)) }
             return ids.isEmpty || (albumId == nil && (title ?? "").isEmpty) ? nil : (albumId, title, ids)
         }
-        let dryRun = call.getBool("dryRun") ?? false
-        let total = groups.reduce(0) { $0 + $1.ids.count }
-        if dryRun || groups.isEmpty {
-            call.resolve(["done": total, "cancelled": false, "dryRun": dryRun])
+        if groups.isEmpty {
+            call.resolve(["done": 0, "cancelled": false])
             return
         }
         var done = 0
@@ -742,9 +736,9 @@ public class PhotoLibraryPlugin: CAPPlugin, CAPBridgedPlugin, PHPhotoLibraryChan
             }
         }) { ok, error in
             if ok {
-                call.resolve(["done": done, "cancelled": false, "dryRun": false])
+                call.resolve(["done": done, "cancelled": false])
             } else if Self.isCancel(error) {
-                call.resolve(["done": 0, "cancelled": true, "dryRun": false])
+                call.resolve(["done": 0, "cancelled": true])
             } else {
                 call.reject(error?.localizedDescription ?? "Could not add to the albums")
             }
@@ -784,9 +778,8 @@ public class PhotoLibraryPlugin: CAPPlugin, CAPBridgedPlugin, PHPhotoLibraryChan
 
     @objc func trash(_ call: CAPPluginCall) {
         let list = ids(call)
-        let dryRun = call.getBool("dryRun") ?? false
-        if dryRun || list.isEmpty {
-            call.resolve(["trashed": list, "cancelled": false, "dryRun": dryRun])
+        if list.isEmpty {
+            call.resolve(["trashed": [String](), "cancelled": false])
             return
         }
         let assets = fetch(list)
@@ -798,9 +791,9 @@ public class PhotoLibraryPlugin: CAPPlugin, CAPBridgedPlugin, PHPhotoLibraryChan
         }) { [weak self] ok, error in
             if ok {
                 self?.queue.async { self?.store?.delete(found) }
-                call.resolve(["trashed": found, "cancelled": false, "dryRun": false])
+                call.resolve(["trashed": found, "cancelled": false])
             } else if Self.isCancel(error) {
-                call.resolve(["trashed": [], "cancelled": true, "dryRun": false])
+                call.resolve(["trashed": [], "cancelled": true])
             } else {
                 call.reject(error?.localizedDescription ?? "Could not delete")
             }
@@ -825,16 +818,10 @@ public class PhotoLibraryPlugin: CAPPlugin, CAPBridgedPlugin, PHPhotoLibraryChan
     /// in the same albums. The Live Photos stay — the web layer asks to trash them (the system's dialog).
     @objc func convertLive(_ call: CAPPluginCall) {
         let list = ids(call)
-        let dryRun = call.getBool("dryRun") ?? false
         work.async { [weak self] in
             guard let self else { return }
             var lives: [PHAsset] = []
             self.fetch(list).enumerateObjects { a, _, _ in if a.mediaSubtypes.contains(.photoLive) { lives.append(a) } }
-            if dryRun {
-                let would = lives.map { ["from": $0.localIdentifier, "to": ""] }
-                call.resolve(["converted": would, "skipped": list.count - lives.count, "dryRun": true])
-                return
-            }
             var converted: [[String: String]] = []
             for asset in lives {
                 guard let data = self.imageData(asset) else { continue }
@@ -860,7 +847,7 @@ public class PhotoLibraryPlugin: CAPPlugin, CAPBridgedPlugin, PHPhotoLibraryChan
                 }
                 if let created { converted.append(["from": asset.localIdentifier, "to": created]) }
             }
-            call.resolve(["converted": converted, "skipped": list.count - converted.count, "dryRun": false])
+            call.resolve(["converted": converted, "skipped": list.count - converted.count])
         }
     }
 
@@ -872,11 +859,10 @@ public class PhotoLibraryPlugin: CAPPlugin, CAPBridgedPlugin, PHPhotoLibraryChan
     /// "Fotos verkleinern": each JPEG or PNG re-saved as HEIC (quality 0.8) with all its metadata (EXIF, GPS,
     /// orientation, date), kept only when at least 30 % smaller, as a new asset with the same creation date,
     /// place and favourite flag in the same albums. The originals stay — the web layer asks to trash them
-    /// (the system's dialog). A dry run encodes but writes nothing. One batch (≤ 20) per call; progress as
+    /// (the system's dialog). One batch (≤ 20) per call; progress as
     /// `compressProgress` events with id "photos". Skipped: Live Photos, edited photos, iCloud-only originals.
     @objc func compressPhotos(_ call: CAPPluginCall) {
         let list = ids(call)
-        let dryRun = call.getBool("dryRun") ?? false
         work.async { [weak self] in
             guard let self else { return }
             var assets: [PHAsset] = []
@@ -890,10 +876,6 @@ public class PhotoLibraryPlugin: CAPPlugin, CAPBridgedPlugin, PHPhotoLibraryChan
                     let before = Int64(data.count)
                     let after = Int64(heic.count)
                     guard Double(after) <= Double(before) * (1 - Self.keepMinSaving) else { return }
-                    if dryRun {
-                        results.append(["from": asset.localIdentifier, "to": "", "before": before, "after": after])
-                        return
-                    }
                     let albums = PHAssetCollection.fetchAssetCollectionsContaining(asset, with: .album, options: nil)
                     let original = PHAssetResource.assetResources(for: asset).first(where: { $0.type == .photo })?.originalFilename
                     let name = (original as NSString?)?.deletingPathExtension ?? "Bildklar"
@@ -921,7 +903,7 @@ public class PhotoLibraryPlugin: CAPPlugin, CAPBridgedPlugin, PHPhotoLibraryChan
                     if let created { results.append(["from": asset.localIdentifier, "to": created, "before": before, "after": after]) }
                 }
             }
-            call.resolve(["results": results, "dryRun": dryRun])
+            call.resolve(["results": results])
         }
     }
 
@@ -953,10 +935,9 @@ public class PhotoLibraryPlugin: CAPPlugin, CAPBridgedPlugin, PHPhotoLibraryChan
     }
 
     /// A smaller copy of a video (HEVC, at most 1080p) saved as a new asset with the same date, place and
-    /// favourite flag. Nothing is saved when the copy is not at least 20 % smaller, or in a dry run.
+    /// favourite flag. Nothing is saved when the copy is not at least 20 % smaller.
     @objc func compressVideo(_ call: CAPPluginCall) {
         guard let id = call.getString("id") else { call.reject("No id"); return }
-        let dryRun = call.getBool("dryRun") ?? false
         work.async { [weak self] in
             guard let self else { return }
             guard let asset = self.fetch([id]).firstObject, asset.mediaType == .video else { call.reject("Video not found"); return }
@@ -982,8 +963,8 @@ public class PhotoLibraryPlugin: CAPPlugin, CAPBridgedPlugin, PHPhotoLibraryChan
             guard exporter.status == .completed else { call.reject("Could not make the video smaller"); return }
             self.emit("compressProgress", ["id": id, "progress": 1.0])
             let after = Int64((try? out.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0)
-            if dryRun || after <= 0 || Double(after) > Double(before) * 0.8 {
-                call.resolve(["created": NSNull(), "before": Double(before), "after": Double(after), "dryRun": dryRun])
+            if after <= 0 || Double(after) > Double(before) * 0.8 {
+                call.resolve(["created": NSNull(), "before": Double(before), "after": Double(after)])
                 return
             }
             var created: String?
@@ -1003,7 +984,7 @@ public class PhotoLibraryPlugin: CAPPlugin, CAPBridgedPlugin, PHPhotoLibraryChan
                 return
             }
             if let created {
-                call.resolve(["created": created, "before": Double(before), "after": Double(after), "dryRun": false])
+                call.resolve(["created": created, "before": Double(before), "after": Double(after)])
             } else {
                 call.reject("Could not save the smaller video")
             }

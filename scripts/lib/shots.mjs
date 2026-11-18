@@ -72,8 +72,6 @@ export function prefs({ lang = 'de', theme = 'light', access = 'full', scanned =
     'bildklar-demo-scanned': scanned ? '1' : null,
     'bildklar-demo-owned': owned ? '1' : null,
     'bildklar-demo-scan-step': scanStep,
-    // The production build is no debug build: no dry run, no debug badges.
-    'bildklar-dry-run': '0',
   };
 }
 

@@ -74,9 +74,6 @@ import java.util.concurrent.atomic.AtomicBoolean
  * - deleting: MediaStore.createTrashRequest — the system's dialog, then the Trash.
  *   Never the permanent delete request.
  * - the user's decisions: a JSON file in the app's files (not localStorage).
- *
- * Every write to the photo library honours `dryRun`: nothing is written, the
- * answer says what would have happened.
  */
 @CapacitorPlugin(name = "PhotoLibrary")
 class PhotoLibraryPlugin : Plugin() {
@@ -632,15 +629,14 @@ class PhotoLibraryPlugin : Plugin() {
     fun createAlbum(call: PluginCall) {
         val title = (call.getString("title") ?: "").replace(Regex("[\\\\/:*?\"<>|\\p{Cntrl}]"), " ").trim().ifEmpty { "Bildklar" }.take(80)
         val list = ids(call)
-        val dryRun = call.getBoolean("dryRun", false) == true
-        if (dryRun || list.isEmpty()) {
-            call.resolve(JSObject().put("done", list.size).put("cancelled", false).put("dryRun", dryRun))
+        if (list.isEmpty()) {
+            call.resolve(JSObject().put("done", 0).put("cancelled", false))
             return
         }
         val target = "${android.os.Environment.DIRECTORY_PICTURES}/Bildklar/$title/"
         withConsent(list.map(::contentUri), { MediaStore.createWriteRequest(context.contentResolver, it) }) { approved, cancelled ->
             if (cancelled) {
-                call.resolve(JSObject().put("done", 0).put("cancelled", true).put("dryRun", false))
+                call.resolve(JSObject().put("done", 0).put("cancelled", true)))
                 return@withConsent
             }
             io.execute {
@@ -650,7 +646,7 @@ class PhotoLibraryPlugin : Plugin() {
                     // Only the folder changes (the file is moved on disk); the picture itself is never touched.
                     try { if (context.contentResolver.update(uri, values, null, null) > 0) done++ } catch (_: Exception) { }
                 }
-                call.resolve(JSObject().put("done", done).put("cancelled", false).put("dryRun", false))
+                call.resolve(JSObject().put("done", done).put("cancelled", false)))
             }
         }
     }
@@ -662,7 +658,6 @@ class PhotoLibraryPlugin : Plugin() {
      */
     @PluginMethod
     fun addToAlbums(call: PluginCall) {
-        val dryRun = call.getBoolean("dryRun", false) == true
         val target = HashMap<String, String>()
         val raw = call.getArray("groups") ?: JSArray()
         for (i in 0 until raw.length()) {
@@ -674,14 +669,14 @@ class PhotoLibraryPlugin : Plugin() {
             val ids = g.optJSONArray("ids") ?: continue
             for (j in 0 until ids.length()) ids.optString(j).takeIf { it.contains(':') }?.let { target[it] = path }
         }
-        if (dryRun || target.isEmpty()) {
-            call.resolve(JSObject().put("done", target.size).put("cancelled", false).put("dryRun", dryRun))
+        if (target.isEmpty()) {
+            call.resolve(JSObject().put("done", 0).put("cancelled", false))
             return
         }
         val byUri = target.keys.associateBy { contentUri(it) }
         withConsent(byUri.keys.toList(), { MediaStore.createWriteRequest(context.contentResolver, it) }) { approved, cancelled ->
             if (cancelled) {
-                call.resolve(JSObject().put("done", 0).put("cancelled", true).put("dryRun", false))
+                call.resolve(JSObject().put("done", 0).put("cancelled", true)))
                 return@withConsent
             }
             io.execute {
@@ -691,7 +686,7 @@ class PhotoLibraryPlugin : Plugin() {
                     val values = ContentValues().apply { put(MediaStore.MediaColumns.RELATIVE_PATH, path) }
                     try { if (context.contentResolver.update(uri, values, null, null) > 0) done++ } catch (_: Exception) { }
                 }
-                call.resolve(JSObject().put("done", done).put("cancelled", false).put("dryRun", false))
+                call.resolve(JSObject().put("done", done).put("cancelled", false)))
             }
         }
     }
@@ -778,9 +773,8 @@ class PhotoLibraryPlugin : Plugin() {
     @PluginMethod
     fun trash(call: PluginCall) {
         val list = ids(call)
-        val dryRun = call.getBoolean("dryRun", false) == true
-        if (dryRun || list.isEmpty()) {
-            call.resolve(JSObject().put("trashed", JSArray(list)).put("cancelled", false).put("dryRun", dryRun))
+        if (list.isEmpty()) {
+            call.resolve(JSObject().put("trashed", JSArray()).put("cancelled", false))
             return
         }
         val byUri = list.associateBy { contentUri(it) }
@@ -788,7 +782,7 @@ class PhotoLibraryPlugin : Plugin() {
         withConsent(byUri.keys.toList(), { MediaStore.createTrashRequest(context.contentResolver, it, true) }) { approved, cancelled ->
             val trashed = approved.mapNotNull { byUri[it] }
             if (trashed.isNotEmpty()) scanThread.execute { store.delete(trashed) }
-            call.resolve(JSObject().put("trashed", JSArray(trashed)).put("cancelled", cancelled).put("dryRun", false))
+            call.resolve(JSObject().put("trashed", JSArray(trashed)).put("cancelled", cancelled)))
         }
     }
 
@@ -813,7 +807,7 @@ class PhotoLibraryPlugin : Plugin() {
      * A smaller copy of a video: re-encoded (HEVC where the phone has an
      * encoder, else what it falls back to) at about a third of its bitrate,
      * between 2 and 8 Mbit/s, saved next to it with the same date. Nothing is
-     * saved when that would not be at least 20 % smaller, or in a dry run.
+     * saved when that would not be at least 20 % smaller.
      * The original stays; the web layer asks to trash it (the system's dialog).
      */
     @androidx.annotation.OptIn(markerClass = [UnstableApi::class])
@@ -821,7 +815,6 @@ class PhotoLibraryPlugin : Plugin() {
     fun compressVideo(call: PluginCall) {
         val id = call.getString("id") ?: return call.reject("No id")
         if (!isVideo(id)) return call.reject("Not a video")
-        val dryRun = call.getBoolean("dryRun", false) == true
         val source = contentUri(id)
         io.execute {
             val info = try { videoInfo(source) } catch (_: Exception) { null }
@@ -829,8 +822,8 @@ class PhotoLibraryPlugin : Plugin() {
             val bitrate = info.size * 8_000 / info.dur
             val target = (bitrate / 3).coerceIn(2_000_000L, 8_000_000L)
             val expected = target * info.dur / 8_000
-            if (dryRun || expected > info.size * 8 / 10) {
-                call.resolve(JSObject().put("created", org.json.JSONObject.NULL).put("before", info.size).put("after", expected).put("dryRun", dryRun))
+            if (expected > info.size * 8 / 10) {
+                call.resolve(JSObject().put("created", org.json.JSONObject.NULL).put("before", info.size).put("after", expected))
                 return@execute
             }
             val out = File(context.cacheDir, "compress-${System.currentTimeMillis()}.mp4")
@@ -896,23 +889,22 @@ class PhotoLibraryPlugin : Plugin() {
      * an HEVC encoder, else JPEG at quality 82 — with its EXIF copied (orientation, date, GPS …), saved next to
      * the original (same folder, same DATE_TAKEN, IS_PENDING while written) and kept only when at least 30 %
      * smaller. The originals stay; the web layer asks to trash them (createTrashRequest, the system's dialog).
-     * A dry run encodes but writes nothing. One batch (≤ 20) per call; progress as `compressProgress` "photos".
+     * One batch (≤ 20) per call; progress as `compressProgress` "photos".
      */
     @PluginMethod
     fun compressPhotos(call: PluginCall) {
         val list = ids(call).filter { !isVideo(it) }
-        val dryRun = call.getBoolean("dryRun", false) == true
         work.execute {
             val results = JSArray()
             list.forEachIndexed { i, id ->
-                try { compressOne(id, dryRun)?.let { results.put(it) } } catch (_: Exception) { /* skipped: unreadable or no room */ }
+                try { compressOne(id)?.let { results.put(it) } } catch (_: Exception) { /* skipped: unreadable or no room */ }
                 notifyListeners("compressProgress", JSObject().put("id", "photos").put("progress", (i + 1).toDouble() / list.size))
             }
-            call.resolve(JSObject().put("results", results).put("dryRun", dryRun))
+            call.resolve(JSObject().put("results", results))
         }
     }
 
-    private fun compressOne(id: String, dryRun: Boolean): JSObject? {
+    private fun compressOne(id: String): JSObject? {
         val source = contentUri(id)
         val info = photoInfo(source) ?: return null
         val resolver = context.contentResolver
@@ -940,7 +932,6 @@ class PhotoLibraryPlugin : Plugin() {
             }
             val after = out.length()
             if (after <= 0 || after > info.size * (1 - KEEP_MIN_SAVING)) return null
-            if (dryRun) return JSObject().put("from", id).put("to", "").put("before", info.size).put("after", after)
             val base = (info.name ?: "Bildklar").substringBeforeLast('.')
             val values = ContentValues().apply {
                 put(MediaStore.MediaColumns.DISPLAY_NAME, if (heic) "$base.heic" else "$base-klein.jpg")
@@ -992,7 +983,7 @@ class PhotoLibraryPlugin : Plugin() {
         try {
             val after = out.length()
             if (after <= 0 || after > info.size * 8 / 10) {
-                call.resolve(JSObject().put("created", org.json.JSONObject.NULL).put("before", info.size).put("after", after).put("dryRun", false))
+                call.resolve(JSObject().put("created", org.json.JSONObject.NULL).put("before", info.size).put("after", after)))
                 return
             }
             val base = (info.name ?: "video").substringBeforeLast('.')
@@ -1012,7 +1003,7 @@ class PhotoLibraryPlugin : Plugin() {
             values.put(MediaStore.MediaColumns.IS_PENDING, 0)
             resolver.update(uri, values, null, null)
             val created = "${MediaStore.VOLUME_EXTERNAL_PRIMARY}:v${ContentUris.parseId(uri)}"
-            call.resolve(JSObject().put("created", created).put("before", info.size).put("after", after).put("dryRun", false))
+            call.resolve(JSObject().put("created", created).put("before", info.size).put("after", after)))
         } catch (e: Exception) {
             call.reject("Could not save the smaller video", e)
         } finally {

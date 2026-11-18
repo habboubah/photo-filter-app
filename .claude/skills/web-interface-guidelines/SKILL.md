@@ -53,5 +53,5 @@ Also check, from CLAUDE.md: logical properties only (`ms-`/`me-`/`start-`/
 `end-`, never `left`/`right`), `num` only on pure numbers, colours only from
 tokens (the "Album" set in `src/index.css`), touch targets in px (`h-tap`,
 `min-h-control`), every destructive action behind the system's own
-confirmation (and, in debug builds, the dry run), and nothing that writes to
+confirmation, and nothing that writes to
 the photo library without the user's tap.
