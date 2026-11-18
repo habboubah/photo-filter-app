@@ -258,6 +258,21 @@ export const SCREENS = [
     },
   },
   { name: '24-months', run: async (page, w) => { await page.click(`button:has-text("${w.t.monthsCard}")`); await pause(page, 700); } },
+  // Coming back after a while (src/useNudges.ts): the card of what is new since the last visit (and a new trip, when one ended lately).
+  {
+    name: '46-coming-back', run: async page => {
+      // Off the app first: leaving it records a visit (now), which would overwrite the old one set here.
+      const origin = new URL(page.url()).origin;
+      await page.goto(`${origin}/__blank`, { waitUntil: 'domcontentloaded' }).catch(() => {});
+      await page.evaluate(() => {
+        localStorage.setItem('bildklar-last-visit', String(Date.now() - 140 * 86_400_000));
+        localStorage.setItem('bildklar-trips-seen', '[]');
+        localStorage.removeItem('bildklar-since-done');
+      });
+      await page.goto(`${origin}/`, { waitUntil: 'networkidle' });
+      await pause(page, 1500);
+    },
+  },
   {
     // A month left part-way: three photos kept, the review closed — the tile shows the share and "Continue".
     name: '45-months-resume', run: async (page, w) => {

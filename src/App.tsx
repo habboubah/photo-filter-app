@@ -5,10 +5,9 @@ import { StatusBar, Style } from '@capacitor/status-bar';
 import { KeepAwake } from '@capacitor-community/keep-awake';
 import { AlertTriangle, FlaskConical, Images, Sparkles } from 'lucide-react';
 import { useAppStore } from './store';
-import { bytes, fmt, loadFirstRun, percent, plural, stringsFor } from './translations';
+import { bytes, fmt, loadFirstRun, plural, stringsFor } from './translations';
 import type { Photo, Trip, Group } from './types';
-import { PhotoLibrary, fileUrl, type AlbumInfo } from './native/photoLibrary';
-import type { AlbumTarget } from './components/AlbumPickSheet';
+import { PhotoLibrary, fileUrl } from './native/photoLibrary';
 import { PRODUCT_ID, Purchases } from './native/purchases';
 import { loadCities } from './cities';
 import { forgetThumbs } from './thumbs';
@@ -17,7 +16,7 @@ import { buildGroups, buildTrips, cleanupBlurry, detect, findBlurry, makeLibrary
 import { folderName } from './logic/naming';
 import { addMerge, addSplit, removeMerge, removeSplits, setIgnored, setName } from './logic/trips';
 import {
-  Decision, ReviewItem, Session, decide, fileTo, isDone, isNewAlbum, keptAgainstSuggestion, laterIds, toDelete, reviewBlurry, reviewCleanup, reviewGroup,
+  Decision, ReviewItem, Session, decide, fileTo, isDone, keptAgainstSuggestion, laterIds, toDelete, reviewBlurry, reviewCleanup, reviewGroup,
   reviewBin, reviewExposure, reviewFound, reviewLarge, reviewLater, reviewScreenshots, reviewTrip, reviewUtility, settledIds, startSession, undo,
 } from './logic/review';
 import { aiProgress, categories, findSensitive, findUtility, type MemoryLabel } from './logic/ai';
@@ -27,7 +26,7 @@ import { buildMonths, monthRest, monthShare, onThisDay, progress } from './logic
 import { findExposure } from './logic/exposure';
 import { sortFor, type SortScreen } from './logic/sort';
 import { likeProtected, protectedIds } from './logic/protect';
-import { batches, findCompressible, tally } from './logic/compress';
+import { findCompressible } from './logic/compress';
 import { APPS_TILE_MIN, groupBySource, reviewSource } from './logic/sources';
 import { cleanParts } from './logic/smartClean';
 import { type Verdict, groupVerdict } from './logic/confidence';
@@ -44,12 +43,14 @@ import { GESTURES, MOMENTS, hasSeen, nextGesture, nextTip } from './logic/firstR
 import { TIPS, TIP_IDS } from './tips';
 import { type FoundKey, firstGroup, nextStepKind, rankCategories } from './logic/nextStep';
 import { TabBar } from './ui/TabBar';
+import { useAlbums } from './useAlbums';
+import { useMediaTools } from './useMediaTools';
+import { useWidget } from './useWidget';
 import { useNudges } from './useNudges';
 import { sinceWords } from './logic/nudges';
 
 import { Progress } from './ui/Controls';
 import { Sheet } from './ui/Sheet';
-import type { ReviewOutcome } from './components/ReviewView';
 import { PaywallSheet, type FreeInfo } from './components/PaywallSheet';
 import type { TaskDone, TaskNext } from './components/FirstTaskSheet';
 import { UNLOCK_ON_SALE, deletesUnlimited, extrasFree, freeDelete, freeLeft } from './logic/allowance';
@@ -208,37 +209,9 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [photos, store.access, store.scan.running, store.stateReady, all]);
 
-  /* ------------------------------------------------------------- widget */
+  /* ------------------------------------------------- widget (src/useWidget.ts) */
 
-  // The home-screen widget shows "On this day" (with its first photo) or the space that could be freed;
-  // sent again only when what it shows changes.
-  const widgetSent = useRef('');
-  useEffect(() => {
-    if (!photos || !summary) return;
-    const storage = store.storage;
-    const data = today.ids.length
-      ? {
-        title: t.onThisDay,
-        line: fmt(t.onThisDayBody, { photos: plural(t, 'photos', today.ids.length), years: today.years.map(y => String(y)).join(', ') }),
-        photoId: today.ids[0],
-      }
-      : {
-        title: summary.total.count ? t.cleanupCard : t.cleanupNone,
-        // With nothing to clean up, the progress figure says something instead (when there is one).
-        line: [summary.total.count ? bytes(t, summary.total.bytes) : pct > 0 ? fmt(t.widgetProgress, { pct: percent(t, pct) }) : null,
-          storage ? fmt(t.storageValue, { free: bytes(t, storage.free), total: bytes(t, storage.total) }) : null].filter(Boolean).join(' · '),
-      };
-    // The Lock Screen widget (iPhone): the space that could be freed and the share gone through.
-    const lock = { freeable: summary.total.bytes, pct };
-    const key = JSON.stringify({ ...data, ...lock });
-    if (key === widgetSent.current) return;
-    const timer = window.setTimeout(() => {
-      widgetSent.current = key;
-      void PhotoLibrary.setWidget({ ...data, ...lock }).catch(() => {});
-    }, 1500);
-    return () => window.clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [photos, summary, today, store.storage, language, pct]);
+  useWidget({ t, language, ready: !!photos, summary, today, storage: store.storage, pct });
 
   /* ---------------------------------------------------------- navigation */
 
@@ -560,85 +533,19 @@ export default function App() {
     }
   };
 
-  /* ----------------------------------------------- videos and Live Photos */
+  /* ------------------------- videos, smaller photos, Live Photos (src/useMediaTools.ts) */
 
-  // Making a video smaller: progress while it runs, then the question whether the original may go.
-  const [compressing, setCompressing] = useState<{ id: string; progress: number } | null>(null);
-  const [afterCompress, setAfterCompress] = useState<{ id: string; before: number; after: number } | null>(null);
-  // Photos made smaller, in batches: where the run is (the progress events count within one batch).
-  const [photoRun, setPhotoRun] = useState<{ total: number; progress: number } | null>(null);
-  const [afterPhotos, setAfterPhotos] = useState<{ from: string[]; saved: number } | null>(null);
-  const run = useRef({ batch: 0, batches: 1, stop: false });
-  useEffect(() => {
-    const handle = PhotoLibrary.addListener('compressProgress', e => {
-      if (e.id === 'photos') {
-        const r = run.current;
-        setPhotoRun(p => (p ? { ...p, progress: Math.min(1, (r.batch + e.progress) / r.batches) } : p));
-        return;
-      }
-      setCompressing(c => (c && c.id === e.id ? { ...c, progress: e.progress } : c));
-    });
-    // Into the background: the run stops after the batch it is in (iOS would pause it anyway).
-    const away = CapacitorApp.addListener('appStateChange', ({ isActive }) => { if (!isActive) run.current.stop = true; });
-    return () => { for (const h of [handle, away]) void h.then(x => x.remove()).catch(() => {}); };
-  }, []);
-  const compressPhotos = async (list: Photo[]) => {
-    const parts = batches(list.map(p => p.id));
-    run.current = { batch: 0, batches: parts.length, stop: false };
-    setPhotoRun({ total: list.length, progress: 0 });
-    const results: { from: string; to: string; before: number; after: number }[] = [];
-    let failed = false;
-    try {
-      for (const [i, part] of parts.entries()) {
-        if (run.current.stop) break;
-        run.current.batch = i;
-        const r = await PhotoLibrary.compressPhotos({ ids: part, dryRun: store.dryRun });
-        results.push(...r.results);
-        setPhotoRun(p => (p ? { ...p, progress: (i + 1) / parts.length } : p));
-      }
-    } catch {
-      failed = true;
-    } finally {
-      setPhotoRun(null);
-    }
-    const { count, saved } = tally(results);
-    if (store.dryRun) { show(fmt(t.dryRunCompressPhotos, { photos: plural(t, 'photos', count), size: bytes(t, saved) })); return; }
-    if (!count) { show(failed ? t.compressFailed : t.compressPhotosNone); return; }
-    store.startScan();
-    if (run.current.stop) show(fmt(t.compressPhotosStopped, { photos: plural(t, 'photos', count) }));
-    setShowCompress(false);
-    setAfterPhotos({ from: results.map(r => r.from), saved });
-  };
-  const compress = async (p: Photo) => {
-    setCompressing({ id: p.id, progress: 0 });
-    try {
-      const r = await PhotoLibrary.compressVideo({ id: p.id, dryRun: store.dryRun });
-      if (r.dryRun) { show(fmt(t.dryRunCompress, { before: bytes(t, r.before), after: bytes(t, r.after) })); return; }
-      if (!r.created) { show(t.compressNoGain); return; }
-      store.startScan();
-      setAfterCompress({ id: p.id, before: r.before, after: r.after });
-    } catch {
-      show(t.compressFailed);
-    } finally {
-      setCompressing(null);
-    }
-  };
+  const { compressing, afterCompress, setAfterCompress, photoRun, afterPhotos, setAfterPhotos, compressPhotos, compress, liveConfirm, setLiveConfirm, convertLive } = useMediaTools({
+    t, store, show, trash, onPhotosDone: () => setShowCompress(false), onLiveDone: () => setShowLive(false),
+  });
 
-  const [liveConfirm, setLiveConfirm] = useState<Photo[] | null>(null);
-  const convertLive = async (list: Photo[]) => {
-    setLiveConfirm(null);
-    try {
-      const r = await PhotoLibrary.convertLive({ ids: list.map(p => p.id), dryRun: store.dryRun });
-      if (r.dryRun) { show(fmt(t.dryRunLive, { photos: plural(t, 'photos', r.converted.length) })); return; }
-      if (!r.converted.length) { show(t.liveFailed); return; }
-      store.startScan();
-      const ok = await trash(r.converted.map(c => c.from));
-      if (!ok) show(t.liveKeptBoth);
-      else setShowLive(false);
-    } catch {
-      show(t.liveFailed);
-    }
-  };
+  /* -------------------------------------------- albums (src/useAlbums.ts) */
+
+  const { albumList, setAlbumList, chips, fileAlbums, organizeAlbums, albumMembers, albumPick, setAlbumPick, fileInto } = useAlbums({
+    t, store, show, recent: state.recentAlbums, byId: lib.byId,
+    want: (tab === 'organize' && !!photos) || !!albumKey || !!category,
+  });
+  const onFile = (album: string) => needUnlock(() => setReview(r => (r ? { ...r, session: fileTo(r.session, album) } : r)));
 
   /* -------------------------------------------------------------- review */
 
@@ -650,96 +557,6 @@ export default function App() {
     // How sure each suggestion is, as this phone's ledger has it (src/logic/ledger.ts).
     setReview({ session: startSession(adjustItems(items, state.ledger)), finished: false, onDone, bin, month });
     if (!albumList) void PhotoLibrary.listAlbums().then(r => setAlbumList(r.albums)).catch(() => setAlbumList([]));
-  };
-
-  /* -------------------------------------------- albums while swiping */
-
-  // The chips: the albums (iPhone) / folders (Android), the last used first, then by name. Asked when a review opens.
-  const [albumList, setAlbumList] = useState<AlbumInfo[] | null>(null);
-  const chips = useMemo(() => {
-    const recent = state.recentAlbums;
-    const rank = (id: string) => { const i = recent.indexOf(id); return i === -1 ? Infinity : i; };
-    return (albumList ?? []).slice().sort((a, b) => rank(a.id) - rank(b.id) || a.title.localeCompare(b.title, t.locale))
-      .map(a => ({ id: a.id, title: a.title }));
-  }, [albumList, state.recentAlbums, t.locale]);
-  const onFile = (album: string) => needUnlock(() => setReview(r => (r ? { ...r, session: fileTo(r.session, album) } : r)));
-  /** The end screen's albums: one native call for all of them (Android: one dialog). True when done (or nothing to do). */
-  const fileAlbums = async (plan: ReviewOutcome['albums']): Promise<boolean> => {
-    if (!plan.length) return true;
-    const filed = plan.reduce((n, a) => n + a.ids.length, 0);
-    try {
-      const r = await PhotoLibrary.addToAlbums({
-        groups: plan.map(a => (isNewAlbum(a.album) ? { title: a.album.slice(4), ids: a.ids } : { albumId: a.album, ids: a.ids })),
-        dryRun: store.dryRun,
-      });
-      if (r.cancelled) { show(t.filedCancelled); return false; }
-      if (r.dryRun) { show(fmt(t.dryRunFiled, { photos: plural(t, 'photos', filed) })); return true; }
-      store.useAlbums(plan.map(a => a.album).filter(a => !isNewAlbum(a)));
-      setAlbumList(null);
-      if (isAndroid()) store.startScan();
-      notifySuccess();
-      show(fmt(t.filedDone, { photos: plural(t, 'photos', r.done) }));
-      return true;
-    } catch {
-      show(t.filedFailed);
-      return false;
-    }
-  };
-  /* ------------------------------------- Ordnen › Alben, and photos into an album */
-
-  // The albums of the phone for Ordnen, asked while it (or an album) is open; each album's members once, for
-  // its cover and its screen. Filing anything sets the list back to null, so both are asked again.
-  const [albumMembers, setAlbumMembers] = useState<Record<string, string[]> | null>(null);
-  const wantAlbums = (tab === 'organize' && !!photos) || !!albumKey || !!category;
-  useEffect(() => {
-    if (!wantAlbums || albumList) return;
-    void PhotoLibrary.listAlbums().then(r => setAlbumList(r.albums)).catch(() => setAlbumList([]));
-  }, [wantAlbums, albumList]);
-  useEffect(() => {
-    setAlbumMembers(null);
-    if (!albumList?.length) return;
-    let live = true;
-    void (async () => {
-      const out: Record<string, string[]> = {};
-      for (const a of albumList.filter(x => x.count > 0)) {
-        out[a.id] = await PhotoLibrary.albumMembers({ ids: [a.id] }).then(r => r.ids).catch(() => []);
-        if (!live) return;
-      }
-      setAlbumMembers(out);
-    })();
-    return () => { live = false; };
-  }, [albumList]);
-  const organizeAlbums = useMemo(() => {
-    if (!albumList) return null;
-    const recent = state.recentAlbums;
-    const rank = (id: string) => { const i = recent.indexOf(id); return i === -1 ? Infinity : i; };
-    const newest = (ids: string[] | undefined) => {
-      let best: Photo | undefined;
-      for (const id of ids ?? []) { const p = lib.byId.get(id); if (p && (!best || p.t > best.t)) best = p; }
-      return best?.id;
-    };
-    return albumList.filter(a => a.count > 0)
-      .sort((a, b) => rank(a.id) - rank(b.id) || b.count - a.count || a.title.localeCompare(b.title, t.locale))
-      .map(a => ({ id: a.id, title: a.title, count: a.count, cover: newest(albumMembers?.[a.id]) }));
-  }, [albumList, albumMembers, state.recentAlbums, lib.byId, t.locale]);
-
-  // Photos picked for an album (a category's): the sheet that asks which one, then one native call.
-  const [albumPick, setAlbumPick] = useState<{ ids: string[]; name?: string } | null>(null);
-  const fileInto = async (ids: string[], target: AlbumTarget) => {
-    setAlbumPick(null);
-    const albumId = 'albumId' in target ? target.albumId : undefined;
-    try {
-      const r = await PhotoLibrary.addToAlbums({ groups: [albumId ? { albumId, ids } : { title: folderName(target.title), ids }], dryRun: store.dryRun });
-      if (r.cancelled) { show(t.filedCancelled); return; }
-      if (r.dryRun) { show(fmt(t.dryRunFiled, { photos: plural(t, 'photos', ids.length) })); return; }
-      if (albumId) store.useAlbums([albumId]);
-      setAlbumList(null);
-      if (isAndroid()) store.startScan();
-      notifySuccess();
-      show(albumId ? fmt(t.filedDone, { photos: plural(t, 'photos', r.done) }) : fmt(t.albumCreated, { name: folderName(target.title) }));
-    } catch {
-      show(t.filedFailed);
-    }
   };
 
   const isOld = (p: Photo) => isOldShot(p, now);
