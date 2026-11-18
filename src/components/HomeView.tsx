@@ -14,6 +14,7 @@ import { Progress } from '../ui/Controls';
 import { StorageBar } from '../ui/StorageBar';
 import { tapLight } from '../ui/haptics';
 import { Thumb } from '../ui/Photo';
+import { isAndroid } from '../platform';
 import { Confirm } from '../ui/Sheet';
 
 export type { Found, FoundKey } from '../logic/nextStep';
@@ -452,6 +453,8 @@ function CleanupSection({ t, summary, cats, done, countOf, library, storage, fre
               <div>
                 <p className="title-face text-title2 font-bold text-fg num wrap-compound">{fmt(t.cleanupCanGo, { size: bytes(t, canGo) })}</p>
                 {libraryBytes > 0 && <p className="text-label text-fg-mute mt-0.5 num wrap-prose">{fmt(t.cleanupOfLibrary, { total: bytes(t, libraryBytes) })}</p>}
+                {/* iPhone: with "Optimise iPhone Storage" some originals are only in iCloud — deleting those frees iCloud, not the phone. */}
+                {!isAndroid() && <p className="text-caption text-fg-mute mt-1 wrap-prose">{t.cleanupCloudNote}</p>}
               </div>
             )}
             {parts.length > 0 && !nothing && (
@@ -497,6 +500,8 @@ function CleanupSection({ t, summary, cats, done, countOf, library, storage, fre
                 {freedBytes > 0 && <span className="rounded-full bg-keep-dim text-keep font-bold px-2.5 py-0.5">{fmt(t.freedSoFar, { size: bytes(t, freedBytes) })}</span>}
               </p>
             )}
+            {/* Honest about when: deleted photos wait 30 days in "Zuletzt gelöscht" / the Trash and still take their space. */}
+            {freedBytes > 0 && <p className="px-1 text-caption text-fg-mute wrap-prose">{t.freedNote}</p>}
           </div>
         )}
 

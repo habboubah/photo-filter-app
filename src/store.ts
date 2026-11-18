@@ -104,7 +104,7 @@ export function useAppStore() {
   // TEMPORARY (November 2026): the dry run switch in release builds, so Ahmad
   // can test a TestFlight / Play build on his phone. Set back to false (or
   // remove) before a build goes to review — release builds must never run dry.
-  const DRY_RUN_IN_RELEASE = true;
+  const DRY_RUN_IN_RELEASE = false;
 
   const [debug, setDebug] = useState(false);
   // Safety (docs/PLAN.md): in a debug build the dry run is on until it is turned off by hand.
