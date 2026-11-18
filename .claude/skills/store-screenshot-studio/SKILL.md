@@ -214,14 +214,21 @@ screen.
 - **Points** — the pills with a tick under a slide's headline, from `points` in
   the copy file (a slide's, or the feature graphic's). Plain strings: what the
   app does and that everything stays on the device.
-- **The ribbon** (a band across the top corner) and **price points**
-  (`{ "text": …, "price": true }`) are machinery from the free shopping list.
-  **Off for Bildklar** on every target and on the feature graphic: an app that
-  sells an unlock may not say "free" on its screenshots (Apple rejects it,
-  guideline 2.3.7; on Play it is misleading), and the paywall's price is not
-  shown either — `09-paywall` is captured for App Review's in-app purchase
-  screenshot, not for the set. The rules, with their sources, are in
-  `reference/store-specs.md` › *The ribbon and the price words*.
+- **The ribbon** (a red band across the top corner: *Gratis · Werbefrei* /
+  *Free · No Ads*, the copy files' `ribbon`) is **on the first Google Play
+  slide only** (`play-phone`: `"ribbon": "first"`), since 18 November 2026,
+  while everything in Bildklar is free and there are no ads
+  (`UNLOCK_ON_SALE = false`, `src/logic/allowance.ts`). Play only asks to
+  avoid "Free"; Apple rejects it (guideline 2.3.7), so `iphone` and the
+  feature graphic stay off. **Take it off the day the unlock goes on sale** —
+  then the words are no longer true. Two words take the band's long form
+  (`.ribbon[data-long]`, up to 20 characters). **Price points**
+  (`{ "text": …, "price": true }`) stay unused; `09-paywall` is captured for
+  App Review's in-app purchase screenshot, not for the set. The rules, with
+  their sources, are in `reference/store-specs.md` › *The ribbon and the price words*.
+- **The icon** — a slide's `"icon": "assets/icon-master.png"` puts the app's
+  icon above its headline, as a launcher draws it (the opening slide, on the
+  mint background that is the icon's own colour).
 
 ## Adding things
 

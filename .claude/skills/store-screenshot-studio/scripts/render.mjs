@@ -252,6 +252,12 @@ export function placedStickers(list, rtl, where) {
 
 // ---------------------------------------------------------------- slides
 
+const iconUrl = (file, where) => {
+  const full = path.join(root, file);
+  if (!existsSync(full)) die(`${where} shows the icon "${file}", which is not a file in the repo.`);
+  return pathToFileURL(full).href;
+};
+
 const backgroundFor = (name, where) =>
   theme.backgrounds[name] || die(`${where} asks for background "${name}", which is not in theme.json. It has: ${Object.keys(theme.backgrounds).join(', ')}.`);
 
@@ -302,6 +308,8 @@ export function slideData(slide, locale, { ids = cfg.slides.map(s => s.id), inde
     phone,
     second: slide.second ? phoneData(slide.second, locale, slide.device, `${where} › second`, slide.rawDir) : null,
     callouts: (slide.callouts || []).map((c, n) => calloutData(c, phone.file, copy.dir === 'rtl', `${where} › callouts[${n}]`)),
+    // The app's icon above the headline (the opening slide): a picture from the repo.
+    icon: slide.icon ? iconUrl(slide.icon, where) : null,
     stickers: stickersFor(ids, index, copy.dir === 'rtl'),
     // Off unless the caller passes ribbonFor(…).
     ribbon: ribbon && { ...ribbon, bg: background.ribbon, fg: background.ribbonInk },

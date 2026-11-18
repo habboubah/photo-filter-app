@@ -1,11 +1,12 @@
 {
   "locale": "en",
   "dir": "ltr",
+  "ribbon": "Free · No Ads",
   "appName": "Bildklar AI: Photo Cleaner",
   "slides": {
     "home": {
-      "headline": "Clean up photos with AI",
-      "subline": "Find duplicates, failed and similar shots – on your device",
+      "headline": "Bildklar",
+      "subline": "More space, less photo clutter",
       "points": [
         "Duplicates & failed shots",
         "AI sorts your photos",

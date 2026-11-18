@@ -51,6 +51,8 @@ try {
       stickers: placedStickers(fg.stickers, copy.dir === 'rtl', 'featureGraphic.stickers'),
       ribbon: ribbonFor(fg, locale),
       art,
+      // The graphic draws the icon's art itself; the slide's small icon stays out.
+      icon: null,
     });
 
     const buf = await shoot(browser, data, fg);

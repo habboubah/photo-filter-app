@@ -51,13 +51,14 @@ differently, which is why they are switched per target (`"ribbon"` in
 | Store | Rule | What this project does |
 |---|---|---|
 | App Store | Guideline 2.3.7: app names, subtitles, screenshots and previews may not include prices or terms. App Review counts "free" as a price reference and rejects the version until it is gone | `iphone` has `"ribbon": false`: no ribbon, no price points. `validate.py` warns if that changes |
-| Google Play | The preview-asset guidelines ask to avoid price and promotional words on the feature graphic and screenshots and name "Free" among the examples. Not following them does not take the listing down; it can change how the assets are shown and limits promotion and recommendation by Play | `play-phone` and the feature graphic have `"ribbon": false` too |
+| Google Play | The preview-asset guidelines ask to avoid price and promotional words on the feature graphic and screenshots and name "Free" among the examples. Not following them does not take the listing down; it can change how the assets are shown and limits promotion and recommendation by Play | `play-phone` has `"ribbon": "first"` while Bildklar is free with no ads (*Gratis · Werbefrei* / *Free · No Ads* on the first slide); the feature graphic stays off |
 
-Whatever the store, the words have to be true. Bildklar is a free download
-with one in-app purchase (the unlock, `store/listing.md`), so "free" or "no
-subscription" on a screenshot would mislead: the ribbon is off everywhere and
-the copy files have no price points. The machinery stays for an app that is
-free outright.
+Whatever the store, the words have to be true. Since 18 November 2026
+everything in Bildklar is free and it never shows ads (`UNLOCK_ON_SALE =
+false`, `src/logic/allowance.ts`; Android has no BILLING permission), so the
+ribbon says so on the first Play slide. The day the unlock goes on sale it
+comes off (`play-phone` → `"ribbon": false`). The price points ("Kein Abo")
+stay unused.
 
 Sources: App Store Review Guidelines 2.3.7 and App Review's rejection text for
 it; Play Console Help → *Add preview assets to showcase your app* (both read

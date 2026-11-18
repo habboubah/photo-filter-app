@@ -71,6 +71,20 @@ body {
   text-wrap: balance;
 }
 
+/* The app's icon above the headline (the opening slide). Its art is on the
+   icon's own flat colour, so it is drawn as the launcher draws it: a rounded
+   square with a soft shadow. */
+.app-icon {
+  display: block;
+  width: calc(24 * var(--u));
+  height: calc(24 * var(--u));
+  margin: 0 auto calc(3.4 * var(--u));
+  border-radius: 23%;
+  box-shadow: 0 calc(1.4 * var(--u)) calc(3.6 * var(--u)) color-mix(in srgb, var(--shade) 32%, transparent),
+              0 0 0 calc(0.5 * var(--u)) rgb(255 255 255 / 0.55);
+}
+[data-align="start"] .app-icon { margin-inline: 0; }
+
 /* ---------- points ----------
    The short promises under the headline ("Ohne Konto", "Kein Abo"): one pill
    each, with a tick. An empty list takes no room. */
@@ -344,6 +358,11 @@ body {
   box-shadow: 0 calc(0.5 * var(--u)) calc(1.6 * var(--u)) color-mix(in srgb, var(--shade) 40%, transparent);
 }
 [dir="rtl"] .ribbon span { transform: rotate(45deg); }
+
+/* A band with two words ("Free · No Ads") sits further in, so it is long
+   enough for them. */
+.ribbon[data-long] { --rc: calc(20 * var(--u)); --rt: calc(9.6 * var(--u)); }
+.ribbon[data-long] span { font-size: calc(5 * var(--u)); letter-spacing: 0.01em; }
 
 /* With the ribbon in the corner the headline starts lower and keeps further
    in from the sides, so no line of it reaches under the band. */
