@@ -525,6 +525,16 @@ export const FIRST_RUN_SCREENS = [
     },
     wait: 900,
   },
+  {
+    // Home with something marked for deletion: its card in its own warm colour.
+    name: '65-home-marked', prefs: { seen: ['*'] }, run: async (page, w) => {
+      await markTwo(page, w);
+      await pause(page, 5200);
+      await page.locator('button[data-tip="tip.bin"]').scrollIntoViewIfNeeded();
+      await page.evaluate(() => window.scrollBy(0, 120));
+    },
+    wait: 700,
+  },
   { name: '60-how', run: async (page, w) => { await openSettings(page, w); await page.click(`main button:has-text("${w.t.howTitle}")`); }, wait: 800 },
 ];
 

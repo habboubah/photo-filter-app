@@ -263,8 +263,9 @@ scenes follow the switch (docs/PLAN.md, *Pricing*).
   under reduced motion. The review card follows the finger and flies out.
 - Home (*Aufräumen*) is a greeting, then *Vorschläge* (one card: the space,
   the bar, the figures, the categories with their hue dots, *Jetzt
-  aufräumen*), then the one next step, then what is marked for deletion,
-  then *Mehr Platz* (month by month first). *Ordnen* opens with
+  aufräumen*), then what is marked for deletion (a warm sand card of its
+  own, never red), then *Mehr Platz* (month by month first). No next-step
+  card on home (the reveal after the first scan keeps one). *Ordnen* opens with
   search as a field. An empty list is `<Empty>`
   (illustration, one line, the way on); a real delete asks through
   `<DeleteSheet>`; a photo looked at closely opens `<ZoomView>`.
