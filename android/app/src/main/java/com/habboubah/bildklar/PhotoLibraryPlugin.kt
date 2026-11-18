@@ -636,7 +636,7 @@ class PhotoLibraryPlugin : Plugin() {
         val target = "${android.os.Environment.DIRECTORY_PICTURES}/Bildklar/$title/"
         withConsent(list.map(::contentUri), { MediaStore.createWriteRequest(context.contentResolver, it) }) { approved, cancelled ->
             if (cancelled) {
-                call.resolve(JSObject().put("done", 0).put("cancelled", true)))
+                call.resolve(JSObject().put("done", 0).put("cancelled", true))
                 return@withConsent
             }
             io.execute {
@@ -646,7 +646,7 @@ class PhotoLibraryPlugin : Plugin() {
                     // Only the folder changes (the file is moved on disk); the picture itself is never touched.
                     try { if (context.contentResolver.update(uri, values, null, null) > 0) done++ } catch (_: Exception) { }
                 }
-                call.resolve(JSObject().put("done", done).put("cancelled", false)))
+                call.resolve(JSObject().put("done", done).put("cancelled", false))
             }
         }
     }
@@ -676,7 +676,7 @@ class PhotoLibraryPlugin : Plugin() {
         val byUri = target.keys.associateBy { contentUri(it) }
         withConsent(byUri.keys.toList(), { MediaStore.createWriteRequest(context.contentResolver, it) }) { approved, cancelled ->
             if (cancelled) {
-                call.resolve(JSObject().put("done", 0).put("cancelled", true)))
+                call.resolve(JSObject().put("done", 0).put("cancelled", true))
                 return@withConsent
             }
             io.execute {
@@ -686,7 +686,7 @@ class PhotoLibraryPlugin : Plugin() {
                     val values = ContentValues().apply { put(MediaStore.MediaColumns.RELATIVE_PATH, path) }
                     try { if (context.contentResolver.update(uri, values, null, null) > 0) done++ } catch (_: Exception) { }
                 }
-                call.resolve(JSObject().put("done", done).put("cancelled", false)))
+                call.resolve(JSObject().put("done", done).put("cancelled", false))
             }
         }
     }
@@ -782,7 +782,7 @@ class PhotoLibraryPlugin : Plugin() {
         withConsent(byUri.keys.toList(), { MediaStore.createTrashRequest(context.contentResolver, it, true) }) { approved, cancelled ->
             val trashed = approved.mapNotNull { byUri[it] }
             if (trashed.isNotEmpty()) scanThread.execute { store.delete(trashed) }
-            call.resolve(JSObject().put("trashed", JSArray(trashed)).put("cancelled", cancelled)))
+            call.resolve(JSObject().put("trashed", JSArray(trashed)).put("cancelled", cancelled))
         }
     }
 
@@ -983,7 +983,7 @@ class PhotoLibraryPlugin : Plugin() {
         try {
             val after = out.length()
             if (after <= 0 || after > info.size * 8 / 10) {
-                call.resolve(JSObject().put("created", org.json.JSONObject.NULL).put("before", info.size).put("after", after)))
+                call.resolve(JSObject().put("created", org.json.JSONObject.NULL).put("before", info.size).put("after", after))
                 return
             }
             val base = (info.name ?: "video").substringBeforeLast('.')
@@ -1003,7 +1003,7 @@ class PhotoLibraryPlugin : Plugin() {
             values.put(MediaStore.MediaColumns.IS_PENDING, 0)
             resolver.update(uri, values, null, null)
             val created = "${MediaStore.VOLUME_EXTERNAL_PRIMARY}:v${ContentUris.parseId(uri)}"
-            call.resolve(JSObject().put("created", created).put("before", info.size).put("after", after)))
+            call.resolve(JSObject().put("created", created).put("before", info.size).put("after", after))
         } catch (e: Exception) {
             call.reject("Could not save the smaller video", e)
         } finally {
