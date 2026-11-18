@@ -45,8 +45,8 @@ export function RevealView({ t, files, categories, first, trips, tripCover, aiRu
   const layout = ids.length >= 3 ? 'grid-cols-[2fr_1fr] grid-rows-2 [&>*:first-child]:row-span-2' : ids.length === 2 ? 'grid-cols-2' : 'grid-cols-1';
   const nothing = categories.length === 0;
   return (
-    <div className="min-h-screen mx-auto max-w-xl flex flex-col safe-top">
-      <main className="flex-1 flex flex-col px-[16px] pt-8">
+    <div className="min-h-screen mx-auto max-w-column flex flex-col safe-top">
+      <main className="flex-1 flex flex-col px-page pt-8">
         <header className="px-2">
           <motion.span
             className="w-12 h-12 rounded-full bg-keep text-keep-ink sheen inline-flex items-center justify-center"
@@ -113,7 +113,7 @@ export function RevealView({ t, files, categories, first, trips, tripCover, aiRu
 
         </div>
 
-        <Foot inset={16}>
+        <Foot inset="page">
           {first || step ? (
             <>
               <Button full size="lg" onClick={onGo}>{first ? t.revealCompare : step?.button ?? t.revealGo}</Button>

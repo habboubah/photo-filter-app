@@ -3,6 +3,25 @@
 What changed and what left, newest first — so `docs/features.md` can say
 only how the app is now. (Started 18 November 2026; older history is in git.)
 
+## 18 November 2026, night — the layout adapts to the screen
+
+- **Narrow phones** (under 360 px: the first iPhone SE, small Android phones,
+  split screen): page margins 12 px, the large titles a step smaller, the
+  trips and albums three to a row (four cut names in two), the first scan's
+  four counts two by two, the review's end tiles as rows (*Behal-ten* was
+  broken in two), the review's header keeps *Rückgängig* on its line.
+- **Short screens** (under 640 px tall): the review's photo shrinks to a floor
+  and its buttons are a step smaller — at 320 × 568 *Behalten* and *Später*
+  were below the screen; a group's viewer leaves room for the series above
+  the dock; the welcome's illustration is smaller.
+- **Foldables and tablets** (700 px and up; Android 16 ignores the portrait
+  lock there): the page column grows from 36 to 44 rem (50 from 1000 px),
+  photo grids, tiles, categories, word cards and months add columns
+  (container queries on the page; `gridColumns` for `PhotoGrid`).
+- New tokens and utilities: `px-page` / `px-title` / `px-step`,
+  `max-w-column`, the `narrow:` and `short:` variants; `npm run ui-review`
+  adds 320 × 568 and 840 × 1000.
+
 ## 18 November 2026, evening — the review and improvement plan
 
 Project doc *Bildklar – review and improvement plan* (claude.ai artifact) and

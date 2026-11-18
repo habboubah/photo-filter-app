@@ -33,11 +33,11 @@ export function PermissionView({ t, access, onAllow, onOpenSettings, onSettings 
     { icon: ImagePlus, title: t.permSome, sub: t.permSomeSub, recommended: false },
   ];
   return (
-    <div className="min-h-screen mx-auto max-w-xl flex flex-col safe-top">
-      <div className="flex justify-end px-[16px] pt-2">
+    <div className="min-h-screen mx-auto max-w-column flex flex-col safe-top">
+      <div className="flex justify-end px-page pt-2">
         <IconButton label={t.settings} icon={Settings} tone="bar" onClick={onSettings} />
       </div>
-      <main className="flex-1 flex flex-col px-6 rise-children">
+      <main className="flex-1 flex flex-col px-step rise-children">
         <h1 className="title-face text-title font-bold text-fg mt-3 wrap-compound">{asked ? t.deniedTitle : t.permTitle}</h1>
         <p className="text-body text-fg-mute mt-3 wrap-prose">
           {access === 'restricted' ? t.restrictedBody : asked ? t.deniedBody : t.permBody}

@@ -1,6 +1,7 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Check } from 'lucide-react';
 import { cachedThumb, SMALL, thumbUrl } from '../thumbs';
+import { gridColumns } from '../logic/layout';
 import { tapLight } from './haptics';
 import { VideoBadge, usePlayer } from './play';
 
@@ -29,7 +30,9 @@ export function Thumb({ id, size = SMALL, className = '', alt = '' }: { id: stri
 /**
  * A grid of photos for any number of them: only the rows on screen (and a
  * few around) are in the DOM, positioned absolutely in a box as tall as all
- * rows. Scrolls with the page, like every screen here.
+ * rows. Scrolls with the page, like every screen here. `columns` is the
+ * count on a phone; the grid fits as many photos of that size as its width
+ * holds (logic/layout.ts: three on the narrowest phones, more on a foldable).
  */
 export function PhotoGrid({ ids, columns = 3, gap = 4, label, onOpen, overlay, selected, onSelect, selectLabel }: {
   ids: string[];
@@ -59,9 +62,10 @@ export function PhotoGrid({ ids, columns = 3, gap = 4, label, onOpen, overlay, s
     return () => ro.disconnect();
   }, []);
 
-  const cell = width > 0 ? (width - gap * (columns - 1)) / columns : 0;
+  const cols = gridColumns(width, columns);
+  const cell = width > 0 ? (width - gap * (cols - 1)) / cols : 0;
   const rowH = cell + gap;
-  const rows = Math.ceil(ids.length / columns);
+  const rows = Math.ceil(ids.length / cols);
 
   useEffect(() => {
     if (!rowH) return;
@@ -82,8 +86,8 @@ export function PhotoGrid({ ids, columns = 3, gap = 4, label, onOpen, overlay, s
   const tiles: React.ReactNode[] = [];
   if (cell > 0) {
     for (let r = range[0]; r < range[1]; r++) {
-      for (let c = 0; c < columns; c++) {
-        const i = r * columns + c;
+      for (let c = 0; c < cols; c++) {
+        const i = r * cols + c;
         if (i >= ids.length) break;
         const id = ids[i];
         const style: React.CSSProperties = { position: 'absolute', top: r * rowH, insetInlineStart: c * (cell + gap), width: cell, height: cell };
