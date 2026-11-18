@@ -160,8 +160,10 @@ scenes follow the switch (docs/PLAN.md, *Pricing*).
   into the bin too (`closeReview`). A new place that deletes goes through
   `toBin` too. Marking for deletion is never styled as deleting: no red, no trash icon
   (`Archive` and teal or quiet glass); red (`neg`, `destructive`) is only
-  for what really deletes. (Exception: the originals after a smaller copy or a Live Photo
-  made a still — the copy is already saved.)
+  for what really deletes. (Exceptions: the originals after a smaller copy or a Live Photo
+  made a still — the copy is already saved; and, Ahmad's call of 18 November
+  2026, a group card's red *Ohne Stern zum Löschen vormerken*, which keeps
+  the archive icon.)
 - A new asset (a plain photo made from a Live Photo, a smaller copy of a video
   or of a photo) needs the user's tap and a confirmation in the app; the original stays and
   goes only through the system's delete dialog afterwards. The copy keeps the
@@ -262,7 +264,7 @@ scenes follow the switch (docs/PLAN.md, *Pricing*).
 - Motion: short and soft; transform and opacity only; all of it collapses
   under reduced motion. The review card follows the finger and flies out.
 - Home (*Aufräumen*) is a greeting, then *Vorschläge* (one card: the space,
-  the bar, the figures, the categories with their hue dots, *Jetzt
+  the two-part bar (can go · stays), the figures, the categories, *Jetzt
   aufräumen*), then what is marked for deletion (a warm sand card of its
   own, never red), then *Mehr Platz* (month by month first). No next-step
   card on home (the reveal after the first scan keeps one). *Ordnen* opens with

@@ -130,15 +130,17 @@ then *Mehr Platz* and *Geschützt*.
   the rest), *72 Fotos · 173 MB*, *Noch nicht gelöscht*; a tap opens it (see
   *Marked for deletion*).
 - **Vorschläge** [Suggestions], one card (since 18 November 2026; until then
-  a separate clean-up card with a table and a list): *Platz, der frei werden
-  kann · 357 MB*; a bar of the whole library — one segment per category that
-  could go, then *Gute Fotos* and *Gute Videos*, paler; then the library's
+  a separate clean-up card with a table and a list): **357 MB können frei
+  werden** [357 MB can be freed] — *Von 873 MB in deiner Mediathek – was
+  genau, steht unten*; a bar of the whole library in **two parts only**, each
+  named with its size under it: *Kann weg · 357 MB* (sand) and *Bleibt · 516
+  MB* (grey); then the library's
   figures — two cells, *Fotos 95 · 31 können weg* and *Videos 6 · 3 können
   weg* (*Fotos* opens *Monat für Monat*, *Videos* all videos), the free space
   on the device, *Bisher freigegeben*; then one row per category — *Duplikate*, *Fast gleiche*, *Ähnliche Videos*, *Missglückt*,
   *Screenshots*, *Unwichtige Fotos* (once the AI has seen photos) — with two
-  of its photos, how many could go and, on the right, **its colour's dot**
-  (its segment in the bar) and the space, the most space first. At its foot
+  of its photos, how many could go and, on the right, the space, the most
+  space first. At its foot
   **Jetzt aufräumen** [Clean up now]
   (the clean-up screen). Categories with nothing left in one line under it:
   *Erledigt: Duplikate, Screenshots*.
@@ -224,12 +226,15 @@ then *Mehr Platz* and *Geschützt*.
   every photo of the group and the group is not suggested again (with undo;
   a new copy joining it later opens it again; *Von vorn anfangen* brings it
   back).
-- **Settled from the list** (since 18 November 2026): every group card on
-  *Fast gleiche Fotos*, *Duplikate* and *Ähnliche Videos* has the same two
-  choices under its photos — **Alle behalten** (the group leaves the list)
-  and **Rest zum Löschen vormerken** [Mark the rest for deletion] (the others go to *Zum Löschen vorgemerkt*;
-  the one to keep, favourites and kept photos stay) — each with undo, without
-  opening the group. A tap on the photos still opens it to compare.
+- **Settled from the list** (since 18 November 2026): on every group card of
+  *Fast gleiche Fotos*, *Duplikate* and *Ähnliche Videos* the **green star**
+  is what stays — the app's pick, a favourite, a photo kept before. Every
+  other photo carries a **grey star**: tap it to keep that one too (several
+  can be starred). Under the photos: **Alle behalten** (the group leaves the
+  list) and, in red, **Ohne Stern zum Löschen vormerken** [Mark unstarred for
+  deletion] — every photo without a star goes to *Zum Löschen vorgemerkt*
+  (nothing is deleted yet), the starred ones are kept from now on — each with
+  undo, without opening the group. A tap on the photos still opens it.
 - **The best shot**: the sharpest, well exposed one; on the iPhone also the
   best face and open eyes, on Android the best faces (the YuNet face
   detector, on the phone). A favourite always wins. **It learns**: after ten
@@ -534,8 +539,8 @@ then *Mehr Platz* and *Geschützt*.
 - Its own section on *Aufräumen* opens it — a **review tray**: the photos, the
   last put aside first, each with its size (a video with its length). A tap
   selects one; **Zurücklegen · 2 Fotos** [Put back] returns them to where
-  they were (with undo), *Nur diese prüfen* [Review only these] opens the
-  delete sheet for just them.
+  they were (with undo); **Diese löschen · 19 MB** [Delete these], in red,
+  opens the delete sheet for just them (then the system's dialog).
 - With nothing selected: **Auswahl prüfen · 12 Fotos · 340 MB** [Review
   selection] — the screen's button never deletes itself (since 18 November
   2026; before, it was the red *12 Fotos löschen*). It opens a sheet with

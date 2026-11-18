@@ -7,7 +7,7 @@ import type { ScanView } from '../store';
 import { Strings, ago, bytes, fmt, num, percent, plural } from '../translations';
 import { etaWords } from '../logic/eta';
 import { greetingAt } from '../logic/greeting';
-import { type Found, type FoundKey, gainOf, rankCategories, type RankedCategory } from '../logic/nextStep';
+import { type Found, type FoundKey, rankCategories, type RankedCategory } from '../logic/nextStep';
 import { Empty, Group, IconTile, Next, Row, Screen, SectionHead } from '../ui/Screen';
 import { Button, IconButton } from '../ui/Button';
 import { Progress } from '../ui/Controls';
@@ -131,9 +131,7 @@ export function HomeView(p: Props) {
   const analysing = p.scan.running && (firstScan || p.scan.phase === 'analyse');
   const lastScan = p.scan.lastScanAt ? fmt(t.lastScan, { when: ago(t, p.scan.lastScanAt, Date.now()) }) : null;
   const rescanLabel = p.scan.running ? `${t.rescan}: ${t.scanUpdating}` : lastScan ? `${t.rescan} (${lastScan})` : t.rescan;
-
-  // The categories, each with the space it would free (from the summary, so every figure agrees).
-  const gain = (k: FoundKey) => gainOf(summary, k);
+  // The categories, each with the space it would free (from the summary, so every figure agrees: rankCategories).
   const words = categoryWords(t);
   const meta: Record<FoundKey, { label: string; icon: React.ComponentType<{ className?: string; strokeWidth?: number }>; hue: string; unit: 'groups' | 'photos'; onClick: () => void }> = {
     duplicates: { ...words.duplicates, icon: Sparkles, hue: 'rose', onClick: p.onDuplicates },
@@ -146,7 +144,6 @@ export function HomeView(p: Props) {
   const keys = (Object.keys(meta) as FoundKey[]).filter(k => p.found[k]);
   const cats = rankCategories(p.found, summary).map(c => ({ ...meta[c.key], ...c }));
   const done = keys.filter(k => p.found[k]!.items === 0).map(k => meta[k].label);
-  const bar = keys.map(k => ({ key: k, hue: meta[k].hue, bytes: gain(k).bytes, label: meta[k].label }));
 
   const pctText = percent(t, p.months.pct);
   const tools: { key: string; label: string; value: string; cover?: string; icon: React.ComponentType<{ className?: string; strokeWidth?: number }>; hue: string; onClick: () => void }[] = [
@@ -204,7 +201,7 @@ export function HomeView(p: Props) {
       {/* First, what could go, in one place: the space, the bar of the library, and its categories as rows — each row's dot is its segment in the bar. */}
       {has && (summary || cats.length > 0 || done.length > 0) && (
         <CleanupSection
-          t={t} summary={summary} cats={cats} done={done} bar={bar} countOf={c => categoryCount(t, c)} library={p.analysis} storage={p.storage} freedBytes={p.freedBytes}
+          t={t} summary={summary} cats={cats} done={done} countOf={c => categoryCount(t, c)} library={p.analysis} storage={p.storage} freedBytes={p.freedBytes}
           partial={analysing} onOpen={p.onCleanup} onPhotos={p.onMonths} onVideos={p.onVideos}
         />
       )}
@@ -384,20 +381,23 @@ function ScanCard({ t, scan, first }: { t: Strings; scan: ScanView; first: boole
  * *Jetzt aufräumen*. Nothing in it
  * is red, nothing counts down: it is an overview, not an alarm.
  */
-function CleanupSection({ t, summary, cats, done, bar, countOf, library, storage, freedBytes, partial, onOpen, onPhotos, onVideos }: {
+function CleanupSection({ t, summary, cats, done, countOf, library, storage, freedBytes, partial, onOpen, onPhotos, onVideos }: {
   t: Strings; summary: CleanupSummary | null;
   cats: (RankedCategory & { label: string; hue: string; icon: React.ComponentType<{ className?: string; strokeWidth?: number }>; onClick: () => void })[];
-  done: string[]; bar: { key: string; hue: string; bytes: number; label: string }[];
+  done: string[];
   countOf: (c: RankedCategory) => string;
   library: Props['analysis']; storage: Storage | null; freedBytes: number; partial: boolean;
   onOpen: () => void; onPhotos: () => void; onVideos: () => void;
 }) {
   const media = summary?.media;
-  const good = media ? [
-    { key: 'goodPhotos', hue: 'pink', soft: true, bytes: Math.max(0, library.photos.bytes - media.photos.bytes), label: t.goodPhotos },
-    { key: 'goodVideos', hue: 'sand', soft: true, bytes: Math.max(0, library.videos.bytes - media.videos.bytes), label: t.goodVideos },
-  ].filter(b => b.bytes > 0) : [];
-  const shown = [...bar.filter(b => b.bytes > 0), ...good];
+  // The library in two parts only: what could go and what stays — one colour each, both named with their size.
+  const libraryBytes = library.photos.bytes + library.videos.bytes;
+  const canGo = summary?.total.bytes ?? 0;
+  const stays = Math.max(0, libraryBytes - canGo);
+  const parts = [
+    { key: 'canGo', hue: 'sand', bytes: canGo, label: t.legendCanGo },
+    { key: 'stays', hue: 'stone', soft: true, bytes: stays, label: t.legendStays },
+  ].filter(x => x.bytes > 0);
   const nothing = !!summary && summary.total.count === 0;
   const cells: { key: string; label: string; icon: React.ComponentType<{ className?: string; strokeWidth?: number }>; all: Stat; gone: Stat; onClick: () => void }[] = media ? [
     { key: 'photos', label: t.statPhotos, icon: ImageIcon, all: library.photos, gone: media.photos, onClick: onPhotos },
@@ -420,23 +420,22 @@ function CleanupSection({ t, summary, cats, done, bar, countOf, library, storage
                 </span>
               </div>
             ) : (
-              <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5">
-                <p className="text-label font-semibold text-fg-mute wrap-prose">{t.cleanupCard}</p>
-                <p className="title-face text-title1 font-bold text-fg num">{bytes(t, summary.total.bytes)}</p>
+              <div>
+                <p className="title-face text-title2 font-bold text-fg num wrap-compound">{fmt(t.cleanupCanGo, { size: bytes(t, canGo) })}</p>
+                {libraryBytes > 0 && <p className="text-label text-fg-mute mt-0.5 num wrap-prose">{fmt(t.cleanupOfLibrary, { total: bytes(t, libraryBytes) })}</p>}
               </div>
             )}
-            {shown.length > 0 && (
+            {parts.length > 0 && !nothing && (
               <div className="mt-3">
-                <StorageBar parts={shown} label={fmt(t.storageBarLabel, { list: shown.map(b => `${b.label} ${bytes(t, b.bytes)}`).join(', ') })} />
-                {good.length > 0 && (
-                  <ul className="flex flex-wrap gap-x-3.5 gap-y-1 mt-2" aria-hidden="true">
-                    {good.map(b => (
-                      <li key={b.key} className="inline-flex items-center gap-1.5 text-caption text-fg-mute">
-                        <span data-hue={b.hue} className="w-2 h-2 rounded-full bg-hue-solid opacity-40" />{b.label}
-                      </li>
-                    ))}
-                  </ul>
-                )}
+                <StorageBar parts={parts} label={fmt(t.storageBarLabel, { list: parts.map(x => `${x.label} ${bytes(t, x.bytes)}`).join(', ') })} />
+                <ul className="flex flex-wrap gap-x-4 gap-y-1 mt-2" aria-hidden="true">
+                  {parts.map(x => (
+                    <li key={x.key} className="inline-flex items-center gap-1.5 text-caption text-fg-mute num">
+                      <span data-hue={x.hue} className={`w-2.5 h-2.5 rounded-full bg-hue-solid ${x.soft ? 'opacity-40' : ''}`} />
+                      <span><span className="font-semibold text-fg">{x.label}</span> · {bytes(t, x.bytes)}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
             )}
           </div>
@@ -482,12 +481,7 @@ function CleanupSection({ t, summary, cats, done, bar, countOf, library, storage
                 lead={c.covers.length ? 48 : undefined}
                 trailing={
                   <span className="shrink-0 flex items-center gap-2">
-                    {c.gain.bytes > 0 && (
-                      <>
-                        <span data-hue={c.hue} className="w-2 h-2 rounded-full bg-hue-solid" aria-hidden="true" />
-                        <span className="text-body font-bold text-fg num">{bytes(t, c.gain.bytes)}</span>
-                      </>
-                    )}
+                    {c.gain.bytes > 0 && <span className="text-body font-bold text-fg num">{bytes(t, c.gain.bytes)}</span>}
                     <ChevronRight className="w-5 h-5 text-fg-faint rtl:rotate-180" aria-hidden="true" />
                   </span>
                 }
