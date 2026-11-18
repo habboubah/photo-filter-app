@@ -52,6 +52,12 @@
         </provider>
     </application>
 
+    <!-- android:screenOrientation="portrait" on the activity makes Play assume the app *requires* a
+         portrait screen, which keeps it off tablets, Chromebooks and Android XR ("Required hardware
+         feature declarations are restricting your app's availability"). The app still opens in
+         portrait; it just doesn't demand the feature. Android 16 ignores the lock on large screens anyway. -->
+    <uses-feature android:name="android.hardware.screen.portrait" android:required="false" />
+
     <!-- Permissions (docs/PLAN.md, "Platform mapping") -->
 
     <!-- The photos: Android 13+ asks for "Photos" (all, or only selected ones from Android 14); below 13 the older storage permission. -->
