@@ -72,6 +72,8 @@ const LIMITED_FROM = Date.UTC(2026, 6, 1);
 
 export class DemoLibrary extends WebPlugin implements PhotoLibraryPlugin {
   private running = false;
+  /** A first scan in progress: null before it lists the library, then how many photos it has analysed (as a phone's cache fills). */
+  private analysed: number | null = null;
 
   constructor() {
     super();
@@ -133,10 +135,14 @@ export class DemoLibrary extends WebPlugin implements PhotoLibraryPlugin {
       const stepMs = first ? Number(get(K.scanStep)) || 110 : 60;
       for (let i = 1; i <= steps; i++) {
         await wait(stepMs);
-        // Like the native scan: a rescan only lists the library (nothing new to analyse).
-        const phase = first && i > steps / 4 ? 'analyse' : 'list';
-        this.notifyListeners('scanProgress', { phase, done: Math.round((i / steps) * total), total });
+        // Like the native scan: a rescan only lists the library (nothing new to analyse). A first scan
+        // lists for a quarter of its steps, then analyses every photo, its progress counting those.
+        const analysing = first && i > steps / 4;
+        const done = analysing ? Math.round(((i - steps / 4) / (steps * 0.75)) * total) : Math.round((i / steps) * total);
+        if (analysing) this.analysed = done;
+        this.notifyListeners('scanProgress', { phase: analysing ? 'analyse' : 'list', done, total });
       }
+      this.analysed = null;
       set(K.scanned, '1');
       this.running = false;
       this.notifyListeners('scanDone', await this.getScanState());
@@ -148,8 +154,17 @@ export class DemoLibrary extends WebPlugin implements PhotoLibraryPlugin {
   /** Like a phone: the facts carry only the vector's version (`vv`), the vectors come from getVectors. */
   async getFacts({ offset, limit }: { offset: number; limit: number }) {
     await ready;
-    const all = get(K.scanned) === '1' ? this.photos() : [];
-    const rows = all.slice(offset, offset + limit).map(({ vec, ...p }) => (vec ? { ...p, vv: AI_VERSION } : p));
+    // Like a phone's cache during a first scan: every photo once listed, the features only of those analysed so far (newest first).
+    const scanned = get(K.scanned) === '1';
+    const all = scanned || this.analysed !== null ? this.photos() : [];
+    const fresh = scanned ? 0 : all.length - (this.analysed ?? 0);
+    const rows = all.slice(offset, offset + limit).map(({ vec, ...p }, i) => {
+      if (offset + i < fresh) {
+        const { id, t, bytes, exact, w, h, fav, shot, video, dur, rec, fmt, dir } = p;
+        return { id, t, bytes, exact, w, h, fav, shot, video, dur, rec, fmt, dir };
+      }
+      return vec ? { ...p, vv: AI_VERSION } : p;
+    });
     return { rows, total: all.length };
   }
 

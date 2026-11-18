@@ -10,6 +10,7 @@ import { PRODUCT_ID, Purchases } from './native/purchases';
 import { AppState, RECENT_ALBUMS, SCHEMA_VERSION, emptyState, normalizeState, pruneLater } from './logic/state';
 import type { TripEdits } from './logic/trips';
 import { addDay } from './logic/streak';
+import { type EtaPoint, secondsLeft } from './logic/eta';
 import { learnPick } from './logic/best';
 import { addToBin, removeFromBin } from './logic/bin';
 import { record } from './logic/ledger';
@@ -61,11 +62,22 @@ export function initialLanguage(): Language {
 export interface ScanView extends ScanProgress {
   running: boolean;
   lastScanAt: number;
+  /** Seconds the current phase still takes at its speed so far (src/logic/eta.ts); null while too early to say. */
+  left?: number | null;
 }
 
 /** During the AI's pass (16 photos per progress event), the facts are read again every this many photos. */
 const AI_RELOAD_EVERY = 480;
 const AI_BATCH = 16;
+
+/**
+ * While new photos are analysed, the facts are read again at most this often
+ * (and at once when the listing is done), so home fills in during a first scan
+ * instead of waiting for its end. A big library waits longer between reads:
+ * every read works the groups, trips and finders out again.
+ */
+const ANALYSE_RELOAD_MS = 8000;
+const analyseReloadMs = (photos: number) => Math.max(ANALYSE_RELOAD_MS, photos * 0.3);
 
 /** Photos whose label scores are worked out between two pauses (src/logic/ai.ts scoreInto). */
 const SCORE_SLICE = 2000;
@@ -217,8 +229,9 @@ export function useAppStore() {
   /** Forget every decision but the purchase, the free deletes and the "freed so far" count; returns the old state for undo. */
   const resetDecisions = (): AppState => {
     const before = state;
-    // What waits in "Zum Löschen" stays: it is a delete in progress, not a suggestion.
-    setState(s => ({ ...emptyState(), owned: s.owned, freed: s.freed, days: s.days, freeUsed: s.freeUsed, early: s.early, bin: s.bin }));
+    // Everything decided goes, "Zum Löschen vorgemerkt" too: those photos come back into their groups
+    // (Ahmad, 18 November 2026: starting over means starting over). The toast's undo brings it all back.
+    setState(s => ({ ...emptyState(), owned: s.owned, freed: s.freed, days: s.days, freeUsed: s.freeUsed, early: s.early }));
     return before;
   };
   const restoreState = (s: AppState) => setState(s);
@@ -310,14 +323,21 @@ export function useAppStore() {
   }, []);
   useEffect(() => { refreshStorage(); }, [refreshStorage]);
 
+  // A read asked for while one runs (the scan's end during a read in its middle) runs once more after it.
+  const readAgain = useRef(false);
   const reload = useCallback(async () => {
-    if (loading.current) return;
+    if (loading.current) { readAgain.current = true; return; }
     loading.current = true;
-    const gen = generation.current;
     try {
-      const rows = await loadAllFacts();
-      if (gen === generation.current) setPhotos(rows);
-    } catch { setPhotos(p => p ?? []); } finally { loading.current = false; }
+      do {
+        readAgain.current = false;
+        const gen = generation.current;
+        try {
+          const rows = await loadAllFacts();
+          if (gen === generation.current) setPhotos(rows);
+        } catch { setPhotos(p => p ?? []); }
+      } while (readAgain.current);
+    } finally { loading.current = false; }
   }, []);
 
   const startScan = useCallback(() => {
@@ -365,14 +385,30 @@ export function useAppStore() {
     return () => { alive = false; };
   }, [refreshAccess, reload, startScan]);
 
+  // Where the current phase began (for its time estimate) and when the facts were last read during it.
+  const phaseStart = useRef<(EtaPoint & { phase: ScanProgress['phase']; total: number }) | null>(null);
+  const lastRead = useRef(0);
+  const factCount = useRef(0);
+  factCount.current = facts?.length ?? 0;
   useEffect(() => {
     const progress = PhotoLibrary.addListener('scanProgress', p => {
-      setScan(s => ({ ...s, ...p, running: true }));
+      const now = Date.now();
+      let start = phaseStart.current;
+      const newPhase = !start || start.phase !== p.phase || start.total !== p.total;
+      if (newPhase) start = phaseStart.current = { phase: p.phase, total: p.total, at: now, done: p.done };
+      const left = secondsLeft(start!, { at: now, done: p.done }, p.total);
+      setScan(s => ({ ...s, ...p, running: true, left }));
+      // Analysing: the photos are all listed by now; what is analysed shows up as it comes, not only at the end.
+      if (p.phase === 'analyse' && (newPhase || now - lastRead.current > analyseReloadMs(factCount.current))) {
+        lastRead.current = now;
+        void reload();
+      }
       // The AI's pass is long: its results show up every AI_RELOAD_EVERY photos, not only at the end.
       if (p.phase === 'ai' && p.done > 0 && p.done % AI_RELOAD_EVERY < AI_BATCH) void reload();
     });
     const done = PhotoLibrary.addListener('scanDone', st => {
-      setScan(s => ({ ...s, running: false, lastScanAt: st.lastScanAt }));
+      phaseStart.current = null;
+      setScan(s => ({ ...s, running: false, lastScanAt: st.lastScanAt, left: null }));
       void reload();
     });
     let changeTimer = 0;

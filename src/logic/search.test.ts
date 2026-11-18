@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { EXAMPLE_COUNT, EXAMPLE_WORDS, FALLBACK_WORDS, conceptByWord, conceptWord, examples, likeThis, normalize, pickExamples, search, suggest, type WordFile } from './search';
+import { EXAMPLE_COUNT, EXAMPLE_WORDS, FALLBACK_WORDS, TRY_WORDS, WORD_SECTIONS, conceptByWord, filterConcepts, wordSections, conceptWord, examples, likeThis, normalize, pickExamples, search, suggest, type WordFile } from './search';
 import { Vectors } from './vectors';
 import wordFile from '../search/words.json';
 import facts from '../native/demo/facts.json';
@@ -85,5 +85,29 @@ describe('search by words', () => {
   it('leaves out what is not allowed (screenshots)', () => {
     const list = examples(vectors, file, id => id !== 'p031');
     expect(list.some(e => e.cover === 'p031')).toBe(false);
+  });
+});
+
+describe('the vocabulary by theme', () => {
+  it('finds every section and puts every word in exactly one', () => {
+    for (const s of WORD_SECTIONS) expect(conceptByWord(file, s.first), s.first).toBeGreaterThanOrEqual(0);
+    const sections = wordSections(file);
+    expect(sections.map(s => s.key)).toEqual(WORD_SECTIONS.map(s => s.key));
+    const all = sections.flatMap(s => s.concepts);
+    expect(all).toEqual(file.concepts.map((_, i) => i));
+    expect(sections.find(s => s.key === 'animals')!.concepts.map(i => file.concepts[i].en[0])).toContain('giraffe');
+    expect(sections.find(s => s.key === 'documents')!.concepts.map(i => file.concepts[i].en[0])).toContain('passport');
+  });
+
+  it('offers words to try that exist', () => {
+    for (const w of TRY_WORDS) expect(conceptByWord(file, w), w).toBeGreaterThanOrEqual(0);
+  });
+
+  it('filters the list by any of a word\'s forms', () => {
+    const all = file.concepts.map((_, i) => i);
+    expect(filterConcepts(file, '', 'de', all)).toHaveLength(all.length);
+    const cake = filterConcepts(file, 'kuchen', 'de', all).map(i => file.concepts[i].en[0]);
+    expect(cake).toContain('birthday');
+    expect(filterConcepts(file, 'giraffe', 'de', all).map(i => file.concepts[i].en[0])).toEqual(['giraffe']);
   });
 });

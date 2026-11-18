@@ -210,3 +210,46 @@ export const LIKE_COS = 0.8;
 /** The photos most like this one, most alike first (src/logic/vectors.ts nearest). */
 export const likeThis = (vectors: Vectors, id: string, allowed?: (id: string) => boolean): Hit[] =>
   vectors.nearest(id, LIKE_COS, SEARCH_LIMIT, allowed).map(n => ({ id: n.id, z: n.cos }));
+
+/*
+ * The vocabulary by theme, for "Alle Wörter" on Suchen: ml/words.yaml keeps
+ * its concepts in sections (people, celebrations, … photo kinds), and
+ * words.json keeps their order — each section starts at its first word here
+ * and runs to the next one's.
+ */
+export const WORD_SECTIONS = [
+  { key: 'people', first: 'baby' },
+  { key: 'celebrations', first: 'birthday' },
+  { key: 'kids', first: 'school' },
+  { key: 'babyMoments', first: 'sleeping' },
+  { key: 'animals', first: 'dog' },
+  { key: 'food', first: 'food' },
+  { key: 'places', first: 'beach' },
+  { key: 'home', first: 'living room' },
+  { key: 'transport', first: 'car' },
+  { key: 'sports', first: 'football' },
+  { key: 'documents', first: 'receipt' },
+  { key: 'things', first: 'phone' },
+  { key: 'kinds', first: 'black and white' },
+] as const;
+export type WordSection = (typeof WORD_SECTIONS)[number]['key'];
+
+/** Every concept in its section, in the vocabulary's order (a section whose first word is missing joins the one before). */
+export function wordSections(file: WordFile): { key: WordSection; concepts: number[] }[] {
+  const starts = WORD_SECTIONS.map(s => ({ key: s.key, at: conceptByWord(file, s.first) })).filter(s => s.at >= 0).sort((a, b) => a.at - b.at);
+  return starts.map((s, i) => ({
+    key: s.key,
+    concepts: Array.from({ length: (starts[i + 1]?.at ?? file.concepts.length) - (i === 0 ? 0 : s.at) }, (_, j) => (i === 0 ? 0 : s.at) + j),
+  }));
+}
+
+/** A few words to try, offered under the cards: one from many themes. */
+export const TRY_WORDS = ['dog', 'beach', 'snow', 'sunset', 'christmas', 'food', 'car', 'mountains', 'zoo', 'receipt', 'sleeping', 'playground'];
+
+/** Concepts whose words (in `lang` or English) contain what is typed; all of them for an empty filter. */
+export function filterConcepts(file: WordFile, typed: string, lang: SearchLanguage, concepts: number[]): number[] {
+  const q = normalize(typed);
+  if (!q) return concepts;
+  const langs: SearchLanguage[] = lang === 'en' ? ['en'] : [lang, 'en'];
+  return concepts.filter(i => langs.some(l => file.concepts[i][l].some(w => normalize(w).includes(q))));
+}

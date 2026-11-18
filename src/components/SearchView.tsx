@@ -1,21 +1,24 @@
+import type React from 'react';
 import { useEffect, useMemo, useState } from 'react';
-import { X } from 'lucide-react';
+import { ChevronRight, X } from 'lucide-react';
 import type { Photo } from '../types';
 import { Strings, bytes, fmt, percent, plural } from '../translations';
 import {
-  EXAMPLE_WORDS, FALLBACK_WORDS, type Example, type ExampleScore, type SearchLanguage, type WordFile,
-  conceptByWord, conceptWord, pickExamples, scoreExample, search, suggest,
+  EXAMPLE_WORDS, FALLBACK_WORDS, TRY_WORDS, type Example, type ExampleScore, type SearchLanguage, type WordFile, type WordSection,
+  conceptByWord, conceptWord, filterConcepts, pickExamples, scoreExample, search, suggest, wordSections,
 } from '../logic/search';
 import { sensitiveLabel } from '../logic/ai';
 import type { Vectors } from '../logic/vectors';
 import words from '../search/words.json';
 import { Dock, Empty, Screen } from '../ui/Screen';
+import { Sheet } from '../ui/Sheet';
 import { Button } from '../ui/Button';
 import { Field } from '../ui/Field';
 import { PhotoGrid, Thumb } from '../ui/Photo';
 import { tapLight } from '../ui/haptics';
 
 const FILE = words as WordFile;
+const SECTIONS = wordSections(FILE);
 
 /** The last cards worked out, kept while the library's vectors stay the same (opening Suchen again is instant). */
 let cached: { vectors: Vectors; size: number; list: Example[] } | null = null;
@@ -69,6 +72,7 @@ export function SearchView({ t, lang, vectors, byId, aiSeen, onBack, onOpen, onR
 }) {
   const [typed, setTyped] = useState('');
   const [tokens, setTokens] = useState<number[]>([]);
+  const [allWords, setAllWords] = useState(false);
   const offered = useMemo(() => suggest(FILE, typed, lang).filter(s => !tokens.includes(s.concept)), [typed, lang, tokens]);
   const fallback = useMemo(() => FALLBACK_WORDS.map(w => conceptByWord(FILE, w)).filter(i => i >= 0), []);
   // No screenshots or screen recordings: they have their own list.
@@ -83,6 +87,19 @@ export function SearchView({ t, lang, vectors, byId, aiSeen, onBack, onOpen, onR
   const date = (id: string) => new Date(byId.get(id)?.t ?? 0).toLocaleString(t.locale, { dateStyle: 'medium', timeStyle: 'short' });
   const ready = vectors.size > 0;
   const docked = ready && tokens.length > 0 && ids.length > 0;
+  // A few words to try under the cards (none a card already shows), then every word in a sheet.
+  const tryWords = useMemo(() => {
+    const shown = new Set((cards ?? []).map(c => c.concept));
+    return TRY_WORDS.map(w => conceptByWord(FILE, w)).filter(c => c >= 0 && !shown.has(c)).slice(0, 8);
+  }, [cards]);
+  const allWordsButton = (
+    <button
+      type="button" onClick={() => { tapLight(); setAllWords(true); }}
+      className="min-h-[44px] ps-4 pe-3 inline-flex items-center gap-1 rounded-full text-label font-semibold text-accent bg-accent-dim press focus-visible:ring-focus"
+    >
+      {fmt(t.searchAllWords, { n: FILE.concepts.length })}<ChevronRight className="w-4 h-4 rtl:rotate-180" aria-hidden="true" />
+    </button>
+  );
 
   return (
     <Screen
@@ -144,12 +161,21 @@ export function SearchView({ t, lang, vectors, byId, aiSeen, onBack, onOpen, onR
         </section>
       )}
 
+      {!typed.trim() && !tokens.length && ready && cards !== null && cards.length > 0 && (
+        <section className="space-y-2" aria-labelledby="search-words-h">
+          <h2 id="search-words-h" className="eyebrow text-fg-mute px-1">{t.searchWordsTitle}</h2>
+          <WordChips words={tryWords.map(c => ({ concept: c, word: conceptWord(FILE, c, lang) }))} onPick={add} after={allWordsButton} />
+        </section>
+      )}
+
       {!typed.trim() && !tokens.length && (!ready || (cards !== null && cards.length === 0)) && (
         <section className="space-y-2" aria-labelledby="search-try-h">
           <h2 id="search-try-h" className="eyebrow text-fg-mute px-1">{t.searchTry}</h2>
-          <WordChips words={fallback.map(c => ({ concept: c, word: conceptWord(FILE, c, lang) }))} onPick={add} />
+          <WordChips words={fallback.map(c => ({ concept: c, word: conceptWord(FILE, c, lang) }))} onPick={add} after={allWordsButton} />
         </section>
       )}
+
+      <AllWords t={t} lang={lang} open={allWords} onClose={() => setAllWords(false)} onPick={c => { setAllWords(false); add(c); }} />
 
       {!ready && (
         <Empty
@@ -171,7 +197,40 @@ export function SearchView({ t, lang, vectors, byId, aiSeen, onBack, onOpen, onR
   );
 }
 
-function WordChips({ words: list, onPick }: { words: { concept: number; word: string }[]; onPick: (concept: number) => void }) {
+/**
+ * Every word Suchen knows, by theme (src/logic/search.ts wordSections), in a
+ * sheet: a field narrows it down by any form of a word ("Kuchen" finds
+ * Geburtstag), a tap searches for it.
+ */
+function AllWords({ t, lang, open, onClose, onPick }: { t: Strings; lang: SearchLanguage; open: boolean; onClose: () => void; onPick: (concept: number) => void }) {
+  const [filter, setFilter] = useState('');
+  const names: Record<WordSection, string> = {
+    people: t.wordsPeople, celebrations: t.wordsCelebrations, kids: t.wordsKids, babyMoments: t.wordsBabyMoments, animals: t.wordsAnimals,
+    food: t.wordsFood, places: t.wordsPlaces, home: t.wordsHome, transport: t.wordsTransport, sports: t.wordsSports,
+    documents: t.wordsDocuments, things: t.wordsThings, kinds: t.wordsKinds,
+  };
+  const shown = SECTIONS.map(s => ({ ...s, concepts: filterConcepts(FILE, filter, lang, s.concepts) })).filter(s => s.concepts.length);
+  const close = () => { setFilter(''); onClose(); };
+  return (
+    <Sheet open={open} title={t.searchWordsSheet} closeLabel={t.close} onClose={close}>
+      <div className="space-y-5">
+        <Field
+          label={t.searchWordsFilter} hideLabel value={filter} onChange={setFilter} placeholder={t.searchWordsFilter}
+          enterKeyHint="search" autoCapitalize="none" autoCorrect="off" spellCheck={false}
+        />
+        {shown.length === 0 && <p className="text-label text-fg-mute px-1 wrap-prose">{t.searchNoWord}</p>}
+        {shown.map(s => (
+          <section key={s.key} className="space-y-2" aria-labelledby={`words-${s.key}`}>
+            <h3 id={`words-${s.key}`} className="eyebrow text-fg-mute px-1">{names[s.key]}</h3>
+            <WordChips words={s.concepts.map(c => ({ concept: c, word: conceptWord(FILE, c, lang) }))} onPick={c => { setFilter(''); onPick(c); }} />
+          </section>
+        ))}
+      </div>
+    </Sheet>
+  );
+}
+
+function WordChips({ words: list, onPick, after }: { words: { concept: number; word: string }[]; onPick: (concept: number) => void; after?: React.ReactNode }) {
   return (
     <div className="flex flex-wrap gap-2">
       {list.map(w => (
@@ -179,9 +238,10 @@ function WordChips({ words: list, onPick }: { words: { concept: number; word: st
           key={w.concept} type="button" onClick={() => onPick(w.concept)}
           className="min-h-[44px] px-4 inline-flex items-center rounded-full glass-flat text-fg text-label font-semibold press focus-visible:ring-focus"
         >
-          {w.word}
+          <span className="inline-block first-letter:uppercase">{w.word}</span>
         </button>
       ))}
+      {after}
     </div>
   );
 }

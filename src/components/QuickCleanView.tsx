@@ -1,3 +1,4 @@
+import { Archive } from 'lucide-react';
 import { useState } from 'react';
 import type { Storage } from '../types';
 import { Strings, bytes, fmt, num, plural } from '../translations';
@@ -55,8 +56,9 @@ export function QuickCleanView({ t, parts, storage, onBack, onReview, onDelete }
       )}
       <Dock>
         <div className="grid gap-1">
-          <Button full size="lg" variant="danger" disabled={!chosen.ids.length} onClick={() => onDelete(chosen.ids)}>
-            {chosen.ids.length ? `${plural(t, 'deleteN', chosen.ids.length)} · ${bytes(t, chosen.bytes)}` : t.quickCleanNothing}
+          {/* Into "Zum Löschen vorgemerkt": nothing is deleted yet, so the quiet teal, not red. */}
+          <Button full size="lg" icon={Archive} disabled={!chosen.ids.length} onClick={() => onDelete(chosen.ids)}>
+            {chosen.ids.length ? `${t.binAdd} · ${plural(t, 'photos', chosen.ids.length)} · ${bytes(t, chosen.bytes)}` : t.quickCleanNothing}
           </Button>
           <Button full variant="ghost" disabled={!chosen.ids.length} onClick={() => onReview(chosen.ids)}>{t.quickCleanFirst}</Button>
         </div>

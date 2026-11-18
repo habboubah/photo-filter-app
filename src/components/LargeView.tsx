@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Minimize2, Play, Trash2 } from 'lucide-react';
+import { Archive, Minimize2, Play } from 'lucide-react';
 import type { Photo } from '../types';
 import { Strings, bytes, fmt, plural } from '../translations';
 import { COMPRESS_MIN, LargeFilter, duration } from '../logic/large';
@@ -91,9 +91,11 @@ export function LargeView({ t, photos, videosOnly, canCompress, sort, onSort, on
             {open.video && canCompress && open.bytes >= COMPRESS_MIN && (
               <p className="text-caption text-fg-mute wrap-prose -mt-2">{fmt(t.compressHint, { size: bytes(t, Math.round(open.bytes * 0.4)) })}</p>
             )}
-            <Button full size="lg" variant="danger" icon={Trash2} onClick={() => { const p = open; setOpen(null); onDelete(p); }}>
-              {open.video ? t.deleteVideo : t.deletePhoto}
+            {/* Into "Zum Löschen vorgemerkt" (src/logic/bin.ts): nothing is deleted here, so no red. */}
+            <Button full size="lg" variant="secondary" icon={Archive} onClick={() => { const p = open; setOpen(null); onDelete(p); }}>
+              {t.aside}
             </Button>
+            <p className="text-caption text-fg-mute text-center wrap-prose -mt-2">{t.asideHint}</p>
           </div>
         )}
       </Sheet>
