@@ -135,11 +135,12 @@ export function SearchView({ t, lang, vectors, byId, aiSeen, onBack, onOpen, onR
           : <p className="text-label text-fg-mute px-1 wrap-prose">{t.searchNoWord}</p>
       )}
 
-      {/* What can be searched for first, as words to tap; the photo cards of the library under them. */}
-      {!typed.trim() && !tokens.length && ready && cards !== null && cards.length > 0 && (
+      {/* What can be searched for first, as words to tap; the photo cards of the library under them.
+          The words stay while a search is shown (without the ones already chosen), so another is one tap away. */}
+      {!typed.trim() && ready && (tokens.length > 0 || (cards !== null && cards.length > 0)) && (
         <section className="space-y-2" aria-labelledby="search-words-h">
           <h2 id="search-words-h" className="eyebrow text-fg-mute px-1">{t.searchWordsTitle}</h2>
-          <WordChips words={tryWords.map(c => ({ concept: c, word: conceptWord(FILE, c, lang) }))} onPick={add} after={allWordsButton} />
+          <WordChips words={tryWords.filter(c => !tokens.includes(c)).map(c => ({ concept: c, word: conceptWord(FILE, c, lang) }))} onPick={add} after={allWordsButton} />
         </section>
       )}
 
