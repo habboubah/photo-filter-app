@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { ArrowUpRight, ChevronLeft, ChevronRight, ChevronsUpDown, Info } from 'lucide-react';
 import { tapLight } from './haptics';
@@ -212,10 +212,12 @@ export function MenuRow<V extends string>({ label, leading, value, options, onCh
 /**
  * The coloured squircle in front of a settings row, as in iOS Settings: a
  * white symbol on one of the list hues, so a row is found by its colour.
+ * On Android (`icon-tile`, index.css) it is a quiet neutral squircle: the
+ * photos carry the colour there.
  */
 export function IconTile({ icon: Icon, hue }: { icon: React.ComponentType<{ className?: string; strokeWidth?: number }>; hue: string }) {
   return (
-    <span data-hue={hue} aria-hidden="true" className="w-[30px] h-[30px] rounded-[9px] bg-hue-solid text-on-color inline-flex items-center justify-center shrink-0 sheen !shadow-none">
+    <span data-hue={hue} aria-hidden="true" className="icon-tile w-[30px] h-[30px] rounded-[9px] bg-hue-solid text-on-color inline-flex items-center justify-center shrink-0 sheen !shadow-none">
       <Icon className="w-[18px] h-[18px]" strokeWidth={2.3} />
     </span>
   );
@@ -294,8 +296,21 @@ export function ActionRow({ label, sub, leading, onClick, ariaLabel, actions, le
  * otherwise capture `position: fixed` and carry the bar along with it.
  */
 export function Dock({ children }: { children: React.ReactNode }) {
+  // Its height, for the page's bottom padding (pb-safe-dock): with large text a dock of two long
+  // German buttons grows well past the default, and the last row must still scroll clear of it.
+  const box = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const el = box.current;
+    if (!el) return;
+    const root = document.documentElement;
+    const set = () => root.style.setProperty('--dock-h', `${Math.ceil(el.getBoundingClientRect().height)}px`);
+    set();
+    const ro = new ResizeObserver(set);
+    ro.observe(el);
+    return () => { ro.disconnect(); root.style.removeProperty('--dock-h'); };
+  }, []);
   return createPortal(
-    <div className="fixed inset-x-0 bottom-0 z-20 pointer-events-none">
+    <div ref={box} className="fixed inset-x-0 bottom-0 z-20 pointer-events-none">
       <div className="mx-auto w-full max-w-xl px-[16px] pt-10 pb-dock dock-fade">
         <div className="pointer-events-auto">{children}</div>
       </div>

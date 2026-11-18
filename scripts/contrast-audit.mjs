@@ -2,7 +2,7 @@
 /**
  * Contrast audit for the colour tokens in src/index.css ("Glass", iOS 27).
  *
- * In both themes it checks where text and glyphs meet a fill: the inks on
+ * In both themes, and in Android's own tuning of each ("Album"), it checks where text and glyphs meet a fill: the inks on
  * the page, on a card and on a fill; the accent as text on each of them and
  * on its own tint; the ink on the accent fill; keep (green), delete (red) and
  * blurry (amber) as text on their tints and as fills with their own ink; the
@@ -43,6 +43,11 @@ const tokens = block(s => s === '@theme');
 const themes = {
   light: block(s => s.includes('[data-theme="light"]')),
   dark: block(s => s.includes('[data-theme="dark"]')),
+};
+// Android's own tuning ("Album": warm surfaces, flat glass), laid over each theme.
+const android = {
+  light: block(s => s.includes('[data-platform="android"][data-theme="light"]')),
+  dark: block(s => s.includes('[data-platform="android"][data-theme="dark"]')),
 };
 const hues = Object.keys(themes.light).flatMap(k => /^--t-([\w]+)-bg$/.exec(k)?.slice(1) ?? []);
 if (!hues.length) throw new Error('index.css: no tile hues (--t-<hue>-bg)');
@@ -100,8 +105,11 @@ function audit(label, scope, list) {
 const darkPhoto = parse('#202020');
 const lightPhoto = parse('#d8d8d8');
 
-for (const theme of ['light', 'dark']) {
-  const scope = { ...tokens, ...themes[theme] };
+const variants = ['light', 'dark'].flatMap(theme => [
+  [theme, { ...tokens, ...themes[theme] }],
+  [`android ${theme}`, { ...tokens, ...themes[theme], ...android[theme] }],
+]);
+for (const [theme, scope] of variants) {
   audit(`inks · ${theme}`, scope, c => {
     const bg = c('--t-bg');
     const surface = c('--t-surface');
@@ -158,14 +166,14 @@ for (const theme of ['light', 'dark']) {
 /* --------------------------------------------------------------- report */
 
 const pad = (s, n) => String(s).padEnd(n);
-console.log(`${pad('', 16)}${pad('worst', 8)}need  where`);
+console.log(`${pad('', 24)}${pad('worst', 8)}need  where`);
 for (const { label, worst, bad, results } of rows) {
-  console.log(`${pad(label, 16)}${pad(worst.r.toFixed(2), 8)}${pad(worst.need, 6)}${worst.what}${bad.length ? `   ✗ ${bad.length} failing` : ''}`);
+  console.log(`${pad(label, 24)}${pad(worst.r.toFixed(2), 8)}${pad(worst.need, 6)}${worst.what}${bad.length ? `   ✗ ${bad.length} failing` : ''}`);
   for (const x of verbose ? results : bad) {
     console.log(`  ${x.r < x.need ? '✗' : ' '} ${pad(x.r.toFixed(2), 6)} ${x.what} (needs ${x.need})`);
   }
 }
 console.log(failures
   ? `\n${failures} check(s) below the minimum contrast.`
-  : `\nAll ${rows.reduce((n, r) => n + r.results.length, 0)} checks pass (2 themes, ${hues.length} hues).`);
+  : `\nAll ${rows.reduce((n, r) => n + r.results.length, 0)} checks pass (2 themes, iPhone and Android, ${hues.length} hues).`);
 process.exit(failures ? 1 : 0);

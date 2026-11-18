@@ -49,7 +49,8 @@ export function Button({
       onMouseDown={e => e.preventDefault()}
       onClick={e => { if (!disabled) { tapLight(); onClick?.(e); } }}
       className={[
-        'inline-flex items-center justify-center gap-2 rounded-full font-bold',
+        // A pill while it is one line; with large text a long German label wraps into a rounded box, never a circle.
+        'inline-flex items-center justify-center gap-2 rounded-[28px] font-bold text-center',
         'press select-none focus-visible:ring-focus',
         sizes[size],
         disabled ? 'bg-surface-2 text-fg-faint cursor-not-allowed active:!transform-none' : variants[variant],

@@ -12,6 +12,25 @@ In order. (State: 16 November 2026, after the first build by Claude.)
       `false` (or ask Claude to remove it). **Never send a build to review
       while it is `true`.**
 
+## 0a. The calm redesign (18 November 2026): check it on your phones
+
+docs/REDESIGN.md, "Album". Checked in a browser (the demo library, Android
+wording, both themes, German at 200 % text) — not yet on a phone.
+
+- [ ] **On the Android phone** (`npm run android:debug`): home → a group →
+      *Die anderen zum Löschen vormerken* → *Zum Löschen vorgemerkt* → *Löschen* (the sheet, then
+      Android's own dialog); a first scan on a big library (home fills in, the
+      time left is sensible); TalkBack over the group's strip and the review's
+      buttons; system font at the largest size.
+- [ ] **On the iPhone**: the same flow — the structure changed there too,
+      only the warm colours are Android's. Say if the iPhone should take the
+      warm look as well.
+- [ ] Redo the screenshots, the preview video and the App Review recording
+      (they show the old home): `npm run ui-review`, `npm run screenshots`
+      (`-- --android`), `npm run app-preview` (its storyboard still clicks
+      *Jetzt aufräumen*), `npm run rehearse:app-review`.
+- [ ] The release notes for it are in `release-notes/2.3.0/`.
+
 ## 0b. The launch phase: free first, sell later
 
 Since 17 November 2026 nothing is for sale (`UNLOCK_ON_SALE = false` in

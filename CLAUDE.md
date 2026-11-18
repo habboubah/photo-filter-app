@@ -135,12 +135,16 @@ scenes follow the switch (docs/PLAN.md, *Pricing*).
 - Never delete, move or change a photo automatically. Every delete or move
   needs the user's tap **and** the system's own dialog.
 - **Choosing to delete puts aside, never deletes** (`src/logic/bin.ts`,
-  *Zum Löschen*): a review's end, a group's *Die anderen löschen*, quick
-  clean and a list's delete call `toBin` (App.tsx) — the photos leave every
+  *Zum Löschen vorgemerkt* / *Marked for deletion*, formerly *Zum Löschen*): a review's end, a
+  group's *Die anderen zum Löschen vormerken*, quick clean and a list's *Löschen vormerken*
+  call `toBin` (App.tsx) — the photos leave every
   finder (`lib` is the library without the bin; `all` has it) and wait in
   `AppState.bin`. Only the bin's screen (and a review started from it) calls
-  `deletePhotos` → the system's dialog. A new place that deletes goes through
-  `toBin` too. (Exception: the originals after a smaller copy or a Live Photo
+  `deletePhotos` → the system's dialog, after a sheet that shows exactly what
+  goes and its size (BinView). A new place that deletes goes through `toBin`
+  too. Marking for deletion is never styled as deleting: no red, no trash icon
+  (`Archive` and teal or quiet glass); red (`neg`, `destructive`) is only
+  for what really deletes. (Exception: the originals after a smaller copy or a Live Photo
   made a still — the copy is already saved.)
 - A new asset (a plain photo made from a Live Photo, a smaller copy of a video
   or of a photo) needs the user's tap and a confirmation in the app; the original stays and
@@ -186,7 +190,7 @@ scenes follow the switch (docs/PLAN.md, *Pricing*).
   `loadLanguage('ar')` before the first render and before switching to it, so
   the main bundle stays German and English.
 
-## Styling — "Glass" (iOS 27 look, 17 November 2026, docs/REDESIGN.md)
+## Styling — "Glass" (iOS 27 look, 17 November 2026) and "Album" on Android (18 November 2026), docs/REDESIGN.md
 - The look of the system apps since iOS 26, as refined in iOS 27: the content
   is the page (photos edge to edge, white grouped cards on the cool grouped
   background), the controls float above it on glass. **One deep teal** for
@@ -241,6 +245,21 @@ scenes follow the switch (docs/PLAN.md, *Pricing*).
   (*Durchgehen · 6 Dateien · 585 MB*).
 - Type scale in rem (follows Dynamic Type, `dynamicType.ts`); touch targets
   44 px. No `hover:` styles.
+
+### Android — "Album" (18 November 2026, docs/REDESIGN.md)
+Android keeps the layout and swaps the material, through
+`[data-platform="android"]` (set in `main.tsx`) in `src/index.css`:
+- **Warm neutrals**: a paper page (`#F5F3EF` / `#12110F`), warm white cards,
+  warm greys for text; the same one teal for what you tap; red only for
+  deleting. `npm run audit:contrast` checks both Android themes too.
+- **Flat glass**: `glass` is a solid fill with a hairline edge and a soft
+  shadow, `sheen` adds nothing — no specular highlights on Android.
+- **Quiet icon tiles**: `IconTile` (`.icon-tile`) is a neutral squircle with
+  the ink in it; the photos carry the colour.
+- Photo-led and calm: home keeps its clean-up card on top, then one next
+  step (`NextStep`), categories as rows with their photos and size; a group compares in a
+  large uncropped viewer. New screens follow it; never an Android-only fork
+  of a component.
 
 ## Native iOS
 - **UIScene lifecycle** exactly as the shopping list has it (`SceneDelegate`,

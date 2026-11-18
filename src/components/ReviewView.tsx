@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { animate, motion, useMotionValue, useReducedMotion, useTransform } from 'motion/react';
-import { Check, Clock, FolderInput, Images, Play, Plus, Shield, Trash2, Undo2, X } from 'lucide-react';
+import { Archive, Check, Clock, FolderInput, Images, Play, Plus, Shield, Trash2, Undo2, X } from 'lucide-react';
 import type { Confidence, Photo } from '../types';
 import { Strings, bytes, fmt, num, plural } from '../translations';
 import { Decision, ReviewItem, Session, albumPlan, deleteSplit, isNewAlbum, laterIds, newAlbumKey, toDelete } from '../logic/review';
@@ -83,32 +83,40 @@ export function ReviewView({ t, session, finished, byId, debug, bin = false, alb
 
   return (
     <div className="min-h-screen mx-auto max-w-xl flex flex-col safe-top">
-      <header className="px-[16px] min-h-[54px] grid grid-cols-[44px_minmax(0,1fr)_44px] gap-2 items-center">
+      {/* With large text the undo moves to its own line rather than squeezing the count. */}
+      <header className="px-[12px] min-h-[54px] py-1 flex flex-wrap gap-2 items-center">
         <IconButton label={t.close} icon={X} tone="bar" onClick={onClose} />
-        <div className="text-center">
+        <div className="text-center flex-1 min-w-[7em]">
           <p className="text-label font-bold text-fg num" aria-live="polite">
             {done ? t.reviewDoneTitle : fmt(t.reviewProgress, { i: num(t, session.index + 1), n: num(t, session.items.length) })}
           </p>
+          {/* What was set aside so far, quietly: nothing is deleted here (from "Zum Löschen vorgemerkt" itself, it is). */}
           {!done && marked > 0 && (
-            <p className="text-caption font-extrabold text-neg num" aria-label={fmt(t.reviewMarked, { size: bytes(t, marked) })}>{`− ${bytes(t, marked)}`}</p>
+            <p className={`text-caption font-semibold num leading-tight ${bin ? 'text-neg' : 'text-fg-mute'}`}>{fmt(bin ? t.reviewMarked : t.reviewAsideSoFar, { size: bytes(t, marked) })}</p>
           )}
         </div>
-        <IconButton label={t.undo} icon={Undo2} tone="bar" onClick={onUndo} disabled={!session.history.length} className={session.history.length ? '' : 'opacity-40'} />
+        {/* Undo in words, always in the same place: the last decision comes back. */}
+        <button
+          type="button" onClick={() => { tapLight(); onUndo(); }} disabled={!session.history.length}
+          className={`ms-auto min-h-tap ps-3 pe-4 inline-flex items-center gap-1.5 rounded-full glass text-label font-semibold whitespace-nowrap press focus-visible:ring-focus ${session.history.length ? 'text-fg' : 'text-fg-faint'}`}
+        >
+          <Undo2 className="w-[18px] h-[18px] rtl:-scale-x-100" strokeWidth={2.3} aria-hidden="true" />{t.undo}
+        </button>
       </header>
       {done
         ? <Summary t={t} session={session} byId={byId} bin={bin} chips={chips} android={android} onDelete={onDelete} onClose={onClose} />
         : (
           <>
-            <div className="px-[16px] pt-1">
+            <div className="px-[12px] pt-1">
               <div className="h-1.5 rounded-full bg-surface-2 overflow-hidden">
                 <div className="h-full bg-accent-fill rounded-full transition-[width] duration-300" style={{ width: `${(session.index / session.items.length) * 100}%` }} />
               </div>
             </div>
             <Card
-              key={item.id} t={t} item={item} photo={byId.get(item.id)} debug={debug} onDecide={onDecide} onProtect={() => onProtect(item.id)} onPreview={() => onPreview(item.id)}
+              key={item.id} t={t} item={item} photo={byId.get(item.id)} debug={debug} bin={bin} onDecide={onDecide} onProtect={() => onProtect(item.id)} onPreview={() => onPreview(item.id)}
               onLike={onLike ? () => onLike(item.id) : undefined}
             />
-            {onFile && <div role="group" aria-label={t.fileIntoAlbum} className="flex gap-2 overflow-x-auto px-[16px] pt-3 pb-1">
+            {onFile && <div role="group" aria-label={t.fileIntoAlbum} className="flex gap-2 overflow-x-auto no-scrollbar px-[12px] pt-3 pb-1">
               {chips.map(c => {
                 const on = session.albums[item.id] === c.id;
                 return (
@@ -129,15 +137,18 @@ export function ReviewView({ t, session, finished, byId, debug, bin = false, alb
                 <Plus className="w-4 h-4" aria-hidden="true" />{t.newAlbum}
               </button>
             </div>}
-            <div className="px-6 pb-safe-8 pt-3">
-              {/* Physical, like the swipe: delete on the left, keep on the right — also right to left. */}
+            <div className="px-5 pb-safe-8 pt-3">
+              {/* Physical, like the swipe: set aside on the left, keep on the right — also right to left.
+                  Setting aside is quiet (nothing is deleted); red only where it deletes for real (from "Zum Löschen vorgemerkt"). */}
               <div dir="ltr" className="flex justify-center items-end gap-6">
-                <RoundButton label={t.delete} tone="neg" icon={Trash2} onClick={() => onDecide('delete')} />
+                {bin
+                  ? <RoundButton label={t.delete} tone="neg" icon={Trash2} onClick={() => onDecide('delete')} />
+                  : <RoundButton label={t.aside} tone="aside" icon={Archive} onClick={() => onDecide('delete')} />}
                 <RoundButton label={t.later} tone="later" icon={Clock} onClick={() => onDecide('later')} />
                 <RoundButton label={t.keep} tone="keep" icon={Check} onClick={() => onDecide('keep')} />
               </div>
-              <div className="flex justify-between items-center mt-4">
-                <p className="text-caption text-fg-mute wrap-prose flex-1">{t.swipeHint}</p>
+              <div className="flex flex-wrap justify-between items-center gap-x-3 mt-4">
+                <p className="text-caption text-fg-mute wrap-prose flex-1 min-w-[12rem]">{bin ? t.swipeHintBin : t.swipeHint}</p>
                 <Button variant="ghost" onClick={onFinish}>{t.finishReview}</Button>
               </div>
             </div>
@@ -150,8 +161,8 @@ export function ReviewView({ t, session, finished, byId, debug, bin = false, alb
   );
 }
 
-function Card({ t, item, photo, debug, onDecide, onProtect, onPreview, onLike }: {
-  t: Strings; item: ReviewItem; photo?: Photo; debug: boolean; onDecide: (d: Decision) => void; onProtect: () => void; onPreview: () => void; onLike?: () => void;
+function Card({ t, item, photo, debug, bin, onDecide, onProtect, onPreview, onLike }: {
+  t: Strings; item: ReviewItem; photo?: Photo; debug: boolean; bin: boolean; onDecide: (d: Decision) => void; onProtect: () => void; onPreview: () => void; onLike?: () => void;
 }) {
   const reduce = useReducedMotion();
   const x = useMotionValue(0);
@@ -174,7 +185,7 @@ function Card({ t, item, photo, debug, onDecide, onProtect, onPreview, onLike }:
     blurrier: t.detailBlurrier, eyesClosed: t.detailEyesClosed, worseLight: t.detailWorseLight, nearlySame: t.detailNearlySame,
   };
   const trusts: Record<Trust, string> = { sure: t.trustSure, likely: t.trustLikely, check: t.trustCheck };
-  const chip = item.suggest === 'delete' ? t.suggestDelete : item.suggest === 'keep' ? t.suggestKeep : '';
+  const chip = item.suggest === 'delete' ? (bin ? t.suggestDelete : t.suggestAside) : item.suggest === 'keep' ? t.suggestKeep : '';
   // A group's extra shot says what is worse about it (blurrier, eyes closed, a smaller copy …), else why it was suggested.
   const reason = item.suggest === 'delete' && item.detail ? details[item.detail] : reasons[item.reason];
   const trust = item.suggest === 'delete' && item.trust ? trusts[item.trust] : '';
@@ -192,14 +203,17 @@ function Card({ t, item, photo, debug, onDecide, onProtect, onPreview, onLike }:
   };
 
   return (
-    <div className="flex-1 flex flex-col px-[16px] pt-4 min-h-0">
-      <div className="flex items-center gap-2 pb-3">
-        {chip && (
-          <span className={`inline-flex items-center px-3 py-1 rounded-full text-caption font-extrabold ${item.suggest === 'delete' ? 'bg-neg-dim text-neg' : 'bg-keep-dim text-keep'}`}>
-            {chip}
-          </span>
-        )}
-        {reason && <span className="text-caption text-fg-mute truncate flex-1 min-w-0">{reason}</span>}
+    <div className="flex-1 flex flex-col px-[12px] pt-3 min-h-0">
+      {/* The suggestion and why, in words that wrap (never cut off), then the photo with all the room left. */}
+      <div className="flex items-start gap-2 pb-2.5">
+        <div className="min-w-0 flex-1 flex flex-wrap items-center gap-x-2 gap-y-1">
+          {chip && (
+            <span className={`inline-flex items-center px-3 py-1 rounded-full text-caption font-extrabold ${item.suggest === 'delete' ? (bin ? 'bg-neg-dim text-neg' : 'bg-surface-2 text-fg') : 'bg-keep-dim text-keep'}`}>
+              {chip}
+            </span>
+          )}
+          {reason && <span className="text-caption text-fg-mute wrap-prose">{reason}</span>}
+        </div>
         <button
           type="button" onClick={() => { tapLight(); onProtect(); }}
           className="ms-auto shrink-0 min-h-[44px] -my-2 inline-flex items-center gap-1.5 px-3 rounded-full text-caption font-bold text-accent focus-visible:ring-focus press"
@@ -218,13 +232,13 @@ function Card({ t, item, photo, debug, onDecide, onProtect, onPreview, onLike }:
           else if (info.offset.x < -THRESHOLD || info.velocity.x < -700) fling('delete');
           else if (info.offset.x > THRESHOLD || info.velocity.x > 700) fling('keep');
         }}
-        className="relative flex-1 min-h-[300px] rounded-lg overflow-hidden bg-surface shadow-e2 touch-none cursor-grab active:cursor-grabbing"
+        className="relative flex-1 min-h-[300px] rounded-md overflow-hidden bg-surface-2 touch-none cursor-grab active:cursor-grabbing"
         role="img"
         aria-label={[when, chip, trust, reason].filter(Boolean).join('. ')}
       >
-        <div className="absolute inset-0"><Thumb id={item.id} size={LARGE} className="!rounded-none !object-contain bg-surface-2" /></div>
-        <motion.span style={{ opacity: delOpacity }} className="absolute top-6 right-6 px-4 py-2 rounded-[12px] border-[3px] border-neg bg-surface text-neg text-heading font-extrabold rotate-[8deg]" aria-hidden="true">
-          {t.delete}
+        <div className="absolute inset-0"><Thumb id={item.id} size={LARGE} className="!rounded-none !object-contain !bg-transparent" /></div>
+        <motion.span style={{ opacity: delOpacity }} className={`absolute top-6 right-6 px-4 py-2 rounded-[12px] border-[3px] bg-surface text-heading font-extrabold rotate-[8deg] ${bin ? 'border-neg text-neg' : 'border-fg text-fg'}`} aria-hidden="true">
+          {bin ? t.delete : t.aside}
         </motion.span>
         <motion.span style={{ opacity: laterOpacity }} className="absolute top-6 start-1/2 -translate-x-1/2 px-4 py-2 rounded-[12px] border-[3px] border-accent bg-surface text-accent text-heading font-extrabold" aria-hidden="true">
           {t.later}
@@ -275,8 +289,10 @@ function Card({ t, item, photo, debug, onDecide, onProtect, onPreview, onLike }:
 }
 
 const ROUND_TONE = {
-  neg: 'w-[70px] h-[70px] bg-neg text-neg-ink sheen',
-  keep: 'w-[70px] h-[70px] bg-keep text-keep-ink sheen',
+  neg: 'w-[66px] h-[66px] bg-neg text-neg-ink sheen',
+  /** Setting aside: quiet, not red — nothing is deleted. */
+  aside: 'w-[66px] h-[66px] glass text-fg',
+  keep: 'w-[66px] h-[66px] bg-keep text-keep-ink sheen',
   later: 'w-[54px] h-[54px] glass text-accent',
 } as const;
 
@@ -289,7 +305,7 @@ function RoundButton({ label, tone, icon: Icon, onClick }: { label: string; tone
       <span className={`rounded-full inline-flex items-center justify-center ${ROUND_TONE[tone]}`}>
         <Icon className={tone === 'later' ? 'w-6 h-6' : 'w-7 h-7'} strokeWidth={2.4} aria-hidden="true" />
       </span>
-      <span className="text-caption font-semibold text-fg">{label}</span>
+      <span className="text-caption font-semibold text-fg max-w-[6.5rem] text-center wrap-compound">{label}</span>
     </button>
   );
 }
@@ -313,7 +329,7 @@ function Summary({ t, session, byId, bin, chips, android, onDelete, onClose }: {
       {ids.length > 0 && (
         <div className="mt-4">
           <p className="text-display text-fg"><BigNumber text={bytes(t, sizeOf(ids))} /></p>
-          <p className="text-label font-semibold text-fg-mute mt-1">{t.reviewDoneFree}</p>
+          <p className="text-label font-semibold text-fg-mute mt-1">{bin ? t.reviewDoneFree : t.reviewDoneAside}</p>
         </div>
       )}
       <p className="text-body text-fg-mute mt-3 wrap-prose">
@@ -337,15 +353,24 @@ function Summary({ t, session, byId, bin, chips, android, onDelete, onClose }: {
           {android && <p className="text-caption text-fg-mute wrap-prose">{t.filedMoveHint}</p>}
         </div>
       )}
+      {/* Exactly what is chosen: the photos themselves (the last tile counts the rest). */}
       {ids.length > 0 && (
-        <div className="grid grid-cols-4 gap-[4px] mt-6">
-          {ids.slice(0, 12).map(id => <div key={id} className="aspect-square rounded-[10px] overflow-hidden"><Thumb id={id} className="!rounded-none" /></div>)}
+        <div className="grid grid-cols-4 gap-[4px] mt-6" role="list" aria-label={bin ? plural(t, 'deleteN', ids.length) : `${t.binAdd} · ${plural(t, 'photos', ids.length)}`}>
+          {ids.slice(0, 12).map((id, i) => (
+            <div key={id} role="listitem" className="relative aspect-square rounded-[10px] overflow-hidden">
+              <Thumb id={id} className="!rounded-none" />
+              {i === 11 && ids.length > 12 && (
+                <span className="absolute inset-0 bg-veil text-on-color text-label font-bold num inline-flex items-center justify-center">+{num(t, ids.length - 11)}</span>
+              )}
+            </div>
+          ))}
         </div>
       )}
       <div className="flex-1 min-h-8" />
       {ids.length > 0 && (
         <>
-          <Button full size="lg" variant="destructive" icon={Trash2} onClick={() => onDelete({ deleteIds: ids, albums: plan })}>
+          {/* From "Zum Löschen vorgemerkt" this deletes (red, then the system's dialog); everywhere else it only sets aside (teal). */}
+          <Button full size="lg" variant={bin ? 'destructive' : 'primary'} icon={bin ? Trash2 : Archive} onClick={() => onDelete({ deleteIds: ids, albums: plan })}>
             {bin
               ? (filed > 0 ? t.deleteAndFile : split.videos.length ? plural(t, 'deleteFilesN', ids.length) : plural(t, 'deleteN', ids.length))
               : (filed > 0 ? t.binAddAndFile : `${t.binAdd} · ${split.videos.length ? plural(t, 'files', ids.length) : plural(t, 'photos', ids.length)}`)}

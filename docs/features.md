@@ -16,8 +16,15 @@ Every feature, as the user sees it (German labels, English in brackets).
   how bright, and a fingerprint to spot near-identical shots (a video's poster
   frame). On the iPhone every frame of a burst is seen, not just the one Photos
   shows; videos, screen recordings and Live Photos are marked as such. Progress on home
-  (*12.340 von 48.210 Fotos angesehen*); the first time takes a few minutes and
-  keeps the screen on.
+  as a slim card with a bar and **how long it still takes** (*12.340 von 48.210
+  Fotos angesehen · noch etwa 4 Min.*: the speed so far in this phase applied to
+  what is left, said after a few seconds; src/logic/eta.ts); the first time
+  takes a few minutes and keeps the screen on.
+- **The app stays usable while it scans.** Once the photos are counted, home
+  fills in: the library's photos, months, trips and the categories appear and
+  grow every few seconds as photos are analysed (*Vorläufig – Bildklar sieht
+  sich noch Fotos an* under the suggestions until it is done). The clean-up
+  overview, search and every list can be opened meanwhile.
 - **Resumable and incremental**: an interrupted scan continues; later scans
   only look at new and changed photos (the rescan button spins), and drop
   deleted ones. It runs at every start, when coming back to the app after a
@@ -31,7 +38,7 @@ Every feature, as the user sees it (German labels, English in brackets).
   (it is a file of its own). The automatic scans stay incremental.
 - iCloud-only originals are never downloaded.
 - **The on-device AI** (docs/AI.md) looks at each photo after that: the
-  line above the card on *Aufräumen* counts along (*KI: 1.234 von 5.000 Fotos*), results show up
+  scan card on *Aufräumen* counts along (*KI: 1.234 von 5.000 Fotos · noch etwa 12 Min.*), results show up
   every 480 photos, the app stays usable. It pauses when the phone runs hot
   and continues with the next scan. Nothing leaves the phone.
 
@@ -44,40 +51,47 @@ tab again scrolls to its top; Android's back button goes from *Ordnen* to
 [Scan again] beside that.
 
 ### Aufräumen [Clean up]
-- No large title: the clean-up card comes first. The AI's pass counts along
-  in one quiet line above it (*KI: 1.234 von 5.000 Fotos*).
-- **The clean-up card**: the space that could be freed (one big number) and
-  how much of it is photos and how much videos (*Fotos: 176 MB von 1,9 GB*,
-  *Videos: 2,2 MB von 169 MB*); a bar of the whole library — one segment per
-  category that could go (sized by the space it frees, in the category's
-  colour), then *Gute Fotos* and *Gute Videos*, paler — with its legend.
-- **The table** under the bar: a row for *Fotos* and one for *Videos*, each
-  with how many were scanned (*Gescannt*), how many are fine (*Gut*: not
-  marked for deleting) and how many could go (*Kann weg*). *Fotos* opens
-  *Monat für Monat*, *Videos* all videos, largest first.
-- Then the free space on the device (*2,4 GB von 128 GB auf dem Gerät frei*),
-  what Bildklar has freed so far (*Bisher freigegeben: 1,2 GB*), *Jetzt
-  aufräumen* [Clean up now].
-- *3 Tage in Folge aufgeräumt* [3 days in a row of cleaning up] on the card
-  once the streak is two days or more.
-- **Vorschläge** [Suggestions]: photos and videos apart — *Duplikate*
-  [Duplicates] (copies of photos), *Fast gleiche* [Near-identical],
-  *Ähnliche Videos* [Similar videos], *Missglückt* [Failed shots: blurry, too dark, too
-  bright], *Screenshots* and (once the AI has seen photos) *Unwichtige Fotos*
-  as cards, each with up to four of its own photos, its colour dot and the
-  space it would free (*222 MB · 9 Fotos*); the most space first. An odd last
-  card takes the whole row. Categories with nothing left are listed in one
-  line: *Erledigt: Duplikate, Screenshots* [Done: …].
-- **Mehr Platz** [More space]: *Große Dateien* [Large files] (size and count),
-  *Fotos verkleinern* [Smaller photos] (*bis zu 115 MB*), on the iPhone
-  *Live Photos*, *Chats & soziale Medien* [Chats & social media] — rows with a photo.
-- **Weitermachen** [Carry on]: *Zum Löschen* [To delete] while anything waits
-  there (its size, *Noch nicht gelöscht*, the count; see *To delete*),
-  *Später entscheiden* [Decide later] with the
-  number on the pile (see *Review*), and *Monat für Monat* [Month by month]
-  with *38 % durchgesehen* [38 % gone through] and a thin bar — the photos in
-  months gone through, as a share of all photos (rounded down, so 100 % only
-  once every month is done).
+Calm and photo-led (docs/REDESIGN.md, "Album"): the clean-up card on top,
+then one next step, then the rest in order.
+- **The clean-up card** (no large title above it): the space that could be
+  freed (one big number) and how much of it is photos and videos; a bar of
+  the whole library — one segment per category that could go, then *Gute
+  Fotos* and *Gute Videos*, paler — with its legend; the table *Fotos* /
+  *Videos* × *Gescannt* · *Gut* · *Kann weg* (*Fotos* opens *Monat für
+  Monat*, *Videos* all videos); the free space on the device, *Bisher
+  freigegeben*, the streak; *Jetzt aufräumen* as a quiet button (the
+  clean-up screen).
+- **One next step**, a card made of its photos with one button:
+  - progress exists (a month gone through) → the next month not gone through,
+    newest first: *Weiter, wo du warst · Oktober 2026 · 148 Fotos · 12 %
+    deiner Mediathek durchgesehen* → **Weiter mit Oktober 2026** (and *Alle
+    Monate*);
+  - else photos wait on the decide-later pile → *Noch offen · Später
+    entscheiden* → **Jetzt entscheiden**;
+  - else the category that frees the most → *Ein guter Anfang · Fast gleiche ·
+    11 Fotos · bis zu 32 MB* → **Ansehen**;
+  - else month by month from the newest month → **Mit November 2026
+    anfangen**; with nothing at all, *Alles aufgeräumt*.
+- **Zum Löschen vorgemerkt** [Marked for deletion], a section of its own while anything waits there:
+  a strip of its photos (the last tile counts the rest), *72 Fotos · 173 MB*,
+  *Noch nicht gelöscht*; a tap opens it (see *Marked for deletion*).
+- **Vorschläge** [Suggestions] with *Übersicht* [Overview] (the clean-up
+  screen): one row per
+  category — *Duplikate*, *Fast gleiche*, *Ähnliche Videos*, *Missglückt*,
+  *Screenshots*, *Unwichtige Fotos* (once the AI has seen photos) — with two of
+  its photos, how many could go and the space on the right, the most space
+  first. Categories with nothing left in one line: *Erledigt: Duplikate,
+  Screenshots*.
+- **Weitermachen** [Carry on]: *Später entscheiden* with the number on the
+  pile (see *Review*) and *Monat für Monat* with *38 % durchgesehen* and a
+  thin bar — the photos in months gone through, as a share of all photos
+  (rounded down, so 100 % only once every month is done) — each unless it is
+  the next step already.
+- **Aus deiner Mediathek** [From your library] with *Ordnen*: small tiles for
+  *An diesem Tag* and the latest trip (*Letzte Reise · 15 Fotos*).
+- **Mehr Platz** [More space]: *Große Dateien* [Large files], *Fotos verkleinern* [Smaller photos], on the iPhone
+  *Live Photos*, *Chats & soziale Medien* — rows with a photo.
+- *Geschützt* [Protected] at the end.
 
 ### Ordnen [Organise]
 - The number of trips and photos under the title.
@@ -119,9 +133,21 @@ tab again scrolls to its top; Android's back button goes from *Ordnen* to
   AI's vectors yet (the first scan) the fingerprints alone decide.
   The list shows each group's photos with the suggested best one starred and
   how many could go.
-- **A group**: the best one large, the series under it. A tap on another photo
-  keeps that one instead (the app remembers). *Die anderen löschen* [Delete the
-  others] (with their size) goes straight to the system's dialog;
+- **A group**, built for comparing: the photo you look at large and uncropped
+  (the viewer takes its shape), the series as a strip under it; a tap on a
+  tile, a swipe on the photo, the arrow buttons or ← → only **look** at a photo.
+  Badges keep two things apart: **Vorschlag der App** [App suggests] (✦) and
+  **Bleibt** [Stays] — **Deine Wahl** [Your choice] once you picked another;
+  a protected photo says *Bleibt auch*. Under the photo its date and size and,
+  in plain words, why: for the app's pick *Vorgeschlagen: das schärfste Foto
+  der Serie* — only what the facts carry (src/logic/explain.ts: favourite,
+  protected, a burst's pick, the only edited copy, the only copy with a place,
+  the largest copy, the sharpest, else *insgesamt am besten*), for another
+  what is worse about it (*Unschärfer als das beste*). **Dieses behalten**
+  [Keep this one] makes the photo looked at the one to keep (the app
+  remembers and learns); *Zurück zum Vorschlag* undoes it. **Die anderen
+  zum Löschen vormerken · 1 Foto · 2,8 MB** [Mark the others for deletion]
+  puts them into *Zum Löschen vorgemerkt* (nothing is deleted);
   *Durchgehen* reviews them one by one; *Alle behalten* [Keep all] keeps
   every photo of the group and the group is not suggested again (with undo;
   a new copy joining it later opens it again; *Von vorn anfangen* brings it
@@ -259,6 +285,12 @@ tab again scrolls to its top; Android's back button goes from *Ordnen* to
   *Zoo* …); no two cards with mostly the same photos. A tap searches for it. A word the library hasn't got is not offered, and a photo of an ID
   or a bank card is never a cover. Until the AI has seen the photos, plain
   examples instead (*Zum Beispiel*).
+- **Wonach du suchen kannst** [What you can search for]: a few words to try
+  under the cards, and **Alle 247 Wörter** [All words]: a sheet with every
+  word by theme (*Familie und Menschen*, *Feste*, *Baby-Momente*, *Tiere*,
+  *Essen und Trinken*, *Orte und Natur*, *Dokumente und Belege* … — the
+  sections of ml/words.yaml) and a field that narrows it by any form of a
+  word (*Kuchen* finds *Geburtstag*). A tap searches for it.
 - Found by the on-device AI from each photo's vector, best match first (at
   most 500); a grid, and *Durchgehen · 24 Fotos* [Go through] reviews them
   with no suggestion.
@@ -327,27 +359,29 @@ tab again scrolls to its top; Android's back button goes from *Ordnen* to
 - *Aufräumen* lists what the card counts (duplicates, near-identical, blurry,
   too dark or too bright, old screenshots, unimportant photos) with sizes, *Alle durchgehen* [Go through all] and
   **Schnell aufräumen** [Quick clean]: a switch per kind (all on), the
-  free space, then *35 Fotos löschen · 91 MB* → into *Zum Löschen* — or
+  free space, then *Löschen vormerken · 35 Fotos · 91 MB* → into *Zum Löschen vorgemerkt* — or
   *Durchgehen* [Review] for the same photos first. Free for now (later the unlock).
 - Favourites are never suggested, nor a photo you kept in a review before.
 
 ## Review
-- One photo at a time, large, with the suggestion (*Vorschlag: löschen —
-  fast gleich wie ein anderes Foto*). Swipe left to delete, right to keep, up
-  for **Später** [Later] — or the three buttons, or the arrow keys (← → ↑).
-  Undo at the top; *Beenden* [Finish] any time. Under *12 von 40* [12 of
-  40] the space marked so far counts up in red (*− 48 MB*).
-- At the end: the space it would free as one big number (*13 MB — kannst du
-  jetzt freigeben* [you can free up now]), *Zum Löschen markiert: 4 Fotos
-  (13 MB)* with thumbnails and
-  **In „Zum Löschen“ legen · 4 Fotos** [Put in “To delete”] — nothing is
-  deleted yet (*Noch wird nichts gelöscht …*); see *To delete*.
+- One photo at a time, with all the room left, and the suggestion with its
+  reason in words that wrap (*Vorschlag: löschen · Unschärfer als das
+  beste*). Swipe left to **mark for deletion**, right to keep, up for **Später**
+  [Later] — or the three labelled buttons (*Löschen vormerken*, *Später*,
+  *Behalten*), or the arrow keys (← → ↑). Marking is quiet (no red:
+  nothing is deleted). **Rückgängig** [Undo] in words at the top right;
+  *Beenden* [Finish] any time. Under *12 von 40* the space marked so far
+  (*48 MB zum Löschen vorgemerkt*).
+- At the end: the space as one big number (*13 MB — zum Löschen vorgemerkt, noch
+  nicht gelöscht*), *Ausgewählt: 4 Fotos (13 MB)* with exactly those photos and
+  **Löschen vormerken · 4 Fotos** — nothing is deleted yet (*Noch wird nichts
+  gelöscht …*); see *Marked for deletion*.
 - Photos you kept against the suggestion are remembered and not suggested again.
 - **Into albums while swiping** (free for now, later the unlock): a row of album chips
   under the photo (the last used first) and *+ Neues Album* [New album]. A tap
   keeps the photo, files it into that album and moves on; undo takes it out
   again. Nothing is written during the review: the end screen lists
-  *In „Zum Löschen“ legen · 3 Fotos · 5 Fotos in 2 Alben* with each album, then does it all in
+  *Löschen vormerken · 3 Fotos · 5 Fotos in 2 Alben* with each album, then does it all in
   one go — iPhone: the photos are added to the albums (nothing moves);
   Android: an album is a folder, so the photos move there after one system
   dialog (*Die Fotos werden in den Ordner verschoben*). Albums made here show
@@ -358,26 +392,29 @@ tab again scrolls to its top; Android's back button goes from *Ordnen* to
   suggestion. A photo leaves the pile once it is kept or deleted, or when it
   is gone from the library.
 
-## To delete (*Zum Löschen*)
-- **Nothing is deleted the moment you choose it.** Whatever you pick to
-  delete — the end of a review, *Die anderen löschen* in a group, quick
-  clean, *Video/Foto löschen* in the large files — goes into *Zum Löschen*
-  first. It leaves the group, list, trip and count it was in at once, as if
-  it were gone; a toast says *4 Fotos in „Zum Löschen“* with **Rückgängig**
-  [Undo].
-- *Aufräumen* › *Weitermachen* › **Zum Löschen** opens it: the photos, the
-  last put aside first, each with its size (a video with its length). A tap
-  selects one; **Zurücklegen · 2 Fotos** [Put back] returns them to where
-  they were (with undo), *Nur diese löschen* [Delete only these] deletes just
-  them.
-- With nothing selected: **12 Fotos löschen · 340 MB** → the system's dialog
-  → Recently Deleted (iPhone) / the Trash (Android) — the only place that
-  deletes — and *Noch einmal durchgehen* [Go through them again]: a review
-  without a suggestion, swiped right goes back, swiped left is deleted at the
-  end (*1 Foto löschen*), up stays in the list.
+## Marked for deletion (*Zum Löschen vorgemerkt*, formerly *Zum Löschen*)
+- **Nothing is deleted the moment you choose it.** Whatever you mark for deletion —
+  the end of a review, *Die anderen zum Löschen vormerken* in a group, quick
+  clean, *Löschen vormerken* in the large files — goes into *Zum Löschen
+  vorgemerkt* first. It leaves
+  the group, list, trip and count it was in at once, as if it were gone; a
+  toast says *4 Fotos zum Löschen vorgemerkt* with **Rückgängig** [Undo].
+- Its own section on *Aufräumen* opens it: the photos, the last put aside
+  first, each with its size (a video with its length). A tap selects one;
+  **Zurücklegen · 2 Fotos** [Put back] returns them to where they were (with
+  undo), *Nur diese löschen* [Delete only these] deletes just them.
+- With nothing selected: **12 Fotos löschen · 340 MB** — the one red button
+  of the app. It first opens a sheet with **exactly what goes** (the photos,
+  their count and size; *Sie kommen in den Papierkorb … Danach fragt Android
+  noch einmal nach*), **Löschen** or **Abbrechen** (or a swipe down); then
+  the system's dialog → Recently Deleted (iPhone) / the Trash (Android) — the
+  only place that deletes. *Noch einmal durchgehen* [Go through them again]:
+  a review without a suggestion, swiped left is deleted at the end (red
+  here), right goes back, up stays in the list.
 - Free deletes (before the unlock) are counted here, when the photos really
-  go. It is kept with the decisions (it survives a restart and *Entscheidungen
-  zurücksetzen*); a photo deleted elsewhere leaves it by itself.
+  go. It is kept with the decisions (it survives a restart); *Von vorn
+  anfangen* [Start over] in Settings empties it too — the photos come back —
+  with undo; a photo deleted elsewhere leaves it by itself.
 - Making a video or photos smaller and turning Live Photos into stills still
   ask about the originals right away: the copy is already saved.
 

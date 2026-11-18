@@ -192,6 +192,10 @@ Version 2.2.0: `release-notes/2.2.0/` (the AI made more reliable: how sure
 each suggestion is, quick clean with the sure ones only, better near-identical
 groups and edited copies, search, similar photos, IDs and bank cards
 protected). If these ship in an earlier version, move the lines there.
+Version 2.3.0: `release-notes/2.3.0/` (the calm redesign of 18 November
+2026: one next step, comparing similar shots, *Zum Löschen vorgemerkt* instead of
+*Zum Löschen* with a check before deleting, the scan in the background with the
+time left, all search words).
 
 ### 2.5 App Review information
 

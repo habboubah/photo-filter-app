@@ -80,6 +80,10 @@ const SearchView = lazy(() => import('./components/SearchView').then(m => ({ def
 const LikeView = lazy(() => import('./components/LikeView').then(m => ({ default: m.LikeView })));
 const BinView = lazy(() => import('./components/BinView').then(m => ({ default: m.BinView })));
 
+/** Up to `n` ids spread over the list (its start, middle and end), for a cover of a few photos. */
+const spread = (ids: string[], n: number) =>
+  ids.length <= n ? ids : Array.from({ length: n }, (_, i) => ids[Math.floor((i * (ids.length - 1)) / Math.max(1, n - 1))]);
+
 /**
  * `onDone`: what happens once the review was gone through to its end (a month marked as done).
  * `bin`: "Zum Löschen" gone through again — the end deletes for real, what was kept goes back.
@@ -963,6 +967,14 @@ export default function App() {
       );
     }
     const failedAll = [...blurry, ...exposureAll];
+    // Home's one next step (src/components/HomeView.tsx): the newest month not gone through, and the latest trip for its small tile.
+    const next = months.find(m => !doneMonths.has(m.key));
+    const nextMonth = next ? {
+      key: next.key, photos: next.ids.length, bytes: next.bytes,
+      name: new Date(next.year, next.month, 1).toLocaleDateString(t.locale, { month: 'long', year: 'numeric' }),
+      covers: spread(next.ids.filter(id => !byId.get(id)?.shot && !byId.get(id)?.video), 3),
+    } : null;
+    const latestTrip = trips.filter(x => !x.ignored).reduce<Trip | null>((a, x) => (!a || x.start > a.start ? x : a), null);
     return (
       <HomeView
         t={t} access={access} photoCount={photos ? photos.length : null} scan={store.scan} summary={summary}
@@ -982,8 +994,17 @@ export default function App() {
         onApps={() => setShowApps(true)}
         storage={store.storage} freedBytes={state.freed.bytes} streak={streak(state.days, now)}
         months={{ done: months.filter(m => doneMonths.has(m.key)).length, total: months.length, pct }}
+        nextMonth={nextMonth}
+        onMonth={openMonth}
         later={{ count: laterPile.length, cover: laterPile[0] }}
-        bin={{ count: binned.length, bytes: binBytes, cover: binned[0]?.id }}
+        bin={{ count: binned.length, bytes: binBytes, covers: binned.slice(0, 4).map(x => x.id) }}
+        memories={{
+          onThisDay: today.ids.length ? { photos: today.ids.length, years: today.years, cover: today.ids[0] } : null,
+          trip: latestTrip ? { key: latestTrip.key, title: latestTrip.title, photos: latestTrip.ids.length, cover: latestTrip.ids[Math.floor(latestTrip.ids.length / 2)] } : null,
+        }}
+        onOnThisDay={() => startReview(reviewTrip(today.ids, groups, byId, kept, undefined, cos))}
+        onTrip={setTripKey}
+        onOrganize={() => switchTab('organize')}
         onBin={() => setShowBin(true)}
         protection={{ albums: state.protect.albums.length, trips: state.protect.trips.length, photos: state.protect.ids.length }}
         onLater={() => startReview(reviewLater(laterPile))}
