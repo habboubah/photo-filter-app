@@ -10,7 +10,7 @@ import { Thumb } from '../ui/Photo';
 import { LARGE } from '../thumbs';
 
 /** The one step the reveal recommends: home's own next step (src/logic/nextStep.ts), worded by App.tsx. */
-export interface RevealStep { eyebrow: string; title: string; meta: string; button: string; covers: string[] }
+export interface RevealStep { eyebrow: string; title: string; meta: string; covers: string[]; /** The button's words; "Jetzt durchsehen" without. */ button?: string }
 
 /**
  * After the first scan, one calm overview: what Bildklar found, per category
@@ -118,7 +118,7 @@ export function RevealView({ t, files, categories, freeable, trips, tripCover, a
         <Foot inset={16}>
           {step ? (
             <>
-              <Button full size="lg" onClick={onGo}>{step.button}</Button>
+              <Button full size="lg" onClick={onGo}>{step.button ?? t.revealGo}</Button>
               <Button full variant="ghost" className="mt-1" onClick={onLookAround}>{t.revealLook}</Button>
             </>
           ) : <Button full size="lg" onClick={onLookAround}>{t.revealHome}</Button>}

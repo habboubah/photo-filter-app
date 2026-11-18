@@ -5,7 +5,7 @@ import { StatusBar, Style } from '@capacitor/status-bar';
 import { KeepAwake } from '@capacitor-community/keep-awake';
 import { AlertTriangle, FlaskConical, Images, Sparkles } from 'lucide-react';
 import { useAppStore } from './store';
-import { bytes, fmt, percent, plural, stringsFor } from './translations';
+import { bytes, fmt, loadFirstRun, percent, plural, stringsFor } from './translations';
 import type { Photo, Trip } from './types';
 import { PhotoLibrary, type AlbumInfo } from './native/photoLibrary';
 import { PRODUCT_ID, Purchases } from './native/purchases';
@@ -38,11 +38,9 @@ import { Toast, useToast } from './ui/Toast';
 import { PlayerContext, type Player } from './ui/play';
 import { Confirm } from './ui/Sheet';
 import { notifySuccess, tapLight } from './ui/haptics';
-import { PermissionView } from './components/PermissionView';
 import { HomeView, categoryMeta, categoryWords } from './components/HomeView';
 import { GESTURES, MOMENTS, hasSeen, nextGesture, nextTip } from './logic/firstRun';
-import { TIPS } from './tips';
-import { TipHost } from './ui/Tip';
+import { TIPS, TIP_IDS } from './tips';
 import { type FoundKey, nextStepKind, rankCategories } from './logic/nextStep';
 import { TabBar } from './ui/TabBar';
 
@@ -58,6 +56,12 @@ import { UNLOCK_ON_SALE, deletesUnlimited, extrasFree, freeDelete, freeLeft } fr
  * budget: scripts/perf-check.mjs). They come from local files on the phone,
  * so the wait is a frame or two.
  */
+/**
+ * A screen that shows strings of the first run (src/translations.firstRun.ts: the welcome, the tips,
+ * the guided review, the safety moments …) comes together with them — they are a chunk of their own,
+ * so a start that is past the first run never loads them.
+ */
+const withFirstRun = <T,>(screen: Promise<T>) => Promise.all([screen, loadFirstRun()]).then(([m]) => m);
 const FailedView = lazy(() => import('./components/FailedView').then(m => ({ default: m.FailedView })));
 const ScreenshotsView = lazy(() => import('./components/ScreenshotsView').then(m => ({ default: m.ScreenshotsView })));
 const QuickCleanView = lazy(() => import('./components/QuickCleanView').then(m => ({ default: m.QuickCleanView })));
@@ -72,7 +76,7 @@ const TripView = lazy(() => import('./components/TripView').then(m => ({ default
 const CleanupView = lazy(() => import('./components/CleanupView').then(m => ({ default: m.CleanupView })));
 const SimilarView = lazy(() => import('./components/SimilarView').then(m => ({ default: m.SimilarView })));
 const GroupView = lazy(() => import('./components/GroupView').then(m => ({ default: m.GroupView })));
-const ReviewView = lazy(() => import('./components/ReviewView').then(m => ({ default: m.ReviewView })));
+const ReviewView = lazy(() => withFirstRun(import('./components/ReviewView')).then(m => ({ default: m.ReviewView })));
 const AppsView = lazy(() => import('./components/AppsView').then(m => ({ default: m.AppsView })));
 const CompressView = lazy(() => import('./components/CompressView').then(m => ({ default: m.CompressView })));
 const ProtectedView = lazy(() => import('./components/ProtectedView').then(m => ({ default: m.ProtectedView })));
@@ -81,11 +85,14 @@ const LicenceView = lazy(() => import('./components/LicencesView').then(m => ({ 
 const OrganizeView = lazy(() => import('./components/OrganizeView').then(m => ({ default: m.OrganizeView })));
 const SearchView = lazy(() => import('./components/SearchView').then(m => ({ default: m.SearchView })));
 const LikeView = lazy(() => import('./components/LikeView').then(m => ({ default: m.LikeView })));
-const BinView = lazy(() => import('./components/BinView').then(m => ({ default: m.BinView })));
+const BinView = lazy(() => withFirstRun(import('./components/BinView')).then(m => ({ default: m.BinView })));
 // The first run (docs/DESIGN.md): seen once, so never part of the main bundle.
-const WelcomeView = lazy(() => import('./components/WelcomeView').then(m => ({ default: m.WelcomeView })));
-const FirstScanView = lazy(() => import('./components/FirstScanView').then(m => ({ default: m.FirstScanView })));
-const RevealView = lazy(() => import('./components/RevealView').then(m => ({ default: m.RevealView })));
+const PermissionView = lazy(() => withFirstRun(import('./components/PermissionView')).then(m => ({ default: m.PermissionView })));
+const TipHost = lazy(() => withFirstRun(import('./ui/Tip')).then(m => ({ default: m.TipHost })));
+const WelcomeView = lazy(() => withFirstRun(import('./components/WelcomeView')).then(m => ({ default: m.WelcomeView })));
+const FirstScanView = lazy(() => withFirstRun(import('./components/FirstScanView')).then(m => ({ default: m.FirstScanView })));
+const HowView = lazy(() => withFirstRun(import('./components/HowView')).then(m => ({ default: m.HowView })));
+const RevealView = lazy(() => withFirstRun(import('./components/RevealView')).then(m => ({ default: m.RevealView })));
 
 /** Up to `n` ids spread over the list (its start, middle and end), for a cover of a few photos. */
 const spread = (ids: string[], n: number) =>
@@ -268,6 +275,8 @@ export default function App() {
   /** The part whose licence is open (Einstellungen › Lizenzen › one row). */
   const [licence, setLicence] = useState<string | null>(null);
   const [showProtected, setShowProtected] = useState(false);
+  /** Einstellungen › So funktioniert Bildklar. */
+  const [showHow, setShowHow] = useState(false);
   const [showBin, setShowBin] = useState(false);
   const [review, setReview] = useState<Review | null>(null);
   const [showSearch, setShowSearch] = useState(false);
@@ -317,6 +326,7 @@ export default function App() {
     ['review', !!review, closeReview],
     ['licence', !!licence, () => setLicence(null)],
     ['licences', showLicences, () => setShowLicences(false)],
+    ['how', showHow, () => setShowHow(false)],
     ['protected', showProtected, () => setShowProtected(false)],
     ['bin', showBin, () => setShowBin(false)],
     ['group', !!group, () => setGroupKey(null)],
@@ -746,7 +756,7 @@ export default function App() {
     if (kind === 'category' && top) {
       return {
         ranked,
-        step: { eyebrow: t.nextStartEyebrow, title: categoryWords(t)[top.key].label, meta: categoryMeta(t, top), button: t.revealGo, covers: top.covers },
+        step: { eyebrow: t.nextStartEyebrow, title: categoryWords(t)[top.key].label, meta: categoryMeta(t, top), covers: top.covers },
         go: () => reviewCategory(top.key),
       };
     }
@@ -811,6 +821,22 @@ export default function App() {
     }
     if (licence) return <LicenceView t={t} name={licence} onBack={() => setLicence(null)} />;
     if (showLicences) return <LicencesView t={t} onBack={() => setShowLicences(false)} onOpen={setLicence} />;
+    if (showHow) {
+      return (
+        <HowView
+          t={t} onBack={() => setShowHow(false)}
+          onWelcome={() => setReplayWelcome(true)}
+          onGuide={() => {
+            store.replay([...GESTURES]);
+            // Practise on what is there to go through; with nothing suggested, the hints wait for the next review.
+            const items = reviewCleanup(groups, cleanupBlurry(blurry, kept), kept, byId, old, utility, exposureAll, cos);
+            if (items.length) startReview(items); else show(t.howGuideDone);
+          }}
+          onTips={() => { store.replay(TIP_IDS); show(t.howTipsDone); }}
+          onHide={() => { store.hideAllHints(); show(t.howHideDone); }}
+        />
+      );
+    }
     if (showProtected) {
       return (
         <ProtectedView
@@ -830,6 +856,7 @@ export default function App() {
       return (
         <BinView
           t={t} photos={binned}
+          safetySeen={hasSeen(store.seen, MOMENTS.safety)} onSafetySeen={() => store.markSeen(MOMENTS.safety)}
           onBack={() => setShowBin(false)}
           onRestore={ids => { store.binRemove(ids); show(plural(t, 'binRestored', ids.length), { label: t.undo, run: () => store.binAdd(ids) }); }}
           onDelete={ids => deletePhotos(ids, [], () => { if (ids.length === binned.length) setShowBin(false); })}
@@ -1058,6 +1085,7 @@ export default function App() {
           onFeedback={() => openExternal(feedbackMail(t, __APP_VERSION__, systemFromAgent(navigator.userAgent)))}
           onPrivacy={() => openExternal(privacyUrl(language))}
           onLicences={() => setShowLicences(true)}
+          onHow={() => setShowHow(true)}
           onReset={() => {
             const before = store.resetDecisions();
             show(t.resetDone, { label: t.undo, run: () => store.restoreState(before) });
@@ -1255,7 +1283,8 @@ export default function App() {
         </div>
       </Sheet>
 
-      <TipHost tip={due ? { id: due.id, text: due.text(t) } : null} label={t.tipLabel} gotIt={t.tipGotIt} onSeen={store.markSeen} />
+      {/* The one tip that is due: loaded (with its words) only when there is one. */}
+      {due && <Suspense fallback={null}><TipHost t={t} tip={due} onSeen={store.markSeen} /></Suspense>}
 
       <Toast toast={toast} onDone={hide} raised={screen === 'bin' ? 'high' : ['trip', 'group', 'blurry', 'screenshots', 'utility', 'quickClean', 'large', 'live', 'compress', 'cleanup', 'review', 'search', 'like'].includes(screen)} />
     </div>

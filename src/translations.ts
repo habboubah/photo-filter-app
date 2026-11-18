@@ -10,7 +10,14 @@
  *
  * Strings that name the iPhone, Apple Photos or "Recently Deleted" have an
  * Android twin in `androidStrings` (laid over in the Android app).
+
+ *
+ * The first run's strings (the welcome, the tips …) follow the same rules in
+ * translations.firstRun.ts, their own chunk (`loadFirstRun`); Arabic has them
+ * in its one block.
  */
+import type { FirstRunStrings } from './translations.firstRun';
+
 const de = {
   languageName: 'Deutsch',
   locale: 'de-DE',
@@ -626,112 +633,18 @@ const de = {
   wordsThings: 'Dinge und Kleidung',
   wordsKinds: 'Fotoarten',
 
-  // Welcome (the first start, src/components/WelcomeView.tsx)
-  welcomeLine1: 'Ordnung in Zehntausenden Fotos',
-  welcomeLine2: 'Reisen – für dich gefunden',
-  welcomeLine3: 'Das beste Foto vorgeschlagen. Du entscheidest.',
-  welcomeLine4: 'Privat: Alles bleibt auf deinem Handy',
-  welcomeSkip: 'Überspringen',
-  welcomeNext: 'Weiter',
-  welcomeStart: 'Los geht’s',
-  welcomePage: 'Seite {i} von {n}',
-  welcomeTripName: 'Gardasee',
-  welcomeTripMeta: 'Juli 2026 · 48 Fotos',
-  welcomeNoCloud: 'Keine Cloud',
-  welcomeNoAccount: 'Kein Konto',
-  welcomeLabel: 'Willkommen bei Bildklar',
-
-  // Photo access (src/components/PermissionView.tsx)
   permTitle: 'Darf Bildklar deine Fotos sehen?',
-  permNoUpload: 'Nichts wird hochgeladen – kein Konto, keine Cloud.',
-  permNoChange: 'Nichts ändert sich ohne dich: Gelöscht wird erst, wenn du es bestätigst.',
-  permChoice: 'Du hast die Wahl',
-  permAll: 'Alle Fotos',
-  permAllSub: 'Das volle Erlebnis: jede Reise, jede Serie, jedes Duplikat.',
-  permSome: 'Ausgewählte Fotos',
-  permSomeSub: 'Bildklar sieht nur, was du auswählst. Reisen und Duplikate können dann unvollständig sein – mehr Fotos kannst du jederzeit hinzufügen.',
-  permRecommended: 'Empfohlen',
   permHint: 'Gleich fragt dein iPhone, welche Fotos Bildklar sehen darf.',
-  restrictedHint: 'Wer das Gerät eingerichtet hat, kann den Zugriff in den Einstellungen erlauben.',
 
-  // The first scan and what it found (src/components/FirstScanView.tsx, RevealView.tsx)
-  firstScanFound: 'Schon gefunden',
-  firstScanLook: 'Schon mal umsehen',
-  firstScanCards: 'Was Bildklar für dich tut',
-  firstScanCardNext: 'Nächster Hinweis',
-  scanCardTripsTitle: 'Reisen, von selbst sortiert',
-  scanCardTrips: 'Aus Ort und Datum deiner Fotos werden Reisen – ohne dass du etwas tun musst.',
-  scanCardSimilarTitle: 'Das beste Foto jeder Serie',
-  scanCardSimilar: 'Bei fast gleichen Fotos schlägt Bildklar das beste vor. Du entscheidest.',
-  scanCardMonthsTitle: 'Monat für Monat',
-  scanCardMonths: 'Lieber in kleinen Schritten? Geh einen Monat nach dem anderen durch.',
-  scanCardBinTitle: 'Erst vormerken, dann löschen',
-  scanCardBin: 'Was gehen soll, wird nur vorgemerkt. Gelöscht wird erst, wenn du es bestätigst.',
-  scanCardPrivateTitle: 'Privat',
-  scanCardPrivate: 'Kein Foto verlässt dein Handy. Kein Konto, keine Cloud.',
-  revealTitle: 'Das hat Bildklar gefunden',
-  revealLooked: '{files} angesehen',
-  revealAiNote: 'Die KI sieht sich deine Fotos noch genauer an – weitere Vorschläge kommen nach und nach dazu.',
-  revealFree: 'Platz, der frei werden kann – wenn du willst',
-  revealGo: 'Jetzt durchsehen',
-  revealLook: 'Erst mal umsehen',
-  revealHome: 'Zur Übersicht',
-  revealSafe: 'Nichts wird gelöscht, bevor du es bestätigst.',
-  firstScanHint: 'Lass Bildklar fürs Erste geöffnet – Vorschläge kommen nach und nach dazu.',
-  revealAll: 'Alles im Überblick',
-
-  // Tips: one-time hints at the real control (src/tips.ts, src/ui/Tip.tsx)
-  tipGotIt: 'Verstanden',
-  tipLabel: 'Tipp',
-  tipButtons: 'Lieber tippen? Die Knöpfe tun dasselbe wie das Wischen. „Rückgängig“ oben holt die letzte Entscheidung zurück.',
-  tipSuggest: 'Das ist nur ein Vorschlag. Entscheidest du anders, gilt deine Wahl.',
-  tipBin: 'Hier warten die vorgemerkten Fotos. Gelöscht wird erst, wenn du es dort bestätigst.',
-  tipBinScreen: 'Tippe ein Foto an, um es zurückzulegen. Der rote Knopf löscht – vorher siehst du genau, was geht.',
-  tipTrips: 'Bildklar hat deine Reisen aus Ort und Datum zusammengestellt. Tippe eine an, um sie umzubenennen, als Album zu sichern oder auszublenden.',
-  tipMonths: 'Ein Monat nach dem anderen: Tippe einen an und geh ihn durch. Fertige Monate bekommen einen Haken.',
-  tipQuick: 'Vorausgewählt ist nur, wobei sich Bildklar sicher ist. Auch das wird erst vorgemerkt, nicht gelöscht.',
-  tipSearch: 'Such nach dem, was auf dem Foto ist – „Strand“, „Kuchen“, „Hund“. Die Suche läuft nur auf deinem Gerät.',
-  tipGroup: 'Das Funkeln zeigt den Vorschlag der App. Gefällt dir ein anderes Foto besser, tippe es an und wähle „Dieses behalten“ – dann gilt deine Wahl.',
-  tipWidget: '„An diesem Tag“ gibt es auch als Widget für deinen Home-Bildschirm.',
-  tipReminder: 'Einmal pro Woche eine leise Erinnerung – nur auf deinem Gerät geplant, ohne Server.',
-
-  // The guided first review, its summary and the safety moments (ReviewGuide.tsx, SafetyNets.tsx)
-  guideRight: 'Nach rechts wischen: behalten',
-  guideLeft: 'Nach links wischen: zum Löschen vormerken',
-  guideUp: 'Nach oben wischen: später entscheiden',
-  guideStep: 'Probier’s aus · {i} von {n}',
-  guideSkip: 'Hinweise ausblenden',
-  guideDidKeep: 'Behalten – bleibt, wo es ist',
-  guideDidAside: 'Vorgemerkt – noch nicht gelöscht',
-  guideDidLater: 'Später – wartet auf dich',
-  summaryMarked: 'Vorgemerkt',
-  summaryRecap: 'Deine Entscheidungen',
-  protectNote: 'Gut zu wissen: Favoriten schlägt Bildklar nie vor.',
-  protectNoteMore: 'So schützt du mehr',
-  protectInfoTitle: 'So schützt du Fotos',
-  protectFav: 'Favoriten',
-  protectFavSub: 'Was in der Fotos-App ein Herz hat, schlägt Bildklar nie vor.',
-  protectOne: 'Ein einzelnes Foto',
-  protectOneSub: 'Tippe beim Durchgehen auf „Schützen“.',
-  protectTrip: 'Eine ganze Reise',
-  protectTripSub: 'Öffne die Reise und wähle im Menü „Nie vorschlagen“.',
-  protectAlbum: 'Ein Album',
-  protectAlbumSub: 'Unter Aufräumen › Geschützt schaltest du ganze Alben ein.',
-  protectFoot: 'Geschützte Fotos tauchen in keinem Vorschlag mehr auf.',
-  safetyTitle: 'Drei Sicherheitsnetze',
-  safetyLead: 'Bevor ein Foto wirklich weg ist, passiert dreimal etwas:',
-  safety1: 'Du merkst vor',
-  safety1Sub: 'Nichts ist gelöscht – alles wartet hier.',
-  safety2: 'Du bestätigst hier',
-  safety2Sub: 'Du siehst genau, was geht und wie viel Platz frei wird.',
-  safety3: 'Dein iPhone fragt noch einmal',
-  safety3Sub: 'Danach liegen die Fotos noch 30 Tage in „Zuletzt gelöscht“.',
-  safetyContinue: 'Verstanden – weiter',
+  howTitle: 'So funktioniert Bildklar',
+  howSub: 'Einführung, Wischen und Tipps noch einmal ansehen',
 };
 
-export type Strings = { [K in keyof typeof de]: string };
+/** The strings every start needs; the first run's are a chunk of their own (translations.firstRun.ts). */
+type BaseStrings = { [K in keyof typeof de]: string };
+export type Strings = BaseStrings & FirstRunStrings;
 
-const en: Strings = {
+const en: BaseStrings = {
   languageName: 'English',
   locale: 'en-GB',
   dir: 'ltr',
@@ -1335,107 +1248,11 @@ const en: Strings = {
   wordsThings: 'Things and clothes',
   wordsKinds: 'Kinds of photo',
 
-  // Welcome (the first start, src/components/WelcomeView.tsx)
-  welcomeLine1: 'Order in tens of thousands of photos',
-  welcomeLine2: 'Trips, found for you',
-  welcomeLine3: 'Best shot suggested. You decide.',
-  welcomeLine4: 'Private: everything stays on your phone',
-  welcomeSkip: 'Skip',
-  welcomeNext: 'Next',
-  welcomeStart: 'Get started',
-  welcomePage: 'Page {i} of {n}',
-  welcomeTripName: 'Lake Garda',
-  welcomeTripMeta: 'July 2026 · 48 photos',
-  welcomeNoCloud: 'No cloud',
-  welcomeNoAccount: 'No account',
-  welcomeLabel: 'Welcome to Bildklar',
-
-  // Photo access (src/components/PermissionView.tsx)
   permTitle: 'May Bildklar see your photos?',
-  permNoUpload: 'Nothing is uploaded – no account, no cloud.',
-  permNoChange: 'Nothing changes without you: a photo is only deleted once you confirm.',
-  permChoice: 'It’s your choice',
-  permAll: 'All photos',
-  permAllSub: 'The full experience: every trip, every series, every duplicate.',
-  permSome: 'Selected photos',
-  permSomeSub: 'Bildklar only sees what you pick, so trips and duplicates may be incomplete. You can add more photos any time.',
-  permRecommended: 'Recommended',
   permHint: 'Your iPhone asks next which photos Bildklar may see.',
-  restrictedHint: 'Whoever set up this device can allow access in Settings.',
 
-  // The first scan and what it found (src/components/FirstScanView.tsx, RevealView.tsx)
-  firstScanFound: 'Found so far',
-  firstScanLook: 'Look around meanwhile',
-  firstScanCards: 'What Bildklar does for you',
-  firstScanCardNext: 'Next hint',
-  scanCardTripsTitle: 'Trips, sorted by themselves',
-  scanCardTrips: 'The places and dates of your photos become trips – without you doing a thing.',
-  scanCardSimilarTitle: 'The best shot of every series',
-  scanCardSimilar: 'Among near-identical photos Bildklar suggests the best one. You decide.',
-  scanCardMonthsTitle: 'Month by month',
-  scanCardMonths: 'Prefer small steps? Go through one month at a time.',
-  scanCardBinTitle: 'Mark first, delete later',
-  scanCardBin: 'What should go is only marked. Nothing is deleted until you confirm.',
-  scanCardPrivateTitle: 'Private',
-  scanCardPrivate: 'No photo leaves your phone. No account, no cloud.',
-  revealTitle: 'Here’s what Bildklar found',
-  revealLooked: '{files} looked at',
-  revealAiNote: 'The AI is still taking a closer look – more suggestions will follow.',
-  revealFree: 'Space you could free up – if you want to',
-  revealGo: 'Review now',
-  revealLook: 'Just look around',
-  revealHome: 'Go to the overview',
-  revealSafe: 'Nothing is deleted before you confirm.',
-  firstScanHint: 'Keep Bildklar open for now – suggestions appear as it goes.',
-  revealAll: 'Everything at a glance',
-
-  // Tips: one-time hints at the real control (src/tips.ts, src/ui/Tip.tsx)
-  tipGotIt: 'Got it',
-  tipLabel: 'Tip',
-  tipButtons: 'Rather tap? The buttons do the same as swiping. “Undo” at the top brings your last decision back.',
-  tipSuggest: 'This is only a suggestion. If you decide otherwise, your choice counts.',
-  tipBin: 'Marked photos wait here. Nothing is deleted until you confirm it there.',
-  tipBinScreen: 'Tap a photo to put it back. The red button deletes – first you see exactly what goes.',
-  tipTrips: 'Bildklar put your trips together from place and date. Tap one to rename it, save it as an album or hide it.',
-  tipMonths: 'One month at a time: tap one and go through it. Finished months get a tick.',
-  tipQuick: 'Only what Bildklar is sure about is preselected. That, too, is only marked – not deleted.',
-  tipSearch: 'Search for what’s in the photo – “beach”, “cake”, “dog”. The search runs on your device only.',
-  tipGroup: 'The sparkle shows the app’s suggestion. If you like another photo better, tap it and choose “Keep this one” – then your choice counts.',
-  tipWidget: '“On this day” is also a widget for your Home Screen.',
-  tipReminder: 'A quiet reminder once a week – scheduled on your device only, no server.',
-
-  // The guided first review, its summary and the safety moments (ReviewGuide.tsx, SafetyNets.tsx)
-  guideRight: 'Swipe right to keep',
-  guideLeft: 'Swipe left to mark for deletion',
-  guideUp: 'Swipe up to decide later',
-  guideStep: 'Try it · {i} of {n}',
-  guideSkip: 'Hide hints',
-  guideDidKeep: 'Kept – it stays where it is',
-  guideDidAside: 'Marked – not deleted yet',
-  guideDidLater: 'Later – it waits for you',
-  summaryMarked: 'Marked',
-  summaryRecap: 'Your decisions',
-  protectNote: 'Good to know: Bildklar never suggests your favourites.',
-  protectNoteMore: 'How to protect more',
-  protectInfoTitle: 'How to protect photos',
-  protectFav: 'Favourites',
-  protectFavSub: 'Whatever has a heart in Photos is never suggested.',
-  protectOne: 'A single photo',
-  protectOneSub: 'Tap “Protect” while reviewing.',
-  protectTrip: 'A whole trip',
-  protectTripSub: 'Open the trip and choose “Never suggest” in its menu.',
-  protectAlbum: 'An album',
-  protectAlbumSub: 'Under Clean up › Protected you switch on whole albums.',
-  protectFoot: 'Protected photos never show up in a suggestion again.',
-  safetyTitle: 'Three safety nets',
-  safetyLead: 'Before a photo is really gone, three things happen:',
-  safety1: 'You mark',
-  safety1Sub: 'Nothing is deleted – it all waits here.',
-  safety2: 'You confirm here',
-  safety2Sub: 'You see exactly what goes and how much space it frees.',
-  safety3: 'Your iPhone asks once more',
-  safety3Sub: 'After that the photos stay in “Recently Deleted” for 30 days.',
-  safetyContinue: 'Got it – continue',
+  howTitle: 'How Bildklar works',
+  howSub: 'See the welcome, the gestures and the tips again',
 };
 
 
@@ -1445,7 +1262,8 @@ export const languages: Language[] = ['de', 'en', 'ar'];
 /** Each language's own name, for the language menu — known before its block is loaded. */
 export const languageNames: Record<Language, string> = { de: 'Deutsch', en: 'English', ar: 'العربية' };
 
-const translations = { de, en } as Record<Language, Strings>;
+// Typed as complete: the first run's strings are laid in by `loadFirstRun` before a screen that shows them renders.
+const translations = { de, en } as unknown as Record<Language, Strings>;
 export default translations;
 
 /**
@@ -1496,14 +1314,6 @@ export const androidStrings: Record<Language, Partial<Strings>> = {
     binAddAndFile: 'Löschen vormerken und verschieben',
     quickCleanIntro: 'Wähle, was weg darf. Es wird erst zum Löschen vorgemerkt – gelöscht wird erst, wenn du es dort bestätigst und Android noch einmal nachfragt. Mit einem Tipp geht nur, was Bildklar sicher erkennt – den Rest gehst du durch.',
     deleteSystemNext: 'Danach fragt Android noch einmal nach.',
-    permHint: 'Gleich fragt Android, welche Fotos Bildklar sehen darf.',
-    tipTrips: 'Bildklar hat deine Reisen aus Ort und Datum zusammengestellt. Tippe eine an, um sie umzubenennen, in einen Ordner zu legen oder auszublenden.',
-    tipWidget: '„An diesem Tag“ gibt es auch als Widget für deinen Startbildschirm.',
-    protectFavSub: 'Was in deiner Galerie ein Favorit ist, schlägt Bildklar nie vor.',
-    protectAlbum: 'Ein Ordner',
-    protectAlbumSub: 'Unter Aufräumen › Geschützt schaltest du ganze Ordner ein.',
-    safety3: 'Android fragt noch einmal',
-    safety3Sub: 'Danach liegen die Fotos noch 30 Tage im Papierkorb.',
   },
   en: {
     resetBody: 'Bildklar forgets what you decided: kept, protected and saved-for-later photos, those marked for deletion (they come back), the best shots you picked, edited trips, months gone through and sort orders. Everything is suggested again. Your photos and folders stay as they are.',
@@ -1545,14 +1355,6 @@ export const androidStrings: Record<Language, Partial<Strings>> = {
     binAddAndFile: 'Mark for deletion and move into folders',
     quickCleanIntro: 'Choose what may go. It is marked for deletion first – nothing is deleted until you confirm it there and Android asks once more. One tap only takes what Bildklar is sure about – you go through the rest.',
     deleteSystemNext: 'Android asks once more after this.',
-    permHint: 'Android asks next which photos Bildklar may see.',
-    tipTrips: 'Bildklar put your trips together from place and date. Tap one to rename it, move it into a folder or hide it.',
-    tipWidget: '“On this day” is also a widget for your home screen.',
-    protectFavSub: 'Whatever is a favourite in your gallery is never suggested.',
-    protectAlbum: 'A folder',
-    protectAlbumSub: 'Under Clean up › Protected you switch on whole folders.',
-    safety3: 'Android asks once more',
-    safety3Sub: 'After that the photos stay in the Trash for 30 days.',
   },
 };
 
@@ -1588,6 +1390,28 @@ export async function loadLanguage(lang: Language): Promise<void> {
     ANDROID_EXTRA_PLURALS[m.ar.locale] = m.arAndroidPlurals;
     merged.delete('ar');
   }
+}
+
+let firstRun: Promise<void> | null = null;
+/**
+ * Makes the first run's German and English strings ready (translations.firstRun.ts: the welcome,
+ * the photo access, the first scan, the reveal, the guided review, the safety moments, the tips, So
+ * funktioniert Bildklar). They are a chunk of their own, so a start that shows none of it never
+ * loads them: App.tsx loads them together with each screen that needs them. Laid into the objects
+ * the app already holds, so a `t` handed out earlier has them too.
+ */
+export function loadFirstRun(): Promise<void> {
+  firstRun ??= import('./translations.firstRun').then(m => {
+    Object.assign(translations.de, m.deFirstRun);
+    Object.assign(translations.en, m.enFirstRun);
+    Object.assign(androidStrings.de, m.deFirstRunAndroid);
+    Object.assign(androidStrings.en, m.enFirstRunAndroid);
+    const de = merged.get('de');
+    if (de) Object.assign(de, m.deFirstRun, m.deFirstRunAndroid);
+    const en = merged.get('en');
+    if (en) Object.assign(en, m.enFirstRun, m.enFirstRunAndroid);
+  });
+  return firstRun;
 }
 
 export const isLanguage = (v: unknown): v is Language =>

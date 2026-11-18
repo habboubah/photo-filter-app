@@ -3,6 +3,8 @@ import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'motion/react';
 import { Lightbulb } from 'lucide-react';
 import { tapLight } from './haptics';
+import type { Strings } from '../translations';
+import type { TipDef } from '../tips';
 
 /** After a screen appears, and between two tips: nobody reads a hint that arrives with the screen, or two in a row. */
 const FIRST_MS = 900;
@@ -24,12 +26,10 @@ interface Box { top: number; left: number; width: number; height: number }
  * `TipHost` is the queue: it is given the one tip that is due (App.tsx picks
  * it with src/logic/firstRun.ts `nextTip`) and adds the pauses.
  */
-export function TipHost({ tip, label, gotIt, onSeen }: {
+export function TipHost({ t, tip, onSeen }: {
+  t: Strings;
   /** The tip that is due on this screen, or null. A new `id` starts a new wait. */
-  tip: { id: string; text: string } | null;
-  /** "Tipp", read before the sentence. */
-  label: string;
-  gotIt: string;
+  tip: TipDef | null;
   onSeen: (id: string) => void;
 }) {
   const [shown, setShown] = useState<string | null>(null);
@@ -50,7 +50,7 @@ export function TipHost({ tip, label, gotIt, onSeen }: {
   };
   return createPortal(
     <AnimatePresence>
-      {tip && shown === tip.id && <Bubble key={tip.id} id={tip.id} text={tip.text} label={label} gotIt={gotIt} onDismiss={dismiss} />}
+      {tip && shown === tip.id && <Bubble key={tip.id} id={tip.id} text={tip.text(t)} label={t.tipLabel} gotIt={t.tipGotIt} onDismiss={dismiss} />}
     </AnimatePresence>,
     document.body,
   );

@@ -712,6 +712,24 @@ export const ar: Strings = {
   safety3: 'يسألك iPhone مرة أخرى',
   safety3Sub: 'بعدها تبقى الصور 30 يومًا في «المحذوفة مؤخرًا».',
   safetyContinue: 'فهمت – متابعة',
+
+  // Einstellungen › So funktioniert Bildklar (src/components/HowView.tsx)
+  howTitle: 'كيف يعمل Bildklar',
+  howSub: 'شاهِد المقدمة والإيماءات والتلميحات من جديد',
+  howAgain: 'شاهِد من جديد',
+  howWelcome: 'المقدمة',
+  howWelcomeSub: 'أربع صفحات قصيرة: ما يفعله Bildklar لك',
+  howGuide: 'تدرّب على السحب',
+  howGuideSub: 'يمينًا للاحتفاظ، يسارًا للتحديد، وللأعلى لاحقًا',
+  howTips: 'إظهار كل التلميحات من جديد',
+  howTipsSub: 'يظهر كل تلميح مرة أخرى في مكانه.',
+  howGood: 'من المفيد أن تعرف',
+  howProtect: 'حماية الصور',
+  howHide: 'إخفاء كل التلميحات',
+  howHideSub: 'بلا تلميحات وبلا إرشادات سحب بعد الآن',
+  howTipsDone: 'ستظهر التلميحات من جديد.',
+  howGuideDone: 'ستظهر إرشادات السحب في مراجعتك القادمة.',
+  howHideDone: 'أُخفيت كل التلميحات.',
 };
 
 /** Android's wording (folders, the Trash, the phone). */

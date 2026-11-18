@@ -111,6 +111,18 @@ try {
   };
 
   console.log('Requests while using the app');
+  await step('the first run: the welcome, access granted, the first scan, the reveal, a guided review', async () => {
+    await start(page, prefs({ firstRun: true, access: 'notDetermined', scanned: false, owned: false }));
+    for (let i = 0; i < 3; i++) { await page.click(`button:has-text("${w.t.welcomeNext}")`); await pause(page, 350); }
+    await page.click(`button:has-text("${w.t.welcomeStart}")`);
+    await page.click(`button:has-text("${w.t.permAllow}")`);
+    await page.waitForSelector(`text=${w.t.revealTitle}`, { timeout: 20000 });
+    await page.click(`button:has-text("${w.t.revealGo}")`);
+    await pause(page, 900);
+    for (const key of ['ArrowRight', 'ArrowLeft', 'ArrowUp']) { await page.keyboard.press(key); await pause(page, 450); }
+    await page.click(`button:has-text("${w.t.finishReview}")`);
+    await pause(page, 600);
+  });
   await step('the permission screen, then access granted and the first scan', async () => {
     await start(page, prefs({ access: 'notDetermined', scanned: false, owned: false }));
     await page.click(`button:has-text("${w.t.permAllow}")`);
