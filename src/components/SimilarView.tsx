@@ -108,10 +108,10 @@ export function SimilarView({ t, kind = 'similar', groups, byId, kept, shown, on
           <ChevronRight className="w-5 h-5 text-fg-faint rtl:rotate-180" aria-hidden="true" />
         </button>
         {/* Settle it here: keep all, or mark everything without a star (the starred ones are kept). */}
-        <div className="grid grid-cols-[auto_minmax(0,1fr)] gap-2 pt-2.5">
+        <div className="flex items-center justify-between gap-2 pt-2.5">
           <button
             type="button" onClick={() => { tapLight(); onKeepAll(g); }}
-            className="min-h-control px-4 rounded-full glass-flat text-label font-semibold text-fg inline-flex items-center justify-center gap-1.5 press focus-visible:ring-focus"
+            className="shrink-0 min-h-[44px] px-4 rounded-full glass-flat text-label font-semibold text-fg inline-flex items-center justify-center gap-1.5 press focus-visible:ring-focus"
           >
             <Check className="w-4 h-4 shrink-0 text-keep" strokeWidth={3} aria-hidden="true" /><span className="whitespace-nowrap">{t.keepAll}</span>
           </button>
@@ -119,9 +119,9 @@ export function SimilarView({ t, kind = 'similar', groups, byId, kept, shown, on
             type="button" disabled={!extra}
             onClick={() => { tapLight(); onAsideOthers(g, others, mine.filter(id => g.ids.includes(id))); setStars(s => { const { [g.key]: _, ...rest } = s; return rest; }); }}
             aria-label={`${t.groupAsideShort}, ${plural(t, unit, extra)}`}
-            className="min-h-control px-3 rounded-full bg-neg text-neg-ink text-label font-bold inline-flex items-center justify-center gap-1.5 press focus-visible:ring-focus disabled:opacity-40"
+            className="min-w-0 min-h-[44px] px-3.5 py-1 rounded-full bg-neg text-neg-ink text-caption font-bold inline-flex items-center justify-center gap-1.5 press focus-visible:ring-focus disabled:opacity-40"
           >
-            <Archive className="w-4 h-4 shrink-0" strokeWidth={2.4} aria-hidden="true" /><span className="wrap-prose text-center leading-tight">{t.groupAsideShort}</span>
+            <Archive className="w-4 h-4 shrink-0" strokeWidth={2.4} aria-hidden="true" /><span className="wrap-prose leading-tight">{t.groupAsideShort}</span>
           </button>
         </div>
       </div>

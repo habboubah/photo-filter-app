@@ -378,6 +378,8 @@ export const ar: Strings = {
   deleteFilesN_one: 'حذف ملف واحد',
   deleteFilesN_other: 'حذف {n} ملف',
   playVideo: 'تشغيل الفيديو، {length}',
+  videoBigger: 'أكبر',
+  videoSmaller: 'أصغر',
   previewFailed: 'الفيديو ليس على هذا الجهاز – إنه في السحابة فقط.',
   playFailed: 'تعذّر تشغيل هذا الفيديو هنا.',
   fileIntoAlbum: 'وضع في ألبوم',

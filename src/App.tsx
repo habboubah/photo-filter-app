@@ -702,7 +702,7 @@ export default function App() {
   const player: Player = {
     length: id => { const p = byId.get(id); return p?.video ? p.dur ?? 0 : null; },
     play: id => {
-      void PhotoLibrary.preview({ id, closeLabel: t.close })
+      void PhotoLibrary.preview({ id, closeLabel: t.close, biggerLabel: t.videoBigger, smallerLabel: t.videoSmaller })
         .catch((e: { code?: string }) => show(e?.code === 'CLOUD' ? t.previewFailed : t.playFailed));
     },
     label: id => fmt(t.playVideo, { length: duration(byId.get(id)?.dur ?? 0) }),

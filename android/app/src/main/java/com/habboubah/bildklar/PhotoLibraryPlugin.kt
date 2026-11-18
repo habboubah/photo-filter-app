@@ -696,8 +696,10 @@ class PhotoLibraryPlugin : Plugin() {
     fun preview(call: PluginCall) {
         val id = call.getString("id")?.takeIf { it.contains(':') && isVideo(it) } ?: run { call.reject("No video"); return }
         val closeLabel = call.getString("closeLabel") ?: "Close"
+        val biggerLabel = call.getString("biggerLabel") ?: "Bigger"
+        val smallerLabel = call.getString("smallerLabel") ?: "Smaller"
         activity.runOnUiThread {
-            VideoPlayer.show(activity, contentUri(id), closeLabel) { failed ->
+            VideoPlayer.show(activity, contentUri(id), closeLabel, biggerLabel, smallerLabel) { failed ->
                 if (failed) call.reject("Cannot play this video", "PLAYBACK") else call.resolve()
             }
         }
