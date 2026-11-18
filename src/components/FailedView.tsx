@@ -8,6 +8,7 @@ import type { ExposureLevel } from '../logic/exposure';
 import { Dock, Empty, Screen } from '../ui/Screen';
 import { Button } from '../ui/Button';
 import { Segmented } from '../ui/Controls';
+import { SelectBar } from '../ui/SelectBar';
 import { PhotoGrid } from '../ui/Photo';
 import { ZoomView } from '../ui/Zoom';
 import { sortPhotos, type SortKey } from '../logic/sort';
@@ -55,7 +56,7 @@ export function FailedView({ t, blurry, dark, bright, tab: initialTab = 'blurry'
   const review = () => (tab === 'blurry' ? onReviewBlurry(list) : onReviewExposure(list, tab));
 
   return (
-    <Screen title={t.failedTitle} subtitle={`${plural(t, 'photos', list.length)} · ${bytes(t, total)}`} onBack={onBack} backLabel={t.back} info={{ label: t.aboutScreen, close: t.close, body: intro }} docked={list.length > 0}
+    <Screen title={t.failedTitle} subtitle={`${plural(t, 'photos', list.length)} · ${bytes(t, total)}`} onBack={onBack} backLabel={t.back} info={{ label: t.aboutScreen, close: t.close, how: t.infoHow, body: intro }} docked={list.length > 0}
       actions={<SortButton t={t} value={sort} onChange={onSort} />}>
       <Segmented
         label={t.failedTitle} value={tab} onChange={setTab}
@@ -72,6 +73,14 @@ export function FailedView({ t, blurry, dark, bright, tab: initialTab = 'blurry'
         />
       )}
       {list.length === 0 ? <Empty title={empty.title} body={empty.body} back={{ label: t.emptyBack, onClick: onBack }} /> : (
+        <>
+        <SelectBar
+          text={chosen.length ? plural(t, 'binPicked', chosen.length) : t.selectHint}
+          all={chosen.length === list.length} none={chosen.length === 0}
+          onAll={() => setPicked(old => new Set([...old, ...list.map(p => p.id)]))}
+          onNone={() => setPicked(new Set())}
+          labels={{ all: t.pickAll, none: t.pickNone }}
+        />
         <PhotoGrid
           ids={list.map(p => p.id)}
           label={id => {
@@ -91,6 +100,7 @@ export function FailedView({ t, blurry, dark, bright, tab: initialTab = 'blurry'
             );
           }}
         />
+        </>
       )}
       {tab === 'blurry' && list.length > 0 && (
         <div className="flex flex-wrap gap-x-4 gap-y-1 px-1 text-caption text-fg-mute" aria-hidden="true">
@@ -102,12 +112,10 @@ export function FailedView({ t, blurry, dark, bright, tab: initialTab = 'blurry'
       {list.length > 0 && (
         <Dock>
           {chosen.length > 0 ? (
-            <>
-              {/* Into "Zum Löschen vorgemerkt": nothing is deleted here, so teal and the archive, never red. */}
+            <>{/* Into "Zum Löschen vorgemerkt": nothing is deleted here, so teal and the archive, never red. */}
               <Button full size="lg" icon={Archive} onClick={() => { onAside(chosen); setPicked(new Set()); }}>
                 {`${t.aside} · ${plural(t, 'photos', chosen.length)} · ${bytes(t, chosenBytes)}`}
               </Button>
-              <Button full variant="ghost" className="mt-1" onClick={() => setPicked(new Set())}>{t.selectionClear}</Button>
             </>
           ) : (
             <Button full size="lg" onClick={review}>{`${t.reviewBlurry} · ${plural(t, 'photos', list.length)} · ${bytes(t, total)}`}</Button>

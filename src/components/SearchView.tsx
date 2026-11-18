@@ -104,7 +104,7 @@ export function SearchView({ t, lang, vectors, byId, aiSeen, onBack, onOpen, onR
   return (
     <Screen
       title={t.searchTitle} subtitle={tokens.length && ready ? `${plural(t, 'photos', ids.length)} · ${bytes(t, size)}` : undefined}
-      onBack={onBack} backLabel={t.back} info={{ label: t.aboutScreen, close: t.close, body: t.searchIntro }} docked={docked}
+      onBack={onBack} backLabel={t.back} info={{ label: t.aboutScreen, close: t.close, how: t.infoHow, body: t.searchIntro }} docked={docked}
     >
       <Field
         label={t.searchLabel} hideLabel value={typed} onChange={setTyped} placeholder={t.searchPlaceholder} autoFocus data-tip="tip.search"

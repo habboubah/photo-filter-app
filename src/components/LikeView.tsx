@@ -35,7 +35,7 @@ export function LikeView({ t, id, vectors, byId, onBack, onOpen, onReview }: {
   return (
     <Screen
       title={t.likeTitle} subtitle={ids.length ? `${plural(t, 'photos', ids.length)} · ${bytes(t, size)}` : undefined}
-      onBack={onBack} backLabel={t.back} info={{ label: t.aboutScreen, close: t.close, body: t.likeIntro }} docked={ids.length > 0}
+      onBack={onBack} backLabel={t.back} info={{ label: t.aboutScreen, close: t.close, how: t.infoHow, body: t.likeIntro }} docked={ids.length > 0}
     >
       <figure className="relative rounded-lg overflow-hidden card">
         <div className="aspect-[4/3]"><Thumb id={id} size={LARGE} alt={date(id)} className="!rounded-none" /></div>

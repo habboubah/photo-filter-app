@@ -25,7 +25,7 @@ export function LiveView({ t, photos: all, sort, onSort, onBack, onConvert }: {
   const byId = new Map(photos.map(p => [p.id, p]));
   const saving = photos.length * LIVE_VIDEO_BYTES;
   return (
-    <Screen title={t.liveTitle} subtitle={`${plural(t, 'photos', photos.length)} · ≈ ${bytes(t, saving)}`} onBack={onBack} backLabel={t.back} info={{ label: t.aboutScreen, close: t.close, body: t.liveIntro }} docked={photos.length > 0}
+    <Screen title={t.liveTitle} subtitle={`${plural(t, 'photos', photos.length)} · ≈ ${bytes(t, saving)}`} onBack={onBack} backLabel={t.back} info={{ label: t.aboutScreen, close: t.close, how: t.infoHow, body: t.liveIntro }} docked={photos.length > 0}
       actions={<SortButton t={t} value={sort} onChange={onSort} />}>
       {photos.length === 0 ? <Empty title={t.noLive} body={t.noLiveBody} back={{ label: t.emptyBack, onClick: onBack }} /> : (
         <PhotoGrid

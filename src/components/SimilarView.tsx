@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Archive, Check, ChevronRight, Star } from 'lucide-react';
+import { Check, ChevronRight, Star, Trash2 } from 'lucide-react';
 import type { Group, GroupKind, Photo } from '../types';
 import { Strings, fmt, num, plural } from '../translations';
 import { Empty, Screen } from '../ui/Screen';
@@ -111,24 +111,25 @@ export function SimilarView({ t, kind = 'similar', groups, byId, kept, shown, on
         <div className="flex items-center justify-between gap-2 pt-2.5">
           <button
             type="button" onClick={() => { tapLight(); onKeepAll(g); }}
-            className="shrink-0 min-h-[44px] px-4 rounded-full glass-flat text-label font-semibold text-fg inline-flex items-center justify-center gap-1.5 press focus-visible:ring-focus"
+            className="shrink-0 min-h-[44px] -ms-1 px-1 rounded-full text-label font-bold text-keep inline-flex items-center justify-center gap-1.5 press focus-visible:ring-focus"
           >
-            <Check className="w-4 h-4 shrink-0 text-keep" strokeWidth={3} aria-hidden="true" /><span className="whitespace-nowrap">{t.keepAll}</span>
+            <Check className="w-4 h-4 shrink-0" strokeWidth={3} aria-hidden="true" /><span className="whitespace-nowrap">{t.keepAll}</span>
           </button>
           <button
             type="button" disabled={!extra}
             onClick={() => { tapLight(); onAsideOthers(g, others, mine.filter(id => g.ids.includes(id))); setStars(s => { const { [g.key]: _, ...rest } = s; return rest; }); }}
             aria-label={`${t.groupAsideShort}, ${plural(t, unit, extra)}`}
-            className="min-w-0 min-h-[44px] px-3.5 py-1 rounded-full bg-neg text-neg-ink text-caption font-bold inline-flex items-center justify-center gap-1.5 press focus-visible:ring-focus disabled:opacity-40"
+            className="min-w-0 min-h-[44px] -me-1 px-1 py-1 rounded-full text-label font-bold text-neg inline-flex items-center justify-center gap-1.5 press focus-visible:ring-focus disabled:opacity-40"
           >
-            <Archive className="w-4 h-4 shrink-0" strokeWidth={2.4} aria-hidden="true" /><span className="wrap-prose leading-tight">{t.groupAsideShort}</span>
+            {/* Ahmad's choice: red words and the delete icon, though nothing is deleted yet ("Zum Löschen vorgemerkt"). */}
+            <Trash2 className="w-4 h-4 shrink-0" strokeWidth={2.4} aria-hidden="true" /><span className="wrap-prose leading-tight text-start">{t.groupAsideShort}</span>
           </button>
         </div>
       </div>
     );
   };
   return (
-    <Screen title={words.title} subtitle={plural(t, 'groups', groups.length)} onBack={onBack} backLabel={t.back} info={{ label: t.aboutScreen, close: t.close, body: words.intro }}>
+    <Screen title={words.title} subtitle={plural(t, 'groups', groups.length)} onBack={onBack} backLabel={t.back} info={{ label: t.aboutScreen, close: t.close, how: t.infoHow, body: words.intro }}>
       {groups.length === 0 ? <Empty title={words.none} body={words.noneBody} back={{ label: t.emptyBack, onClick: onBack }} /> : (
         <>
           <div className="space-y-[10px]">{visible.map(card)}</div>

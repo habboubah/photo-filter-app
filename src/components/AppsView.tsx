@@ -29,7 +29,7 @@ export function AppsView({ t, groups, sort, onSort, onBack, onReview }: {
   const total = groups.reduce((s, g) => s + g.bytes, 0);
   return (
     <Screen
-      title={t.appsTitle} subtitle={bytes(t, total)} onBack={onBack} backLabel={t.back} info={{ label: t.aboutScreen, close: t.close, body: t.appsIntro }}
+      title={t.appsTitle} subtitle={bytes(t, total)} onBack={onBack} backLabel={t.back} info={{ label: t.aboutScreen, close: t.close, how: t.infoHow, body: t.appsIntro }}
       actions={<SortButton t={t} value={sort} onChange={onSort} />}
     >
       {groups.length === 0 ? <Empty title={t.appsNone} body={t.appsNoneBody} back={{ label: t.emptyBack, onClick: onBack }} /> : (

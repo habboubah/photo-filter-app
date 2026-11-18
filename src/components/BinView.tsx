@@ -6,6 +6,7 @@ import { duration } from '../logic/large';
 import { Dock, Empty, Screen } from '../ui/Screen';
 import { Button } from '../ui/Button';
 import { PhotoGrid } from '../ui/Photo';
+import { SelectBar } from '../ui/SelectBar';
 import { DeleteSheet } from './DeleteSheet';
 import { SafetyNets } from './SafetyNets';
 
@@ -48,11 +49,16 @@ export function BinView({ t, photos, safetySeen, onSafetySeen, onBack, onRestore
   return (
     <Screen
       title={t.binTitle} subtitle={photos.length ? `${count(photos)} · ${bytes(t, total)}` : undefined}
-      onBack={onBack} backLabel={t.back} info={{ label: t.aboutScreen, close: t.close, body: t.binIntro }} docked={photos.length > 0}
+      onBack={onBack} backLabel={t.back} info={{ label: t.aboutScreen, close: t.close, how: t.infoHow, body: t.binIntro }} docked={photos.length > 0}
     >
       {photos.length === 0 ? <Empty icon={Archive} tone="accent" title={t.binEmpty} body={t.binEmptyBody} back={{ label: t.emptyBack, onClick: onBack }} /> : (
         <>
-          <p data-tip="tip.binScreen" className="px-1 pb-3 text-label text-fg-mute wrap-prose" aria-live="polite">{picked.length ? plural(t, 'binPicked', picked.length) : t.binTapHint}</p>
+          <SelectBar
+            tip="tip.binScreen" text={picked.length ? plural(t, 'binPicked', picked.length) : t.binTapHint}
+            all={picked.length === photos.length} none={picked.length === 0}
+            onAll={() => setChosen(new Set(ids(photos)))} onNone={() => setChosen(new Set())}
+            labels={{ all: t.pickAll, none: t.pickNone }}
+          />
           <PhotoGrid
             ids={ids(photos)}
             label={id => { const p = byId.get(id)!; return `${when(p)}, ${bytes(t, p.bytes)}, ${chosen.has(id) ? t.selected : t.notSelected}`; }}

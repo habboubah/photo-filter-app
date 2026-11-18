@@ -140,7 +140,11 @@ export class DemoLibrary extends WebPlugin implements PhotoLibraryPlugin {
         const analysing = first && i > steps / 4;
         const done = analysing ? Math.round(((i - steps / 4) / (steps * 0.75)) * total) : Math.round((i / steps) * total);
         if (analysing) this.analysed = done;
-        this.notifyListeners('scanProgress', { phase: analysing ? 'analyse' : 'list', done, total });
+        // The videos are analysed last, like the newest-first order puts few of them early: their count fills in at the end.
+        const videos = data.facts.filter(f => f.video).length;
+        this.notifyListeners('scanProgress', analysing
+          ? { phase: 'analyse', done, total, videos, videosDone: Math.max(0, videos - (total - done)) }
+          : { phase: 'list', done, total });
       }
       this.analysed = null;
       set(K.scanned, '1');

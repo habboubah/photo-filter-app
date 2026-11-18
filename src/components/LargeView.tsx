@@ -6,6 +6,7 @@ import { COMPRESS_MIN, LargeFilter, duration } from '../logic/large';
 import { Dock, Empty, Screen } from '../ui/Screen';
 import { Button } from '../ui/Button';
 import { Segmented } from '../ui/Controls';
+import { SelectBar } from '../ui/SelectBar';
 import { PhotoGrid, Thumb } from '../ui/Photo';
 import { Sheet } from '../ui/Sheet';
 import { LARGE } from '../thumbs';
@@ -48,7 +49,7 @@ export function LargeView({ t, photos, videosOnly, canCompress, sort, onSort, on
   const size = (p: Photo) => `${p.exact ? '' : '≈ '}${bytes(t, p.bytes)}`;
 
   return (
-    <Screen title={videosOnly ? t.videosTitle : t.largeTitle} subtitle={`${plural(t, 'files', list.length)} · ${approx ? '≈ ' : ''}${bytes(t, total)}`} onBack={onBack} backLabel={t.back} info={{ label: t.aboutScreen, close: t.close, body: canCompress ? `${t.largeIntro} ${t.largeCompressNote}` : t.largeIntro }} docked={list.length > 0}
+    <Screen title={videosOnly ? t.videosTitle : t.largeTitle} subtitle={`${plural(t, 'files', list.length)} · ${approx ? '≈ ' : ''}${bytes(t, total)}`} onBack={onBack} backLabel={t.back} info={{ label: t.aboutScreen, close: t.close, how: t.infoHow, body: canCompress ? `${t.largeIntro}\n${t.largeCompressNote}` : t.largeIntro }} docked={list.length > 0}
       actions={<SortButton t={t} value={sort} onChange={onSort} />}>
       {!videosOnly && (
         <Segmented
@@ -57,6 +58,14 @@ export function LargeView({ t, photos, videosOnly, canCompress, sort, onSort, on
         />
       )}
       {list.length === 0 ? <Empty title={videosOnly ? t.noVideos : t.noLarge} body={videosOnly ? t.noVideosBody : t.noLargeBody} back={{ label: t.emptyBack, onClick: onBack }} /> : (
+        <>
+        <SelectBar
+          text={chosen.length ? plural(t, 'binPicked', chosen.length) : t.selectHint}
+          all={chosen.length === list.length} none={chosen.length === 0}
+          onAll={() => setPicked(old => new Set([...old, ...list.map(p => p.id)]))}
+          onNone={() => setPicked(new Set())}
+          labels={{ all: t.pickAll, none: t.pickNone }}
+        />
         <PhotoGrid
           ids={list.map(p => p.id)}
           label={id => { const p = byId.get(id)!; return `${when(p)}, ${size(p)}${p.video ? `, ${t.videoBadge} ${duration(p.dur ?? 0)}` : ''}`; }}
@@ -77,16 +86,15 @@ export function LargeView({ t, photos, videosOnly, canCompress, sort, onSort, on
             );
           }}
         />
+        </>
       )}
       {list.length > 0 && (
         <Dock>
           {chosen.length > 0 ? (
-            <>
-              {/* Into "Zum Löschen vorgemerkt": nothing is deleted here, so teal and the archive, never red. */}
+            <>{/* Into "Zum Löschen vorgemerkt": nothing is deleted here, so teal and the archive, never red. */}
               <Button full size="lg" icon={Archive} onClick={() => { onAside(chosen); setPicked(new Set()); }}>
                 {`${t.aside} · ${plural(t, 'files', chosen.length)} · ${bytes(t, chosenBytes)}`}
               </Button>
-              <Button full variant="ghost" className="mt-1" onClick={() => setPicked(new Set())}>{t.selectionClear}</Button>
             </>
           ) : (
             <Button full size="lg" onClick={() => onReview(list)}>{`${t.reviewGroup} · ${plural(t, 'files', list.length)} · ${approx ? '≈ ' : ''}${bytes(t, total)}`}</Button>

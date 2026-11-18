@@ -1,4 +1,5 @@
-import { Check, History, MapPin, Search, Settings } from 'lucide-react';
+import { useState } from 'react';
+import { Check, FolderOpen, History, MapPin, Search, Settings } from 'lucide-react';
 import type { Trip } from '../types';
 import type { MemoryLabel } from '../logic/ai';
 import { Strings, fmt, num, plural } from '../translations';
@@ -23,19 +24,29 @@ interface Props {
   onTrips: () => void;
   onTrip: (key: string) => void;
   onCategory: (label: MemoryLabel) => void;
+  /** The albums of the phone (Android: its folders), the last used first; a cover once their photos are known. Null while asked for. */
+  albums: { id: string; title: string; count: number; cover?: string }[] | null;
+  onAlbum: (id: string) => void;
 }
+
+/** Albums shown before *Alle zeigen*: two rows of four. */
+const ALBUMS_SHOWN = 8;
 
 /**
  * The "Ordnen" tab: the photos to keep and look back on. Search first, as a
  * field (what is on the photo — the on-device AI), then On this day as a
  * large photo, every trip as a tile, four to a row (each becomes an album or
- * folder; all of them in view at once), and what the AI saw on the photos as
+ * folder; all of them in view at once), the albums the phone already has
+ * (Android: its folders) the same way, and what the AI saw on the photos as
  * larger photo cards, three to a row, the name on the photo. While the facts
  * load, the page's shape breathes instead of a blank screen.
  */
 export function OrganizeView(p: Props) {
   const { t } = p;
   const visible = p.trips.filter(x => !x.ignored);
+  const [allAlbums, setAllAlbums] = useState(false);
+  const albums = p.albums ?? [];
+  const shownAlbums = allAlbums ? albums : albums.slice(0, ALBUMS_SHOWN);
   const loaded = p.photoCount !== null;
   const subtitle = loaded
     ? [visible.length ? plural(t, 'trips', visible.length) : null, plural(t, 'photos', p.photoCount!)].filter(Boolean).join(' · ')
@@ -108,6 +119,36 @@ export function OrganizeView(p: Props) {
               </div>
             </div>
           )}
+        </section>
+      )}
+
+      {loaded && albums.length > 0 && (
+        <section aria-labelledby="albums-h">
+          <SectionHead
+            id="albums-h" title={t.albumsSection}
+            action={albums.length > ALBUMS_SHOWN ? (
+              <button type="button" aria-expanded={allAlbums} onClick={() => { tapLight(); setAllAlbums(v => !v); }} className="text-label font-bold text-accent hit-44 focus-visible:ring-focus rounded-full">
+                {allAlbums ? t.albumsLess : `${t.albumsAll} (${num(t, albums.length)})`}
+              </button>
+            ) : undefined}
+          />
+          <div className="grid grid-cols-4 gap-x-[8px] gap-y-[12px]">
+            {shownAlbums.map(a => (
+              <button
+                key={a.id} type="button" onClick={() => { tapLight(); p.onAlbum(a.id); }}
+                aria-label={`${fmt(t.openAlbum, { name: a.title })}, ${plural(t, 'photos', a.count)}`}
+                className="min-w-0 self-start text-start press focus-visible:ring-focus rounded-sm"
+              >
+                <span className="relative block aspect-square rounded-[12px] overflow-hidden bg-surface">
+                  {a.cover
+                    ? <Thumb id={a.cover} className="!rounded-none absolute inset-0" />
+                    : <FolderOpen className="absolute inset-0 m-auto w-7 h-7 text-fg-faint" aria-hidden="true" />}
+                </span>
+                <span aria-hidden="true" className="mt-1.5 px-0.5 text-caption font-semibold text-fg leading-tight line-clamp-2 hyphens-auto">{a.title}</span>
+                <span aria-hidden="true" className="block px-0.5 text-caption text-fg-mute num truncate">{num(t, a.count)}</span>
+              </button>
+            ))}
+          </div>
         </section>
       )}
 

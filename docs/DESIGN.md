@@ -20,8 +20,8 @@ Calm, photo-first, private, never pushy.
   quiet units everywhere (`bytes()`).
 - **Marking is not deleting.** *Löschen vormerken* is teal or quiet glass with
   an archive icon. Two exceptions by Ahmad's call (18 November 2026): a group
-  card's *Ohne Stern zum Löschen vormerken* is red (with the archive icon,
-  not the trash), and the bin's *Diese löschen* is red text — it leads to
+  card's *Ohne Stern zum Löschen vormerken* is red words with the trash icon
+  (no fill; *Alle behalten* beside it is green words with a check), and the bin's *Diese löschen* is red text — it leads to
   the delete sheet. Red and the trash icon appear only where a tap really
   deletes: the delete sheet's one button. The bin's dock reviews the
   selection (*Auswahl prüfen*), it never deletes by itself.

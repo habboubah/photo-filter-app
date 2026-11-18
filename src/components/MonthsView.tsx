@@ -39,7 +39,7 @@ export function MonthsView({ t, months, done, at, byId, shown, onMore, onBack, o
   const time = (id: string) => byId.get(id)?.t;
   return (
     <Screen
-      title={t.monthsTitle} onBack={onBack} backLabel={t.back} info={{ label: t.aboutScreen, close: t.close, body: t.monthsIntro }}
+      title={t.monthsTitle} onBack={onBack} backLabel={t.back} info={{ label: t.aboutScreen, close: t.close, how: t.infoHow, body: t.monthsIntro }}
       subtitle={<span className="num">{`${pctText} · ${fmt(t.monthsDone, { done: num(t, doneCount), total: num(t, months.length) })}`}</span>}
       trailing={
         <Ring value={pct / 100} size={60} stroke={6} label={pctText}>

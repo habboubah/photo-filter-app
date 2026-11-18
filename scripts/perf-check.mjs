@@ -23,8 +23,12 @@ import { root } from './lib/shots.mjs';
  *     version 2: the compact vectors and the label scoring, two-signal groups, how sure each
  *     suggestion is, search's entry points, protecting look-alikes, and their strings in German and
  *     English. The search vocabulary (67 kB) is a chunk of its own, loaded with the search screen.
+ *   - 18 November 2026: 180 kB — the redesigned Aufräumen and Ordnen, the albums on Ordnen, picking
+ *     with select all / deselect all, the player in place, the scan's photo and video counts, and
+ *     every screen's (i) written out as numbered steps, in German and English. The album and
+ *     album-picker screens are chunks of their own.
  */
-const BUNDLE_GZIP_BASELINE = 162_000;
+const BUNDLE_GZIP_BASELINE = 180_000;
 const BUNDLE_GROWTH = 1.10;
 /**
  * 50,000 photos (about 62,000 with bursts and screenshots), on a desktop. Measured 16 November 2026: ~300 ms;

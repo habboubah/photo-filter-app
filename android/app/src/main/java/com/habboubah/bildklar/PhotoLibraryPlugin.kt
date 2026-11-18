@@ -257,8 +257,10 @@ class PhotoLibraryPlugin : Plugin() {
         call.resolve()
     }
 
-    private fun progress(phase: String, done: Int, total: Int) {
+    /** How far a phase is; `videos` / `videosDone`: how many of `total` are videos, and of those done (for the scan card's two counts). */
+    private fun progress(phase: String, done: Int, total: Int, videos: Int? = null, videosDone: Int? = null) {
         val data = JSObject().put("phase", phase).put("done", done).put("total", total)
+        if (videos != null) data.put("videos", videos).put("videosDone", videosDone ?: 0)
         main.post { notifyListeners("scanProgress", data) }
     }
 
@@ -381,15 +383,18 @@ class PhotoLibraryPlugin : Plugin() {
     private fun analyse() {
         val total = store.pendingCount()
         if (total == 0) return
+        val videos = store.pendingVideoCount()
         var done = 0
-        progress("analyse", 0, total)
+        var videosDone = 0
+        progress("analyse", 0, total, videos, 0)
         while (!cancelled.get()) {
             val batch = store.pending(BATCH)
             if (batch.isEmpty()) break
             val results = workers.invokeAll(batch.map { (id, _) -> Callable { analyseOne(id) } }).map { it.get() }
             store.store(results)
             done += batch.size
-            progress("analyse", minOf(done, total), total)
+            videosDone += batch.count { (id, _) -> isVideo(id) }
+            progress("analyse", minOf(done, total), total, videos, minOf(videosDone, videos))
         }
     }
 
@@ -437,8 +442,10 @@ class PhotoLibraryPlugin : Plugin() {
         val total = store.aiPendingCount()
         if (total == 0) return
         val power = context.getSystemService(Context.POWER_SERVICE) as android.os.PowerManager
+        val videos = store.aiPendingVideoCount()
         var done = 0
-        progress("ai", 0, total)
+        var videosDone = 0
+        progress("ai", 0, total, videos, 0)
         while (!cancelled.get()) {
             if (power.currentThermalStatus >= android.os.PowerManager.THERMAL_STATUS_SEVERE) break
             val ids = store.aiPending(AI_BATCH)
@@ -464,7 +471,8 @@ class PhotoLibraryPlugin : Plugin() {
             }
             store.storeAI(results)
             done += results.size
-            progress("ai", minOf(done, total), total)
+            videosDone += results.count { isVideo(it.id) }
+            progress("ai", minOf(done, total), total, videos, minOf(videosDone, videos))
         }
     }
 

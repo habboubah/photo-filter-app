@@ -18,6 +18,7 @@ export const SORT_DEFAULT = {
   failed: 'newest',
   utility: 'newest',
   category: 'newest',
+  album: 'newest',
   apps: 'newest',
 } as const satisfies Record<string, SortKey>;
 export type SortScreen = keyof typeof SORT_DEFAULT;

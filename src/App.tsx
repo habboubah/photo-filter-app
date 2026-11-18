@@ -8,6 +8,7 @@ import { useAppStore } from './store';
 import { bytes, fmt, loadFirstRun, percent, plural, stringsFor } from './translations';
 import type { Photo, Trip, Group } from './types';
 import { PhotoLibrary, fileUrl, type AlbumInfo } from './native/photoLibrary';
+import type { AlbumTarget } from './components/AlbumPickSheet';
 import { PRODUCT_ID, Purchases } from './native/purchases';
 import { loadCities } from './cities';
 import { forgetThumbs } from './thumbs';
@@ -70,6 +71,8 @@ const MonthsView = lazy(() => import('./components/MonthsView').then(m => ({ def
 const LargeView = lazy(() => import('./components/LargeView').then(m => ({ default: m.LargeView })));
 const LiveView = lazy(() => import('./components/LiveView').then(m => ({ default: m.LiveView })));
 const UtilityView = lazy(() => import('./components/UtilityView').then(m => ({ default: m.UtilityView })));
+const AlbumView = lazy(() => import('./components/AlbumView').then(m => ({ default: m.AlbumView })));
+const AlbumPickSheet = lazy(() => import('./components/AlbumPickSheet').then(m => ({ default: m.AlbumPickSheet })));
 const CategoryView = lazy(() => import('./components/CategoryView').then(m => ({ default: m.CategoryView })));
 const TripsView = lazy(() => import('./components/TripsView').then(m => ({ default: m.TripsView })));
 const SettingsView = lazy(() => import('./components/SettingsView').then(m => ({ default: m.SettingsView })));
@@ -278,6 +281,8 @@ export default function App() {
   const [showApps, setShowApps] = useState(false);
   const [showUtility, setShowUtility] = useState(false);
   const [category, setCategory] = useState<MemoryLabel | null>(null);
+  // Ordnen › Alben: the album (Android: folder) open, by its id.
+  const [albumKey, setAlbumKey] = useState<string | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const [showLicences, setShowLicences] = useState(false);
   /** The part whose licence is open (Einstellungen › Lizenzen › one row). */
@@ -359,6 +364,7 @@ export default function App() {
     ['compress', showCompress, () => setShowCompress(false)],
     ['apps', showApps, () => setShowApps(false)],
     ['cleanup', showCleanup, () => setShowCleanup(false)],
+    ['album', !!albumKey, () => setAlbumKey(null)],
     ['category', !!category, () => setCategory(null)],
     ['months', showMonths, () => setShowMonths(false)],
     ['trips', showTrips, () => setShowTrips(false)],
@@ -679,6 +685,63 @@ export default function App() {
       return false;
     }
   };
+  /* ------------------------------------- Ordnen › Alben, and photos into an album */
+
+  // The albums of the phone for Ordnen, asked while it (or an album) is open; each album's members once, for
+  // its cover and its screen. Filing anything sets the list back to null, so both are asked again.
+  const [albumMembers, setAlbumMembers] = useState<Record<string, string[]> | null>(null);
+  const wantAlbums = (tab === 'organize' && !!photos) || !!albumKey || !!category;
+  useEffect(() => {
+    if (!wantAlbums || albumList) return;
+    void PhotoLibrary.listAlbums().then(r => setAlbumList(r.albums)).catch(() => setAlbumList([]));
+  }, [wantAlbums, albumList]);
+  useEffect(() => {
+    setAlbumMembers(null);
+    if (!albumList?.length) return;
+    let live = true;
+    void (async () => {
+      const out: Record<string, string[]> = {};
+      for (const a of albumList.filter(x => x.count > 0)) {
+        out[a.id] = await PhotoLibrary.albumMembers({ ids: [a.id] }).then(r => r.ids).catch(() => []);
+        if (!live) return;
+      }
+      setAlbumMembers(out);
+    })();
+    return () => { live = false; };
+  }, [albumList]);
+  const organizeAlbums = useMemo(() => {
+    if (!albumList) return null;
+    const recent = state.recentAlbums;
+    const rank = (id: string) => { const i = recent.indexOf(id); return i === -1 ? Infinity : i; };
+    const newest = (ids: string[] | undefined) => {
+      let best: Photo | undefined;
+      for (const id of ids ?? []) { const p = lib.byId.get(id); if (p && (!best || p.t > best.t)) best = p; }
+      return best?.id;
+    };
+    return albumList.filter(a => a.count > 0)
+      .sort((a, b) => rank(a.id) - rank(b.id) || b.count - a.count || a.title.localeCompare(b.title, t.locale))
+      .map(a => ({ id: a.id, title: a.title, count: a.count, cover: newest(albumMembers?.[a.id]) }));
+  }, [albumList, albumMembers, state.recentAlbums, lib.byId, t.locale]);
+
+  // Photos picked for an album (a category's): the sheet that asks which one, then one native call.
+  const [albumPick, setAlbumPick] = useState<{ ids: string[]; name?: string } | null>(null);
+  const fileInto = async (ids: string[], target: AlbumTarget) => {
+    setAlbumPick(null);
+    const albumId = 'albumId' in target ? target.albumId : undefined;
+    try {
+      const r = await PhotoLibrary.addToAlbums({ groups: [albumId ? { albumId, ids } : { title: folderName(target.title), ids }], dryRun: store.dryRun });
+      if (r.cancelled) { show(t.filedCancelled); return; }
+      if (r.dryRun) { show(fmt(t.dryRunFiled, { photos: plural(t, 'photos', ids.length) })); return; }
+      if (albumId) store.useAlbums([albumId]);
+      setAlbumList(null);
+      if (isAndroid()) store.startScan();
+      notifySuccess();
+      show(albumId ? fmt(t.filedDone, { photos: plural(t, 'photos', r.done) }) : fmt(t.albumCreated, { name: folderName(target.title) }));
+    } catch {
+      show(t.filedFailed);
+    }
+  };
+
   const isOld = (p: Photo) => isOldShot(p, now);
   const openMonth = (key: string) => {
     const m = months.find(x => x.key === key);
@@ -1072,6 +1135,7 @@ export default function App() {
         <UtilityView
           t={t} {...sorting('utility')} photos={utility} progress={aiSeen} onBack={() => setShowUtility(false)}
           onReview={(list: Photo[]) => startReview(reviewUtility(list))}
+          onAside={list => toBin(list.map(p => p.id))}
         />
       );
     }
@@ -1111,9 +1175,27 @@ export default function App() {
         />
       );
     }
+    if (albumKey) {
+      const a = albumList?.find(x => x.id === albumKey);
+      const members = albumMembers?.[albumKey];
+      const list = (members ?? []).flatMap(id => lib.byId.get(id) ?? []);
+      return (
+        <AlbumView
+          t={t} {...sorting('album')} title={a?.title ?? ''} photos={list} loading={!members}
+          onBack={() => setAlbumKey(null)}
+          onReview={l => startReview(reviewTrip(l.map(p => p.id), groups, byId, kept, undefined, cos))}
+          onAside={l => toBin(l.map(p => p.id))}
+        />
+      );
+    }
     if (category) {
       const c = cats.find(x => x.label === category);
-      return <CategoryView t={t} {...sorting('category')} label={category} photos={c?.photos ?? []} onBack={() => setCategory(null)} />;
+      return (
+        <CategoryView
+          t={t} {...sorting('category')} label={category} photos={c?.photos ?? []} onBack={() => setCategory(null)}
+          onAlbum={(l, name) => needUnlock(() => setAlbumPick({ ids: l.map(p => p.id), name }))}
+        />
+      );
     }
     if (showMonths) {
       return (
@@ -1208,6 +1290,8 @@ export default function App() {
           onTrips={() => setShowTrips(true)}
           onTrip={setTripKey}
           onCategory={setCategory}
+          albums={organizeAlbums}
+          onAlbum={setAlbumKey}
         />
       );
     }
@@ -1295,6 +1379,15 @@ export default function App() {
       )}
 
       <PaywallSheet t={t} open={paywall} free={store.owned ? undefined : paywallFree ?? { left: freeLeft(state.freeUsed) }} onClose={closePaywall} onOwned={unlocked} toast={label => show(label)} />
+
+      {albumPick && (
+        <Suspense fallback={null}>
+          <AlbumPickSheet
+            t={t} open albums={chips.flatMap(c => albumList?.find(a => a.id === c.id) ?? [])} count={albumPick.ids.length} name={albumPick.name}
+            onPick={target => void fileInto(albumPick.ids, target)} onClose={() => setAlbumPick(null)}
+          />
+        </Suspense>
+      )}
 
       <Confirm
         open={!!albumFor}

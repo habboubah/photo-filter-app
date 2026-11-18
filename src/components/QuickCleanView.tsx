@@ -37,7 +37,7 @@ export function QuickCleanView({ t, parts, storage, onBack, onReview, onDelete }
   });
 
   return (
-    <Screen title={t.quickCleanTitle} subtitle={bytes(t, chosen.bytes)} onBack={onBack} backLabel={t.back} info={{ label: t.aboutScreen, close: t.close, body: t.quickCleanIntro }} docked>
+    <Screen title={t.quickCleanTitle} subtitle={bytes(t, chosen.bytes)} onBack={onBack} backLabel={t.back} info={{ label: t.aboutScreen, close: t.close, how: t.infoHow, body: t.quickCleanIntro }} docked>
       <div data-tip="tip.quickClean">
       <Group footer={storage ? fmt(t.storageFree, { free: bytes(t, storage.free), total: bytes(t, storage.total) }) : undefined}>
         {present.map(part => (

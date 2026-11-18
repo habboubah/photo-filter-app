@@ -22,7 +22,7 @@ export function CleanupView({ t, summary, onBack, onDuplicates, onVideoGroups, o
 }) {
   const sub = (count: number, size: number) => fmt(t.cleanupRowSub, { photos: plural(t, 'photos', count), size: bytes(t, size) });
   return (
-    <Screen title={t.cleanupTitle} subtitle={bytes(t, summary.total.bytes)} onBack={onBack} backLabel={t.back} info={{ label: t.aboutScreen, close: t.close, body: t.cleanupIntro }} docked={summary.total.count > 0}>
+    <Screen title={t.cleanupTitle} subtitle={bytes(t, summary.total.bytes)} onBack={onBack} backLabel={t.back} info={{ label: t.aboutScreen, close: t.close, how: t.infoHow, body: t.cleanupIntro }} docked={summary.total.count > 0}>
       <Group>
         <Row
           label={t.cleanupDuplicates}

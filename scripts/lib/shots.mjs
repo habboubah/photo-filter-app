@@ -429,8 +429,8 @@ export const SCREENS = [
       await pause(page, 600);
       await page.click(`button${aria(w.t.back)}`);
       await pause(page, 700);
-      // The pile is home's next step now (its row shows only when another step comes first).
-      await page.click(`button:has-text("${w.t.nextLaterButton}")`);
+      // The pile is a row of home's "More space" now.
+      await page.click(`button:has-text("${w.t.laterCard}")`);
       await pause(page, 900);
     },
   },

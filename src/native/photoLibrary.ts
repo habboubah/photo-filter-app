@@ -20,6 +20,9 @@ export interface ScanProgress {
   phase: 'list' | 'analyse' | 'ai';
   done: number;
   total: number;
+  /** Of `total`, how many are videos, and how many of those are done (absent from an older native build). */
+  videos?: number;
+  videosDone?: number;
 }
 
 export interface ScanState {

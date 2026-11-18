@@ -171,6 +171,7 @@ class ScanStore(context: Context) : SQLiteOpenHelper(context, "bildklar-scan.db"
     }
 
     fun pendingCount(): Int = count("SELECT COUNT(*) FROM asset WHERE fv < ${FeatureMath.FEATURE_VERSION}")
+    fun pendingVideoCount(): Int = count("SELECT COUNT(*) FROM asset WHERE fv < ${FeatureMath.FEATURE_VERSION} AND video = 1")
     fun count(): Int = count("SELECT COUNT(*) FROM asset")
 
     private fun count(sql: String): Int = readableDatabase.rawQuery(sql, null).use { c -> if (c.moveToFirst()) c.getInt(0) else 0 }
@@ -187,6 +188,9 @@ class ScanStore(context: Context) : SQLiteOpenHelper(context, "bildklar-scan.db"
 
     fun aiPendingCount(): Int =
         readableDatabase.rawQuery("SELECT COUNT(*) FROM asset WHERE $AI_WANTED", arrayOf(ImageEmbedder.AI_VERSION.toString()))
+            .use { c -> if (c.moveToFirst()) c.getInt(0) else 0 }
+    fun aiPendingVideoCount(): Int =
+        readableDatabase.rawQuery("SELECT COUNT(*) FROM asset WHERE $AI_WANTED AND video = 1", arrayOf(ImageEmbedder.AI_VERSION.toString()))
             .use { c -> if (c.moveToFirst()) c.getInt(0) else 0 }
 
     /** One photo's (or video's) AI pass: its compact vector, packed, and a video's full embedding; null: unreadable. */

@@ -3,7 +3,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { Archive, CalendarDays, Check, Lock, MapPin, Sparkles } from 'lucide-react';
 import type { ScanView } from '../store';
 import { Strings, fmt, num, percent, plural } from '../translations';
-import { etaText } from './HomeView';
+import { ScanSplit, etaText, scanSplit } from './HomeView';
 import { Button } from '../ui/Button';
 import { CountUp, Dots, Foot, Ring, SETTLE } from '../ui/FirstRun';
 import { tapLight } from '../ui/haptics';
@@ -42,7 +42,7 @@ export function FirstScanView({ t, scan, found, firstFind, onLookAround }: {
   const where = counting ? t.scanList
     : ai ? fmt(t.scanAi, { done: num(t, scan.done), total: num(t, scan.total) })
       : fmt(t.scanAnalyse, { done: num(t, scan.done), total: num(t, scan.total) });
-  const eta = counting ? '' : etaText(t, scan.left);
+  const eta = counting ? '' : etaText(t, scan.left) || t.scanEtaWait;
 
   const cards = [
     { key: 'trips', title: t.scanCardTripsTitle, body: t.scanCardTrips },
@@ -79,7 +79,9 @@ export function FirstScanView({ t, scan, found, firstFind, onLookAround }: {
           </Ring>
           <h1 className="title-face text-title1 font-bold text-fg mt-5 wrap-compound text-balance">{ai ? t.scanAiTitle : t.scanTitle}</h1>
           {/* One quiet status line: read out when it changes, without interrupting. */}
-          <p className="text-label text-fg-mute mt-2 num wrap-prose" aria-live="polite" aria-atomic="true">{[where, eta].filter(Boolean).join(' · ')}</p>
+          <p className="text-label text-fg-mute mt-2 num wrap-prose" aria-live="polite" aria-atomic="true">{[scanSplit(scan) ? '' : where, eta].filter(Boolean).join(' · ')}</p>
+          {/* The photos and the videos apart, each "done of total" (src/components/HomeView.tsx ScanSplit). */}
+          <div className="mt-1.5"><ScanSplit t={t} scan={scan} center /></div>
         </div>
 
         <section className="mt-6" aria-labelledby="found-so-far">
