@@ -6,6 +6,7 @@ import type { Access } from '../native/photoLibrary';
 import type { ScanView } from '../store';
 import { Strings, ago, bytes, fmt, num, percent, plural } from '../translations';
 import { etaWords } from '../logic/eta';
+import { greetingAt } from '../logic/greeting';
 import { type Found, type FoundKey, gainOf, nextStepKind, rankCategories } from '../logic/nextStep';
 import { Empty, Group, IconTile, Next, Row, Screen, SectionHead } from '../ui/Screen';
 import { Button, IconButton } from '../ui/Button';
@@ -212,12 +213,16 @@ export function HomeView(p: Props) {
   const showLater = p.later.count > 0 && kind !== 'later';
   const showMonths = p.months.total > 0 && kind !== 'month' && kind !== 'start';
 
+  // A short greeting by the time of day — no name: there is no account.
+  const greeting = { morning: t.greetMorning, day: t.greetDay, evening: t.greetEvening }[greetingAt(new Date().getHours())];
+
   const link = 'min-h-tap inline-flex items-center text-label font-semibold text-accent rounded-full focus-visible:ring-focus';
 
   return (
     <Screen
-      title={t.tabClean}
-      hideTitle
+      title={greeting}
+      eyebrow={t.tabClean}
+      subtitle={has ? fmt(t.homeSub, { files: plural(t, 'files', p.photoCount!) }) : undefined}
       tabbed
       actions={<>
         {has && (
@@ -241,19 +246,16 @@ export function HomeView(p: Props) {
         </section>
       )}
 
-      {(bigScan || aiPass || !loaded) && <ScanCard t={t} scan={p.scan} first={firstScan || !loaded} />}
+      {(bigScan || aiPass) && <ScanCard t={t} scan={p.scan} first={firstScan} />}
+
+      {/* The facts are still being read: the page's shape, quietly, instead of blank space. */}
+      {!loaded && !bigScan && !aiPass && <HomeSkeleton label={t.loading} />}
 
       {loaded && p.photoCount === 0 && !p.scan.running && (
         <Empty title={t.emptyLibraryTitle} body={t.emptyLibraryBody} />
       )}
 
-      {has && summary && (
-        <CleanupCard
-          t={t} summary={summary} bar={bar} library={p.analysis} storage={p.storage} freedBytes={p.freedBytes}
-          onOpen={p.onCleanup} onPhotos={p.onMonths} onVideos={p.onVideos}
-        />
-      )}
-
+      {/* The one next step first: the obvious thing to do. Then what waits to be confirmed, then the overview. */}
       {has && step && <NextStep step={step} />}
 
       {has && p.bin.count > 0 && (
@@ -261,6 +263,13 @@ export function HomeView(p: Props) {
           <SectionHead id="aside-h" title={t.binTitle} />
           <AsideCard t={t} bin={p.bin} onClick={p.onBin} />
         </section>
+      )}
+
+      {has && summary && (
+        <CleanupCard
+          t={t} summary={summary} bar={bar} library={p.analysis} storage={p.storage} freedBytes={p.freedBytes}
+          onOpen={p.onCleanup} onPhotos={p.onMonths} onVideos={p.onVideos}
+        />
       )}
 
       {has && (cats.length > 0 || done.length > 0) && (
@@ -377,6 +386,30 @@ export function HomeView(p: Props) {
         onConfirm={() => { setAskRescan(false); p.onRescan(); }} onCancel={() => setAskRescan(false)}
       />
     </Screen>
+  );
+}
+
+/** Home while the facts load: the next step's card and a few rows as soft shapes. */
+function HomeSkeleton({ label }: { label: string }) {
+  return (
+    <div role="status" aria-label={label} className="space-y-6 skeleton">
+      <div className="rounded-lg card overflow-hidden">
+        <div className="aspect-[16/9] bg-surface-2" />
+        <div className="p-5 space-y-3">
+          <div className="h-3 w-24 rounded-full bg-surface-2" />
+          <div className="h-5 w-48 rounded-full bg-surface-2" />
+          <div className="h-12 rounded-full bg-surface-2" />
+        </div>
+      </div>
+      <div className="rounded-md card p-4 space-y-4">
+        {[0, 1, 2].map(i => (
+          <div key={i} className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-[11px] bg-surface-2" />
+            <div className="flex-1 space-y-2"><div className="h-3.5 w-32 rounded-full bg-surface-2" /><div className="h-3 w-20 rounded-full bg-surface-2" /></div>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
 

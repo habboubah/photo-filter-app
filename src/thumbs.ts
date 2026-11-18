@@ -11,6 +11,8 @@ import { fileUrl, PhotoLibrary } from './native/photoLibrary';
 /** The two sizes in use: grid tiles and a photo shown large (the review, a group's best). */
 export const SMALL = 256;
 export const LARGE = 1024;
+/** A photo looked at closely (ui/Zoom): asked for only then. */
+export const ZOOM = 2048;
 
 const CONCURRENT = 6;
 const done = new Map<string, string>();
@@ -55,5 +57,5 @@ export function forgetAllThumbs() {
 
 /** A photo that is gone (deleted, moved out of reach) no longer has a thumbnail to remember. */
 export function forgetThumbs(ids: string[]) {
-  for (const id of ids) { done.delete(key(id, SMALL)); done.delete(key(id, LARGE)); }
+  for (const id of ids) { done.delete(key(id, SMALL)); done.delete(key(id, LARGE)); done.delete(key(id, ZOOM)); }
 }

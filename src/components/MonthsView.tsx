@@ -2,7 +2,7 @@ import type React from 'react';
 import { CheckCircle2, ChevronRight } from 'lucide-react';
 import type { Photo } from '../types';
 import { Strings, bytes, fmt, num, percent, plural } from '../translations';
-import { Progress } from '../ui/Controls';
+import { Ring } from '../ui/FirstRun';
 import { progress, type Month } from '../logic/months';
 import { Screen } from '../ui/Screen';
 import { Thumb } from '../ui/Photo';
@@ -30,10 +30,12 @@ export function MonthsView({ t, months, done, byId, shown, onMore, onBack, onOpe
   return (
     <Screen
       title={t.monthsTitle} onBack={onBack} backLabel={t.back} info={{ label: t.aboutScreen, close: t.close, body: t.monthsIntro }}
-      subtitle={<>
-        <span className="num">{`${pctText} · ${fmt(t.monthsDone, { done: num(t, doneCount), total: num(t, months.length) })}`}</span>
-        <span className="block mt-2 max-w-[220px]"><Progress thin value={pct / 100} label={pctText} /></span>
-      </>}
+      subtitle={<span className="num">{`${pctText} · ${fmt(t.monthsDone, { done: num(t, doneCount), total: num(t, months.length) })}`}</span>}
+      trailing={
+        <Ring value={pct / 100} size={60} stroke={6} label={pctText}>
+          <span className="text-caption font-bold text-fg num" aria-hidden="true">{percent(t, pct)}</span>
+        </Ring>
+      }
     >
       <div data-tip="tip.months" className="rounded-md card overflow-hidden divide-hairline-inset">
         {visible.map(m => {

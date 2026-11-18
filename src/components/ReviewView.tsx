@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { AnimatePresence, animate, motion, useMotionValue, useReducedMotion, useTransform } from 'motion/react';
-import { Archive, Check, ChevronRight, Clock, FolderInput, Images, Play, Plus, Shield, Trash2, Undo2, X } from 'lucide-react';
+import { Archive, Check, ChevronRight, Clock, FolderInput, Images, Play, Plus, Shield, Trash2, Undo2, X, ZoomIn } from 'lucide-react';
 import type { Confidence, Photo } from '../types';
 import { Strings, bytes, fmt, num, plural } from '../translations';
 import { Decision, ReviewItem, Session, albumPlan, deleteSplit, isNewAlbum, laterIds, newAlbumKey, toDelete } from '../logic/review';
@@ -16,6 +16,7 @@ import { notifyWarning, tapLight, tapMedium } from '../ui/haptics';
 import { CountUp, SETTLE } from '../ui/FirstRun';
 import { GESTURE_OF, GestureHint, type Guide, saidFor } from './ReviewGuide';
 import { ProtectInfo } from './SafetyNets';
+import { ZoomView, zoomLayoutId } from '../ui/Zoom';
 
 /** How far a card is dragged before it counts as a decision. */
 const THRESHOLD = 110;
@@ -72,20 +73,21 @@ export function ReviewView({ t, session, finished, byId, debug, bin = false, alb
   const [title, setTitle] = useState('');
   const create = () => { const name = title.trim(); if (name) onFile?.(newAlbumKey(name)); setNaming(false); setTitle(''); };
   const done = finished || !item;
-  // While the guide runs, every decision is named right after it ("Vorgemerkt – noch nicht gelöscht"), on top of the next card.
+  // Every decision is named right after it, on top of the next card, with its undo beside it — a snackbar
+  // that stays until the next decision (or a few seconds). While the guide runs it says more ("Vorgemerkt – noch nicht gelöscht").
   const [said, setSaid] = useState<{ key: number; text: string } | null>(null);
   useEffect(() => {
     if (!said) return;
-    const timer = window.setTimeout(() => setSaid(null), 1900);
+    const timer = window.setTimeout(() => setSaid(null), 4500);
     return () => window.clearTimeout(timer);
   }, [said]);
   const onDecide = (d: Decision) => {
-    if (guide) {
-      if (guide.gesture) setSaid({ key: Date.now(), text: saidFor(t, d) });
-      guide.onDid(GESTURE_OF[d]);
-    }
+    const short = d === 'keep' ? (bin ? t.binRestore : t.keep) : d === 'delete' ? (bin ? t.delete : t.summaryMarked) : t.later;
+    setSaid({ key: Date.now(), text: guide?.gesture ? saidFor(t, d) : short });
+    guide?.onDid(GESTURE_OF[d]);
     decideRaw(d);
   };
+  const undoNow = () => { setSaid(null); onUndo(); };
   // What the photos marked so far would free: counts up as you swipe left.
   const marked = toDelete(session).reduce((sum, id) => sum + (byId.get(id)?.bytes ?? 0), 0);
 
@@ -97,6 +99,8 @@ export function ReviewView({ t, session, finished, byId, debug, bin = false, alb
   useEffect(() => {
     if (done) return;
     const onKey = (e: KeyboardEvent) => {
+      // A sheet or the zoom viewer is open: the keys are theirs.
+      if (document.querySelector('[role="dialog"], [role="alertdialog"]')) return;
       if (e.key === 'ArrowLeft') onDecide('delete');
       else if (e.key === 'ArrowRight') onDecide('keep');
       else if (e.key === 'ArrowUp') { e.preventDefault(); onDecide('later'); }
@@ -138,7 +142,7 @@ export function ReviewView({ t, session, finished, byId, debug, bin = false, alb
               </div>
             </div>
             <Card
-              key={item.id} t={t} item={item} photo={byId.get(item.id)} debug={debug} bin={bin} guide={guide} said={said} onDecide={onDecide} onProtect={() => onProtect(item.id)} onPreview={() => onPreview(item.id)}
+              key={item.id} t={t} item={item} photo={byId.get(item.id)} debug={debug} bin={bin} guide={guide} said={said} onUndo={undoNow} onDecide={onDecide} onProtect={() => onProtect(item.id)} onPreview={() => onPreview(item.id)}
               onLike={onLike ? () => onLike(item.id) : undefined}
             />
             {onFile && <div role="group" aria-label={t.fileIntoAlbum} className="flex gap-2 overflow-x-auto no-scrollbar px-[12px] pt-3 pb-1">
@@ -186,13 +190,15 @@ export function ReviewView({ t, session, finished, byId, debug, bin = false, alb
   );
 }
 
-function Card({ t, item, photo, debug, bin, guide, said, onDecide, onProtect, onPreview, onLike }: {
-  t: Strings; item: ReviewItem; photo?: Photo; debug: boolean; bin: boolean; guide?: Guide; said: { key: number; text: string } | null;
+function Card({ t, item, photo, debug, bin, guide, said, onUndo, onDecide, onProtect, onPreview, onLike }: {
+  t: Strings; item: ReviewItem; photo?: Photo; debug: boolean; bin: boolean; guide?: Guide; said: { key: number; text: string } | null; onUndo: () => void;
   onDecide: (d: Decision) => void; onProtect: () => void; onPreview: () => void; onLike?: () => void;
 }) {
   const reduce = useReducedMotion();
   // The guide's hand leaves the moment the card is touched, and comes back if it is let go undecided.
   const [touched, setTouched] = useState(false);
+  // The photo large, to check its sharpness (ui/Zoom): it grows out of the card.
+  const [zoom, setZoom] = useState(false);
   const x = useMotionValue(0);
   const y = useMotionValue(0);
   const rotate = useTransform(x, [-240, 0, 240], [-10, 0, 10]);
@@ -219,15 +225,17 @@ function Card({ t, item, photo, debug, bin, guide, said, onDecide, onProtect, on
   const trust = item.suggest === 'delete' && item.trust ? trusts[item.trust] : '';
   const when = photo ? new Date(photo.t).toLocaleString(t.locale, { dateStyle: 'medium', timeStyle: 'short' }) : '';
 
-  const fling = (d: Decision) => {
+  /** The card leaves in the decision's direction — a spring that takes over the finger's speed (0 from a button or a key). */
+  const fling = (d: Decision, velocity = 0) => {
     tapMedium();
     if (d === 'delete') notifyWarning();
     if (reduce) { onDecide(d); return; }
-    const ease = [0.32, 0.72, 0, 1] as const;
+    const spring = { type: 'spring', bounce: 0, duration: 0.28, velocity } as const;
     const flight = d === 'later'
-      ? animate(y, -window.innerHeight, { duration: 0.22, ease })
-      : animate(x, d === 'delete' ? -window.innerWidth : window.innerWidth, { duration: 0.22, ease });
-    void flight.then(() => onDecide(d));
+      ? animate(y, -window.innerHeight, spring)
+      : animate(x, (d === 'delete' ? -1.15 : 1.15) * window.innerWidth, spring);
+    // The decision is taken once the card is clearly on its way, not after the spring has fully settled.
+    window.setTimeout(() => { flight.stop(); onDecide(d); }, 200);
   };
 
   return (
@@ -249,7 +257,8 @@ function Card({ t, item, photo, debug, bin, guide, said, onDecide, onProtect, on
           <Shield className="w-4 h-4" strokeWidth={2.4} aria-hidden="true" />{t.protect}
         </button>
       </div>
-      <div className="relative flex-1 min-h-[300px]">
+      {/* Full-bleed: the photo takes the whole width of the screen. */}
+      <div className="relative flex-1 min-h-[300px] -mx-[12px]">
       <motion.div
         drag
         dragSnapToOrigin
@@ -259,15 +268,15 @@ function Card({ t, item, photo, debug, bin, guide, said, onDecide, onProtect, on
         onDragEnd={(_, info) => {
           setTouched(false);
           const up = -info.offset.y > Math.abs(info.offset.x);
-          if (up && (info.offset.y < -THRESHOLD || info.velocity.y < -700)) fling('later');
-          else if (info.offset.x < -THRESHOLD || info.velocity.x < -700) fling('delete');
-          else if (info.offset.x > THRESHOLD || info.velocity.x > 700) fling('keep');
+          if (up && (info.offset.y < -THRESHOLD || info.velocity.y < -700)) fling('later', info.velocity.y);
+          else if (info.offset.x < -THRESHOLD || info.velocity.x < -700) fling('delete', info.velocity.x);
+          else if (info.offset.x > THRESHOLD || info.velocity.x > 700) fling('keep', info.velocity.x);
         }}
-        className="absolute inset-0 rounded-md overflow-hidden bg-surface-2 touch-none cursor-grab active:cursor-grabbing"
+        className="absolute inset-0 overflow-hidden bg-surface-2 touch-none cursor-grab active:cursor-grabbing"
         role="img"
         aria-label={[when, chip, trust, reason].filter(Boolean).join('. ')}
       >
-        <div className="absolute inset-0"><Thumb id={item.id} size={LARGE} className="!rounded-none !object-contain !bg-transparent" /></div>
+        <motion.div layoutId={reduce ? undefined : zoomLayoutId(item.id)} className="absolute inset-0"><Thumb id={item.id} size={LARGE} className="!rounded-none !object-contain !bg-transparent" /></motion.div>
         <motion.span style={{ opacity: delOpacity }} className={`absolute top-6 right-6 px-4 py-2 rounded-[12px] border-[3px] bg-surface text-heading font-extrabold rotate-[8deg] ${bin ? 'border-neg text-neg' : 'border-fg text-fg'}`} aria-hidden="true">
           {bin ? t.delete : t.aside}
         </motion.span>
@@ -309,28 +318,54 @@ function Card({ t, item, photo, debug, bin, guide, said, onDecide, onProtect, on
             <Play className="w-8 h-8 ms-1" fill="currentColor" strokeWidth={0} aria-hidden="true" />
           </button>
         )}
+        {!photo?.video && (
+          <button
+            type="button" aria-label={t.zoomOpen} title={t.zoomOpen}
+            onPointerDownCapture={e => e.stopPropagation()}
+            onClick={() => { tapLight(); setZoom(true); }}
+            className="absolute top-3 end-3 w-12 h-12 rounded-full glass text-fg inline-flex items-center justify-center press focus-visible:ring-focus"
+          >
+            <ZoomIn className="w-5 h-5" aria-hidden="true" />
+          </button>
+        )}
         {debug && photo && (
-          <span className="absolute top-3 end-3 px-2 py-1 rounded-full bg-veil text-on-color text-micro font-bold num">
+          <span className="absolute top-[68px] end-3 px-2 py-1 rounded-full bg-veil text-on-color text-micro font-bold num">
             {fmt(t.sharpnessDebug, { s: photo.sharp ?? '–', c: photo.contrast ?? '–' })}
           </span>
         )}
       </motion.div>
       {guide?.gesture && <GestureHint key={guide.gesture} t={t} gesture={guide.gesture} hidden={touched} onSkip={guide.onSkip} />}
-      {/* What the last decision did, in a word (the guide only): read out, and gone after a moment. */}
-      <div className="absolute top-14 inset-x-3 z-20 flex justify-center pointer-events-none" role="status">
+      {/* What the last decision did, in a word, with its undo: read out, and gone with the next decision or after a moment. */}
+      <div className="absolute top-[68px] inset-x-3 z-20 flex justify-center pointer-events-none" role="status">
         <AnimatePresence>
           {said && (
             <motion.span
               key={said.key}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full glass text-fg text-label font-bold wrap-compound"
+              className="pointer-events-auto max-w-full inline-flex items-center gap-1.5 ps-3.5 pe-1 py-1 rounded-full glass text-fg text-label font-bold"
               initial={{ opacity: 0, y: -8, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, transition: { duration: 0.15 } }}
               transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
             >
-              <Check className="w-4 h-4 shrink-0 text-keep" strokeWidth={3} aria-hidden="true" />{said.text}
+              <Check className="w-4 h-4 shrink-0 text-keep" strokeWidth={3} aria-hidden="true" />
+              <span className="min-w-0 wrap-compound py-1.5">{said.text}</span>
+              <button
+                type="button" onPointerDownCapture={e => e.stopPropagation()} onClick={() => { tapLight(); onUndo(); }}
+                className="shrink-0 min-h-[40px] px-3 rounded-full text-accent font-bold active:bg-accent-dim press focus-visible:ring-focus hit-44"
+              >
+                {t.undo}
+              </button>
             </motion.span>
           )}
         </AnimatePresence>
       </div>
+      <AnimatePresence>
+        {zoom && (
+          <ZoomView
+            key="zoom" id={item.id} alt={when}
+            labels={{ close: t.close, zoomIn: t.zoomIn, zoomOut: t.zoomOut, hint: t.zoomHint }}
+            onClose={() => setZoom(false)}
+          />
+        )}
+      </AnimatePresence>
       </div>
     </div>
   );

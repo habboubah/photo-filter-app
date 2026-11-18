@@ -730,6 +730,18 @@ export const ar: Strings = {
   howTipsDone: 'ستظهر التلميحات من جديد.',
   howGuideDone: 'ستظهر إرشادات السحب في مراجعتك القادمة.',
   howHideDone: 'أُخفيت كل التلميحات.',
+
+  // Home's greeting (src/logic/greeting.ts)
+  greetMorning: 'صباح الخير',
+  greetDay: 'نهارك سعيد',
+  greetEvening: 'مساء الخير',
+  homeSub: '{files} · كل شيء يبقى على جهازك',
+
+  // Zoom: a photo large, to check its sharpness (src/ui/Zoom.tsx)
+  zoomOpen: 'عرض مكبَّر',
+  zoomHint: 'المس للتكبير واسحب للتحريك',
+  zoomIn: 'تكبير',
+  zoomOut: 'تصغير',
 };
 
 /** Android's wording (folders, the Trash, the phone). */

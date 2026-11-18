@@ -451,6 +451,13 @@
   & > :nth-child(n + 5) { animation-delay: 160ms; }
 }
 
+/* A skeleton: the shape of what is loading, breathing softly. Opacity only. */
+@keyframes breathe {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+@utility skeleton { animation: breathe 1600ms ease-in-out infinite; }
+
 /* The scan's progress track: a bar that fills, and a soft shimmer while the
    total is still unknown. Transform only. */
 @keyframes sweep {

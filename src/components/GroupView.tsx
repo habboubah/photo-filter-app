@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { motion } from 'motion/react';
-import { Archive, Check, ChevronLeft, ChevronRight, Play, Shield, Sparkles } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
+import { Archive, Check, ChevronLeft, ChevronRight, Play, Shield, Sparkles, ZoomIn } from 'lucide-react';
 import type { Group, Photo } from '../types';
 import type { Detail, Verdict } from '../logic/confidence';
 import { type KeeperWhy, keeperWhy } from '../logic/explain';
@@ -10,6 +10,7 @@ import { Button } from '../ui/Button';
 import { Thumb } from '../ui/Photo';
 import { LARGE } from '../thumbs';
 import { tapLight } from '../ui/haptics';
+import { ZoomView, zoomLayoutId } from '../ui/Zoom';
 import { PlayOver, usePlayer } from '../ui/play';
 
 /**
@@ -46,6 +47,8 @@ export function GroupView({ t, group, byId, kept, verdicts, debug, onBack, onPic
 
   const player = usePlayer();
   const [looking, setLooking] = useState(group.best);
+  // The photo looked at, large (ui/Zoom): to check sharpness and faces before choosing.
+  const [zoom, setZoom] = useState(false);
   const focus = group.ids.includes(looking) ? looking : group.best;
   const at = group.ids.indexOf(focus);
   const move = (by: number) => {
@@ -117,8 +120,27 @@ export function GroupView({ t, group, byId, kept, verdicts, debug, onBack, onPic
             style={{ aspectRatio: ratio }}
             className="max-h-[56vh] w-full mx-auto touch-pan-y"
           >
-            <Thumb id={focus} size={LARGE} alt={`${when(focus)}. ${state(focus)}`} className="!rounded-none !object-contain !bg-transparent" />
+            <motion.div layoutId={zoomLayoutId(focus)} className="w-full h-full">
+              <Thumb id={focus} size={LARGE} alt={`${when(focus)}. ${state(focus)}`} className="!rounded-none !object-contain !bg-transparent" />
+            </motion.div>
           </motion.div>
+          {!byId.get(focus)?.video && (
+            <button
+              type="button" aria-label={t.zoomOpen} title={t.zoomOpen} onClick={() => { tapLight(); setZoom(true); }}
+              className="absolute bottom-2 start-2 w-12 h-12 rounded-full glass text-fg inline-flex items-center justify-center press focus-visible:ring-focus"
+            >
+              <ZoomIn className="w-5 h-5" aria-hidden="true" />
+            </button>
+          )}
+          <AnimatePresence>
+            {zoom && (
+              <ZoomView
+                key="zoom" id={focus} alt={`${when(focus)}. ${state(focus)}`}
+                labels={{ close: t.close, zoomIn: t.zoomIn, zoomOut: t.zoomOut, hint: t.zoomHint }}
+                onClose={() => setZoom(false)}
+              />
+            )}
+          </AnimatePresence>
           <PlayOver id={focus} />
           <div className="absolute top-3 start-3 end-3 flex flex-wrap gap-1.5 pointer-events-none" aria-hidden="true">
             {fate(focus) === 'keeps' && (
