@@ -18,7 +18,7 @@ import { PlayOver } from '../ui/play';
  * deleting here: a tap opens one file with what can be done with it — make a
  * video smaller (a copy, the original stays until it is deleted), or delete it.
  */
-export function LargeView({ t, photos, videosOnly, canCompress, sort, onSort, onBack, onReview, onCompress, onDelete }: {
+export function LargeView({ t, photos, videosOnly, canCompress, sort, onSort, onBack, onReview, onCompress, onDelete, onAside }: {
   t: Strings;
   photos: Photo[];
   /** Every video of the library (the analysis' "Videos"), not the large files: its own title, no filter. */
@@ -30,12 +30,19 @@ export function LargeView({ t, photos, videosOnly, canCompress, sort, onSort, on
   onReview: (photos: Photo[]) => void;
   onCompress: (photo: Photo) => void;
   onDelete: (photo: Photo) => void;
+  /** The selected files into "Zum Löschen vorgemerkt" (nothing is deleted). */
+  onAside: (photos: Photo[]) => void;
 }) {
   const [filter, setFilter] = useState<LargeFilter>('all');
   const [open, setOpen] = useState<Photo | null>(null);
+  // Files picked by their circle, to mark for deletion in one go (a tap elsewhere on a tile still opens it).
+  const [picked, setPicked] = useState<Set<string>>(() => new Set());
+  const toggle = (id: string) => setPicked(old => { const next = new Set(old); if (next.has(id)) next.delete(id); else next.add(id); return next; });
   const list = sortPhotos(filter === 'all' ? photos : photos.filter(p => (filter === 'videos' ? p.video : !p.video)), sort);
   const byId = new Map(list.map(p => [p.id, p]));
   const total = list.reduce((s, p) => s + p.bytes, 0);
+  const chosen = list.filter(p => picked.has(p.id));
+  const chosenBytes = chosen.reduce((s, p) => s + p.bytes, 0);
   const approx = list.some(p => !p.exact);
   const when = (p: Photo) => new Date(p.t).toLocaleString(t.locale, { dateStyle: 'medium', timeStyle: 'short' });
   const size = (p: Photo) => `${p.exact ? '' : '≈ '}${bytes(t, p.bytes)}`;
@@ -54,6 +61,8 @@ export function LargeView({ t, photos, videosOnly, canCompress, sort, onSort, on
           ids={list.map(p => p.id)}
           label={id => { const p = byId.get(id)!; return `${when(p)}, ${size(p)}${p.video ? `, ${t.videoBadge} ${duration(p.dur ?? 0)}` : ''}`; }}
           onOpen={id => setOpen(byId.get(id) ?? null)}
+          selected={picked} onSelect={toggle}
+          selectLabel={id => { const p = byId.get(id)!; return fmt(t.selectTile, { item: `${when(p)}, ${size(p)}` }); }}
           overlay={id => {
             const p = byId.get(id)!;
             return (
@@ -70,7 +79,19 @@ export function LargeView({ t, photos, videosOnly, canCompress, sort, onSort, on
         />
       )}
       {list.length > 0 && (
-        <Dock><Button full size="lg" onClick={() => onReview(list)}>{`${t.reviewGroup} · ${plural(t, 'files', list.length)} · ${approx ? '≈ ' : ''}${bytes(t, total)}`}</Button></Dock>
+        <Dock>
+          {chosen.length > 0 ? (
+            <>
+              {/* Into "Zum Löschen vorgemerkt": nothing is deleted here, so teal and the archive, never red. */}
+              <Button full size="lg" icon={Archive} onClick={() => { onAside(chosen); setPicked(new Set()); }}>
+                {`${t.aside} · ${plural(t, 'files', chosen.length)} · ${bytes(t, chosenBytes)}`}
+              </Button>
+              <Button full variant="ghost" className="mt-1" onClick={() => setPicked(new Set())}>{t.selectionClear}</Button>
+            </>
+          ) : (
+            <Button full size="lg" onClick={() => onReview(list)}>{`${t.reviewGroup} · ${plural(t, 'files', list.length)} · ${approx ? '≈ ' : ''}${bytes(t, total)}`}</Button>
+          )}
+        </Dock>
       )}
 
       <Sheet open={!!open} title={open?.video ? t.videoBadge : t.photoBadge} closeLabel={t.close} onClose={() => setOpen(null)}>

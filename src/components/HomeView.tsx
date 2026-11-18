@@ -252,7 +252,15 @@ export function HomeView(p: Props) {
         />
       )}
 
-      {/* The one next step first: the obvious thing to do. Then what waits to be confirmed, then the overview. */}
+      {/* First, what could go, in one place: the space, the bar of the library, and its categories as rows — each row's dot is its segment in the bar. */}
+      {has && (summary || cats.length > 0 || done.length > 0) && (
+        <CleanupSection
+          t={t} summary={summary} cats={cats} done={done} bar={bar} countOf={c => categoryCount(t, c)} library={p.analysis} storage={p.storage} freedBytes={p.freedBytes}
+          partial={analysing} onOpen={p.onCleanup} onPhotos={p.onMonths} onVideos={p.onVideos}
+        />
+      )}
+
+      {/* Then the one next step, then what waits to be confirmed. */}
       {has && step && <NextStep step={step} />}
 
       {has && p.bin.count > 0 && (
@@ -262,25 +270,10 @@ export function HomeView(p: Props) {
         </section>
       )}
 
-      {/* What could go, in one place: the space, the bar of the library, and its categories as rows — each row's dot is its segment in the bar. */}
-      {has && (summary || cats.length > 0 || done.length > 0) && (
-        <CleanupSection
-          t={t} summary={summary} cats={cats} done={done} bar={bar} countOf={c => categoryCount(t, c)} library={p.analysis} storage={p.storage} freedBytes={p.freedBytes}
-          partial={analysing} onOpen={p.onCleanup} onPhotos={p.onMonths} onVideos={p.onVideos}
-        />
-      )}
-
-      {has && (showLater || showMonths) && (
-        <section aria-labelledby="continue-h">
-          <SectionHead id="continue-h" title={t.continueTitle} />
+      {has && (
+        <section aria-labelledby="tools-h">
+          <SectionHead id="tools-h" title={t.moreSpaceTitle} />
           <Group>
-            {showLater && (
-              <Row
-                label={t.laterCard} sub={`${plural(t, 'photos', p.later.count)} · ${t.laterCardBody}`} onClick={p.onLater}
-                leading={p.later.cover ? <RowPhoto id={p.later.cover} /> : <IconTile icon={Clock} hue="sand" />} lead={p.later.cover ? 48 : undefined}
-                trailing={<Next />}
-              />
-            )}
             {showMonths && (
               <Row
                 label={t.monthsCard} onClick={p.onMonths}
@@ -294,14 +287,13 @@ export function HomeView(p: Props) {
                 trailing={<Next />}
               />
             )}
-          </Group>
-        </section>
-      )}
-
-      {has && (
-        <section aria-labelledby="tools-h">
-          <SectionHead id="tools-h" title={t.moreSpaceTitle} />
-          <Group>
+            {showLater && (
+              <Row
+                label={t.laterCard} sub={`${plural(t, 'photos', p.later.count)} · ${t.laterCardBody}`} onClick={p.onLater}
+                leading={p.later.cover ? <RowPhoto id={p.later.cover} /> : <IconTile icon={Clock} hue="sand" />} lead={p.later.cover ? 48 : undefined}
+                trailing={<Next />}
+              />
+            )}
             {tools.map(x => (
               <Row
                 key={x.key} label={x.label} sub={x.value} onClick={x.onClick}

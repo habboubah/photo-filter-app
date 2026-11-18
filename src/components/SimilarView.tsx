@@ -1,4 +1,4 @@
-import { ChevronRight, Star } from 'lucide-react';
+import { Archive, Check, ChevronRight, Star } from 'lucide-react';
 import type { Group, GroupKind, Photo } from '../types';
 import { Strings, fmt, num, plural } from '../translations';
 import { Empty, Screen } from '../ui/Screen';
@@ -8,8 +8,15 @@ import { tapLight } from '../ui/haptics';
 /** How many groups are drawn at once; more come as the list is scrolled to its end. */
 const PAGE = 40;
 
-/** The near-identical photos, the duplicates (photos) or the similar videos, newest first: each group a strip with the one to keep marked. */
-export function SimilarView({ t, kind = 'similar', groups, byId, kept, shown, onMore, onBack, onOpen }: {
+/**
+ * The near-identical photos, the duplicates (photos) or the similar videos,
+ * newest first: each group a strip with the one to keep marked. Each card
+ * settles its group in one tap, without opening it: *Alle behalten* (the
+ * group leaves the list and is not suggested again) or *Die anderen
+ * vormerken* (the others go to *Zum Löschen vorgemerkt*; favourites and kept
+ * photos stay) — both with undo. A tap on the photos opens the group to compare.
+ */
+export function SimilarView({ t, kind = 'similar', groups, byId, kept, shown, onMore, onBack, onOpen, onKeepAll, onAsideOthers }: {
   t: Strings;
   kind?: GroupKind;
   groups: Group[];
@@ -19,6 +26,10 @@ export function SimilarView({ t, kind = 'similar', groups, byId, kept, shown, on
   onMore: () => void;
   onBack: () => void;
   onOpen: (key: string) => void;
+  /** Keeps every photo of the group (it leaves the list). */
+  onKeepAll: (group: Group) => void;
+  /** Marks the group's others for deletion (not the one to keep, no favourite, nothing kept). */
+  onAsideOthers: (group: Group, ids: string[]) => void;
 }) {
   const dup = kind === 'duplicate';
   const videos = kind === 'lookalike';
@@ -29,14 +40,16 @@ export function SimilarView({ t, kind = 'similar', groups, byId, kept, shown, on
       ? { title: t.duplicatesTitle, intro: t.duplicatesIntro, none: t.noDuplicates, noneBody: t.noDuplicatesBody }
       : { title: t.similarTitle, intro: t.similarIntro, none: t.noGroups, noneBody: t.noGroupsBody };
   const card = (g: Group) => {
-    const extra = g.ids.filter(id => id !== g.best && !kept.has(id) && !byId.get(id)?.fav).length;
+    const others = g.ids.filter(id => id !== g.best && !kept.has(id) && !byId.get(id)?.fav);
+    const extra = others.length;
     const when = new Date(byId.get(g.ids[0])?.t ?? 0).toLocaleString(t.locale, { dateStyle: 'medium', timeStyle: 'short' });
     const count = plural(t, g.kind === 'lookalike' || byId.get(g.ids[0])?.video ? 'videos' : 'photos', g.ids.length);
     return (
+      <div key={g.key} className="rounded-md card p-[10px]">
       <button
-        key={g.key} type="button" onClick={() => { tapLight(); onOpen(g.key); }}
+        type="button" onClick={() => { tapLight(); onOpen(g.key); }}
         aria-label={`${when}, ${count}`}
-        className="w-full rounded-md card p-[10px] text-start press focus-visible:ring-focus"
+        className="w-full rounded-[12px] text-start press focus-visible:ring-focus"
       >
         <div className="flex gap-[4px] overflow-hidden rounded-[12px]">
           {g.ids.slice(0, 4).map(id => (
@@ -60,6 +73,23 @@ export function SimilarView({ t, kind = 'similar', groups, byId, kept, shown, on
           <ChevronRight className="w-5 h-5 text-fg-faint rtl:rotate-180" aria-hidden="true" />
         </div>
       </button>
+      {/* Settle it here: keep all, or mark the others — the same two choices as inside the group. */}
+      <div className="grid grid-cols-2 gap-2 pt-2.5">
+        <button
+          type="button" onClick={() => { tapLight(); onKeepAll(g); }}
+          className="min-h-control px-3 rounded-full glass-flat text-label font-semibold text-fg inline-flex items-center justify-center gap-1.5 press focus-visible:ring-focus"
+        >
+          <Check className="w-4 h-4 shrink-0 text-keep" strokeWidth={3} aria-hidden="true" /><span className="wrap-compound">{t.keepAll}</span>
+        </button>
+        <button
+          type="button" disabled={!extra} onClick={() => { tapLight(); onAsideOthers(g, others); }}
+          aria-label={`${t.groupAsideOthers}, ${plural(t, g.kind === 'lookalike' ? 'videos' : 'photos', extra)}`}
+          className="min-h-control px-3 rounded-full bg-accent-dim text-accent text-label font-bold inline-flex items-center justify-center gap-1.5 press focus-visible:ring-focus disabled:opacity-40"
+        >
+          <Archive className="w-4 h-4 shrink-0" strokeWidth={2.4} aria-hidden="true" /><span className="wrap-compound">{fmt(t.groupAsideShort, { n: num(t, extra) })}</span>
+        </button>
+      </div>
+      </div>
     );
   };
   return (
