@@ -52,7 +52,7 @@ export function BinView({ t, photos, onBack, onRestore, onDelete, onReview }: {
     >
       {photos.length === 0 ? <Empty emoji="📦" title={t.binEmpty} body={t.binEmptyBody} /> : (
         <>
-          <p className="px-1 pb-3 text-label text-fg-mute wrap-prose" aria-live="polite">{picked.length ? plural(t, 'binPicked', picked.length) : t.binTapHint}</p>
+          <p data-tip="tip.binScreen" className="px-1 pb-3 text-label text-fg-mute wrap-prose" aria-live="polite">{picked.length ? plural(t, 'binPicked', picked.length) : t.binTapHint}</p>
           <PhotoGrid
             ids={ids(photos)}
             label={id => { const p = byId.get(id)!; return `${when(p)}, ${bytes(t, p.bytes)}, ${chosen.has(id) ? t.selected : t.notSelected}`; }}

@@ -402,7 +402,7 @@ function AsideCard({ t, bin, onClick }: { t: Strings; bin: Props['bin']; onClick
   const line = `${plural(t, 'photos', bin.count)} · ${bytes(t, bin.bytes)}`;
   return (
     <button
-      type="button" onClick={() => { tapLight(); onClick(); }} aria-label={`${t.binTitle}: ${line}. ${t.binCardBody}`}
+      type="button" data-tip="tip.bin" onClick={() => { tapLight(); onClick(); }} aria-label={`${t.binTitle}: ${line}. ${t.binCardBody}`}
       className="w-full rounded-md card p-3 text-start press focus-visible:ring-focus"
     >
       <span className="grid grid-cols-4 gap-[4px]" aria-hidden="true">

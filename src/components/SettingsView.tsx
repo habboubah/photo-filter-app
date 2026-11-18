@@ -64,9 +64,11 @@ export function SettingsView(p: Props) {
         </Group>
       )}
 
+      <div data-tip="tip.reminder">
       <Group title={t.reminderSection}>
         <SwitchRow label={t.reminderRow} sub={t.reminderSub} checked={p.reminder} onChange={p.onReminder} />
       </Group>
+      </div>
 
       {(p.onSale || p.owned) && (
         <Group title={t.unlockSection}>

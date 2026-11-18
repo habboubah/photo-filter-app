@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { animate, motion, useMotionValue, useReducedMotion, useTransform } from 'motion/react';
-import { Archive, Check, Clock, FolderInput, Images, Play, Plus, Shield, Trash2, Undo2, X } from 'lucide-react';
+import { AnimatePresence, animate, motion, useMotionValue, useReducedMotion, useTransform } from 'motion/react';
+import { Archive, Check, ChevronRight, Clock, FolderInput, Images, Play, Plus, Shield, Trash2, Undo2, X } from 'lucide-react';
 import type { Confidence, Photo } from '../types';
 import { Strings, bytes, fmt, num, plural } from '../translations';
 import { Decision, ReviewItem, Session, albumPlan, deleteSplit, isNewAlbum, laterIds, newAlbumKey, toDelete } from '../logic/review';
@@ -13,6 +13,9 @@ import { Sheet } from '../ui/Sheet';
 import { Field } from '../ui/Field';
 import { LARGE, thumbUrl } from '../thumbs';
 import { notifyWarning, tapLight, tapMedium } from '../ui/haptics';
+import { CountUp, SETTLE } from '../ui/FirstRun';
+import { GESTURE_OF, GestureHint, type Guide, saidFor } from './ReviewGuide';
+import { ProtectInfo } from './SafetyNets';
 
 /** How far a card is dragged before it counts as a decision. */
 const THRESHOLD = 110;
@@ -26,7 +29,7 @@ const THRESHOLD = 110;
 /** What the end screen writes: the photos marked for deleting, and the photos filed into albums (Session.albums). */
 export interface ReviewOutcome { deleteIds: string[]; albums: { album: string; ids: string[] }[] }
 
-export function ReviewView({ t, session, finished, byId, debug, bin = false, albums, android, onDecide, onFile, onProtect, onPreview, onLike, onUndo, onFinish, onDelete, onClose }: {
+export function ReviewView({ t, session, finished, byId, debug, bin = false, albums, android, guide, protectNote, onProtectNote, onDecide: decideRaw, onFile, onProtect, onPreview, onLike, onUndo, onFinish, onDelete, onClose }: {
   t: Strings;
   session: Session;
   finished: boolean;
@@ -38,6 +41,14 @@ export function ReviewView({ t, session, finished, byId, debug, bin = false, alb
   albums: { id: string; title: string }[];
   /** Android: filing moves the photos into the folder (said on the end screen). */
   android: boolean;
+  /**
+   * The guided first review (docs/DESIGN.md, "The first run"): the gesture hinted over the card until the
+   * user has done it once, each decision confirmed with a word. Absent once the three were done, and from the bin.
+   */
+  guide?: Guide;
+  /** The first summary also says once that favourites are never suggested, and how to protect more. */
+  protectNote?: boolean;
+  onProtectNote?: () => void;
   onDecide: (d: Decision) => void;
   /** An album chip: the photo kept and filed into it (or `new:<title>`). */
   /** Absent while albums are not offered (src/logic/allowance.ts): no chips then. */
@@ -61,6 +72,20 @@ export function ReviewView({ t, session, finished, byId, debug, bin = false, alb
   const [title, setTitle] = useState('');
   const create = () => { const name = title.trim(); if (name) onFile?.(newAlbumKey(name)); setNaming(false); setTitle(''); };
   const done = finished || !item;
+  // While the guide runs, every decision is named right after it ("Vorgemerkt – noch nicht gelöscht"), on top of the next card.
+  const [said, setSaid] = useState<{ key: number; text: string } | null>(null);
+  useEffect(() => {
+    if (!said) return;
+    const timer = window.setTimeout(() => setSaid(null), 1900);
+    return () => window.clearTimeout(timer);
+  }, [said]);
+  const onDecide = (d: Decision) => {
+    if (guide) {
+      if (guide.gesture) setSaid({ key: Date.now(), text: saidFor(t, d) });
+      guide.onDid(GESTURE_OF[d]);
+    }
+    decideRaw(d);
+  };
   // What the photos marked so far would free: counts up as you swipe left.
   const marked = toDelete(session).reduce((sum, id) => sum + (byId.get(id)?.bytes ?? 0), 0);
 
@@ -104,7 +129,7 @@ export function ReviewView({ t, session, finished, byId, debug, bin = false, alb
         </button>
       </header>
       {done
-        ? <Summary t={t} session={session} byId={byId} bin={bin} chips={chips} android={android} onDelete={onDelete} onClose={onClose} />
+        ? <Summary t={t} session={session} byId={byId} bin={bin} chips={chips} android={android} protectNote={!!protectNote && !bin} onProtectNote={onProtectNote} onDelete={onDelete} onClose={onClose} />
         : (
           <>
             <div className="px-[12px] pt-1">
@@ -113,7 +138,7 @@ export function ReviewView({ t, session, finished, byId, debug, bin = false, alb
               </div>
             </div>
             <Card
-              key={item.id} t={t} item={item} photo={byId.get(item.id)} debug={debug} bin={bin} onDecide={onDecide} onProtect={() => onProtect(item.id)} onPreview={() => onPreview(item.id)}
+              key={item.id} t={t} item={item} photo={byId.get(item.id)} debug={debug} bin={bin} guide={guide} said={said} onDecide={onDecide} onProtect={() => onProtect(item.id)} onPreview={() => onPreview(item.id)}
               onLike={onLike ? () => onLike(item.id) : undefined}
             />
             {onFile && <div role="group" aria-label={t.fileIntoAlbum} className="flex gap-2 overflow-x-auto no-scrollbar px-[12px] pt-3 pb-1">
@@ -140,7 +165,7 @@ export function ReviewView({ t, session, finished, byId, debug, bin = false, alb
             <div className="px-5 pb-safe-8 pt-3">
               {/* Physical, like the swipe: set aside on the left, keep on the right — also right to left.
                   Setting aside is quiet (nothing is deleted); red only where it deletes for real (from "Zum Löschen vorgemerkt"). */}
-              <div dir="ltr" className="flex justify-center items-end gap-6">
+              <div dir="ltr" data-tip="tip.buttons" className="flex justify-center items-end gap-6">
                 {bin
                   ? <RoundButton label={t.delete} tone="neg" icon={Trash2} onClick={() => onDecide('delete')} />
                   : <RoundButton label={t.aside} tone="aside" icon={Archive} onClick={() => onDecide('delete')} />}
@@ -161,10 +186,13 @@ export function ReviewView({ t, session, finished, byId, debug, bin = false, alb
   );
 }
 
-function Card({ t, item, photo, debug, bin, onDecide, onProtect, onPreview, onLike }: {
-  t: Strings; item: ReviewItem; photo?: Photo; debug: boolean; bin: boolean; onDecide: (d: Decision) => void; onProtect: () => void; onPreview: () => void; onLike?: () => void;
+function Card({ t, item, photo, debug, bin, guide, said, onDecide, onProtect, onPreview, onLike }: {
+  t: Strings; item: ReviewItem; photo?: Photo; debug: boolean; bin: boolean; guide?: Guide; said: { key: number; text: string } | null;
+  onDecide: (d: Decision) => void; onProtect: () => void; onPreview: () => void; onLike?: () => void;
 }) {
   const reduce = useReducedMotion();
+  // The guide's hand leaves the moment the card is touched, and comes back if it is let go undecided.
+  const [touched, setTouched] = useState(false);
   const x = useMotionValue(0);
   const y = useMotionValue(0);
   const rotate = useTransform(x, [-240, 0, 240], [-10, 0, 10]);
@@ -208,7 +236,7 @@ function Card({ t, item, photo, debug, bin, onDecide, onProtect, onPreview, onLi
       <div className="flex items-start gap-2 pb-2.5">
         <div className="min-w-0 flex-1 flex flex-wrap items-center gap-x-2 gap-y-1">
           {chip && (
-            <span className={`inline-flex items-center px-3 py-1 rounded-full text-caption font-extrabold ${item.suggest === 'delete' ? (bin ? 'bg-neg-dim text-neg' : 'bg-surface-2 text-fg') : 'bg-keep-dim text-keep'}`}>
+            <span data-tip="tip.suggest" className={`inline-flex items-center px-3 py-1 rounded-full text-caption font-extrabold ${item.suggest === 'delete' ? (bin ? 'bg-neg-dim text-neg' : 'bg-surface-2 text-fg') : 'bg-keep-dim text-keep'}`}>
               {chip}
             </span>
           )}
@@ -221,18 +249,21 @@ function Card({ t, item, photo, debug, bin, onDecide, onProtect, onPreview, onLi
           <Shield className="w-4 h-4" strokeWidth={2.4} aria-hidden="true" />{t.protect}
         </button>
       </div>
+      <div className="relative flex-1 min-h-[300px]">
       <motion.div
         drag
         dragSnapToOrigin
         dragElastic={0.9}
         style={{ x, y, rotate }}
+        onDragStart={() => setTouched(true)}
         onDragEnd={(_, info) => {
+          setTouched(false);
           const up = -info.offset.y > Math.abs(info.offset.x);
           if (up && (info.offset.y < -THRESHOLD || info.velocity.y < -700)) fling('later');
           else if (info.offset.x < -THRESHOLD || info.velocity.x < -700) fling('delete');
           else if (info.offset.x > THRESHOLD || info.velocity.x > 700) fling('keep');
         }}
-        className="relative flex-1 min-h-[300px] rounded-md overflow-hidden bg-surface-2 touch-none cursor-grab active:cursor-grabbing"
+        className="absolute inset-0 rounded-md overflow-hidden bg-surface-2 touch-none cursor-grab active:cursor-grabbing"
         role="img"
         aria-label={[when, chip, trust, reason].filter(Boolean).join('. ')}
       >
@@ -284,6 +315,23 @@ function Card({ t, item, photo, debug, bin, onDecide, onProtect, onPreview, onLi
           </span>
         )}
       </motion.div>
+      {guide?.gesture && <GestureHint key={guide.gesture} t={t} gesture={guide.gesture} hidden={touched} onSkip={guide.onSkip} />}
+      {/* What the last decision did, in a word (the guide only): read out, and gone after a moment. */}
+      <div className="absolute top-14 inset-x-3 z-20 flex justify-center pointer-events-none" role="status">
+        <AnimatePresence>
+          {said && (
+            <motion.span
+              key={said.key}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full glass text-fg text-label font-bold wrap-compound"
+              initial={{ opacity: 0, y: -8, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, transition: { duration: 0.15 } }}
+              transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
+            >
+              <Check className="w-4 h-4 shrink-0 text-keep" strokeWidth={3} aria-hidden="true" />{said.text}
+            </motion.span>
+          )}
+        </AnimatePresence>
+      </div>
+      </div>
     </div>
   );
 }
@@ -310,10 +358,16 @@ function RoundButton({ label, tone, icon: Icon, onClick }: { label: string; tone
   );
 }
 
-function Summary({ t, session, byId, bin, chips, android, onDelete, onClose }: {
+function Summary({ t, session, byId, bin, chips, android, protectNote, onProtectNote, onDelete, onClose }: {
   t: Strings; session: Session; byId: Map<string, Photo>; bin: boolean; chips: { id: string; title: string }[]; android: boolean;
+  protectNote: boolean; onProtectNote?: () => void;
   onDelete: (outcome: ReviewOutcome) => void; onClose: () => void;
 }) {
+  // The note about protection belongs to the first summary: it stays while this one is open, and counts as seen from now on.
+  const [note] = useState(protectNote);
+  const [protectOpen, setProtectOpen] = useState(false);
+  useEffect(() => { if (note) onProtectNote?.(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const keptCount = session.items.filter(i => session.decisions[i.id] === 'keep').length;
   const ids = toDelete(session);
   const plan = albumPlan(session);
   const filed = plan.reduce((n, a) => n + a.ids.length, 0);
@@ -325,10 +379,17 @@ function Summary({ t, session, byId, bin, chips, android, onDelete, onClose }: {
   const sizeOf = (list: string[]) => list.reduce((s, id) => s + (byId.get(id)?.bytes ?? 0), 0);
   return (
     <main className="flex-1 flex flex-col px-6 pb-safe-8 pt-6">
+      {/* Done, calmly: a soft check, then the figures count up. No confetti, nothing to collect. */}
+      <motion.span
+        className="w-12 h-12 rounded-full bg-keep text-keep-ink sheen inline-flex items-center justify-center mb-4" aria-hidden="true"
+        initial={{ scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ ...SETTLE, duration: 0.5 }}
+      >
+        <Check className="w-6 h-6" strokeWidth={2.8} />
+      </motion.span>
       <h1 className="title-face text-title font-bold text-fg">{t.reviewDoneTitle}</h1>
       {ids.length > 0 && (
         <div className="mt-4">
-          <p className="text-display text-fg"><BigNumber text={bytes(t, sizeOf(ids))} /></p>
+          <p className="text-display text-fg"><CountUp value={sizeOf(ids)} seconds={0.9} format={n => <BigNumber text={bytes(t, n)} />} /></p>
           <p className="text-label font-semibold text-fg-mute mt-1">{bin ? t.reviewDoneFree : t.reviewDoneAside}</p>
         </div>
       )}
@@ -340,7 +401,23 @@ function Summary({ t, session, byId, bin, chips, android, onDelete, onClose }: {
       {split.photos.length > 0 && split.videos.length > 0 && (
         <p className="text-body text-fg-mute wrap-prose num">{fmt(t.reviewDoneVideos, { videos: plural(t, 'videos', split.videos.length), size: bytes(t, sizeOf(split.videos)) })}</p>
       )}
-      {later > 0 && <p className="text-label text-accent font-bold num mt-1">{plural(t, 'laterSaved', later)}</p>}
+      {!bin && (keptCount > 0 || ids.length > 0 || later > 0) && (
+        <dl className="mt-5 grid grid-cols-3 gap-2" aria-label={t.summaryRecap}>
+          {[
+            { icon: Check, label: t.keep, n: keptCount, tone: 'text-keep' },
+            { icon: Archive, label: t.summaryMarked, n: ids.length, tone: 'text-fg' },
+            { icon: Clock, label: t.later, n: later, tone: 'text-accent' },
+          ].map(({ icon: Icon, label, n, tone }) => (
+            <div key={label} className="rounded-md card px-3 py-3 flex flex-col-reverse">
+              <dt className="flex items-center gap-1 text-caption text-fg-mute wrap-compound">
+                <Icon className={`w-3.5 h-3.5 shrink-0 ${tone}`} strokeWidth={2.8} aria-hidden="true" />{label}
+              </dt>
+              <dd className="title-face text-title2 font-bold text-fg num"><CountUp value={n} format={v => num(t, v)} /></dd>
+            </div>
+          ))}
+        </dl>
+      )}
+      {later > 0 && <p className="text-label text-accent font-bold num mt-3">{plural(t, 'laterSaved', later)}</p>}
       {restored > 0 && <p className="text-label text-keep font-bold num mt-1">{plural(t, 'binRestoreHint', restored)}</p>}
       {filed > 0 && (
         <div className="mt-5 rounded-md card p-4 space-y-1.5">
@@ -366,6 +443,21 @@ function Summary({ t, session, byId, bin, chips, android, onDelete, onClose }: {
           ))}
         </div>
       )}
+      {note && (
+        <button
+          type="button" onClick={() => { tapLight(); setProtectOpen(true); }}
+          className="mt-5 w-full rounded-md card p-4 flex items-center gap-3 text-start press focus-visible:ring-focus"
+        >
+          <span className="w-9 h-9 shrink-0 rounded-full bg-accent-dim text-accent inline-flex items-center justify-center" aria-hidden="true">
+            <Shield className="w-[18px] h-[18px]" strokeWidth={2.4} />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-label text-fg wrap-prose">{t.protectNote}</span>
+            <span className="block text-label font-bold text-accent mt-0.5">{t.protectNoteMore}</span>
+          </span>
+          <ChevronRight className="w-5 h-5 text-fg-faint shrink-0 rtl:rotate-180" aria-hidden="true" />
+        </button>
+      )}
       <div className="flex-1 min-h-8" />
       {ids.length > 0 && (
         <>
@@ -384,6 +476,9 @@ function Summary({ t, session, byId, bin, chips, android, onDelete, onClose }: {
         </Button>
       )}
       <Button full size="lg" variant="secondary" onClick={onClose}>{t.done}</Button>
+      <Sheet open={protectOpen} title={t.protectInfoTitle} closeLabel={t.close} onClose={() => setProtectOpen(false)}>
+        <ProtectInfo t={t} />
+      </Sheet>
     </main>
   );
 }

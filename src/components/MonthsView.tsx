@@ -35,7 +35,7 @@ export function MonthsView({ t, months, done, byId, shown, onMore, onBack, onOpe
         <span className="block mt-2 max-w-[220px]"><Progress thin value={pct / 100} label={pctText} /></span>
       </>}
     >
-      <div className="rounded-md card overflow-hidden divide-hairline-inset">
+      <div data-tip="tip.months" className="rounded-md card overflow-hidden divide-hairline-inset">
         {visible.map(m => {
           const isDone = done.has(m.key);
           const cover = m.ids.find(id => !byId.get(id)?.shot) ?? m.ids[0];

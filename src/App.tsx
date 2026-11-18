@@ -40,7 +40,9 @@ import { Confirm } from './ui/Sheet';
 import { notifySuccess, tapLight } from './ui/haptics';
 import { PermissionView } from './components/PermissionView';
 import { HomeView, categoryMeta, categoryWords } from './components/HomeView';
-import { MOMENTS, hasSeen } from './logic/firstRun';
+import { GESTURES, MOMENTS, hasSeen, nextGesture, nextTip } from './logic/firstRun';
+import { TIPS } from './tips';
+import { TipHost } from './ui/Tip';
 import { type FoundKey, nextStepKind, rankCategories } from './logic/nextStep';
 import { TabBar } from './ui/TabBar';
 
@@ -683,6 +685,25 @@ export default function App() {
     await store.accessGranted(a);
   };
 
+  /* ----------------------------------------------- the guide and the tips */
+
+  // The guided review (src/components/ReviewGuide.tsx): the gesture still to be done once, or null.
+  const teach = nextGesture(store.seen);
+  // An install that has gone through reviews before this version knows the gestures.
+  useEffect(() => {
+    if (store.stateReady && Object.keys(state.ledger).length > 0) store.markSeen(...GESTURES);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [store.stateReady]);
+  // The one tip that is due (src/tips.ts): the first unseen one of this screen whose moment has come.
+  const moments = new Set<string>();
+  const card = review && !review.finished ? review.session.items[review.session.index] : undefined;
+  if (card && !review?.bin && !teach) {
+    moments.add('gesturesLearned');
+    if (card.suggest !== 'none') moments.add('suggestionShown');
+  }
+  if (state.bin.length > 0) moments.add('somethingMarked');
+  const due = nextTip(TIPS, store.seen, screenKey, moments);
+
   /* ------------------------------------------------- home and the reveal */
 
   // What home's rows and the reveal after the first scan show: per category how much there is and a few of its photos.
@@ -762,6 +783,8 @@ export default function App() {
         <ReviewView
           t={t} session={review.session} finished={review.finished} byId={review.bin ? all.byId : byId} debug={store.debug} bin={review.bin}
           onDecide={onDecide} onUndo={onUndo} albums={chips} android={isAndroid()} onFile={onFile}
+          guide={review.bin || !teach ? undefined : { gesture: teach, onDid: g => store.markSeen(g), onSkip: () => store.markSeen(...GESTURES) }}
+          protectNote={!hasSeen(store.seen, MOMENTS.protect)} onProtectNote={() => store.markSeen(MOMENTS.protect)}
           onProtect={id => { store.protectPhotos([id], true); onDecide('keep'); show(t.protected); }}
           onPreview={player.play}
           onLike={review.bin ? undefined : id => { if (store.vectors.has(id)) setLikeId(id); else show(t.likeNone); }}
@@ -1231,6 +1254,8 @@ export default function App() {
           <Progress value={compressing?.progress ?? null} label={t.compressing} />
         </div>
       </Sheet>
+
+      <TipHost tip={due ? { id: due.id, text: due.text(t) } : null} label={t.tipLabel} gotIt={t.tipGotIt} onSeen={store.markSeen} />
 
       <Toast toast={toast} onDone={hide} raised={screen === 'bin' ? 'high' : ['trip', 'group', 'blurry', 'screenshots', 'utility', 'quickClean', 'large', 'live', 'compress', 'cleanup', 'review', 'search', 'like'].includes(screen)} />
     </div>
