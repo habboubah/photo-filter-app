@@ -125,14 +125,14 @@ is marked for deletion, then the storage overview and the rest in order.
 - **Vorschläge** [Suggestions], one card (since 18 November 2026; until then
   a separate clean-up card with a table and a list): *Platz, der frei werden
   kann · 357 MB*; a bar of the whole library — one segment per category that
-  could go, then *Gute Fotos* and *Gute Videos*, paler; then one row per
-  category — *Duplikate*, *Fast gleiche*, *Ähnliche Videos*, *Missglückt*,
+  could go, then *Gute Fotos* and *Gute Videos*, paler; then the library's
+  figures — two cells, *Fotos 95 · 31 können weg* and *Videos 6 · 3 können
+  weg* (*Fotos* opens *Monat für Monat*, *Videos* all videos), the free space
+  on the device, *Bisher freigegeben*; then one row per category — *Duplikate*, *Fast gleiche*, *Ähnliche Videos*, *Missglückt*,
   *Screenshots*, *Unwichtige Fotos* (once the AI has seen photos) — with two
   of its photos, how many could go and, on the right, **its colour's dot**
   (its segment in the bar) and the space, the most space first. At its foot
-  two cells, *Fotos 95 · 31 können weg* and *Videos 6 · 3 können weg*
-  (*Fotos* opens *Monat für Monat*, *Videos* all videos), the free space on
-  the device, *Bisher freigegeben*, and **Jetzt aufräumen** [Clean up now]
+  **Jetzt aufräumen** [Clean up now]
   (the clean-up screen). Categories with nothing left in one line under it:
   *Erledigt: Duplikate, Screenshots*.
 - **Weitermachen** [Carry on]: *Später entscheiden* with the number on the
