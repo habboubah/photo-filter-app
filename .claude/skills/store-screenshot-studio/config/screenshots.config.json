@@ -304,11 +304,12 @@
       "rawDir": "screenshots/{locale}-android"
     }
   ],
-  "//featureGraphic": "Google Play feature graphic, exactly 1024x500 JPEG. slide: whose screen the phone shows; rawDir: the Android captures, like play-phone. Its copy is the featureGraphic block of every copy file (its subline shows with \"subline\": true). phone: width in percent of the height, tilt, nudge [x in widths, y in heights]. stickers: placed straight on the canvas — x in widths, y in heights, size in heights.",
+  "//featureGraphic": "Google Play feature graphic, exactly 1024x500 JPEG. No phone: Google's 'highly recommended' guidelines say to avoid device imagery here (support.google.com/googleplay/android-developer/answer/9866151). art: a picture from the repo drawn on the end side instead — the broom icon, on the mint background that is its own flat colour, so it has no visible edge. Its copy is the featureGraphic block of every copy file (headline = the name, subline = the promise, points). Without art it falls back to a phone of `slide`'s screen (rawDir, device, phone: width in percent of the height, tilt, nudge). stickers: x in widths, y in heights, size in heights.",
   "featureGraphic": {
     "slide": "home",
     "rawDir": "screenshots/{locale}-android",
-    "background": "teal",
+    "background": "mint",
+    "art": "assets/icon-master.png",
     "device": "pixel",
     "width": 1024,
     "height": 500,
@@ -316,30 +317,7 @@
     "format": "jpeg",
     "quality": 92,
     "ribbon": false,
-    "phone": {
-      "width": 52,
-      "tilt": 7,
-      "nudge": [
-        0,
-        0.13
-      ]
-    },
-    "stickers": [
-      {
-        "art": "snapshot-sea",
-        "x": 0.64,
-        "y": 0.78,
-        "size": 0.32,
-        "rotate": -10
-      },
-      {
-        "art": "pin",
-        "x": 0.975,
-        "y": 0.22,
-        "size": 0.24,
-        "rotate": 12,
-        "layer": "back"
-      }
-    ]
+    "subline": true,
+    "stickers": []
   }
 }

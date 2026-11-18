@@ -195,6 +195,20 @@ shown in dark mode). Change the set's colour by changing every slide's
 the app's files (`assets/fonts/fonts.css` → `src/assets/fonts/`): Fraunces for
 headlines (weight 650, `templates/slide.css`), Figtree for points and sublines.
 
+## The feature graphic
+
+Google Play's 1024 × 500 banner (`featureGraphic` in the config,
+`scripts/feature_graphic.mjs`). **No phone**: Google's "highly recommended"
+guidelines say to avoid device imagery there
+(support.google.com/googleplay/android-developer/answer/9866151), and it also
+advises against "best", "#1", "free" and the like. Instead `art` draws the
+broom icon (`assets/icon-master.png`) on the **mint** background, which is the
+icon's own flat colour (#8AE1B7), so the art has no edge and the banner
+matches the icon beside it in the listing. The copy file's `featureGraphic`
+block: the name (headline), the promise in two halves split with `\n`
+(subline), three points. Without `art` it falls back to a phone of `slide`'s
+screen.
+
 ## Ribbon and points
 
 - **Points** — the pills with a tick under a slide's headline, from `points` in

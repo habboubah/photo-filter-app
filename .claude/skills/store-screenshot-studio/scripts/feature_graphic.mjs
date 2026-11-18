@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // Google Play feature graphic: exactly 1024x500, JPEG so it cannot carry alpha.
 import { chromium } from 'playwright';
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, writeFileSync, existsSync } from 'node:fs';
+import { pathToFileURL } from 'node:url';
 import path from 'node:path';
 import { cfg, root, launchArgs, slideData, ribbonFor, pointsFor, placedStickers, shoot, copyFor, die } from './render.mjs';
 
@@ -13,6 +14,15 @@ if (!fg) {
 }
 const slide = cfg.slides.find(s => s.id === fg.slide);
 if (!slide) die(`featureGraphic.slide is "${fg.slide}", which is not a slide id in screenshots.config.json.`);
+
+// A picture in place of the phone (the icon's art): Google advises against
+// device imagery in the feature graphic.
+let art = null;
+if (fg.art) {
+  const file = path.join(root, fg.art);
+  if (!existsSync(file)) die(`featureGraphic.art is "${fg.art}", which is not a file in the repo.`);
+  art = pathToFileURL(file).href;
+}
 
 const browser = await chromium.launch({ args: launchArgs });
 try {
@@ -40,6 +50,7 @@ try {
       points: pointsFor(copy.featureGraphic.points, Boolean(fg.ribbon), `config/copy.${locale}.json[featureGraphic]`),
       stickers: placedStickers(fg.stickers, copy.dir === 'rtl', 'featureGraphic.stickers'),
       ribbon: ribbonFor(fg, locale),
+      art,
     });
 
     const buf = await shoot(browser, data, fg);
