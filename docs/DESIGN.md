@@ -1,0 +1,195 @@
+# Bildklar – the design system
+
+Read this before any UI change, and keep it true. It describes the system as
+it is in the code: the tokens live in `src/index.css`, the components in
+`src/ui/`. The history of how it got here is `docs/REDESIGN.md`; the rules
+that are not about looks (architecture, safety, i18n) are `CLAUDE.md`.
+
+## Tone
+
+Calm, photo-first, private, never pushy.
+
+- **Photos are the hero.** Colour comes from the photos; the interface around
+  them is neutral, with one teal for what you tap.
+- **Every screen answers three questions**: what is this, what do I do next,
+  and is anything deleted without me (never).
+- **Bildklar suggests, the user decides.** A suggestion is always worded and
+  drawn as a suggestion (*Vorschlag der App*), never as a verdict.
+- **No pressure.** No storage alarms, no red counts, no streaks, no
+  leaderboards, no confetti, no "only today". Space is stated in the same
+  quiet units everywhere (`bytes()`).
+- **Marking is not deleting.** *Löschen vormerken* is teal or quiet glass with
+  an archive icon. Red and the trash icon appear only where a tap really
+  deletes (the bin's confirm sheet and its dock).
+- Sentence case in every language. German strings are long: they wrap, a
+  button is never truncated.
+
+## Two materials, one layout
+
+| | iPhone — "Glass" | Android — "Album" |
+|---|---|---|
+| Page (`bg`) | cool grouped grey `#F2F2F7` / black | warm paper `#F5F3EF` / `#12110F` |
+| Card, sheet (`surface`) | white / `#1C1C1E` | warm white `#FFFDFA` / `#1E1C19` |
+| Fill on either (`surface-2`) | translucent cool grey | translucent warm grey |
+| Text (`fg`, `fg-mute`, `fg-faint`) | near-black, cool greys | warm near-black, warm greys |
+| What floats (`glass`) | translucent fill, sheen, specular line, darkened edge, shadow | solid fill, hairline edge, soft shadow — no sheen |
+| Icon tile | white glyph on the hue's solid squircle | neutral squircle, ink glyph |
+
+Android's set is laid over the same tokens by `[data-platform="android"]`.
+There is never an Android-only fork of a component, and no Material dynamic
+colour: the warm palette is the palette.
+
+## Colour tokens
+
+Only tokens, never a literal colour in a component. After any change:
+`npm run audit:contrast` (both themes, both platforms, every hue, the inks on
+glass and on a photo's shade).
+
+| Token | Use |
+|---|---|
+| `bg`, `surface`, `surface-2`, `hairline` | the layers and their divider |
+| `fg`, `fg-mute`, `fg-faint` | text; `fg-faint` only for placeholders and decoration |
+| `accent` | teal as text (links, ghost buttons, a tip's action) |
+| `accent-fill` + `accent-fill-ink` | teal as a fill: the one prominent button, a selected chip, progress |
+| `accent-dim` | a teal tint behind an icon or a pressed ghost button |
+| `keep` (+ `-dim`, `-ink`) | green: keep, the photo that stays, done |
+| `neg` (+ `-dim`, `-ink`) | red: only what really deletes |
+| `warn` (+ `-dim`) | amber: blurry, "check this one", the dry run banner |
+| `on-color`, `veil`, `shade` | white ink on a photo, the dark chip under it, the shade at a photo card's foot |
+| `data-hue` → `hue-bg`, `hue-ink`, `hue-solid` | a category's colour: its icon tile, its dot, its segment of the storage bar (sky, sand, mint, rose, lilac, stone, cyan, pink) |
+
+## Type
+
+Figtree for everything (bundled; Arabic falls back to the system face). Sizes
+are rem, so they follow the system's text size (`dynamicType.ts`).
+
+| Role | Class | Size | Used for |
+|---|---|---|---|
+| Display | `text-display display` via `<BigNumber>` | 48–68 px | one figure per screen (space to free, a review's result) |
+| Title | `text-title title-face font-bold` | 34 | a screen's large title, a first-run headline |
+| Title 2 | `text-title2 title-face font-bold` | 22 | section headings, a card's name |
+| Heading | `text-heading title-face font-bold` | 20 | a dialog's or empty state's title |
+| Body | `text-body` | 17 | rows, paragraphs, buttons |
+| Label | `text-label` | 15 | secondary lines, chips, a tip |
+| Caption | `text-caption` | 13 | meta lines, badges |
+| Micro | `text-micro` | 11 | a badge on a thumbnail |
+
+Numbers that are read at a glance take `num` (tabular). `wrap-compound` on
+titles and labels, `wrap-prose` on sentences. Titles drop their tracking in
+Arabic.
+
+## Spacing
+
+A 4 px base. The steps in use: 4 · 8 · 12 · 16 · 20 · 24 · 32 · 48.
+
+- Page margin 16 px (20 px beside a large title); margins are px so they hold
+  when text grows.
+- Between sections 24 px (`space-y-6`); inside a card 16–24 px; between a
+  label and its sub line 2–4 px; between tiles 2–4 px (photos sit close).
+- Touch targets ≥ 44 px, **48 px for anything new** (`min-h-control`).
+- Logical spacing only (`ps-`/`pe-`/`start-`/`end-`); what follows the finger
+  (the review's swipe, its buttons and stamps, a gesture hint) stays physical.
+
+## Radii and elevation
+
+`xs` 10 · `sm` 14 · `md` 24 (a card) · `lg` 32 (a hero card) · `xl` 38 (a
+sheet). Corners are concentric: a photo inside a card takes the card's radius
+minus its inset. A photo tile is 6–10 px.
+
+Three levels, no more: the page; a card (no border, no shadow); what floats
+(`glass` with `shadow-e2`; a sheet with `shadow-e3`). `glass-flat` is the
+same material inside a card or sheet. Where content meets a floating bar it
+fades into the page (`edge-fade-top`, `dock-fade`), never a line. No
+`backdrop-filter`, no `filter: blur`, no `hover:`.
+
+## Motion
+
+Motion explains — where something came from, what changed, what a gesture
+will do. It never decorates and never delays a tap.
+
+| Kind | Value |
+|---|---|
+| Press feedback | `press`: scale 0.97, 100 ms in, 220 ms out |
+| Small state change (a chip, a badge, a tip) | 160–220 ms, `ease-out-soft` |
+| A screen's push / pop | 350 ms, `cubic-bezier(0.32, 0.72, 0, 1)` |
+| A sheet | spring, stiffness 400, damping 40 (no bounce) |
+| What the finger moves (the review card, a sheet, the welcome's pages) | follows 1:1; released with a spring that takes the finger's velocity; bounce ≤ 0.2 and only after a flick |
+| An illustration that explains (welcome, the first scan's cards, a safety moment) | springs with bounce 0, 0.5–0.7 s per move, 60–90 ms stagger, 1.2–2 s in all, then it rests — it never loops |
+| A number counting up (`<CountUp>`) | 0.6–0.9 s, ease-out; the final value is in the DOM for screen readers at once |
+| A gesture hint (the guided review's hand) | one slow pass in the gesture's direction, a pause, again; it stops the moment the card is touched |
+
+Rules: transform and opacity only (the one exception is a progress ring's
+stroke: a small SVG, never over a scrolling list). Everything collapses under
+reduced motion (`<MotionConfig reducedMotion="user">` and the media query in
+`index.css`): illustrations show their end state, hints become a still arrow
+with the words, auto-advancing cards stop advancing. No motion on list
+scrolling. Haptics (`src/ui/haptics`) accompany a decision, not a navigation.
+
+## Component states
+
+One look per state, on every screen:
+
+| State | Shape | Colour | Icon | Words |
+|---|---|---|---|---|
+| **Selected** (a tile picked in a grid) | 3 px inset ring + a filled check disc top-end | `accent` | `CheckCircle2` (unselected: `Circle`, `fg-faint`) | *Ausgewählt* in the tile's label |
+| **Suggested by the app** | a pill badge (large viewer) or a 24 px disc top-end (thumbnail) | `glass`, ink `fg` — neutral, never green | `Sparkles` | *Vorschlag der App* |
+| **Stays / your choice** | a pill badge or a 24 px disc top-start with a white ring | `keep` fill | `Check` | *Bleibt* / *Deine Wahl* |
+| **Protected** | a pill badge or disc, as "stays" but glass | `glass`, ink `fg`; as an action: `accent` text | `Shield` | *Geschützt* / *Schützen* |
+| **Marked for deletion** | quiet glass (button, stamp, chip); the bin's card on home | `glass` / `surface-2`, ink `fg`; a prominent "mark" button is teal | `Archive` | *Löschen vormerken* / *Zum Löschen vorgemerkt* |
+| **Destructive** (really deletes) | the one red button of a screen, after a sheet that shows exactly what goes | `neg` fill | `Trash2` | *N Fotos löschen* |
+| **Blurry / check** | a small dot or a `warn-dim` chip | `warn` | – | *Unscharf*, *Bitte prüfen* |
+
+Suggested and your choice differ in **shape, position, icon and colour** — a
+neutral sparkle at the end, a green check at the start — never by colour
+alone.
+
+## Components (`src/ui/`)
+
+`Screen` (large title, floating bar, `info` sheet, `docked` / `tabbed`),
+`SectionHead`, `Group`, `Row`, `MenuRow`, `ActionRow`, `IconTile`, `Next`,
+`Away`, `Empty`, `Dock`, `TabBar`, `Sheet`, `Confirm`, `Button`, `IconButton`,
+`Field`, `Toast`, `Progress`, `SwitchRow`, `Segmented`, `Badge`, `BigNumber`,
+`SortMenu`, `StorageBar`, `Thumb`, `PhotoGrid`, `Mosaic`, `PlayOver`, and for
+the first run: `Tip`, `CountUp`, `Ring`, `Dots`, `PhotoFrame`.
+
+- **One prominent button per screen** (`Button` primary, in the `Dock` or at
+  the foot). A second action goes under it as `variant="ghost"`.
+- **A screen says what it is for** behind an (i) in its bar, not in a
+  paragraph; its subtitle carries the count and the size.
+- **Sheets** float inset from the edges; the confirm button is teal with
+  `sheen`, red only when it deletes.
+- **Empty states**: an illustration or the app's icon, one line of what is
+  missing, the action that fixes it (`Empty`).
+
+## The first run
+
+The first five minutes teach the value and the three gestures by doing
+(docs/REDESIGN.md, "The first five minutes").
+
+- **Welcome** (`WelcomeView`, lazy): four pages, one line each, an
+  illustration of photo frames that animates what the line says, *Überspringen*
+  on every page, dots, swipe or *Weiter*. Its photos are eight small
+  licence-clean WebPs in `src/assets/welcome/` — never the user's, never the
+  demo library's.
+- **Photo access** (`PermissionView`): why, in three plain lines; both paths
+  named honestly (all photos, selected photos); denied is no dead end.
+- **First scan** (`FirstScanView`, lazy): a ring, what was found so far
+  counting up, how long it still takes, five rotating cards that explain the
+  features, and *Schon mal umsehen*. Later scans are the slim card on home.
+- **Reveal** (`RevealView`, lazy): what was found per category with its space
+  in home's units, and one recommended first step — the same choice as home's
+  next-step card (`src/logic/nextStep.ts`).
+- **Guided review**: the hand shows one gesture per card until the user has
+  done it (right, left, up), each confirmed with a word and a haptic; then
+  the buttons, undo and *Schützen* as tips. The summary counts up and says
+  where the marked photos wait.
+- **Safety moments**: before the first real delete, the three safety nets in
+  one small illustration (`SafetyNets`); protection explained once, where it
+  matters.
+- **Tips** (`src/ui/Tip.tsx`, the list in `src/tips.ts`): one at a time from
+  one queue, pointing at the real control (`data-tip`), dismissed with one
+  tap, never blocking, read by TalkBack / VoiceOver. No screen builds its
+  own. *Einstellungen › So funktioniert Bildklar* replays all of it.
+
+What was seen is a view preference (`bildklar-welcome`, `bildklar-seen` in
+localStorage): losing it only shows a hint again.

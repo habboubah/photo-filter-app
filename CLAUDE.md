@@ -17,6 +17,7 @@ the root; every other document lives in `docs/` (only `README.md` stays here):
 | `docs/TECHNOLOGY.md` | An overview for readers: the stack, the tools, which AI runs, how and why |
 | `docs/PLAN.md` | The concept: architecture, data model, platform mapping, design, the decisions and why |
 | `docs/DEVELOPMENT.md` | The project layout, the single checks, the native tests, the demo library, the test library, the city table, icons |
+| `docs/DESIGN.md` | The design system: tone, tokens, type, spacing, motion, component states, the first run |
 | `docs/features.md` | Every feature, as the user sees it |
 | `docs/TODO.md` | What only Ahmad can do: devices, Xcode, the stores, photos |
 | `docs/APP_STORE_RELEASE.md`, `docs/ANDROID_RELEASE.md` | The store releases step by step |
@@ -191,6 +192,7 @@ scenes follow the switch (docs/PLAN.md, *Pricing*).
   the main bundle stays German and English.
 
 ## Styling — "Glass" (iOS 27 look, 17 November 2026) and "Album" on Android (18 November 2026), docs/REDESIGN.md
+- **Read `docs/DESIGN.md` before any UI change and keep it updated** — it is the design system; this section is its short form.
 - The look of the system apps since iOS 26, as refined in iOS 27: the content
   is the page (photos edge to edge, white grouped cards on the cool grouped
   background), the controls float above it on glass. **One deep teal** for
