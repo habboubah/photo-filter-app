@@ -39,7 +39,9 @@ import { PlayerContext, type Player } from './ui/play';
 import { Confirm } from './ui/Sheet';
 import { notifySuccess, tapLight } from './ui/haptics';
 import { PermissionView } from './components/PermissionView';
-import { HomeView } from './components/HomeView';
+import { HomeView, categoryMeta, categoryWords } from './components/HomeView';
+import { MOMENTS, hasSeen } from './logic/firstRun';
+import { type FoundKey, nextStepKind, rankCategories } from './logic/nextStep';
 import { TabBar } from './ui/TabBar';
 
 import type { FailedTab } from './components/FailedView';
@@ -80,6 +82,8 @@ const LikeView = lazy(() => import('./components/LikeView').then(m => ({ default
 const BinView = lazy(() => import('./components/BinView').then(m => ({ default: m.BinView })));
 // The first run (docs/DESIGN.md): seen once, so never part of the main bundle.
 const WelcomeView = lazy(() => import('./components/WelcomeView').then(m => ({ default: m.WelcomeView })));
+const FirstScanView = lazy(() => import('./components/FirstScanView').then(m => ({ default: m.FirstScanView })));
+const RevealView = lazy(() => import('./components/RevealView').then(m => ({ default: m.RevealView })));
 
 /** Up to `n` ids spread over the list (its start, middle and end), for a cover of a few photos. */
 const spread = (ids: string[], n: number) =>
@@ -340,10 +344,34 @@ export default function App() {
   // welcome, the photo access), then home. They are one screen for the stack, like the two tabs.
   const access = store.access;
   const hasAccess = access === 'full' || access === 'limited';
-  const root = !access ? 'loading'
+  // The first scan of an install gets a screen of its own and, once it found enough, a reveal
+  // (docs/DESIGN.md, "The first run"). Decided once per start, as soon as it is known whether a scan
+  // ever finished: an install that was scanned before never sees them; "Neu durchsuchen" later is
+  // home's slim card. *Schon mal umsehen* and the reveal's buttons end it for good.
+  const firstScan = useRef<'active' | 'no' | null>(null);
+  if (firstScan.current === null && hasAccess && store.scanKnown) {
+    firstScan.current = store.scan.lastScanAt > 0 || hasSeen(store.seen, MOMENTS.firstScan) ? 'no' : 'active';
+  }
+  const endFirstScan = () => { firstScan.current = 'no'; store.markSeen(MOMENTS.firstScan, MOMENTS.reveal); };
+  useEffect(() => {
+    if (firstScan.current === 'no') store.markSeen(MOMENTS.firstScan, MOMENTS.reveal);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasAccess, store.scanKnown]);
+  // Enough is found once every photo was analysed: the AI's long pass then only adds to it.
+  const scanFinished = !store.scan.running && store.scan.lastScanAt > 0;
+  const enoughFound = photos !== null && (scanFinished || (store.scan.running && store.scan.phase === 'ai'));
+  const root = !access || (hasAccess && !store.scanKnown) ? 'loading'
     : !store.welcomeSeen && access === 'notDetermined' ? 'welcome'
       : !hasAccess ? 'permission'
-        : 'home';
+        : firstScan.current !== 'active' ? 'home'
+          : !enoughFound ? 'firstScan'
+            : photos && photos.length > 0 ? 'reveal'
+              : 'home';
+  // An empty library has nothing to reveal: home says so.
+  useEffect(() => {
+    if (firstScan.current === 'active' && scanFinished && photos && photos.length === 0) endFirstScan();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scanFinished, photos]);
   // The two tabs and the first run's steps are one screen for the stack, but each its own for the
   // transition: going from one to the next crossfades (dir 2) instead of sliding.
   const screenKey = screen !== 'home' ? screen : root === 'home' ? `home-${tab}` : `root-${root}`;
@@ -653,6 +681,69 @@ export default function App() {
   const addPhotos = async () => {
     const { access: a } = await PhotoLibrary.addMorePhotos().catch(() => ({ access: access ?? 'denied' }));
     await store.accessGranted(a);
+  };
+
+  /* ------------------------------------------------- home and the reveal */
+
+  // What home's rows and the reveal after the first scan show: per category how much there is and a few of its photos.
+  const failedAll = [...blurry, ...exposureAll];
+  const found: Partial<Record<FoundKey, { items: number; covers: string[] }>> = {
+    duplicates: { items: dupGroups.length, covers: dupGroups.slice(0, 4).map(g => g.ids.find(id => id !== g.suggested) ?? g.ids[0]) },
+    videos: { items: videoGroups.length, covers: videoGroups.slice(0, 4).map(g => g.ids.find(id => id !== g.suggested) ?? g.ids[0]) },
+    similar: { items: similarGroups.length, covers: similarGroups.slice(0, 4).map(g => g.suggested) },
+    failed: { items: failedAll.length, covers: failedAll.slice(0, 4).map(x => x.id) },
+    screenshots: { items: shots.length, covers: shots.slice(0, 4).map(x => x.id) },
+    ...(aiSeen.seen > 0 ? { utility: { items: utility.length, covers: utility.slice(0, 4).map(x => x.id) } } : {}),
+  };
+  // Home's one next step (src/components/HomeView.tsx): the newest month not gone through, and the latest trip for its small tile.
+  const next = months.find(m => !doneMonths.has(m.key));
+  const nextMonth = next ? {
+    key: next.key, photos: next.ids.length, bytes: next.bytes,
+    name: new Date(next.year, next.month, 1).toLocaleDateString(t.locale, { month: 'long', year: 'numeric' }),
+    covers: spread(next.ids.filter(id => !byId.get(id)?.shot && !byId.get(id)?.video), 3),
+  } : null;
+  const latestTrip = trips.filter(x => !x.ignored).reduce<Trip | null>((a, x) => (!a || x.start > a.start ? x : a), null);
+
+  /** One category gone through as a review: a group's best shot first (keep), then its extra shots; the single photos as their screens review them. */
+  const reviewCategory = (key: FoundKey) => {
+    const series = (list: typeof groups) => list.flatMap(g => reviewGroup(g, kept, byId, cos));
+    startReview(
+      key === 'similar' ? series(similarGroups)
+        : key === 'duplicates' ? series(dupGroups)
+          : key === 'videos' ? series(videoGroups)
+            : key === 'failed' ? reviewCleanup([], cleanupBlurry(blurry, kept), kept, byId, [], [], exposureAll, cos)
+              : key === 'screenshots' ? reviewScreenshots(shots)
+                : reviewUtility(utility),
+    );
+  };
+
+  // The reveal's one recommended step: the choice home's next-step card makes (src/logic/nextStep.ts).
+  const revealStep = () => {
+    const ranked = rankCategories(found, summary);
+    const kind = nextStepKind({ monthsDone: doneMonths.size, hasNextMonth: !!nextMonth, later: laterPile.length, categories: ranked.length, scanning: store.scan.running });
+    const top = ranked[0];
+    if (kind === 'category' && top) {
+      return {
+        ranked,
+        step: { eyebrow: t.nextStartEyebrow, title: categoryWords(t)[top.key].label, meta: categoryMeta(t, top), button: t.revealGo, covers: top.covers },
+        go: () => reviewCategory(top.key),
+      };
+    }
+    if (kind === 'later') {
+      return {
+        ranked,
+        step: { eyebrow: t.nextLaterEyebrow, title: t.laterCard, meta: fmt(t.nextLaterMeta, { photos: plural(t, 'photos', laterPile.length) }), button: t.nextLaterButton, covers: laterPile.slice(0, 1) },
+        go: () => startReview(reviewLater(laterPile)),
+      };
+    }
+    if ((kind === 'month' || kind === 'start') && nextMonth) {
+      return {
+        ranked,
+        step: { eyebrow: t.monthsCard, title: nextMonth.name, meta: t.nextMonthsStartMeta, button: fmt(t.nextMonthsStartButton, { month: nextMonth.name }), covers: nextMonth.covers },
+        go: () => openMonth(nextMonth.key),
+      };
+    }
+    return { ranked, step: null, go: () => {} };
   };
 
   const content = () => {
@@ -966,6 +1057,25 @@ export default function App() {
       );
     }
     if (root === 'loading') return <div className="min-h-screen" aria-busy="true" />;
+    if (root === 'firstScan') {
+      return (
+        <FirstScanView
+          t={t} scan={store.scan} onLookAround={endFirstScan}
+          found={{ trips: trips.filter(x => !x.ignored).length, similar: similarGroups.length, duplicates: dupGroups.length, screenshots: shots.length }}
+        />
+      );
+    }
+    if (root === 'reveal') {
+      const r = revealStep();
+      return (
+        <RevealView
+          t={t} files={photos?.length ?? 0} categories={r.ranked} freeable={summary?.total.bytes ?? 0}
+          trips={trips.filter(x => !x.ignored).length} tripCover={latestTrip ? latestTrip.ids[Math.floor(latestTrip.ids.length / 2)] : undefined}
+          aiRunning={store.scan.running} step={r.step}
+          onGo={() => { endFirstScan(); r.go(); }} onLookAround={endFirstScan}
+        />
+      );
+    }
     if (tab === 'organize') {
       return (
         <OrganizeView
@@ -981,26 +1091,10 @@ export default function App() {
         />
       );
     }
-    const failedAll = [...blurry, ...exposureAll];
-    // Home's one next step (src/components/HomeView.tsx): the newest month not gone through, and the latest trip for its small tile.
-    const next = months.find(m => !doneMonths.has(m.key));
-    const nextMonth = next ? {
-      key: next.key, photos: next.ids.length, bytes: next.bytes,
-      name: new Date(next.year, next.month, 1).toLocaleDateString(t.locale, { month: 'long', year: 'numeric' }),
-      covers: spread(next.ids.filter(id => !byId.get(id)?.shot && !byId.get(id)?.video), 3),
-    } : null;
-    const latestTrip = trips.filter(x => !x.ignored).reduce<Trip | null>((a, x) => (!a || x.start > a.start ? x : a), null);
     return (
       <HomeView
         t={t} access={access} photoCount={photos ? photos.length : null} scan={store.scan} summary={summary}
-        found={{
-          duplicates: { items: dupGroups.length, covers: dupGroups.slice(0, 4).map(g => g.ids.find(id => id !== g.suggested) ?? g.ids[0]) },
-          videos: { items: videoGroups.length, covers: videoGroups.slice(0, 4).map(g => g.ids.find(id => id !== g.suggested) ?? g.ids[0]) },
-          similar: { items: similarGroups.length, covers: similarGroups.slice(0, 4).map(g => g.suggested) },
-          failed: { items: failedAll.length, covers: failedAll.slice(0, 4).map(x => x.id) },
-          screenshots: { items: shots.length, covers: shots.slice(0, 4).map(x => x.id) },
-          ...(aiSeen.seen > 0 ? { utility: { items: utility.length, covers: utility.slice(0, 4).map(x => x.id) } } : {}),
-        }}
+        found={found}
         large={{ count: large.length, bytes: large.reduce((sum, x) => sum + x.bytes, 0), cover: large[0]?.id }}
         liveCount={isAndroid() ? 0 : live.length} liveCover={live[0]?.id}
         compress={{ count: compressible.photos.length + compressible.screenshots.length, saving: compressible.saving, cover: (compressible.photos[0] ?? compressible.screenshots[0])?.id }}

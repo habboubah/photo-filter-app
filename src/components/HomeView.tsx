@@ -96,6 +96,29 @@ export function etaText(t: Strings, seconds: number | null | undefined): string 
   return w.minutes ? fmt(t.scanEtaHours, { h: num(t, w.hours), m: num(t, w.minutes) }) : fmt(t.scanEtaHoursOnly, { h: num(t, w.hours) });
 }
 
+/** A category's name and what its screen counts (groups or photos) — for home's rows and the reveal after the first scan. */
+export function categoryWords(t: Strings): Record<FoundKey, { label: string; unit: 'groups' | 'photos' }> {
+  return {
+    duplicates: { label: t.duplicatesTile, unit: 'groups' },
+    similar: { label: t.similarTile, unit: 'groups' },
+    videos: { label: t.lookalikeTitle, unit: 'groups' },
+    failed: { label: t.failedTile, unit: 'photos' },
+    screenshots: { label: t.screenshotsTile, unit: 'photos' },
+    utility: { label: t.utilityTile, unit: 'photos' },
+  };
+}
+
+/** What a category row counts: the photos that could go when the summary knows them, else its groups or photos. */
+export function categoryCount(t: Strings, c: { key: FoundKey; items: number; gain: { count: number } }): string {
+  if (c.gain.count > 0) return plural(t, c.key === 'videos' ? 'videos' : 'photos', c.gain.count);
+  return plural(t, categoryWords(t)[c.key].unit, c.items);
+}
+
+/** The line under a recommended category: what could go and how much space that is. */
+export function categoryMeta(t: Strings, c: { key: FoundKey; items: number; gain: { count: number; bytes: number } }): string {
+  return c.gain.bytes > 0 ? fmt(t.nextCategoryMeta, { count: categoryCount(t, c), size: bytes(t, c.gain.bytes) }) : categoryCount(t, c);
+}
+
 type Step = { eyebrow: string; title: string; meta: string; covers: string[]; button: string; onGo: () => void; more?: { label: string; onClick: () => void } };
 
 /**
@@ -124,20 +147,20 @@ export function HomeView(p: Props) {
 
   // The categories, each with the space it would free (from the summary, so every figure agrees).
   const gain = (k: FoundKey) => gainOf(summary, k);
+  const words = categoryWords(t);
   const meta: Record<FoundKey, { label: string; icon: React.ComponentType<{ className?: string; strokeWidth?: number }>; hue: string; unit: 'groups' | 'photos'; onClick: () => void }> = {
-    duplicates: { label: t.duplicatesTile, icon: Sparkles, hue: 'rose', unit: 'groups', onClick: p.onDuplicates },
-    similar: { label: t.similarTile, icon: Sparkles, hue: 'lilac', unit: 'groups', onClick: p.onSimilar },
-    videos: { label: t.lookalikeTitle, icon: Video, hue: 'cyan', unit: 'groups', onClick: p.onVideoGroups },
-    failed: { label: t.failedTile, icon: Sparkles, hue: 'sand', unit: 'photos', onClick: p.onBlurry },
-    screenshots: { label: t.screenshotsTile, icon: Sparkles, hue: 'sky', unit: 'photos', onClick: p.onScreenshots },
-    utility: { label: t.utilityTile, icon: Sparkles, hue: 'mint', unit: 'photos', onClick: p.onUtility },
+    duplicates: { ...words.duplicates, icon: Sparkles, hue: 'rose', onClick: p.onDuplicates },
+    similar: { ...words.similar, icon: Sparkles, hue: 'lilac', onClick: p.onSimilar },
+    videos: { ...words.videos, icon: Video, hue: 'cyan', onClick: p.onVideoGroups },
+    failed: { ...words.failed, icon: Sparkles, hue: 'sand', onClick: p.onBlurry },
+    screenshots: { ...words.screenshots, icon: Sparkles, hue: 'sky', onClick: p.onScreenshots },
+    utility: { ...words.utility, icon: Sparkles, hue: 'mint', onClick: p.onUtility },
   };
   const keys = (Object.keys(meta) as FoundKey[]).filter(k => p.found[k]);
   const cats = rankCategories(p.found, summary).map(c => ({ ...meta[c.key], ...c }));
   const done = keys.filter(k => p.found[k]!.items === 0).map(k => meta[k].label);
   const bar = keys.map(k => ({ key: k, hue: meta[k].hue, bytes: gain(k).bytes, label: meta[k].label }));
-  /** What a category row counts: the photos that could go when the summary knows them, else its groups or photos. */
-  const countOf = (c: (typeof cats)[number]) => (c.gain.count > 0 ? plural(t, c.key === 'videos' ? 'videos' : 'photos', c.gain.count) : plural(t, c.unit, c.items));
+  const countOf = (c: (typeof cats)[number]) => categoryCount(t, c);
 
   /* ---------------------------------------------------------- the next step */
 
@@ -165,7 +188,7 @@ export function HomeView(p: Props) {
     const top = cats[0];
     step = {
       eyebrow: t.nextStartEyebrow, title: top.label, covers: top.covers,
-      meta: top.gain.bytes > 0 ? fmt(t.nextCategoryMeta, { count: countOf(top), size: bytes(t, top.gain.bytes) }) : countOf(top),
+      meta: categoryMeta(t, top),
       button: t.nextCategoryButton, onGo: top.onClick,
     };
   } else if (kind === 'start' && p.nextMonth) {

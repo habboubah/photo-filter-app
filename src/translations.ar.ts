@@ -638,6 +638,32 @@ export const ar: Strings = {
   permRecommended: 'موصى به',
   permHint: 'سيسألك iPhone الآن عن الصور التي يمكن لـ Bildklar رؤيتها.',
   restrictedHint: 'من أعدّ هذا الجهاز يستطيع السماح بالوصول من الإعدادات.',
+
+  // The first scan and what it found (src/components/FirstScanView.tsx, RevealView.tsx)
+  firstScanFound: 'ما وُجد حتى الآن',
+  firstScanLook: 'تصفّح في الأثناء',
+  firstScanCards: 'ما يفعله Bildklar لك',
+  firstScanCardNext: 'التلميح التالي',
+  scanCardTripsTitle: 'رحلات تُرتَّب تلقائيًا',
+  scanCardTrips: 'من أماكن صورك وتواريخها تتكوّن الرحلات – من دون أن تفعل شيئًا.',
+  scanCardSimilarTitle: 'أفضل صورة من كل سلسلة',
+  scanCardSimilar: 'بين الصور المتشابهة يقترح Bildklar الأفضل. والقرار لك.',
+  scanCardMonthsTitle: 'شهرًا بعد شهر',
+  scanCardMonths: 'تفضّل خطوات صغيرة؟ راجِع شهرًا بعد شهر.',
+  scanCardBinTitle: 'حدِّد أولًا ثم احذف لاحقًا',
+  scanCardBin: 'ما تريد التخلص منه يُحدَّد فقط. ولا يُحذف شيء حتى تؤكد.',
+  scanCardPrivateTitle: 'خصوصية',
+  scanCardPrivate: 'لا تغادر أي صورة هاتفك. بلا حساب وبلا سحابة.',
+  revealTitle: 'هذا ما وجده Bildklar',
+  revealLooked: 'تم فحص {files}',
+  revealAiNote: 'ما زال الذكاء الاصطناعي يفحص صورك بدقة – وستظهر اقتراحات أخرى تباعًا.',
+  revealFree: 'مساحة يمكن تحريرها – إن أردت',
+  revealGo: 'راجِع الآن',
+  revealLook: 'تصفّح أولًا',
+  revealHome: 'إلى النظرة العامة',
+  revealSafe: 'لا يُحذف شيء قبل أن تؤكد.',
+  firstScanHint: 'أبقِ Bildklar مفتوحًا الآن – تظهر الاقتراحات تباعًا.',
+  revealAll: 'نظرة على كل شيء',
 };
 
 /** Android's wording (folders, the Trash, the phone). */

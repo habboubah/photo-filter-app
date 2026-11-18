@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { animate, useReducedMotion } from 'motion/react';
 
 /*
@@ -28,37 +28,42 @@ export function Dots({ count, index, label }: { count: number; index: number; la
 }
 
 /**
- * A number that counts up to its value (and on from its last one when the
- * value changes): what the scan found so far, what a review set aside. The
- * figure for screen readers is the final one at once; under reduced motion
- * nothing counts. `format` turns the number into words ("12", "357 MB").
+ * A number on its way up to `value` (and on from its last one when the value
+ * changes): the figure to draw right now. Under reduced motion it is the
+ * value at once.
  */
-export function CountUp({ value, format, className = '', seconds = 0.8 }: {
-  value: number;
-  format: (n: number) => string;
-  className?: string;
-  seconds?: number;
-}) {
+export function useCountUp(value: number, seconds = 0.8): number {
   const reduce = useReducedMotion();
-  const shown = useRef<HTMLSpanElement>(null);
-  const from = useRef(0);
-  const fmt = useRef(format);
-  fmt.current = format;
+  const [shown, setShown] = useState(reduce ? value : 0);
+  const from = useRef(reduce ? value : 0);
   useEffect(() => {
-    const el = shown.current;
-    if (!el) return;
-    if (reduce || from.current === value) { el.textContent = fmt.current(value); from.current = value; return; }
+    if (reduce || from.current === value) { from.current = value; setShown(value); return; }
     const run = animate(from.current, value, {
       duration: seconds, ease: [0.23, 1, 0.32, 1],
-      onUpdate: v => { el.textContent = fmt.current(Math.round(v)); },
-      onComplete: () => { el.textContent = fmt.current(value); },
+      onUpdate: v => setShown(Math.round(v)),
+      onComplete: () => setShown(value),
     });
     from.current = value;
     return () => run.stop();
   }, [value, reduce, seconds]);
+  return shown;
+}
+
+/**
+ * A number that counts up: what the scan found so far, what a review set
+ * aside. Screen readers get the final figure at once. `format` turns the
+ * number into words ("12", "357 MB").
+ */
+export function CountUp({ value, format, className = '', seconds }: {
+  value: number;
+  format: (n: number) => React.ReactNode;
+  className?: string;
+  seconds?: number;
+}) {
+  const shown = useCountUp(value, seconds);
   return (
     <span className={className}>
-      <span ref={shown} aria-hidden="true">{format(reduce ? value : from.current)}</span>
+      <span aria-hidden="true">{format(shown)}</span>
       <span className="sr-only">{format(value)}</span>
     </span>
   );
@@ -108,5 +113,20 @@ export function PhotoFrame({ src, className = '', children }: { src: string; cla
       <img src={src} alt="" draggable={false} decoding="async" className="absolute inset-0 w-full h-full object-cover" />
       {children}
     </span>
+  );
+}
+
+/**
+ * The foot of a first-run screen: its one action (and a quieter second one)
+ * in thumb reach. It sticks to the bottom of a screen that is taller than
+ * the phone; what scrolls under it fades into the page. `inset`: the
+ * screen's side padding in px, so the foot runs edge to edge.
+ */
+export function Foot({ inset = 24, children }: { inset?: number; children: React.ReactNode }) {
+  return (
+    <div className="sticky bottom-0 z-10 mt-auto" style={{ marginInline: -inset }}>
+      <div className="h-8 bg-linear-to-b from-transparent to-bg pointer-events-none" aria-hidden="true" />
+      <div className="bg-bg pb-safe-8" style={{ paddingInline: inset }}>{children}</div>
+    </div>
   );
 }

@@ -3,6 +3,7 @@ import type { Access } from '../native/photoLibrary';
 import { Strings } from '../translations';
 import { Button, IconButton } from '../ui/Button';
 import { Badge } from '../ui/Controls';
+import { Foot } from '../ui/FirstRun';
 
 /**
  * The screen before the system's own question (and after a "no"): why
@@ -72,9 +73,8 @@ export function PermissionView({ t, access, onAllow, onOpenSettings, onSettings 
             </ul>
           </section>
         )}
-        <div className="flex-1 min-h-4" />
         {/* The one action stays in reach on a small phone: the text above scrolls under it and fades into the page. */}
-        <div className="sticky bottom-0 -mx-6 px-6 pt-8 pb-safe-8 dock-fade">
+        <Foot>
         {asked ? (
           <>
             <Button full size="lg" onClick={onOpenSettings}>{t.openSettings}</Button>
@@ -86,7 +86,7 @@ export function PermissionView({ t, access, onAllow, onOpenSettings, onSettings 
             <p className="text-caption text-fg-mute text-center mt-3 wrap-prose">{t.permHint}</p>
           </>
         )}
-        </div>
+        </Foot>
       </main>
     </div>
   );

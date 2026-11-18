@@ -263,6 +263,8 @@ export function useAppStore() {
   /** The facts as the phone reports them; `photos` (below) are these with the label scores laid on. */
   const [facts, setPhotos] = useState<Photo[] | null>(null);
   const [scan, setScan] = useState<ScanView>({ running: false, phase: 'list', done: 0, total: 0, lastScanAt: 0 });
+  /** Whether a scan ever finished is known (`scan.lastScanAt`): asked at launch, so a first scan is not mistaken for one. */
+  const [scanKnown, setScanKnown] = useState(false);
   const [faces, setFaces] = useState<Map<string, Partial<Photo>>>(() => new Map());
   const [storage, setStorage] = useState<Storage | null>(null);
   const loading = useRef(false);
@@ -382,9 +384,12 @@ export function useAppStore() {
     let alive = true;
     void (async () => {
       const a = await refreshAccess();
-      if (!alive || (a !== 'full' && a !== 'limited')) return;
+      if (!alive) return;
+      // Without access nothing was ever scanned: a scan after the permission is the first one.
+      if (a !== 'full' && a !== 'limited') { setScanKnown(true); return; }
       const s = await PhotoLibrary.getScanState().catch(() => null);
       if (s) setScan(v => ({ ...v, lastScanAt: s.lastScanAt }));
+      setScanKnown(true);
       await reload();
       if (alive) startScan();
     })();
@@ -588,7 +593,7 @@ export function useAppStore() {
     welcomeSeen, setWelcomeSeen, seen, markSeen, replay, hideAllHints,
     owned: isOwned, setOwned,
     access, refreshAccess, accessGranted,
-    photos, scan, startScan, rescanAll, reload, removePhotos, vectors,
+    photos, scan, scanKnown, startScan, rescanAll, reload, removePhotos, vectors,
     faces, scoreFaces,
     appAlbums,
     storage, refreshStorage,
