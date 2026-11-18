@@ -197,10 +197,11 @@ Version 2.3.0: `release-notes/2.3.0/` (the calm redesign of 18 November
 *Zum Löschen* with a check before deleting, the scan in the background with the
 time left, all search words).
 Version 2.4.0: `release-notes/2.4.0/` (the first run of 18 November 2026: the
-welcome, photo access explained, the first scan's screen and its reveal, the
-guided review, the three safety nets, one-time tips and *So funktioniert
-Bildklar*; and the polish of the same day: the next step first on home,
-the full-bleed review with zoom and a named, undoable decision).
+one-screen welcome, photo access explained, the first scan's screen and its
+reveal, comparing the first group side by side with one zoom, the guided
+review, months that resume, the three safety nets, one-time tips and *So
+funktioniert Bildklar*; and the polish of the same day: the next step first
+on home, the full-bleed review with zoom and a named, undoable decision).
 
 ### 2.5 App Review information
 
