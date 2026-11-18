@@ -1,4 +1,5 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { Check } from 'lucide-react';
 import { cachedThumb, SMALL, thumbUrl } from '../thumbs';
 import { tapLight } from './haptics';
 import { VideoBadge, usePlayer } from './play';
@@ -30,7 +31,7 @@ export function Thumb({ id, size = SMALL, className = '', alt = '' }: { id: stri
  * few around) are in the DOM, positioned absolutely in a box as tall as all
  * rows. Scrolls with the page, like every screen here.
  */
-export function PhotoGrid({ ids, columns = 3, gap = 4, label, onOpen, overlay }: {
+export function PhotoGrid({ ids, columns = 3, gap = 4, label, onOpen, overlay, selected, onSelect, selectLabel }: {
   ids: string[];
   columns?: number;
   gap?: number;
@@ -39,6 +40,11 @@ export function PhotoGrid({ ids, columns = 3, gap = 4, label, onOpen, overlay }:
   onOpen?: (id: string) => void;
   /** A badge or veil over a tile. */
   overlay?: (id: string) => React.ReactNode;
+  /** With these, every tile gets a select circle of its own (top start), beside opening it. */
+  selected?: ReadonlySet<string>;
+  onSelect?: (id: string) => void;
+  /** What VoiceOver reads for a tile's select circle. */
+  selectLabel?: (id: string) => string;
 }) {
   const box = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(0);
@@ -84,7 +90,24 @@ export function PhotoGrid({ ids, columns = 3, gap = 4, label, onOpen, overlay }:
         const ms = onOpen ? null : player?.length(id) ?? null;
         const open = onOpen ?? (ms !== null ? player!.play : undefined);
         const inner = <><Thumb id={id} />{overlay?.(id)}{ms !== null && <VideoBadge ms={ms} />}</>;
-        tiles.push(open ? (
+        const on = !!selected?.has(id);
+        tiles.push(open && onSelect ? (
+          // A tile that opens and can be selected: two buttons side by side in one square, never one inside the other.
+          <div key={id} style={style} className={`overflow-hidden rounded-[8px] ${on ? 'ring-[3px] ring-inset ring-accent' : ''}`}>
+            <button type="button" aria-label={ms !== null ? `${label(id)}, ${player!.label(id)}` : label(id)}
+              onClick={() => { tapLight(); open(id); }}
+              className="absolute inset-0 block overflow-hidden press focus-visible:ring-focus">
+              {inner}
+            </button>
+            <button type="button" aria-pressed={on} aria-label={selectLabel?.(id) ?? label(id)}
+              onClick={() => { tapLight(); onSelect(id); }}
+              className="absolute top-0 start-0 w-12 h-12 inline-flex items-start justify-start p-1.5 focus-visible:ring-focus rounded-[8px]">
+              <span className={`w-7 h-7 rounded-full inline-flex items-center justify-center ${on ? 'bg-accent-fill text-accent-fill-ink' : 'bg-veil ring-2 ring-inset ring-on-color'}`} aria-hidden="true">
+                {on && <Check className="w-4 h-4" strokeWidth={3.2} />}
+              </span>
+            </button>
+          </div>
+        ) : open ? (
           <button key={id} type="button" style={style} aria-label={ms !== null ? `${label(id)}, ${player!.label(id)}` : label(id)}
             onClick={() => { tapLight(); open(id); }}
             className="block overflow-hidden rounded-[8px] press focus-visible:ring-focus">

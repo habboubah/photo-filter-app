@@ -261,9 +261,10 @@ scenes follow the switch (docs/PLAN.md, *Pricing*).
   close button `glass-flat`, their confirm button teal with `sheen`.
 - Motion: short and soft; transform and opacity only; all of it collapses
   under reduced motion. The review card follows the finger and flies out.
-- Home (*Aufräumen*) is a greeting, then the one next step, then what is
-  marked for deletion, then *Vorschläge* (one card: the space, the bar, the
-  categories with their hue dots, *Jetzt aufräumen*). *Ordnen* opens with
+- Home (*Aufräumen*) is a greeting, then *Vorschläge* (one card: the space,
+  the bar, the figures, the categories with their hue dots, *Jetzt
+  aufräumen*), then the one next step, then what is marked for deletion,
+  then *Mehr Platz* (month by month first). *Ordnen* opens with
   search as a field. An empty list is `<Empty>`
   (illustration, one line, the way on); a real delete asks through
   `<DeleteSheet>`; a photo looked at closely opens `<ZoomView>`.

@@ -190,12 +190,13 @@ to the bottom with a fade above it).
   delete sheet — the only red button. Reviewing and deleting are two steps.
 - **Loading**: the shape of what comes, breathing softly (`skeleton`), never
   a spinner on a blank page.
-- **Home's order**: greeting, the one next step (why it is the step: a glass
-  chip on its photo, never a kicker over its title), what is marked for
-  deletion, *Vorschläge* — ONE card: the space, the library's bar, the
+- **Home's order**: greeting, *Vorschläge* first (Ahmad: the space you could
+  free up on top), then the one next step (why it is the step: a glass chip
+  on its photo, never a kicker over its title), what is marked for deletion.
+  *Vorschläge* is ONE card: the space, the library's bar, the
   photos / videos cells and the free space, then the categories as rows
   whose hue dot is their segment in the bar, and *Jetzt aufräumen* at its foot —
-  then carry on, more space, protected. On this day and the trips are
+  then more space (month by month and the later pile first), protected. On this day and the trips are
   *Ordnen*'s, not home's.
 - **Ordnen's order**: search as a field (`card`, rounded-full, 56 px), On
   this day as a large photo, the trips as tiles four to a row (name, dates,

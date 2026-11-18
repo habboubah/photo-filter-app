@@ -6,7 +6,7 @@ import { KeepAwake } from '@capacitor-community/keep-awake';
 import { AlertTriangle, FlaskConical, Images, Sparkles } from 'lucide-react';
 import { useAppStore } from './store';
 import { bytes, fmt, loadFirstRun, percent, plural, stringsFor } from './translations';
-import type { Photo, Trip } from './types';
+import type { Photo, Trip, Group } from './types';
 import { PhotoLibrary, type AlbumInfo } from './native/photoLibrary';
 import { PRODUCT_ID, Purchases } from './native/purchases';
 import { loadCities } from './cities';
@@ -803,6 +803,13 @@ export default function App() {
     return { ranked, step: null, go: () => {} };
   };
 
+  /** A group's *Alle behalten* from a list (SimilarView): every photo kept, the group leaves the list; undo takes it back. */
+  const keepGroup = (g: Group) => {
+    const ids = g.ids.filter(id => !state.kept.includes(id));
+    store.addKept(ids);
+    show(t.keepAllDone, { label: t.undo, run: () => store.removeKept(ids) });
+  };
+
   /** The one next step after the first task: the next group to compare, else home's own next step. */
   const taskNext = (): TaskNext | null => {
     if (firstOf) {
@@ -978,6 +985,7 @@ export default function App() {
           t={t} groups={similarGroups} byId={byId} kept={kept} shown={similarShown}
           onMore={() => setSimilarShown(n => n + 40)}
           onBack={() => setShowSimilar(false)} onOpen={setGroupKey}
+          onKeepAll={keepGroup} onAsideOthers={(_, ids) => toBin(ids)}
         />
       );
     }
@@ -987,6 +995,7 @@ export default function App() {
           t={t} kind="duplicate" groups={dupGroups} byId={byId} kept={kept} shown={duplicatesShown}
           onMore={() => setDuplicatesShown(n => n + 40)}
           onBack={() => setShowDuplicates(false)} onOpen={setGroupKey}
+          onKeepAll={keepGroup} onAsideOthers={(_, ids) => toBin(ids)}
         />
       );
     }
@@ -996,6 +1005,7 @@ export default function App() {
           t={t} kind="lookalike" groups={videoGroups} byId={byId} kept={kept} shown={videoGroupsShown}
           onMore={() => setVideoGroupsShown(n => n + 40)}
           onBack={() => setShowVideoGroups(false)} onOpen={setGroupKey}
+          onKeepAll={keepGroup} onAsideOthers={(_, ids) => toBin(ids)}
         />
       );
     }
@@ -1038,6 +1048,7 @@ export default function App() {
           onReview={(list: Photo[]) => startReview(reviewLarge(list))}
           onCompress={p => needUnlock(() => { void compress(p); })}
           onDelete={p => toBin([p.id])}
+          onAside={list => toBin(list.map(p => p.id))}
         />
       );
     }
@@ -1049,6 +1060,7 @@ export default function App() {
           onReview={(list: Photo[]) => startReview(reviewLarge(list))}
           onCompress={p => needUnlock(() => { void compress(p); })}
           onDelete={p => toBin([p.id])}
+          onAside={list => toBin(list.map(p => p.id))}
         />
       );
     }

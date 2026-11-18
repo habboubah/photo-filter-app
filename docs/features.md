@@ -97,15 +97,17 @@ tab again scrolls to its top; Android's back button goes from *Ordnen* to
 [Scan again] beside that.
 
 ### Aufräumen [Clean up]
-Calm and photo-led (docs/REDESIGN.md): a greeting, the one next step, what
-is marked for deletion, then the storage overview and the rest in order.
+Calm and photo-led (docs/REDESIGN.md): a greeting, *Vorschläge* (the space
+that could be freed and the library's figures), the one next step, what is
+marked for deletion, then *Mehr Platz* and *Geschützt*.
 - **A greeting** by the time of day as the screen's title (*Guten Morgen* ·
   *Guten Tag* · *Guten Abend* — no name: there is no account), and under it how many photos and videos there are and that
   they stay on the device. While the facts load, the page shows its shape as
   soft placeholders instead of blank space.
-- **The order** (since 18 November 2026): the **one next step** first — the
-  obvious thing to do — then *Zum Löschen vorgemerkt* when something waits
-  there, then *Vorschläge*.
+- **The order** (since 18 November 2026, Ahmad's call that evening):
+  **Vorschläge** first — the space you could free up on top — then the one
+  next step, then *Zum Löschen vorgemerkt* when something waits there, then
+  *Mehr Platz*.
 - **One next step**, a card made of its photos with one button; why it is
   the step (*Ein guter Anfang*, *Weiter, wo du warst* …) is a small label on
   its photo:
@@ -135,15 +137,17 @@ is marked for deletion, then the storage overview and the rest in order.
   **Jetzt aufräumen** [Clean up now]
   (the clean-up screen). Categories with nothing left in one line under it:
   *Erledigt: Duplikate, Screenshots*.
-- **Weitermachen** [Carry on]: *Später entscheiden* with the number on the
-  pile (see *Review*) and *Monat für Monat* with *38 % durchgesehen* and a
-  thin bar — the photos in months gone through, as a share of all photos
-  (rounded down, so 100 % only once every month is done) — each unless it is
-  the next step already.
+- (*Weitermachen* [Carry on] is gone since 18 November 2026: its two rows
+  moved into *Mehr Platz*.)
 - (*Aus deiner Mediathek* — On this day and the latest trip as small tiles —
   left *Aufräumen* on 18 November 2026: both live on *Ordnen*.)
-- **Mehr Platz** [More space]: *Große Dateien* [Large files], *Fotos verkleinern* [Smaller photos], on the iPhone
-  *Live Photos*, *Chats & soziale Medien* — rows with a photo.
+- **Mehr Platz** [More space]: *Monat für Monat* with *38 % durchgesehen* and
+  a thin bar — the photos in months gone through, as a share of all photos
+  (rounded down, so 100 % only once every month is done) — and *Später
+  entscheiden* with the number on the pile (see *Review*), each unless it is
+  the next step already; then *Große Dateien* [Large files], *Fotos
+  verkleinern* [Smaller photos], on the iPhone *Live Photos*, *Chats &
+  soziale Medien* — rows with a photo.
 - *Geschützt* [Protected] at the end.
 
 ### Ordnen [Organise]
@@ -216,6 +220,12 @@ is marked for deletion, then the storage overview and the rest in order.
   every photo of the group and the group is not suggested again (with undo;
   a new copy joining it later opens it again; *Von vorn anfangen* brings it
   back).
+- **Settled from the list** (since 18 November 2026): every group card on
+  *Fast gleiche Fotos*, *Duplikate* and *Ähnliche Videos* has the same two
+  choices under its photos — **Alle behalten** (the group leaves the list)
+  and **1 vormerken** [Mark 1] (the others go to *Zum Löschen vorgemerkt*;
+  the one to keep, favourites and kept photos stay) — each with undo, without
+  opening the group. A tap on the photos still opens it to compare.
 - **The best shot**: the sharpest, well exposed one; on the iPhone also the
   best face and open eyes, on Android the best faces (the YuNet face
   detector, on the phone). A favourite always wins. **It learns**: after ten
@@ -254,9 +264,14 @@ is marked for deletion, then the storage overview and the rest in order.
   *Videos*, *Fotos*. Each tile shows its size (≈ where the iPhone can only
   estimate) and a video's length. Nothing is suggested for deleting;
   *Durchgehen* reviews them with every suggestion on keep.
-- A tap opens the file: date, size, length, a play button on a video's
-  picture, **Video verkleinern** [Make video smaller] for videos of 30 MB or
-  more, and *Video/Foto löschen*.
+- **Choose several to mark** (since 18 November 2026): every tile has a
+  circle at its top corner; tap it to select the file. With any selected the
+  button reads **Löschen vormerken · 2 Dateien · 265 MB** [Mark for deletion]
+  (into *Zum Löschen vorgemerkt*, nothing is deleted) with *Auswahl aufheben*
+  under it.
+- A tap elsewhere on a tile opens the file: date, size, length, a play button
+  on a video's picture, **Video verkleinern** [Make video smaller] for videos
+  of 30 MB or more, and *Löschen vormerken*.
 - **Making a video smaller** (free for now, later the unlock): a copy at about a third of the
   bitrate (iPhone: HEVC at most 1080p; Android: HEVC where the phone can, 2–8
   Mbit/s) is saved next to the original with its date and place, with progress
