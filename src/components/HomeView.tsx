@@ -6,6 +6,7 @@ import type { Access } from '../native/photoLibrary';
 import type { ScanView } from '../store';
 import { Strings, ago, bytes, fmt, num, percent, plural } from '../translations';
 import { etaWords } from '../logic/eta';
+import { type Found, type FoundKey, gainOf, nextStepKind, rankCategories } from '../logic/nextStep';
 import { Empty, Group, IconTile, Next, Row, Screen, SectionHead } from '../ui/Screen';
 import { Button, IconButton } from '../ui/Button';
 import { BigNumber, Progress } from '../ui/Controls';
@@ -15,14 +16,10 @@ import { Thumb } from '../ui/Photo';
 import { LARGE } from '../thumbs';
 import { Confirm } from '../ui/Sheet';
 
-/** The categories that suggest photos to delete, each a row on home. */
-export type FoundKey = 'duplicates' | 'similar' | 'videos' | 'failed' | 'screenshots' | 'utility';
+export type { Found, FoundKey } from '../logic/nextStep';
 
 /** A count and its size. */
 export interface Stat { count: number; bytes: number }
-
-/** One category: how many of it there are (groups or photos, as its screen counts), and a few of its photos. */
-export interface Found { items: number; covers: string[] }
 
 /** The month to go on with (the newest not gone through yet), with what it holds. */
 export interface NextMonth { key: string; name: string; photos: number; bytes: number; covers: string[] }
@@ -44,7 +41,6 @@ interface Props {
   apps: { bytes: number; cover?: string } | null;
   storage: Storage | null;
   freedBytes: number;
-  streak: number;
   /** Months gone through, and the share of all photos in them (src/logic/months.ts progress). */
   months: { done: number; total: number; pct: number };
   /** The newest month not gone through yet (none when every month is done). */
@@ -100,6 +96,29 @@ export function etaText(t: Strings, seconds: number | null | undefined): string 
   return w.minutes ? fmt(t.scanEtaHours, { h: num(t, w.hours), m: num(t, w.minutes) }) : fmt(t.scanEtaHoursOnly, { h: num(t, w.hours) });
 }
 
+/** A category's name and what its screen counts (groups or photos) — for home's rows and the reveal after the first scan. */
+export function categoryWords(t: Strings): Record<FoundKey, { label: string; unit: 'groups' | 'photos' }> {
+  return {
+    duplicates: { label: t.duplicatesTile, unit: 'groups' },
+    similar: { label: t.similarTile, unit: 'groups' },
+    videos: { label: t.lookalikeTitle, unit: 'groups' },
+    failed: { label: t.failedTile, unit: 'photos' },
+    screenshots: { label: t.screenshotsTile, unit: 'photos' },
+    utility: { label: t.utilityTile, unit: 'photos' },
+  };
+}
+
+/** What a category row counts: the photos that could go when the summary knows them, else its groups or photos. */
+export function categoryCount(t: Strings, c: { key: FoundKey; items: number; gain: { count: number } }): string {
+  if (c.gain.count > 0) return plural(t, c.key === 'videos' ? 'videos' : 'photos', c.gain.count);
+  return plural(t, categoryWords(t)[c.key].unit, c.items);
+}
+
+/** The line under a recommended category: what could go and how much space that is. */
+export function categoryMeta(t: Strings, c: { key: FoundKey; items: number; gain: { count: number; bytes: number } }): string {
+  return c.gain.bytes > 0 ? fmt(t.nextCategoryMeta, { count: categoryCount(t, c), size: bytes(t, c.gain.bytes) }) : categoryCount(t, c);
+}
+
 type Step = { eyebrow: string; title: string; meta: string; covers: string[]; button: string; onGo: () => void; more?: { label: string; onClick: () => void } };
 
 /**
@@ -127,69 +146,54 @@ export function HomeView(p: Props) {
   const rescanLabel = p.scan.running ? `${t.rescan}: ${t.scanUpdating}` : lastScan ? `${t.rescan} (${lastScan})` : t.rescan;
 
   // The categories, each with the space it would free (from the summary, so every figure agrees).
-  const gain = (k: FoundKey) => {
-    if (!summary) return { bytes: 0, count: 0 };
-    switch (k) {
-      case 'duplicates': return summary.duplicates;
-      case 'videos': return summary.lookalike;
-      case 'similar': return summary.similar;
-      case 'failed': return { bytes: summary.blurry.bytes + summary.exposure.bytes, count: summary.blurry.count + summary.exposure.count };
-      case 'screenshots': return summary.screenshots;
-      case 'utility': return summary.utility;
-    }
-  };
+  const gain = (k: FoundKey) => gainOf(summary, k);
+  const words = categoryWords(t);
   const meta: Record<FoundKey, { label: string; icon: React.ComponentType<{ className?: string; strokeWidth?: number }>; hue: string; unit: 'groups' | 'photos'; onClick: () => void }> = {
-    duplicates: { label: t.duplicatesTile, icon: Sparkles, hue: 'rose', unit: 'groups', onClick: p.onDuplicates },
-    similar: { label: t.similarTile, icon: Sparkles, hue: 'lilac', unit: 'groups', onClick: p.onSimilar },
-    videos: { label: t.lookalikeTitle, icon: Video, hue: 'cyan', unit: 'groups', onClick: p.onVideoGroups },
-    failed: { label: t.failedTile, icon: Sparkles, hue: 'sand', unit: 'photos', onClick: p.onBlurry },
-    screenshots: { label: t.screenshotsTile, icon: Sparkles, hue: 'sky', unit: 'photos', onClick: p.onScreenshots },
-    utility: { label: t.utilityTile, icon: Sparkles, hue: 'mint', unit: 'photos', onClick: p.onUtility },
+    duplicates: { ...words.duplicates, icon: Sparkles, hue: 'rose', onClick: p.onDuplicates },
+    similar: { ...words.similar, icon: Sparkles, hue: 'lilac', onClick: p.onSimilar },
+    videos: { ...words.videos, icon: Video, hue: 'cyan', onClick: p.onVideoGroups },
+    failed: { ...words.failed, icon: Sparkles, hue: 'sand', onClick: p.onBlurry },
+    screenshots: { ...words.screenshots, icon: Sparkles, hue: 'sky', onClick: p.onScreenshots },
+    utility: { ...words.utility, icon: Sparkles, hue: 'mint', onClick: p.onUtility },
   };
   const keys = (Object.keys(meta) as FoundKey[]).filter(k => p.found[k]);
-  const cats = keys.filter(k => p.found[k]!.items > 0)
-    .map(k => ({ key: k, ...meta[k], ...p.found[k]!, gain: gain(k) }))
-    .sort((a, b) => b.gain.bytes - a.gain.bytes || b.items - a.items);
+  const cats = rankCategories(p.found, summary).map(c => ({ ...meta[c.key], ...c }));
   const done = keys.filter(k => p.found[k]!.items === 0).map(k => meta[k].label);
   const bar = keys.map(k => ({ key: k, hue: meta[k].hue, bytes: gain(k).bytes, label: meta[k].label }));
-  /** What a category row counts: the photos that could go when the summary knows them, else its groups or photos. */
-  const countOf = (c: (typeof cats)[number]) => (c.gain.count > 0 ? plural(t, c.key === 'videos' ? 'videos' : 'photos', c.gain.count) : plural(t, c.unit, c.items));
+  const countOf = (c: (typeof cats)[number]) => categoryCount(t, c);
 
   /* ---------------------------------------------------------- the next step */
 
   const pctText = percent(t, p.months.pct);
-  let kind: 'month' | 'later' | 'category' | 'start' | null = null;
+  // Which step it is: src/logic/nextStep.ts (the reveal after the first scan recommends the same one).
+  const kind = nextStepKind({ monthsDone: p.months.done, hasNextMonth: !!p.nextMonth, later: p.later.count, categories: cats.length, scanning: p.scan.running });
   let step: Step | null = null;
-  if (p.months.done > 0 && p.nextMonth) {
+  if (kind === 'month' && p.nextMonth) {
     // Progress exists: go on with the next month.
     const m = p.nextMonth;
-    kind = 'month';
     step = {
       eyebrow: t.nextResumeEyebrow, title: m.name, covers: m.covers,
       meta: fmt(t.nextResumeMeta, { photos: plural(t, 'photos', m.photos), pct: pctText }),
       button: fmt(t.nextResumeButton, { month: m.name }), onGo: () => p.onMonth(m.key),
       more: { label: t.nextAllMonths, onClick: p.onMonths },
     };
-  } else if (p.later.count > 0) {
+  } else if (kind === 'later') {
     // Photos put off in a review wait for a decision.
-    kind = 'later';
     step = {
       eyebrow: t.nextLaterEyebrow, title: t.laterCard, covers: p.later.cover ? [p.later.cover] : [],
       meta: fmt(t.nextLaterMeta, { photos: plural(t, 'photos', p.later.count) }), button: t.nextLaterButton, onGo: p.onLater,
     };
-  } else if (cats[0]) {
+  } else if (kind === 'category') {
     // A good place to start: the category that frees the most.
     const top = cats[0];
-    kind = 'category';
     step = {
       eyebrow: t.nextStartEyebrow, title: top.label, covers: top.covers,
-      meta: top.gain.bytes > 0 ? fmt(t.nextCategoryMeta, { count: countOf(top), size: bytes(t, top.gain.bytes) }) : countOf(top),
+      meta: categoryMeta(t, top),
       button: t.nextCategoryButton, onGo: top.onClick,
     };
-  } else if (p.nextMonth && !p.scan.running) {
+  } else if (kind === 'start' && p.nextMonth) {
     // Nothing found to clean up: month by month, the newest first.
     const m = p.nextMonth;
-    kind = 'start';
     step = {
       eyebrow: t.monthsCard, title: m.name, covers: m.covers, meta: t.nextMonthsStartMeta,
       button: fmt(t.nextMonthsStartButton, { month: m.name }), onGo: () => p.onMonth(m.key),
@@ -245,7 +249,7 @@ export function HomeView(p: Props) {
 
       {has && summary && (
         <CleanupCard
-          t={t} summary={summary} bar={bar} library={p.analysis} storage={p.storage} freedBytes={p.freedBytes} streak={p.streak}
+          t={t} summary={summary} bar={bar} library={p.analysis} storage={p.storage} freedBytes={p.freedBytes}
           onOpen={p.onCleanup} onPhotos={p.onMonths} onVideos={p.onVideos}
         />
       )}
@@ -398,7 +402,7 @@ function AsideCard({ t, bin, onClick }: { t: Strings; bin: Props['bin']; onClick
   const line = `${plural(t, 'photos', bin.count)} · ${bytes(t, bin.bytes)}`;
   return (
     <button
-      type="button" onClick={() => { tapLight(); onClick(); }} aria-label={`${t.binTitle}: ${line}. ${t.binCardBody}`}
+      type="button" data-tip="tip.bin" onClick={() => { tapLight(); onClick(); }} aria-label={`${t.binTitle}: ${line}. ${t.binCardBody}`}
       className="w-full rounded-md card p-3 text-start press focus-visible:ring-focus"
     >
       <span className="grid grid-cols-4 gap-[4px]" aria-hidden="true">
@@ -542,9 +546,9 @@ function LibraryTable({ t, library, marked, onPhotos, onVideos }: {
  * videos, paler — and its legend, then the table of photos and videos (scanned,
  * good, could go), the free space and the button.
  */
-function CleanupCard({ t, summary, bar, library, storage, freedBytes, streak, onOpen, onPhotos, onVideos }: {
+function CleanupCard({ t, summary, bar, library, storage, freedBytes, onOpen, onPhotos, onVideos }: {
   t: Strings; summary: CleanupSummary; bar: { key: string; hue: string; bytes: number; label: string }[];
-  library: Props['analysis']; storage: Storage | null; freedBytes: number; streak: number;
+  library: Props['analysis']; storage: Storage | null; freedBytes: number;
   onOpen: () => void; onPhotos: () => void; onVideos: () => void;
 }) {
   const table = (
@@ -555,10 +559,9 @@ function CleanupCard({ t, summary, bar, library, storage, freedBytes, streak, on
   const facts = (
     <>
       {storage && <p className="text-caption text-fg-mute num mt-3">{fmt(t.storageFree, { free: bytes(t, storage.free), total: bytes(t, storage.total) })}</p>}
-      {(freedBytes > 0 || streak >= 2) && (
+      {freedBytes > 0 && (
         <p className="flex flex-wrap gap-1.5 mt-2.5">
-          {freedBytes > 0 && <span className="rounded-full bg-keep-dim text-keep text-caption font-bold num px-2.5 py-1">{fmt(t.freedSoFar, { size: bytes(t, freedBytes) })}</span>}
-          {streak >= 2 && <span className="rounded-full bg-accent-dim text-accent text-caption font-bold num px-2.5 py-1">{fmt(t.streakLine, { n: num(t, streak) })}</span>}
+          <span className="rounded-full bg-keep-dim text-keep text-caption font-bold num px-2.5 py-1">{fmt(t.freedSoFar, { size: bytes(t, freedBytes) })}</span>
         </p>
       )}
     </>

@@ -162,6 +162,7 @@ export function GroupView({ t, group, byId, kept, verdicts, debug, onBack, onPic
         {/* The series as a strip under the photo: a tap looks at a photo (it does not choose it). */}
         <div
           role="group" aria-label={fmt(t.groupSeries, { count: plural(t, unit, group.ids.length) })}
+          data-tip="tip.group"
           className="flex gap-[6px] overflow-x-auto no-scrollbar -mx-[16px] px-[16px] py-1"
         >
           {group.ids.map((id, i) => {

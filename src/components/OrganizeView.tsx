@@ -50,7 +50,7 @@ export function OrganizeView(p: Props) {
     >
       {loaded && p.onThisDay.photos > 0 && p.onThisDay.cover && (
         <button
-          type="button" onClick={() => { tapLight(); p.onOnThisDay(); }}
+          type="button" data-tip="tip.widget" onClick={() => { tapLight(); p.onOnThisDay(); }}
           className="relative block w-full aspect-[4/3] rounded-lg overflow-hidden bg-surface text-start press focus-visible:ring-focus"
         >
           <Thumb id={p.onThisDay.cover} size={LARGE} className="!rounded-none absolute inset-0" />
@@ -68,7 +68,7 @@ export function OrganizeView(p: Props) {
       )}
 
       {loaded && (
-        <section aria-labelledby="trips-h">
+        <section aria-labelledby="trips-h" data-tip="tip.trips">
           <SectionHead
             id="trips-h" title={t.tripsSection}
             // Every trip shows here; "All trips" stays for the hidden ones (at the end of that list).

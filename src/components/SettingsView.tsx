@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BadgeCheck, FileText, FlaskConical, Globe, Images, Mail, Moon, RotateCcw, ShieldCheck, Star, Unlock } from 'lucide-react';
+import { BadgeCheck, FileText, FlaskConical, Globe, Images, Lightbulb, Mail, Moon, RotateCcw, ShieldCheck, Star, Unlock } from 'lucide-react';
 import type { ThemeMode } from '../types';
 import type { Access } from '../native/photoLibrary';
 import { Language, Strings, fmt, languageNames, languages, num, percent, plural } from '../translations';
@@ -40,6 +40,8 @@ interface Props {
   onFeedback: () => void;
   onPrivacy: () => void;
   onLicences: () => void;
+  /** So funktioniert Bildklar: the welcome, the swipe hints and the tips again. */
+  onHow: () => void;
   onReset: () => void;
 }
 
@@ -57,6 +59,10 @@ export function SettingsView(p: Props) {
         </div>
       </section>
 
+      <Group>
+        <Row label={t.howTitle} sub={t.howSub} leading={<IconTile icon={Lightbulb} hue="sand" />} trailing={<Next />} onClick={p.onHow} />
+      </Group>
+
       {/* Only with limited access: full access needs nothing, and without access the app shows its permission screen. */}
       {p.access === 'limited' && (
         <Group title={t.photosSection}>
@@ -64,9 +70,11 @@ export function SettingsView(p: Props) {
         </Group>
       )}
 
+      <div data-tip="tip.reminder">
       <Group title={t.reminderSection}>
         <SwitchRow label={t.reminderRow} sub={t.reminderSub} checked={p.reminder} onChange={p.onReminder} />
       </Group>
+      </div>
 
       {(p.onSale || p.owned) && (
         <Group title={t.unlockSection}>

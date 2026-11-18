@@ -107,7 +107,7 @@ export function SearchView({ t, lang, vectors, byId, aiSeen, onBack, onOpen, onR
       onBack={onBack} backLabel={t.back} info={{ label: t.aboutScreen, close: t.close, body: t.searchIntro }} docked={docked}
     >
       <Field
-        label={t.searchLabel} hideLabel value={typed} onChange={setTyped} placeholder={t.searchPlaceholder} autoFocus
+        label={t.searchLabel} hideLabel value={typed} onChange={setTyped} placeholder={t.searchPlaceholder} autoFocus data-tip="tip.search"
         enterKeyHint="search" autoCapitalize="none" autoCorrect="off" spellCheck={false}
         onKeyDown={e => { if (e.key === 'Enter' && offered[0]) add(offered[0].concept); }}
       />

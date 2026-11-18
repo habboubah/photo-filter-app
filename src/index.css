@@ -92,7 +92,8 @@
   --shadow-e3: 0 -10px 50px var(--t-shadow-2);
 
   /* Type scale in rem so it follows Dynamic Type (dynamicType.ts): micro 11 ·
-     caption 13 · label 15 · body 17 · heading 20 · title2 22 · title 34 ·
+     caption 13 · label 15 · body 17 · heading 20 · title2 22 · title1 28 (a
+     first-run headline) · title 34 ·
      display (the big number on Aufräumen and the end screen). */
   --text-micro: 0.6875rem;   --text-micro--line-height: 0.8125rem;
   --text-caption: 0.8125rem; --text-caption--line-height: 1.125rem;
@@ -100,6 +101,7 @@
   --text-body: 1.0625rem;    --text-body--line-height: 1.375rem;
   --text-heading: 1.25rem;   --text-heading--line-height: 1.5625rem;
   --text-title2: 1.375rem;   --text-title2--line-height: 1.75rem;
+  --text-title1: 1.75rem;    --text-title1--line-height: 2.125rem;
   --text-title: 2.125rem;    --text-title--line-height: 2.5rem;
   --text-display: clamp(48px, 15vw, 68px);   --text-display--line-height: 1;
 

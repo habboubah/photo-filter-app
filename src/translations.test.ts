@@ -1,8 +1,8 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import translations, { ago, androidStrings, bytes, fmt, languageNames, languages, loadLanguage, plural, setPlatform, stringsFor } from './translations';
+import translations, { ago, androidStrings, bytes, fmt, languageNames, languages, loadFirstRun, loadLanguage, plural, setPlatform, stringsFor } from './translations';
 
-// Arabic is its own chunk: load it as the app does when it is chosen.
-beforeAll(() => loadLanguage('ar'));
+// Arabic is its own chunk, and so are the first run's German and English strings: load them as the app does.
+beforeAll(async () => { await loadLanguage('ar'); await loadFirstRun(); });
 
 describe('translations', () => {
   it('has every key with the same placeholders in every language', () => {

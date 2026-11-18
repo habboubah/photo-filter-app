@@ -34,7 +34,7 @@ export interface AppState {
   months: string[];
   /** What the app has moved to Recently Deleted / the Trash so far (not in a dry run). */
   freed: { count: number; bytes: number };
-  /** Days ("2026-11-16") with a clean-up, for the streak (src/logic/streak.ts). */
+  /** Days ("2026-11-16") with a clean-up (src/logic/streak.ts addDay). Kept, but no longer shown: the streak left home on 18 November 2026. */
   days: string[];
   /** Photos deleted without the unlock (src/logic/allowance.ts). */
   freeUsed: number;

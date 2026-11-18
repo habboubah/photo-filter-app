@@ -1,3 +1,115 @@
+# Redesign — the first five minutes, calm and clear (18 November 2026, afternoon)
+
+Ahmad's brief: Bildklar should feel like a calm, premium photo app, not a
+"cleaner"; on every screen the user knows what it is, what to do next, and
+that nothing is deleted without them. Until today there was **no onboarding
+at all**: the app opened on a permission screen, then on home. This redesign
+is an evolution — the two tabs, the next-step card, the uncropped group
+viewer, *Zum Löschen vorgemerkt* and both materials stay. The design system
+is now written down in `docs/DESIGN.md`. No detection logic, deletion
+safety, bin behaviour, privacy guarantee or native code changes.
+
+It runs in two parts with a stop between them: **the first run** (this
+section, Phase 2 of the brief), then, after Ahmad's OK, **the app-wide
+polish** (Phase 3: home, review and groups, confirmation, trips, empty
+states, a motion pass).
+
+## Research: onboarding, first run, tips, empty states
+
+The research of 17 November (below) covered the look and the structure. This
+adds what it left out. Sources: the apps' store pages and reviews, press
+reviews, Google's help pages, and onboarding write-ups (NN/g via Uxcel,
+Shopify, Appcues), read 18 November 2026. *Wipix* and *ByteBroom* did not
+turn up under those names; the closest of their kind stand in (swipe decks:
+Swipedeck, Swipe44, Swipe To Wipe; on-device clustering: Cluster Cleanup,
+ShotSift, Clean Kit).
+
+| App | What it does in the first minutes and around deleting | Adopt | Adapt | Avoid |
+|---|---|---|---|---|
+| **Swipewipe** | Four onboarding steps, then a trial paywall; the library in monthly chunks; *On this day* as the daily way in; a review of everything marked before it is deleted; stats and a yearly "Wrapped" | Month by month as bites; the summary before anything goes; *On this day* as a gentle way back | Progress per month as a ring, not a score | The paywall inside onboarding, weekly subscriptions, the eight-hour wait between months, stats as a game |
+| **Swipe Photo Cleaner, Swipe To Wipe, Swipe44, Swipedeck** (swipe decks) | Right keeps, left marks; a pending pile ("review bin") to look through and restore from before one confirmation; undo; the photo's size on the card; decks by month and week | "Marked, not deleted" said in the first seconds; undo always in the same place | The pending pile is our *Zum Löschen vorgemerkt* — explain it once, at the moment of the first mark | Daily reminders "to build a habit", timers and 60-second races, "fear" copy |
+| **Slidebox** | The gestures are shown on the first screen, over the real photo; up = trash (not deleted yet), a tap files into an album, back and forth compares | Teach the gestures on the real card, where they happen | One gesture per card that the user performs, instead of all at once | A gesture legend that covers the photo and has to be read first |
+| **Files by Google** | A *Clean* tab of plain suggestion cards per category, *Select files*, then one button that says exactly what happens (*Move 12 files to Trash*); Trash keeps 30 days | A button that states count and destination; the 30 days said plainly | Categories with photo, count and size (home has them) | "Junk" language; one card that deletes for good without the Trash |
+| **CleanMyPhone / Gemini Photos** | Similar shots as sets with a "best" mark the user can change; side by side with size and date; reviewers say the best pick is not always right | The best shot as a *suggestion* the user overrides; the group viewer's uncropped comparison | Say out loud that the app can be wrong: "Vorschlag – du entscheidest" | A paywall before the first result; unrelated tools (speed tests) |
+| **On-device cleaners** (Cluster Cleanup, ShotSift, Clean Kit) | "No account, no cloud, on your device" as the first promise; review first, delete after | Privacy as one of the four welcome pages and a card during the scan | — | Promising "minutes, not hours": a first scan of 50,000 photos takes what it takes — we show the time left instead |
+| **Google Photos** | Asks for access with its reason; fills the grid while it backs up; memories as cards; shared-element motion from tile to photo | Home fills in while the scan runs; results counting up | The scan's wait as the place to explain features | Nudges to buy storage |
+| **Onboarding practice** | A screen of our own before the system's permission dialog ("priming"); short, skippable intros (flows past five screens lose people); contextual tips beat front-loaded tours; one coach mark at a time, never a chain; an empty state names one action; short looping demos beat walls of text | All of it | Tips come from one queue with a pause between them; an illustration plays once and rests | A screen full of coach marks; a tour that blocks the app; tips nobody can replay |
+
+**Avoid, everywhere:** paywall nags, ads, guilt-driven storage alarms ("Your
+phone is almost full!"), streaks and leaderboards, anything that pushes
+deleting. → The **day streak** on home's clean-up card is gone from the UI
+(`HomeView` `CleanupCard`). `src/logic/streak.ts` stays: its `addDay` keeps
+`AppState.days` (set by `markDay`), which nothing shows any more.
+
+## The biggest UX problems today (from `screenshots/review-before/`)
+
+1. **No welcome.** A new user's first screen asks for the whole photo library
+   with three icon bullets and no photo in sight (`10-permission`). What
+   "selected photos" would mean is a grey caption under the button.
+2. **The first scan is an empty room.** A slim card with a sweeping bar on a
+   blank page, two tabs that lead to nothing yet (`01-scan`). Nothing says
+   what is being found, nothing uses the wait.
+3. **Home leads with a dashboard, not with the next step.** A 357-MB figure,
+   an eight-colour bar with eight legend entries and a table come first; the
+   one next step starts at the fold, under the tab bar (`02-home`).
+4. **The review explains itself in one grey line at the very bottom**
+   (`08-review`): which way is keep, what "vormerken" means and that nothing
+   is deleted have to be found out by trying. The chip says *Vorschlag:
+   löschen* where every other word says *vormerken*.
+5. **The first real delete arrives unexplained.** The sheet shows what goes,
+   but not that there are three safety nets and 30 days after them.
+6. **Protection is invisible** until someone taps the small *Schützen* in a
+   review; that favourites are never suggested is said nowhere.
+7. **Features are found by accident**: months, quick clean, search, the
+   widget and the reminder have no first-time hint; empty lists show the app
+   icon and a sentence.
+
+## The plan, on real files
+
+**Part 1 — the first run**
+
+| Step | What | Where |
+|---|---|---|
+| Flags | What was seen: `bildklar-welcome`, `bildklar-seen` (view preferences; *Von vorn anfangen* leaves them) | `src/logic/firstRun.ts` (+ test), `src/store.ts` |
+| Welcome | Four skippable pages, each an illustration of photo frames that animates its line; lazy; eight small WebPs | `src/components/WelcomeView.tsx`, `src/assets/welcome/`, `src/ui/FirstRun.tsx` (`PhotoFrame`, `Dots`, `CountUp`, `Ring`) |
+| Photo access | Why, both paths, denied without a dead end | `src/components/PermissionView.tsx` |
+| First scan | Ring, counts, time left, five rotating cards, *Schon mal umsehen* | `src/components/FirstScanView.tsx`, `App.tsx` |
+| Reveal | What was found, one recommended step from home's own choice | `src/components/RevealView.tsx`, `src/logic/nextStep.ts` (the choice moves out of `HomeView`, tested) |
+| Guided review | One performed gesture per card, then tips; a summary that counts up | `src/components/ReviewView.tsx`, `src/components/ReviewGuide.tsx` |
+| Safety moments | Three safety nets before the first delete; protection once | `src/components/SafetyNets.tsx`, `BinView.tsx`, `ReviewView.tsx` |
+| Tips | One primitive, one list, one queue; replay in Settings | `src/ui/Tip.tsx`, `src/tips.ts`, `src/components/HowView.tsx`, `SettingsView.tsx` |
+| Scripts | The captures and checks start past the first run unless they ask for it; new ui-review screens for it | `scripts/lib/shots.mjs`, `scripts/privacy-check.mjs`, `ios/AppReviewRecorder/scenes.json` |
+
+**Built (18 November 2026)**, each step a commit on `redesign-first-run`:
+all of Part 1. Decisions taken on the way:
+
+- The welcome shows only while the photo access was never asked for; an
+  install that already has access never sees it (it can replay it).
+- The reveal's button starts a review of the recommended category at once
+  (a group's best shot first, then its extra shots), so the guided review
+  follows the reveal without a list screen in between. Which category is
+  home's choice; where the button leads is the reveal's own.
+- A gesture counts as done whichever way the decision was made (swipe,
+  button, arrow key), and whichever of the three was made — nobody is asked
+  to keep or mark a photo just to learn a gesture.
+- A tip points at its real control and waits until that control is on
+  screen: the tip about *Zum Löschen vorgemerkt* shows once home is scrolled
+  to its card. Home's order is Part 2's.
+- The first run's strings are their own chunk (`translations.firstRun.ts`):
+  the main bundle grew by 2 kB instead of 12 and stays in its budget.
+- `ui-review` got the first run's screens (50–60) and a large-text variant.
+- Still stale from the "Album" redesign, not from this one: scenes 3 and 4
+  of `ios/AppReviewRecorder/scenes.json` use the labels of 17 November
+  (`npm run rehearse:app-review` stops at "Best"). The rehearsal starts past
+  the first run; the scenes are Part 2's last step, as the brief has it.
+
+**Part 2 — after the checkpoint** (Phase 3 of the brief): home (greeting,
+the next step first), review and groups (full-bleed, zoom, undo snackbar),
+confirmation sheets, trips (one menu), empty states, the motion pass
+(shared-element tile → viewer, rings, skeletons, the system back gesture).
+
+---
+
 # Redesign — "Album" on Android, calm and photo-led (18 November 2026)
 
 Ahmad asked for an Android frontend that feels like a calm, modern photo

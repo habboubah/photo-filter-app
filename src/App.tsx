@@ -5,7 +5,7 @@ import { StatusBar, Style } from '@capacitor/status-bar';
 import { KeepAwake } from '@capacitor-community/keep-awake';
 import { AlertTriangle, FlaskConical, Images, Sparkles } from 'lucide-react';
 import { useAppStore } from './store';
-import { bytes, fmt, percent, plural, stringsFor } from './translations';
+import { bytes, fmt, loadFirstRun, percent, plural, stringsFor } from './translations';
 import type { Photo, Trip } from './types';
 import { PhotoLibrary, type AlbumInfo } from './native/photoLibrary';
 import { PRODUCT_ID, Purchases } from './native/purchases';
@@ -31,7 +31,6 @@ import { APPS_TILE_MIN, groupBySource, reviewSource } from './logic/sources';
 import { cleanParts } from './logic/smartClean';
 import { type Verdict, groupVerdict } from './logic/confidence';
 import { adjustItems, strictUtility } from './logic/ledger';
-import { streak } from './logic/streak';
 import { binOutcome, binPhotos, withoutBin } from './logic/bin';
 import { feedbackMail, openExternal, privacyUrl, rateUrl, systemFromAgent } from './links';
 import { devNative, isAndroid, isIos } from './platform';
@@ -39,8 +38,10 @@ import { Toast, useToast } from './ui/Toast';
 import { PlayerContext, type Player } from './ui/play';
 import { Confirm } from './ui/Sheet';
 import { notifySuccess, tapLight } from './ui/haptics';
-import { PermissionView } from './components/PermissionView';
-import { HomeView } from './components/HomeView';
+import { HomeView, categoryMeta, categoryWords } from './components/HomeView';
+import { GESTURES, MOMENTS, hasSeen, nextGesture, nextTip } from './logic/firstRun';
+import { TIPS, TIP_IDS } from './tips';
+import { type FoundKey, nextStepKind, rankCategories } from './logic/nextStep';
 import { TabBar } from './ui/TabBar';
 
 import type { FailedTab } from './components/FailedView';
@@ -55,6 +56,12 @@ import { UNLOCK_ON_SALE, deletesUnlimited, extrasFree, freeDelete, freeLeft } fr
  * budget: scripts/perf-check.mjs). They come from local files on the phone,
  * so the wait is a frame or two.
  */
+/**
+ * A screen that shows strings of the first run (src/translations.firstRun.ts: the welcome, the tips,
+ * the guided review, the safety moments …) comes together with them — they are a chunk of their own,
+ * so a start that is past the first run never loads them.
+ */
+const withFirstRun = <T,>(screen: Promise<T>) => Promise.all([screen, loadFirstRun()]).then(([m]) => m);
 const FailedView = lazy(() => import('./components/FailedView').then(m => ({ default: m.FailedView })));
 const ScreenshotsView = lazy(() => import('./components/ScreenshotsView').then(m => ({ default: m.ScreenshotsView })));
 const QuickCleanView = lazy(() => import('./components/QuickCleanView').then(m => ({ default: m.QuickCleanView })));
@@ -69,7 +76,7 @@ const TripView = lazy(() => import('./components/TripView').then(m => ({ default
 const CleanupView = lazy(() => import('./components/CleanupView').then(m => ({ default: m.CleanupView })));
 const SimilarView = lazy(() => import('./components/SimilarView').then(m => ({ default: m.SimilarView })));
 const GroupView = lazy(() => import('./components/GroupView').then(m => ({ default: m.GroupView })));
-const ReviewView = lazy(() => import('./components/ReviewView').then(m => ({ default: m.ReviewView })));
+const ReviewView = lazy(() => withFirstRun(import('./components/ReviewView')).then(m => ({ default: m.ReviewView })));
 const AppsView = lazy(() => import('./components/AppsView').then(m => ({ default: m.AppsView })));
 const CompressView = lazy(() => import('./components/CompressView').then(m => ({ default: m.CompressView })));
 const ProtectedView = lazy(() => import('./components/ProtectedView').then(m => ({ default: m.ProtectedView })));
@@ -78,7 +85,14 @@ const LicenceView = lazy(() => import('./components/LicencesView').then(m => ({ 
 const OrganizeView = lazy(() => import('./components/OrganizeView').then(m => ({ default: m.OrganizeView })));
 const SearchView = lazy(() => import('./components/SearchView').then(m => ({ default: m.SearchView })));
 const LikeView = lazy(() => import('./components/LikeView').then(m => ({ default: m.LikeView })));
-const BinView = lazy(() => import('./components/BinView').then(m => ({ default: m.BinView })));
+const BinView = lazy(() => withFirstRun(import('./components/BinView')).then(m => ({ default: m.BinView })));
+// The first run (docs/DESIGN.md): seen once, so never part of the main bundle.
+const PermissionView = lazy(() => withFirstRun(import('./components/PermissionView')).then(m => ({ default: m.PermissionView })));
+const TipHost = lazy(() => withFirstRun(import('./ui/Tip')).then(m => ({ default: m.TipHost })));
+const WelcomeView = lazy(() => withFirstRun(import('./components/WelcomeView')).then(m => ({ default: m.WelcomeView })));
+const FirstScanView = lazy(() => withFirstRun(import('./components/FirstScanView')).then(m => ({ default: m.FirstScanView })));
+const HowView = lazy(() => withFirstRun(import('./components/HowView')).then(m => ({ default: m.HowView })));
+const RevealView = lazy(() => withFirstRun(import('./components/RevealView')).then(m => ({ default: m.RevealView })));
 
 /** Up to `n` ids spread over the list (its start, middle and end), for a cover of a few photos. */
 const spread = (ids: string[], n: number) =>
@@ -261,11 +275,16 @@ export default function App() {
   /** The part whose licence is open (Einstellungen › Lizenzen › one row). */
   const [licence, setLicence] = useState<string | null>(null);
   const [showProtected, setShowProtected] = useState(false);
+  /** Einstellungen › So funktioniert Bildklar. */
+  const [showHow, setShowHow] = useState(false);
   const [showBin, setShowBin] = useState(false);
   const [review, setReview] = useState<Review | null>(null);
   const [showSearch, setShowSearch] = useState(false);
   /** The photo whose look-alikes are shown (Ähnliche Fotos), over a review or the search. */
   const [likeId, setLikeId] = useState<string | null>(null);
+
+  /** The welcome shown again, from Einstellungen › So funktioniert Bildklar (the first start shows it by itself). */
+  const [replayWelcome, setReplayWelcome] = useState(false);
 
   const trip = tripKey ? trips.find(x => x.key === tripKey) ?? null : null;
   const group = groupKey ? groups.find(g => g.key === groupKey) ?? null : null;
@@ -302,10 +321,12 @@ export default function App() {
   // Screens pushed over Home, the deepest first. Every pushed screen must be
   // here: it drives the hardware back, the scroll reset and the slide.
   const pushed: [string, boolean, () => void][] = [
+    ['welcomeAgain', replayWelcome, () => setReplayWelcome(false)],
     ['like', !!likeId, () => setLikeId(null)],
     ['review', !!review, closeReview],
     ['licence', !!licence, () => setLicence(null)],
     ['licences', showLicences, () => setShowLicences(false)],
+    ['how', showHow, () => setShowHow(false)],
     ['protected', showProtected, () => setShowProtected(false)],
     ['bin', showBin, () => setShowBin(false)],
     ['group', !!group, () => setGroupKey(null)],
@@ -331,14 +352,48 @@ export default function App() {
   ];
   const topIndex = pushed.findIndex(([, open]) => open);
   const screen = topIndex === -1 ? 'home' : pushed[topIndex][0];
-  // The two tabs are one screen for the stack, two for the transition: switching crossfades (dir 2) instead of sliding.
-  const screenKey = screen === 'home' ? `home-${tab}` : screen;
+  // What the root shows under every pushed screen: the first run's steps one after another (the
+  // welcome, the photo access), then home. They are one screen for the stack, like the two tabs.
+  const access = store.access;
+  const hasAccess = access === 'full' || access === 'limited';
+  // The first scan of an install gets a screen of its own and, once it found enough, a reveal
+  // (docs/DESIGN.md, "The first run"). Decided once per start, as soon as it is known whether a scan
+  // ever finished: an install that was scanned before never sees them; "Neu durchsuchen" later is
+  // home's slim card. *Schon mal umsehen* and the reveal's buttons end it for good.
+  const firstScan = useRef<'active' | 'no' | null>(null);
+  if (firstScan.current === null && hasAccess && store.scanKnown) {
+    firstScan.current = store.scan.lastScanAt > 0 || hasSeen(store.seen, MOMENTS.firstScan) ? 'no' : 'active';
+  }
+  const endFirstScan = () => { firstScan.current = 'no'; store.markSeen(MOMENTS.firstScan, MOMENTS.reveal); };
+  useEffect(() => {
+    if (firstScan.current === 'no') store.markSeen(MOMENTS.firstScan, MOMENTS.reveal);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasAccess, store.scanKnown]);
+  // Enough is found once every photo was analysed: the AI's long pass then only adds to it.
+  const scanFinished = !store.scan.running && store.scan.lastScanAt > 0;
+  const enoughFound = photos !== null && (scanFinished || (store.scan.running && store.scan.phase === 'ai'));
+  const root = !access || (hasAccess && !store.scanKnown) ? 'loading'
+    : !store.welcomeSeen && access === 'notDetermined' ? 'welcome'
+      : !hasAccess ? 'permission'
+        : firstScan.current !== 'active' ? 'home'
+          : !enoughFound ? 'firstScan'
+            : photos && photos.length > 0 ? 'reveal'
+              : 'home';
+  // An empty library has nothing to reveal: home says so.
+  useEffect(() => {
+    if (firstScan.current === 'active' && scanFinished && photos && photos.length === 0) endFirstScan();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scanFinished, photos]);
+  // The two tabs and the first run's steps are one screen for the stack, but each its own for the
+  // transition: going from one to the next crossfades (dir 2) instead of sliding.
+  const screenKey = screen !== 'home' ? screen : root === 'home' ? `home-${tab}` : `root-${root}`;
+  const isRoot = (key: string) => key.startsWith('home-') || key.startsWith('root-');
 
   const nav = useRef({ screen: screenKey, depth: 0, dir: 0 });
   const depth = topIndex === -1 ? 0 : pushed.filter(([, open]) => open).length;
   if (nav.current.screen !== screenKey) {
-    const tabSwitch = screen === 'home' && nav.current.screen.startsWith('home-');
-    nav.current = { screen: screenKey, depth, dir: tabSwitch ? 2 : depth > nav.current.depth ? 1 : -1 };
+    const rootSwitch = screen === 'home' && isRoot(nav.current.screen);
+    nav.current = { screen: screenKey, depth, dir: rootSwitch ? 2 : depth > nav.current.depth ? 1 : -1 };
   }
   const dir = nav.current.dir;
   const rtl = t.dir === 'rtl' ? -1 : 1;
@@ -624,8 +679,6 @@ export default function App() {
 
   const rate = rateUrl(isAndroid() ? 'android' : isIos() || devNative() ? 'ios' : 'web');
   const byId = lib.byId;
-  const access = store.access;
-  const hasAccess = access === 'full' || access === 'limited';
 
   // A video plays inside the app (src/ui/play.tsx): the native player over the app, never another app.
   const player: Player = {
@@ -642,7 +695,92 @@ export default function App() {
     await store.accessGranted(a);
   };
 
+  /* ----------------------------------------------- the guide and the tips */
+
+  // The guided review (src/components/ReviewGuide.tsx): the gesture still to be done once, or null.
+  const teach = nextGesture(store.seen);
+  // An install that has gone through reviews before this version knows the gestures.
+  useEffect(() => {
+    if (store.stateReady && Object.keys(state.ledger).length > 0) store.markSeen(...GESTURES);
+    // And one that has deleted before has met the system's dialog and the 30 days.
+    if (store.stateReady && state.freed.count > 0) store.markSeen(MOMENTS.safety);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [store.stateReady]);
+  // The one tip that is due (src/tips.ts): the first unseen one of this screen whose moment has come.
+  const moments = new Set<string>();
+  const card = review && !review.finished ? review.session.items[review.session.index] : undefined;
+  if (card && !review?.bin && !teach) {
+    moments.add('gesturesLearned');
+    if (card.suggest !== 'none') moments.add('suggestionShown');
+  }
+  if (state.bin.length > 0) moments.add('somethingMarked');
+  const due = nextTip(TIPS, store.seen, screenKey, moments);
+
+  /* ------------------------------------------------- home and the reveal */
+
+  // What home's rows and the reveal after the first scan show: per category how much there is and a few of its photos.
+  const failedAll = [...blurry, ...exposureAll];
+  const found: Partial<Record<FoundKey, { items: number; covers: string[] }>> = {
+    duplicates: { items: dupGroups.length, covers: dupGroups.slice(0, 4).map(g => g.ids.find(id => id !== g.suggested) ?? g.ids[0]) },
+    videos: { items: videoGroups.length, covers: videoGroups.slice(0, 4).map(g => g.ids.find(id => id !== g.suggested) ?? g.ids[0]) },
+    similar: { items: similarGroups.length, covers: similarGroups.slice(0, 4).map(g => g.suggested) },
+    failed: { items: failedAll.length, covers: failedAll.slice(0, 4).map(x => x.id) },
+    screenshots: { items: shots.length, covers: shots.slice(0, 4).map(x => x.id) },
+    ...(aiSeen.seen > 0 ? { utility: { items: utility.length, covers: utility.slice(0, 4).map(x => x.id) } } : {}),
+  };
+  // Home's one next step (src/components/HomeView.tsx): the newest month not gone through, and the latest trip for its small tile.
+  const next = months.find(m => !doneMonths.has(m.key));
+  const nextMonth = next ? {
+    key: next.key, photos: next.ids.length, bytes: next.bytes,
+    name: new Date(next.year, next.month, 1).toLocaleDateString(t.locale, { month: 'long', year: 'numeric' }),
+    covers: spread(next.ids.filter(id => !byId.get(id)?.shot && !byId.get(id)?.video), 3),
+  } : null;
+  const latestTrip = trips.filter(x => !x.ignored).reduce<Trip | null>((a, x) => (!a || x.start > a.start ? x : a), null);
+
+  /** One category gone through as a review: a group's best shot first (keep), then its extra shots; the single photos as their screens review them. */
+  const reviewCategory = (key: FoundKey) => {
+    const series = (list: typeof groups) => list.flatMap(g => reviewGroup(g, kept, byId, cos));
+    startReview(
+      key === 'similar' ? series(similarGroups)
+        : key === 'duplicates' ? series(dupGroups)
+          : key === 'videos' ? series(videoGroups)
+            : key === 'failed' ? reviewCleanup([], cleanupBlurry(blurry, kept), kept, byId, [], [], exposureAll, cos)
+              : key === 'screenshots' ? reviewScreenshots(shots)
+                : reviewUtility(utility),
+    );
+  };
+
+  // The reveal's one recommended step: the choice home's next-step card makes (src/logic/nextStep.ts).
+  const revealStep = () => {
+    const ranked = rankCategories(found, summary);
+    const kind = nextStepKind({ monthsDone: doneMonths.size, hasNextMonth: !!nextMonth, later: laterPile.length, categories: ranked.length, scanning: store.scan.running });
+    const top = ranked[0];
+    if (kind === 'category' && top) {
+      return {
+        ranked,
+        step: { eyebrow: t.nextStartEyebrow, title: categoryWords(t)[top.key].label, meta: categoryMeta(t, top), covers: top.covers },
+        go: () => reviewCategory(top.key),
+      };
+    }
+    if (kind === 'later') {
+      return {
+        ranked,
+        step: { eyebrow: t.nextLaterEyebrow, title: t.laterCard, meta: fmt(t.nextLaterMeta, { photos: plural(t, 'photos', laterPile.length) }), button: t.nextLaterButton, covers: laterPile.slice(0, 1) },
+        go: () => startReview(reviewLater(laterPile)),
+      };
+    }
+    if ((kind === 'month' || kind === 'start') && nextMonth) {
+      return {
+        ranked,
+        step: { eyebrow: t.monthsCard, title: nextMonth.name, meta: t.nextMonthsStartMeta, button: fmt(t.nextMonthsStartButton, { month: nextMonth.name }), covers: nextMonth.covers },
+        go: () => openMonth(nextMonth.key),
+      };
+    }
+    return { ranked, step: null, go: () => {} };
+  };
+
   const content = () => {
+    if (replayWelcome) return <WelcomeView t={t} onDone={() => setReplayWelcome(false)} />;
     if (likeId) {
       return (
         <LikeView
@@ -657,6 +795,8 @@ export default function App() {
         <ReviewView
           t={t} session={review.session} finished={review.finished} byId={review.bin ? all.byId : byId} debug={store.debug} bin={review.bin}
           onDecide={onDecide} onUndo={onUndo} albums={chips} android={isAndroid()} onFile={onFile}
+          guide={review.bin || !teach ? undefined : { gesture: teach, onDid: g => store.markSeen(g), onSkip: () => store.markSeen(...GESTURES) }}
+          protectNote={!hasSeen(store.seen, MOMENTS.protect)} onProtectNote={() => store.markSeen(MOMENTS.protect)}
           onProtect={id => { store.protectPhotos([id], true); onDecide('keep'); show(t.protected); }}
           onPreview={player.play}
           onLike={review.bin ? undefined : id => { if (store.vectors.has(id)) setLikeId(id); else show(t.likeNone); }}
@@ -683,6 +823,22 @@ export default function App() {
     }
     if (licence) return <LicenceView t={t} name={licence} onBack={() => setLicence(null)} />;
     if (showLicences) return <LicencesView t={t} onBack={() => setShowLicences(false)} onOpen={setLicence} />;
+    if (showHow) {
+      return (
+        <HowView
+          t={t} onBack={() => setShowHow(false)}
+          onWelcome={() => setReplayWelcome(true)}
+          onGuide={() => {
+            store.replay([...GESTURES]);
+            // Practise on what is there to go through; with nothing suggested, the hints wait for the next review.
+            const items = reviewCleanup(groups, cleanupBlurry(blurry, kept), kept, byId, old, utility, exposureAll, cos);
+            if (items.length) startReview(items); else show(t.howGuideDone);
+          }}
+          onTips={() => { store.replay(TIP_IDS); show(t.howTipsDone); }}
+          onHide={() => { store.hideAllHints(); show(t.howHideDone); }}
+        />
+      );
+    }
     if (showProtected) {
       return (
         <ProtectedView
@@ -702,6 +858,7 @@ export default function App() {
       return (
         <BinView
           t={t} photos={binned}
+          safetySeen={hasSeen(store.seen, MOMENTS.safety)} onSafetySeen={() => store.markSeen(MOMENTS.safety)}
           onBack={() => setShowBin(false)}
           onRestore={ids => { store.binRemove(ids); show(plural(t, 'binRestored', ids.length), { label: t.undo, run: () => store.binAdd(ids) }); }}
           onDelete={ids => deletePhotos(ids, [], () => { if (ids.length === binned.length) setShowBin(false); })}
@@ -930,6 +1087,7 @@ export default function App() {
           onFeedback={() => openExternal(feedbackMail(t, __APP_VERSION__, systemFromAgent(navigator.userAgent)))}
           onPrivacy={() => openExternal(privacyUrl(language))}
           onLicences={() => setShowLicences(true)}
+          onHow={() => setShowHow(true)}
           onReset={() => {
             const before = store.resetDecisions();
             show(t.resetDone, { label: t.undo, run: () => store.restoreState(before) });
@@ -937,10 +1095,11 @@ export default function App() {
         />
       );
     }
-    if (access && !hasAccess) {
+    if (root === 'welcome') return <WelcomeView t={t} onDone={() => store.setWelcomeSeen(true)} />;
+    if (root === 'permission' && access) {
       return (
         <PermissionView
-          t={t} access={access} albums
+          t={t} access={access}
           onAllow={async () => {
             const { access: a } = await PhotoLibrary.requestAccess().catch(() => ({ access: 'denied' as const }));
             await store.accessGranted(a);
@@ -950,7 +1109,26 @@ export default function App() {
         />
       );
     }
-    if (!access) return <div className="min-h-screen" aria-busy="true" />;
+    if (root === 'loading') return <div className="min-h-screen" aria-busy="true" />;
+    if (root === 'firstScan') {
+      return (
+        <FirstScanView
+          t={t} scan={store.scan} onLookAround={endFirstScan}
+          found={{ trips: trips.filter(x => !x.ignored).length, similar: similarGroups.length, duplicates: dupGroups.length, screenshots: shots.length }}
+        />
+      );
+    }
+    if (root === 'reveal') {
+      const r = revealStep();
+      return (
+        <RevealView
+          t={t} files={photos?.length ?? 0} categories={r.ranked} freeable={summary?.total.bytes ?? 0}
+          trips={trips.filter(x => !x.ignored).length} tripCover={latestTrip ? latestTrip.ids[Math.floor(latestTrip.ids.length / 2)] : undefined}
+          aiRunning={store.scan.running} step={r.step}
+          onGo={() => { endFirstScan(); r.go(); }} onLookAround={endFirstScan}
+        />
+      );
+    }
     if (tab === 'organize') {
       return (
         <OrganizeView
@@ -966,33 +1144,17 @@ export default function App() {
         />
       );
     }
-    const failedAll = [...blurry, ...exposureAll];
-    // Home's one next step (src/components/HomeView.tsx): the newest month not gone through, and the latest trip for its small tile.
-    const next = months.find(m => !doneMonths.has(m.key));
-    const nextMonth = next ? {
-      key: next.key, photos: next.ids.length, bytes: next.bytes,
-      name: new Date(next.year, next.month, 1).toLocaleDateString(t.locale, { month: 'long', year: 'numeric' }),
-      covers: spread(next.ids.filter(id => !byId.get(id)?.shot && !byId.get(id)?.video), 3),
-    } : null;
-    const latestTrip = trips.filter(x => !x.ignored).reduce<Trip | null>((a, x) => (!a || x.start > a.start ? x : a), null);
     return (
       <HomeView
         t={t} access={access} photoCount={photos ? photos.length : null} scan={store.scan} summary={summary}
-        found={{
-          duplicates: { items: dupGroups.length, covers: dupGroups.slice(0, 4).map(g => g.ids.find(id => id !== g.suggested) ?? g.ids[0]) },
-          videos: { items: videoGroups.length, covers: videoGroups.slice(0, 4).map(g => g.ids.find(id => id !== g.suggested) ?? g.ids[0]) },
-          similar: { items: similarGroups.length, covers: similarGroups.slice(0, 4).map(g => g.suggested) },
-          failed: { items: failedAll.length, covers: failedAll.slice(0, 4).map(x => x.id) },
-          screenshots: { items: shots.length, covers: shots.slice(0, 4).map(x => x.id) },
-          ...(aiSeen.seen > 0 ? { utility: { items: utility.length, covers: utility.slice(0, 4).map(x => x.id) } } : {}),
-        }}
+        found={found}
         large={{ count: large.length, bytes: large.reduce((sum, x) => sum + x.bytes, 0), cover: large[0]?.id }}
         liveCount={isAndroid() ? 0 : live.length} liveCover={live[0]?.id}
         compress={{ count: compressible.photos.length + compressible.screenshots.length, saving: compressible.saving, cover: (compressible.photos[0] ?? compressible.screenshots[0])?.id }}
         onCompress={() => setShowCompress(true)}
         apps={sourcesBytes >= APPS_TILE_MIN ? { bytes: sourcesBytes, cover: sources[0]?.photos[0]?.id } : null}
         onApps={() => setShowApps(true)}
-        storage={store.storage} freedBytes={state.freed.bytes} streak={streak(state.days, now)}
+        storage={store.storage} freedBytes={state.freed.bytes}
         months={{ done: months.filter(m => doneMonths.has(m.key)).length, total: months.length, pct }}
         nextMonth={nextMonth}
         onMonth={openMonth}
@@ -1050,7 +1212,7 @@ export default function App() {
         <Suspense fallback={<div className="min-h-screen" aria-busy="true" />}>{content()}</Suspense>
       </motion.div>
 
-      {screen === 'home' && hasAccess && (
+      {screen === 'home' && root === 'home' && (
         <TabBar
           label={t.tabsLabel} current={tab} onChange={switchTab}
           tabs={[{ key: 'clean', label: t.tabClean, icon: Sparkles }, { key: 'organize', label: t.tabOrganize, icon: Images }]}
@@ -1122,6 +1284,9 @@ export default function App() {
           <Progress value={compressing?.progress ?? null} label={t.compressing} />
         </div>
       </Sheet>
+
+      {/* The one tip that is due: loaded (with its words) only when there is one. */}
+      {due && <Suspense fallback={null}><TipHost t={t} tip={due} onSeen={store.markSeen} /></Suspense>}
 
       <Toast toast={toast} onDone={hide} raised={screen === 'bin' ? 'high' : ['trip', 'group', 'blurry', 'screenshots', 'utility', 'quickClean', 'large', 'live', 'compress', 'cleanup', 'review', 'search', 'like'].includes(screen)} />
     </div>

@@ -19,6 +19,7 @@ import type { SortKey } from './logic/sort';
 import { toggled } from './logic/protect';
 import { UNLOCK_ON_SALE } from './logic/allowance';
 import { type Source, sourceOfAlbum } from './logic/sources';
+import { ALL, parseSeen, serializeSeen, withSeen, withoutSeen } from './logic/firstRun';
 import { isAndroid } from './platform';
 import { LocalNotifications } from '@capacitor/local-notifications';
 
@@ -26,8 +27,9 @@ import { LocalNotifications } from '@capacitor/local-notifications';
  * All state lives here (no store library): the photo facts, the scan, the
  * access, the unlock, the user's decisions and the view preferences.
  *
- * - View preferences (language, theme, dry run) are `bildklar-*` keys in
- *   localStorage: losing them costs nothing.
+ * - View preferences (language, theme, dry run, what of the first run was
+ *   seen) are `bildklar-*` keys in localStorage: losing them costs nothing —
+ *   a welcome or a hint showing again is harmless.
  * - The decisions (src/logic/state.ts) go through the native plugin into
  *   SQLite (PhotoLibrary getState/setState) — localStorage on the web —
  *   debounced, and only after they were read, so a slow first read can never
@@ -43,6 +45,10 @@ const K = {
   theme: 'bildklar-theme',
   dryRun: 'bildklar-dry-run',
   reminder: 'bildklar-reminder',
+  /** The welcome was seen ("1"). */
+  welcome: 'bildklar-welcome',
+  /** What else of the first run was seen: a JSON list of ids (src/logic/firstRun.ts). */
+  seen: 'bildklar-seen',
 } as const;
 
 /** The weekly reminder's id in the system (one notification, repeating). */
@@ -215,7 +221,7 @@ export function useAppStore() {
   const countFree = (n: number) => {
     if (n > 0) setState(s => ({ ...s, freeUsed: s.freeUsed + n }));
   };
-  /** Today counts for the streak: something was cleaned up. */
+  /** Today had a clean-up (AppState.days; nothing shows it since the streak left home, 18 November 2026). */
   const markDay = () => setState(s => {
     const days = addDay(s.days, Date.now());
     return days === s.days ? s : { ...s, days };
@@ -257,6 +263,8 @@ export function useAppStore() {
   /** The facts as the phone reports them; `photos` (below) are these with the label scores laid on. */
   const [facts, setPhotos] = useState<Photo[] | null>(null);
   const [scan, setScan] = useState<ScanView>({ running: false, phase: 'list', done: 0, total: 0, lastScanAt: 0 });
+  /** Whether a scan ever finished is known (`scan.lastScanAt`): asked at launch, so a first scan is not mistaken for one. */
+  const [scanKnown, setScanKnown] = useState(false);
   const [faces, setFaces] = useState<Map<string, Partial<Photo>>>(() => new Map());
   const [storage, setStorage] = useState<Storage | null>(null);
   const loading = useRef(false);
@@ -376,9 +384,12 @@ export function useAppStore() {
     let alive = true;
     void (async () => {
       const a = await refreshAccess();
-      if (!alive || (a !== 'full' && a !== 'limited')) return;
+      if (!alive) return;
+      // Without access nothing was ever scanned: a scan after the permission is the first one.
+      if (a !== 'full' && a !== 'limited') { setScanKnown(true); return; }
       const s = await PhotoLibrary.getScanState().catch(() => null);
       if (s) setScan(v => ({ ...v, lastScanAt: s.lastScanAt }));
+      setScanKnown(true);
       await reload();
       if (alive) startScan();
     })();
@@ -533,6 +544,24 @@ export function useAppStore() {
     }
   }, []);
 
+  /* ------------------------------------------------------ the first run */
+
+  // The welcome and every one-time hint (src/logic/firstRun.ts). "Von vorn anfangen" leaves them:
+  // they are about knowing the app, not about decisions.
+  const [welcomeSeen, setWelcomeSeenState] = useState(() => read(K.welcome) === '1');
+  const setWelcomeSeen = useCallback((v: boolean) => {
+    setWelcomeSeenState(v);
+    if (v) write(K.welcome, '1'); else { try { localStorage.removeItem(K.welcome); } catch { /* storage is unavailable */ } }
+  }, []);
+  const [seen, setSeen] = useState(() => parseSeen(read(K.seen)));
+  useEffect(() => { write(K.seen, serializeSeen(seen)); }, [seen]);
+  /** These moments or tips were shown (or done): never again by themselves. */
+  const markSeen = useCallback((...ids: string[]) => setSeen(s => withSeen(s, ids)), []);
+  /** Shows these again; `null` shows every hint again. */
+  const replay = useCallback((ids: string[] | null) => setSeen(s => withoutSeen(s, ids)), []);
+  /** Hides every hint from now on (Settings › So funktioniert Bildklar). */
+  const hideAllHints = useCallback(() => setSeen(s => withSeen(s, [ALL])), []);
+
   /* --------------------------------------------------- view preferences */
 
   useEffect(() => {
@@ -561,9 +590,10 @@ export function useAppStore() {
     debug, dryRunAvailable, dryRun, setDryRun,
     state, stateReady, storageError, updateTrips, recordAlbum, setBest, recordReview, addKept, removeKept, updateLater, pruneLaterPile, binAdd, binRemove, pruneBin, setSort, protectPhotos, protectTrip, protectAlbum, protectSimilar, albumMembers, useAlbums, markMonthDone, addFreed, markDay, countFree, resetDecisions, restoreState,
     reminder, setReminder,
+    welcomeSeen, setWelcomeSeen, seen, markSeen, replay, hideAllHints,
     owned: isOwned, setOwned,
     access, refreshAccess, accessGranted,
-    photos, scan, startScan, rescanAll, reload, removePhotos, vectors,
+    photos, scan, scanKnown, startScan, rescanAll, reload, removePhotos, vectors,
     faces, scoreFaces,
     appAlbums,
     storage, refreshStorage,

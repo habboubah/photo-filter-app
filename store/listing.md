@@ -196,6 +196,10 @@ Version 2.3.0: `release-notes/2.3.0/` (the calm redesign of 18 November
 2026: one next step, comparing similar shots, *Zum Löschen vorgemerkt* instead of
 *Zum Löschen* with a check before deleting, the scan in the background with the
 time left, all search words).
+Version 2.4.0: `release-notes/2.4.0/` (the first run of 18 November 2026: the
+welcome, photo access explained, the first scan's screen and its reveal, the
+guided review, the three safety nets, one-time tips and *So funktioniert
+Bildklar*).
 
 ### 2.5 App Review information
 

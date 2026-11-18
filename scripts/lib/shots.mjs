@@ -45,6 +45,7 @@ export async function loadSource() {
   try {
     const tr = await vite.ssrLoadModule('/src/translations.ts');
     await tr.loadLanguage('ar'); // Arabic is its own chunk
+    await tr.loadFirstRun(); // and so are the first run's strings
     return { strings: tr.default, android: tr.androidStrings, fmt: tr.fmt, plural: tr.plural, onSale: unlockOnSale() };
   } finally {
     await vite.close();
@@ -57,9 +58,14 @@ export function words(src, lang, platform) {
   return { lang, t, onSale: src.onSale, f: (s, vars) => src.fmt(s, vars), p: (base, n) => src.plural(t, base, n) };
 }
 
-/** The demo's state before the app starts: access granted, the library scanned, the unlock bought — each can be changed per screen. */
-export function prefs({ lang = 'de', theme = 'light', access = 'full', scanned = true, owned = true, scanStep = null } = {}) {
+/** The demo's state before the app starts: access granted, the library scanned, the unlock bought, the first run behind it — each can be changed per screen. */
+export function prefs({ lang = 'de', theme = 'light', access = 'full', scanned = true, owned = true, scanStep = null, firstRun = false, seen = ['*'] } = {}) {
   return {
+    // Past the first run — the welcome, the first scan's screen, the reveal, the guided review, every
+    // tip (src/logic/firstRun.ts) — unless a screen asks to see it: `firstRun: true` is a new install,
+    // `seen: []` (or a few ids) an install that has its scan behind it but not the hints.
+    'bildklar-welcome': firstRun ? null : '1',
+    'bildklar-seen': firstRun ? null : JSON.stringify(seen),
     'bildklar-lang': lang,
     'bildklar-theme': theme,
     'bildklar-demo-access': access,
@@ -403,10 +409,78 @@ export const SCREENS = [
       await pause(page, 600);
       await page.click(`button${aria(w.t.back)}`);
       await pause(page, 700);
-      await page.click(`button:has-text("${w.t.laterCard}")`);
+      // The pile is home's next step now (its row shows only when another step comes first).
+      await page.click(`button:has-text("${w.t.nextLaterButton}")`);
       await pause(page, 900);
     },
   },
+];
+
+/** A new install, before the photo access was asked for. */
+const NEW = { firstRun: true, access: 'notDetermined', scanned: false };
+/** Through the reveal after the first scan to home, then into the review of everything suggested — the guided first review. */
+async function openGuidedReview(page, w) {
+  await page.waitForSelector(`text=${w.t.revealTitle}`, { timeout: 20000 });
+  await pause(page, 700);
+  await page.click(`button:has-text("${w.t.revealLook}")`);
+  await pause(page, 800);
+  await openCleanupReview(page, w);
+}
+/** Two photos marked in a review and put into "Zum Löschen vorgemerkt", then back on home. */
+async function markTwo(page, w) {
+  await openCleanupReview(page, w);
+  for (let i = 0; i < 2; i++) { await page.click(`button${aria(w.t.aside)}`); await pause(page, 450); }
+  await page.click(`button:has-text("${w.t.finishReview}")`);
+  await pause(page, 600);
+  await page.click(`main button:has-text("${w.t.binAdd}")`);
+  await pause(page, 700);
+  await page.click(`button${aria(w.t.back)}`);
+  await pause(page, 700);
+}
+
+/**
+ * The first run (docs/DESIGN.md), for ui-review: the welcome's four pages, the first scan's screen, the
+ * reveal, the guided review and its summary, a tip, the three safety nets, So funktioniert Bildklar.
+ */
+export const FIRST_RUN_SCREENS = [
+  ...[0, 1, 2, 3].map(n => ({
+    name: `5${n}-welcome-${n + 1}`, prefs: NEW, wait: 2900,
+    run: async (page, w) => { for (let i = 0; i < n; i++) { await page.click(`button:has-text("${w.t.welcomeNext}")`); await pause(page, 350); } },
+  })),
+  // Slowed down (about 12 s), so the capture catches the screen half way through.
+  { name: '54-first-scan', prefs: { firstRun: true, scanned: false, scanStep: '500' }, wait: 6500 },
+  {
+    name: '55-reveal', prefs: { firstRun: true, scanned: false },
+    run: async (page, w) => { await page.waitForSelector(`text=${w.t.revealTitle}`, { timeout: 20000 }); await pause(page, 1300); },
+  },
+  { name: '56-guide', prefs: { firstRun: true, scanned: false }, run: openGuidedReview, wait: 1200 },
+  {
+    name: '57-guide-summary', prefs: { firstRun: true, scanned: false }, run: async (page, w) => {
+      await openGuidedReview(page, w);
+      for (const key of ['ArrowRight', 'ArrowLeft', 'ArrowUp', 'ArrowLeft']) { await page.keyboard.press(key); await pause(page, 500); }
+      await page.click(`button:has-text("${w.t.finishReview}")`);
+    },
+    wait: 1600,
+  },
+  // A tip waits for its control to be on screen: home is scrolled to "Zum Löschen vorgemerkt", where the first one points.
+  {
+    name: '58-tip', prefs: { seen: ['swipeRight', 'swipeLeft', 'swipeUp'] }, run: async (page, w) => {
+      await markTwo(page, w);
+      await page.evaluate(() => document.querySelector('[data-tip="tip.bin"]')?.scrollIntoView({ block: 'center' }));
+    },
+    wait: 5500,
+  },
+  {
+    name: '59-safety', prefs: { seen: ['swipeRight', 'swipeLeft', 'swipeUp', 'tip.bin', 'tip.binScreen', 'tip.buttons', 'tip.suggest'] }, run: async (page, w) => {
+      await markTwo(page, w);
+      await pause(page, 5200); // the toast of the marking is gone
+      await page.click('button[data-tip="tip.bin"]');
+      await pause(page, 800);
+      await page.click('body > div.fixed.bottom-0 button >> nth=0');
+    },
+    wait: 1500,
+  },
+  { name: '60-how', run: async (page, w) => { await openSettings(page, w); await page.click(`main button:has-text("${w.t.howTitle}")`); }, wait: 800 },
 ];
 
 /**
@@ -446,7 +520,7 @@ export async function measure(page, wanted) {
 }
 
 /**
- * Capture `screens` for each variant ({ id, lang, theme?, viewport? }) into
+ * Capture `screens` for each variant ({ id, lang, theme?, viewport?, platform?, fontScale? }) into
  * `<outDir>/<id>/<name>.png`. With `marks`, a screen that names marks also
  * gets `<name>.marks.json` next to it. Returns the names that could not be
  * reached.
@@ -473,6 +547,13 @@ export async function capture({ variants, screens, outDir, clean = true, onlyNam
         locale: LOCALE[v.lang] ?? v.lang, colorScheme: 'light', hasTouch: true, isMobile: true,
       });
       if (v.platform === 'android') await ctx.addInitScript(() => localStorage.setItem('bildklar-dev-platform', 'android'));
+      // Large text, as the system's setting gives it on a phone (src/dynamicType.ts scales the root font size there).
+      if (v.fontScale) {
+        await ctx.addInitScript(scale => {
+          const timer = setInterval(() => { if (document.documentElement) document.documentElement.style.fontSize = `${scale * 100}%`; }, 40);
+          setTimeout(() => clearInterval(timer), 4000);
+        }, v.fontScale);
+      }
       const page = await ctx.newPage();
       page.on('pageerror', e => console.error(`[${v.id}] page error:`, e.message));
 

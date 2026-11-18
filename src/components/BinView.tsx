@@ -7,6 +7,7 @@ import { Dock, Empty, Screen } from '../ui/Screen';
 import { Button } from '../ui/Button';
 import { PhotoGrid, Thumb } from '../ui/Photo';
 import { Sheet } from '../ui/Sheet';
+import { SafetyNets } from './SafetyNets';
 
 /** How many photos the delete sheet draws; the last tile counts the rest. */
 const SHEET_TILES = 48;
@@ -20,9 +21,12 @@ const SHEET_TILES = 48;
  * what goes and how much space it frees (a sheet that cancels with one tap),
  * then the system's own dialog moves it to the Trash / Recently Deleted.
  */
-export function BinView({ t, photos, onBack, onRestore, onDelete, onReview }: {
+export function BinView({ t, photos, safetySeen, onSafetySeen, onBack, onRestore, onDelete, onReview }: {
   t: Strings;
   photos: Photo[];
+  /** The three safety nets were explained (once, before the first real delete: docs/DESIGN.md, "The first run"). */
+  safetySeen: boolean;
+  onSafetySeen: () => void;
   onBack: () => void;
   /** Put back: out of the bin, into their groups again. */
   onRestore: (ids: string[]) => void;
@@ -52,7 +56,7 @@ export function BinView({ t, photos, onBack, onRestore, onDelete, onReview }: {
     >
       {photos.length === 0 ? <Empty emoji="📦" title={t.binEmpty} body={t.binEmptyBody} /> : (
         <>
-          <p className="px-1 pb-3 text-label text-fg-mute wrap-prose" aria-live="polite">{picked.length ? plural(t, 'binPicked', picked.length) : t.binTapHint}</p>
+          <p data-tip="tip.binScreen" className="px-1 pb-3 text-label text-fg-mute wrap-prose" aria-live="polite">{picked.length ? plural(t, 'binPicked', picked.length) : t.binTapHint}</p>
           <PhotoGrid
             ids={ids(photos)}
             label={id => { const p = byId.get(id)!; return `${when(p)}, ${bytes(t, p.bytes)}, ${chosen.has(id) ? t.selected : t.notSelected}`; }}
@@ -98,8 +102,10 @@ export function BinView({ t, photos, onBack, onRestore, onDelete, onReview }: {
       )}
 
       {/* Before the system's dialog: exactly what goes, and how much space it frees. Cancel is one tap (or a swipe down). */}
-      <Sheet open={!!confirm} title={confirm ? deleteLabel(confirm) : ''} closeLabel={t.cancel} onClose={() => setConfirm(null)}>
-        {confirm && (
+      <Sheet open={!!confirm} title={confirm ? (safetySeen ? deleteLabel(confirm) : t.safetyTitle) : ''} closeLabel={t.cancel} onClose={() => setConfirm(null)}>
+        {/* The first time, before anything red: what stands between a mark and a photo that is really gone. */}
+        {confirm && !safetySeen && <SafetyNets t={t} onContinue={onSafetySeen} />}
+        {confirm && safetySeen && (
           <div className="space-y-4 pb-1">
             <p className="text-body text-fg num wrap-prose">{`${count(confirm)} · ${bytes(t, sheetBytes)}`}</p>
             <div className="grid grid-cols-6 gap-[3px]" role="list" aria-label={count(confirm)}>

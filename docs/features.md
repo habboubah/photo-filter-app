@@ -3,13 +3,43 @@
 Every feature, as the user sees it (German labels, English in brackets).
 
 ## First start and photo access
-- **Permission screen**: what the app does in three lines, *Fotos freigeben*
-  [Allow access to photos] → the system's dialog. "Selected photos" works too.
+- **Welcome** (the first start only; again from *Einstellungen › So
+  funktioniert Bildklar*): four short pages, each one line and an illustration
+  of photo frames that animates what it says — *Ordnung in Zehntausenden
+  Fotos* (a pile settles into a grid), *Reisen – für dich gefunden* (a stack
+  becomes a trip), *Das beste Foto vorgeschlagen. Du entscheidest.* (the
+  app's sparkle, then a finger picks another: the green check), *Privat:
+  Alles bleibt auf deinem Handy* (a phone with a lock; no cloud, no account).
+  *Überspringen* on every page, dots, swipe or *Weiter*. Its photos are the
+  app's own eight; under reduced motion each illustration shows its end state.
+- **Photo access**: *Darf Bildklar deine Fotos sehen?* — why (to find trips
+  and similar photos on the phone), *Nichts wird hochgeladen*, *Nichts ändert
+  sich ohne dich*, and both ways to answer under *Du hast die Wahl*: *Alle
+  Fotos* (recommended) or *Ausgewählte Fotos* (Bildklar then only sees what
+  was picked; trips and duplicates may be incomplete). *Fotos freigeben*
+  [Allow access to photos] → the system's dialog, which offers both.
 - **Selected photos only** (iPhone *Limit Access*, Android 14+ *Select photos*):
   a card on home says so, with *Fotos auswählen* [Select photos] → the
   system's picker; the app rescans afterwards.
 - **No access** (denied, or restricted by Screen Time): the screen explains it
   and offers *Einstellungen öffnen* [Open Settings].
+- **The first scan** has a screen of its own: a ring with the share done, how
+  long it still takes, *Schon gefunden* (trips, near-identical, duplicates,
+  screenshots, counting up as they are found) and five cards that explain the
+  app while it works (trips, the best shot, month by month, marking before
+  deleting, privacy; they turn by themselves or on a tap). *Schon mal
+  umsehen* [Look around meanwhile] goes to home, where the slim card carries
+  on. Every later scan is only the slim card.
+- **What it found** (once, when the first scan has analysed every photo): the
+  space that could be freed — *wenn du willst* — one recommended first step
+  (the same choice as home's next-step card, src/logic/nextStep.ts) with
+  *Jetzt durchsehen*, everything found per category with count and size, the
+  trips, and the quiet second way *Erst mal umsehen*.
+- **One-time tips**: the first time a feature is on screen, one short hint
+  points at its control — the review's buttons and undo, what a suggestion
+  is, where the marked photos wait, the bin, a group's sparkle, quick clean,
+  months, trips, the widget, search, the weekly reminder. One at a time, a
+  tap sends it away, nothing is blocked (src/tips.ts).
 
 ## The scan
 - Looks at every photo and video once: when and where it was taken, how sharp,
@@ -59,7 +89,7 @@ then one next step, then the rest in order.
   Fotos* and *Gute Videos*, paler — with its legend; the table *Fotos* /
   *Videos* × *Gescannt* · *Gut* · *Kann weg* (*Fotos* opens *Monat für
   Monat*, *Videos* all videos); the free space on the device, *Bisher
-  freigegeben*, the streak; *Jetzt aufräumen* as a quiet button (the
+  freigegeben* (no streak: it left on 18 November 2026); *Jetzt aufräumen* as a quiet button (the
   clean-up screen).
 - **One next step**, a card made of its photos with one button:
   - progress exists (a month gone through) → the next month not gone through,
@@ -365,13 +395,26 @@ then one next step, then the rest in order.
 
 ## Review
 - One photo at a time, with all the room left, and the suggestion with its
-  reason in words that wrap (*Vorschlag: löschen · Unschärfer als das
+  reason in words that wrap (*Vorschlag: vormerken · Unschärfer als das
   beste*). Swipe left to **mark for deletion**, right to keep, up for **Später**
   [Later] — or the three labelled buttons (*Löschen vormerken*, *Später*,
   *Behalten*), or the arrow keys (← → ↑). Marking is quiet (no red:
   nothing is deleted). **Rückgängig** [Undo] in words at the top right;
   *Beenden* [Finish] any time. Under *12 von 40* the space marked so far
   (*48 MB zum Löschen vorgemerkt*).
+- **The guided first review**: on the first real cards a hand makes one
+  gesture and says it in words (*Nach rechts wischen: behalten* · *Nach links
+  wischen: zum Löschen vormerken* · *Nach oben wischen: später entscheiden*,
+  *Probier's aus · 1 von 3*), one gesture per card until it was done once —
+  by a swipe, its button or its arrow key; whichever of the three is done
+  counts. Each decision is named right after it (*Vorgemerkt – noch nicht
+  gelöscht*). The hint leaves the moment the card is touched, ✕ hides the
+  hints for good, and under reduced motion it is a still arrow with the same
+  words. Then two tips: the buttons and *Rückgängig*, and what a suggestion is.
+- **The summary** opens with a soft check, the space counting up, and
+  *Behalten · Vorgemerkt · Später* as three figures. The first one also says
+  *Favoriten schlägt Bildklar nie vor* → *So schützt du mehr*: a sheet with
+  the four ways to protect (favourites, one photo, a trip, an album / folder).
 - At the end: the space as one big number (*13 MB — zum Löschen vorgemerkt, noch
   nicht gelöscht*), *Ausgewählt: 4 Fotos (13 MB)* with exactly those photos and
   **Löschen vormerken · 4 Fotos** — nothing is deleted yet (*Noch wird nichts
@@ -399,6 +442,11 @@ then one next step, then the rest in order.
   vorgemerkt* first. It leaves
   the group, list, trip and count it was in at once, as if it were gone; a
   toast says *4 Fotos zum Löschen vorgemerkt* with **Rückgängig** [Undo].
+- **Before the first real delete**, once, the sheet first shows the **three
+  safety nets** in one small illustration: 1. *Du merkst vor* → 2. *Du
+  bestätigst hier* → 3. *Dein iPhone fragt noch einmal* (Android: *Android
+  fragt noch einmal*), then the photos stay 30 days in *Zuletzt gelöscht* /
+  the Trash. *Verstanden – weiter* leads to the usual sheet with the red button.
 - Its own section on *Aufräumen* opens it: the photos, the last put aside
   first, each with its size (a video with its length). A tap selects one;
   **Zurücklegen · 2 Fotos** [Put back] returns them to where they were (with
@@ -471,6 +519,10 @@ then one next step, then the rest in order.
   screen instead. Settings holds only what can be changed: the storage, what was freed and *Fotos auswählen* are on
   *Aufräumen*, so are *Geschützt* (its last row) and *Neu durchsuchen* (at its top).
 - **Vollversion**: unlock or *Freigeschaltet*, restore.
+- **So funktioniert Bildklar** [How Bildklar works]: *Die Einführung* (the
+  welcome again), *Wischen üben* (the swipe hints again, in a review of what
+  is suggested), *Alle Tipps wieder zeigen*; *Drei Sicherheitsnetze* and
+  *Fotos schützen* to read at any time; *Alle Hinweise ausblenden*.
 - **Darstellung**: language (Deutsch, English, العربية — right to left), appearance (system, light, dark).
 - **Nur in der Debug-Version**: *Probelauf* [Dry run] — on by default in debug
   builds: nothing in the photo library changes, the app says what it would have done.

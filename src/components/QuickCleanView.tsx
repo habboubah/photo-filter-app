@@ -38,6 +38,7 @@ export function QuickCleanView({ t, parts, storage, onBack, onReview, onDelete }
 
   return (
     <Screen title={t.quickCleanTitle} subtitle={bytes(t, chosen.bytes)} onBack={onBack} backLabel={t.back} info={{ label: t.aboutScreen, close: t.close, body: t.quickCleanIntro }} docked>
+      <div data-tip="tip.quickClean">
       <Group footer={storage ? fmt(t.storageFree, { free: bytes(t, storage.free), total: bytes(t, storage.total) }) : undefined}>
         {present.map(part => (
           <SwitchRow
@@ -49,6 +50,7 @@ export function QuickCleanView({ t, parts, storage, onBack, onReview, onDelete }
           />
         ))}
       </Group>
+      </div>
       {unsure.length > 0 && (
         <Group footer={fmt(t.quickCleanCheck, { photos: plural(t, 'photos', unsure.length) })}>
           <Row label={t.quickCleanCheckReview} trailing={<Next value={num(t, unsure.length)} />} onClick={() => onReview(unsure)} />

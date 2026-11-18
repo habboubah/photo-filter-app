@@ -31,6 +31,35 @@ wording, both themes, German at 200 % text) — not yet on a phone.
       *Jetzt aufräumen*), `npm run rehearse:app-review`.
 - [ ] The release notes for it are in `release-notes/2.3.0/`.
 
+## 0a2. The first run (18 November 2026): walk it on your phones
+
+Built in the cloud against the demo library; nothing native changed. On a
+real iPhone and a real Android phone, please check:
+
+- [ ] **A fresh install** (delete the app first): welcome → *Fotos freigeben*
+      → the system's dialog → the first scan's screen → *Das hat Bildklar
+      gefunden* → *Jetzt durchsehen* → the hand over the first cards → the
+      summary → *Zum Löschen vorgemerkt* → the three safety nets → the
+      system's dialog (dry run on).
+- [ ] **A real library's first scan**: the ring, the time left and *Schon
+      gefunden* move; the reveal comes when the photos are analysed (the AI's
+      pass may still run: the reveal says so). With 50,000 photos: is the
+      screen calm for the whole wait, does *Schon mal umsehen* feel right?
+- [ ] **Selected photos** (iPhone *Limit Access*, Android 14+): the flow is
+      the same, home shows the *Fotos auswählen* card.
+- [ ] **Denied**: *Einstellungen öffnen* opens the right place on both phones.
+- [ ] **The swipe hint on a phone**: the hand should not get in the thumb's
+      way; say if it should be smaller or sit lower.
+- [ ] **Large text** (iPhone: Settings › Display & Brightness › Text Size, far
+      right) on the welcome, the first scan and the review.
+- [ ] **TalkBack / VoiceOver**: a tip is read when it appears; the welcome's
+      pages are announced; the gesture hint's words are read.
+- [ ] **Arabic**: the first-run texts are my translation — please read them
+      once as a native speaker (`src/translations.ar.ts`, from *Welcome* down).
+- [ ] **Updating** from 2.0.13 with a scanned library: no welcome, no first
+      scan screen; each tip shows once. If that is too much for people who
+      know the app, say so: one line hides all hints for existing installs.
+
 ## 0b. The launch phase: free first, sell later
 
 Since 17 November 2026 nothing is for sale (`UNLOCK_ON_SALE = false` in

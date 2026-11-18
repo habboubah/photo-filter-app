@@ -1,14 +1,15 @@
 // Every screen of Bildklar, to look at before and after a UI change: German by
-// day and by night (iPhone Pro Max and iPhone SE), and English with Android's
-// wording on a small Android phone (360 × 800). Captures go to
-// screenshots/review/<variant>/.
+// day and by night (iPhone Pro Max and iPhone SE) and with large text, and English with Android's
+// wording on a small Android phone (360 × 800) — the first run included (the
+// welcome, the first scan, the reveal, the guided review, a tip, the safety
+// nets). Captures go to screenshots/review/<variant>/.
 //
 // Usage:  node scripts/ui-review.mjs
 //         node scripts/ui-review.mjs --only 06-group,17-settings
 //         node scripts/ui-review.mjs --variant de-dark
 // Once per machine:  npx playwright install chromium
 import path from 'path';
-import { SCREENS, capture, onlyArg, root } from './lib/shots.mjs';
+import { FIRST_RUN_SCREENS, SCREENS, capture, onlyArg, root } from './lib/shots.mjs';
 
 const VARIANTS = [
   { id: 'de-light', lang: 'de' },
@@ -17,6 +18,8 @@ const VARIANTS = [
   // The smallest iPhone still sold (iPhone SE, 375 × 667), by day and by night.
   { id: 'de-light-se', lang: 'de', viewport: { width: 375, height: 667, scale: 2 } },
   { id: 'de-dark-se', lang: 'de', theme: 'dark', viewport: { width: 375, height: 667, scale: 2 } },
+  // Large text (the system's text size at 135 %): long German labels must wrap, never be cut.
+  { id: 'de-light-large', lang: 'de', fontScale: 1.35 },
 ];
 const argv = process.argv.slice(2);
 const pick = argv.includes('--variant') ? argv[argv.indexOf('--variant') + 1] : null;
@@ -26,7 +29,7 @@ if (!variants.length) { console.error(`Unknown variant "${pick}". One of: ${VARI
 const failed = await capture({
   variants,
   // A screen that sets its own theme is shown in the dark variants anyway.
-  screens: SCREENS.filter(s => !s.prefs?.theme),
+  screens: [...SCREENS, ...FIRST_RUN_SCREENS].filter(s => !s.prefs?.theme),
   outDir: path.join(root, 'screenshots', 'review'),
   onlyNames: onlyArg(argv),
 });

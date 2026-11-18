@@ -10,7 +10,14 @@
  *
  * Strings that name the iPhone, Apple Photos or "Recently Deleted" have an
  * Android twin in `androidStrings` (laid over in the Android app).
+
+ *
+ * The first run's strings (the welcome, the tips …) follow the same rules in
+ * translations.firstRun.ts, their own chunk (`loadFirstRun`); Arabic has them
+ * in its one block.
  */
+import type { FirstRunStrings } from './translations.firstRun';
+
 const de = {
   languageName: 'Deutsch',
   locale: 'de-DE',
@@ -36,14 +43,8 @@ const de = {
   groups_other: '{n} Gruppen',
 
   // Permission
-  permTitle: 'Bring Ordnung in deine Fotos',
   permBody: 'Bildklar findet deine Reisen, fast gleiche und unscharfe Fotos – direkt auf deinem iPhone.',
-  permPoint1: 'Jede Reise wird mit einem Tipp zum Album',
-  permPoint1Trips: 'Deine Reisen auf einen Blick – nach Ort und Datum',
-  permPoint2: 'Doppelte und verwackelte Fotos finden und aufräumen',
-  permPoint3: 'Alles bleibt auf deinem Gerät – kein Konto, keine Cloud',
   permAllow: 'Fotos freigeben',
-  permHint: 'Du kannst auch nur ausgewählte Fotos freigeben und später mehr hinzufügen.',
   deniedTitle: 'Kein Zugriff auf deine Fotos',
   deniedBody: 'Ohne Zugriff kann Bildklar nichts finden. Erlaube den Zugriff in den Einstellungen – unter „Fotos“.',
   restrictedBody: 'Der Zugriff auf Fotos ist auf diesem Gerät eingeschränkt, zum Beispiel durch die Bildschirmzeit.',
@@ -87,7 +88,6 @@ const de = {
   cleanupScreenshots: 'Alte Screenshots',
   storageFree: '{free} von {total} auf dem Gerät frei',
   freedSoFar: 'Bisher freigegeben: {size}',
-  streakLine: '{n} Tage in Folge aufgeräumt',
   monthsCard: 'Monat für Monat',
   progressDone: '{pct} durchgesehen',
   widgetProgress: '{pct} deiner Fotos durchgesehen',
@@ -610,7 +610,7 @@ const de = {
   groupAsideOthers: 'Die anderen zum Löschen vormerken',
   aside: 'Löschen vormerken',
   asideHint: 'Es kommt nach „Zum Löschen vorgemerkt“ – gelöscht wird noch nichts.',
-  suggestAside: 'Vorschlag: löschen',
+  suggestAside: 'Vorschlag: vormerken',
   reviewAsideSoFar: '{size} zum Löschen vorgemerkt',
   swipeHintBin: 'Links: löschen · rechts: zurücklegen · nach oben: später.',
   reviewDoneAside: 'zum Löschen vorgemerkt – noch nicht gelöscht',
@@ -632,11 +632,19 @@ const de = {
   wordsDocuments: 'Dokumente und Belege',
   wordsThings: 'Dinge und Kleidung',
   wordsKinds: 'Fotoarten',
+
+  permTitle: 'Darf Bildklar deine Fotos sehen?',
+  permHint: 'Gleich fragt dein iPhone, welche Fotos Bildklar sehen darf.',
+
+  howTitle: 'So funktioniert Bildklar',
+  howSub: 'Einführung, Wischen und Tipps noch einmal ansehen',
 };
 
-export type Strings = { [K in keyof typeof de]: string };
+/** The strings every start needs; the first run's are a chunk of their own (translations.firstRun.ts). */
+type BaseStrings = { [K in keyof typeof de]: string };
+export type Strings = BaseStrings & FirstRunStrings;
 
-const en: Strings = {
+const en: BaseStrings = {
   languageName: 'English',
   locale: 'en-GB',
   dir: 'ltr',
@@ -659,15 +667,8 @@ const en: Strings = {
   trips_other: '{n} trips',
   groups_one: '1 group',
   groups_other: '{n} groups',
-
-  permTitle: 'Bring order to your photos',
   permBody: 'Bildklar finds your trips, near-identical and blurry photos – right on your iPhone.',
-  permPoint1: 'Turn every trip into an album with one tap',
-  permPoint1Trips: 'Your trips at a glance – by place and date',
-  permPoint2: 'Find and clear out duplicate and shaky shots',
-  permPoint3: 'Everything stays on your device – no account, no cloud',
   permAllow: 'Allow access to photos',
-  permHint: 'You can also share only selected photos and add more later.',
   deniedTitle: 'No access to your photos',
   deniedBody: 'Without access Bildklar can’t find anything. Allow access in Settings – under “Photos”.',
   restrictedBody: 'Access to photos is restricted on this device, for example by Screen Time.',
@@ -709,7 +710,6 @@ const en: Strings = {
   cleanupScreenshots: 'Old screenshots',
   storageFree: '{free} of {total} free on this device',
   freedSoFar: 'Freed so far: {size}',
-  streakLine: '{n} days in a row of cleaning up',
   monthsCard: 'Month by month',
   progressDone: '{pct} gone through',
   widgetProgress: '{pct} of your photos gone through',
@@ -1225,7 +1225,7 @@ const en: Strings = {
   groupAsideOthers: 'Mark the others for deletion',
   aside: 'Mark for deletion',
   asideHint: 'It goes to “Marked for deletion” – nothing is deleted yet.',
-  suggestAside: 'Suggested: delete',
+  suggestAside: 'Suggested: mark',
   reviewAsideSoFar: '{size} marked for deletion',
   swipeHintBin: 'Left: delete · right: put back · up: later.',
   reviewDoneAside: 'marked for deletion – not deleted yet',
@@ -1247,6 +1247,12 @@ const en: Strings = {
   wordsDocuments: 'Documents and receipts',
   wordsThings: 'Things and clothes',
   wordsKinds: 'Kinds of photo',
+
+  permTitle: 'May Bildklar see your photos?',
+  permHint: 'Your iPhone asks next which photos Bildklar may see.',
+
+  howTitle: 'How Bildklar works',
+  howSub: 'See the welcome, the gestures and the tips again',
 };
 
 
@@ -1256,7 +1262,8 @@ export const languages: Language[] = ['de', 'en', 'ar'];
 /** Each language's own name, for the language menu — known before its block is loaded. */
 export const languageNames: Record<Language, string> = { de: 'Deutsch', en: 'English', ar: 'العربية' };
 
-const translations = { de, en } as Record<Language, Strings>;
+// Typed as complete: the first run's strings are laid in by `loadFirstRun` before a screen that shows them renders.
+const translations = { de, en } as unknown as Record<Language, Strings>;
 export default translations;
 
 /**
@@ -1275,7 +1282,6 @@ export const androidStrings: Record<Language, Partial<Strings>> = {
     albums_one: '1 Ordner',
     albums_other: '{n} Ordner',
     permBody: 'Bildklar findet deine Reisen, fast gleiche und unscharfe Fotos – direkt auf deinem Handy.',
-    permPoint1: 'Jede Reise kommt mit einem Tipp in einen eigenen Ordner',
     albumBadge: 'Ordner erstellt',
     createAlbum: 'Ordner erstellen',
     albumExists: 'Ordner erstellt am {date}',
@@ -1317,7 +1323,6 @@ export const androidStrings: Record<Language, Partial<Strings>> = {
     albums_one: '1 folder',
     albums_other: '{n} folders',
     permBody: 'Bildklar finds your trips, near-identical and blurry photos – right on your phone.',
-    permPoint1: 'Move every trip into its own folder with one tap',
     albumBadge: 'Folder made',
     createAlbum: 'Create folder',
     albumExists: 'Folder made on {date}',
@@ -1385,6 +1390,28 @@ export async function loadLanguage(lang: Language): Promise<void> {
     ANDROID_EXTRA_PLURALS[m.ar.locale] = m.arAndroidPlurals;
     merged.delete('ar');
   }
+}
+
+let firstRun: Promise<void> | null = null;
+/**
+ * Makes the first run's German and English strings ready (translations.firstRun.ts: the welcome,
+ * the photo access, the first scan, the reveal, the guided review, the safety moments, the tips, So
+ * funktioniert Bildklar). They are a chunk of their own, so a start that shows none of it never
+ * loads them: App.tsx loads them together with each screen that needs them. Laid into the objects
+ * the app already holds, so a `t` handed out earlier has them too.
+ */
+export function loadFirstRun(): Promise<void> {
+  firstRun ??= import('./translations.firstRun').then(m => {
+    Object.assign(translations.de, m.deFirstRun);
+    Object.assign(translations.en, m.enFirstRun);
+    Object.assign(androidStrings.de, m.deFirstRunAndroid);
+    Object.assign(androidStrings.en, m.enFirstRunAndroid);
+    const de = merged.get('de');
+    if (de) Object.assign(de, m.deFirstRun, m.deFirstRunAndroid);
+    const en = merged.get('en');
+    if (en) Object.assign(en, m.enFirstRun, m.enFirstRunAndroid);
+  });
+  return firstRun;
 }
 
 export const isLanguage = (v: unknown): v is Language =>

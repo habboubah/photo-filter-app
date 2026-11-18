@@ -13,6 +13,7 @@
    {"select": "English", "in": ["Language", "Sprache"]},
    {"pause": 0.5},
    {"select": "Like the system", "in": "Appearance"},
+   {"optional": [{"tap": ["How Bildklar works", "So funktioniert Bildklar"]}, {"pause": 0.5}, {"tap": ["Hide every hint", "Alle Hinweise ausblenden"]}, {"pause": 0.5}, {"tap": "Back"}, {"pause": 0.5}]},
    {"scrollTo": "Start over"},
    {"tap": "Start over"},
    {"pause": 1},
@@ -35,7 +36,7 @@
  },
  "rehearsal": {
   "locale": "en-GB",
-  "localStorage": {"bildklar-demo-access": "full", "bildklar-demo-scanned": "1", "bildklar-dry-run": "0", "bildklar-demo-restorable": "1"}
+  "localStorage": {"bildklar-demo-access": "full", "bildklar-demo-scanned": "1", "bildklar-dry-run": "0", "bildklar-welcome": "1", "bildklar-seen": "[\"*\"]", "bildklar-demo-restorable": "1"}
  },
  "scenes": [
   { "name": "Launch and the scan", "steps": [
