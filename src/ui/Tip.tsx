@@ -77,8 +77,8 @@ function Bubble({ id, text, label, gotIt, onDismiss }: { id: string; text: strin
       }
       if (!el) { setBox(null); return; }
       const r = el.getBoundingClientRect();
-      // A tall control (a list, a photo card) is pointed at by its head, so the bubble sits on it instead of far below.
-      const height = Math.min(r.height, 72);
+      // A tall control (a list, a section, a large photo card) is pointed at by its head, so the bubble sits on it instead of far below.
+      const height = r.height > 240 ? 72 : r.height;
       const visible = r.width > 0 && r.top + height > 60 && r.top < window.innerHeight - 120;
       setBox(b => (!visible ? null : b && b.top === r.top && b.left === r.left && b.width === r.width && b.height === height ? b : { top: r.top, left: r.left, width: r.width, height }));
     };
