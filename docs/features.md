@@ -480,8 +480,13 @@ is marked for deletion, then the storage overview and the rest in order.
   those marks were dropped. (On the summary, *Fertig* instead of *Löschen
   vormerken* still leaves them unmarked: that is the summary's own choice.) A month remembers where it was left (see *Month
   by month*).
-- **Into albums while swiping** (free for now, later the unlock): a row of album chips
-  under the photo (the last used first) and *+ Neues Album* [New album]. A tap
+- **Into albums while swiping** (free for now, later the unlock): under the
+  photo only the albums you chose — not every album of the phone (since 18
+  November 2026). *In ein Album legen* [Put into an album] (then *Alben*)
+  opens a sheet, *Alben in der Durchsicht*, with every album as a toggle (a
+  search field once there are more than eight) and *+ Neues Album* [New
+  album]; the choice is remembered for the next review. The album the photo
+  is already in, and albums made in this review, always show. A tap
   keeps the photo, files it into that album and moves on; undo takes it out
   again. Nothing is written during the review: the end screen lists
   *Löschen vormerken · 3 Fotos · 5 Fotos in 2 Alben* with each album, then does it all in

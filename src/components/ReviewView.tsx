@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { AnimatePresence, animate, motion, useMotionValue, useReducedMotion, useTransform } from 'motion/react';
-import { Archive, Check, ChevronRight, Clock, FolderInput, Images, Play, Plus, Shield, Trash2, Undo2, X, ZoomIn } from 'lucide-react';
+import { Archive, Check, ChevronRight, Clock, FolderInput, FolderPlus, Images, Play, Plus, Shield, Trash2, Undo2, X, ZoomIn } from 'lucide-react';
 import type { Confidence, Photo } from '../types';
 import { Strings, bytes, fmt, num, plural } from '../translations';
 import { Decision, ReviewItem, Session, albumPlan, deleteSplit, isNewAlbum, laterIds, newAlbumKey, toDelete } from '../logic/review';
@@ -17,6 +17,7 @@ import { CountUp, SETTLE } from '../ui/FirstRun';
 import { GESTURE_OF, GestureHint, type Guide, saidFor } from './ReviewGuide';
 import { ProtectInfo } from './SafetyNets';
 import { ZoomView, zoomLayoutId } from '../ui/Zoom';
+import { loadPinned, rowAlbums, savePinned } from '../logic/reviewAlbums';
 
 /** How far a card is dragged before it counts as a decision. */
 const THRESHOLD = 110;
@@ -38,7 +39,7 @@ export function ReviewView({ t, session, finished, byId, debug, bin = false, alb
   debug: boolean;
   /** "Zum Löschen" gone through again: the end deletes for real (else it puts the marked ones into the bin). */
   bin?: boolean;
-  /** The albums for the chips, the last used first (iPhone albums / Android folders). */
+  /** Every album (iPhone) / folder (Android), the last used first: the *Alben* sheet lists them, the chips show the chosen ones. */
   albums: { id: string; title: string }[];
   /** Android: filing moves the photos into the folder (said on the end screen). */
   android: boolean;
@@ -69,6 +70,14 @@ export function ReviewView({ t, session, finished, byId, debug, bin = false, alb
   // Albums made in this review show as chips too, first.
   const made = [...new Set(Object.values(session.albums).filter(isNewAlbum))].map(k => ({ id: k, title: k.slice(4) }));
   const chips = [...made, ...albums];
+  // Under the photo only the albums the user chose (src/logic/reviewAlbums.ts), not every album of the phone;
+  // the *Alben* button opens a sheet to choose them.
+  const [pinned, setPinned] = useState(loadPinned);
+  const [picking, setPicking] = useState(false);
+  const [filter, setFilter] = useState('');
+  const pin = (id: string) => setPinned(list => { const next = list.includes(id) ? list.filter(x => x !== id) : [...list, id]; savePinned(next); return next; });
+  const row = item ? rowAlbums(albums, pinned, made, session.albums[item.id]) : [];
+  const found = filter.trim() ? albums.filter(a => a.title.toLocaleLowerCase(t.locale).includes(filter.trim().toLocaleLowerCase(t.locale))) : albums;
   const [naming, setNaming] = useState(false);
   const [title, setTitle] = useState('');
   const create = () => { const name = title.trim(); if (name) onFile?.(newAlbumKey(name)); setNaming(false); setTitle(''); };
@@ -146,7 +155,7 @@ export function ReviewView({ t, session, finished, byId, debug, bin = false, alb
               onLike={onLike ? () => onLike(item.id) : undefined}
             />
             {onFile && <div role="group" aria-label={t.fileIntoAlbum} className="flex gap-2 overflow-x-auto no-scrollbar px-[12px] pt-3 pb-1">
-              {chips.map(c => {
+              {row.map(c => {
                 const on = session.albums[item.id] === c.id;
                 return (
                   <button
@@ -160,10 +169,10 @@ export function ReviewView({ t, session, finished, byId, debug, bin = false, alb
                 );
               })}
               <button
-                type="button" onClick={() => { tapLight(); setNaming(true); }}
+                type="button" onClick={() => { tapLight(); setFilter(''); setPicking(true); }} aria-haspopup="dialog"
                 className="shrink-0 min-h-[44px] px-3.5 inline-flex items-center gap-1.5 rounded-full text-label font-semibold text-accent glass-flat focus-visible:ring-focus press"
               >
-                <Plus className="w-4 h-4" aria-hidden="true" />{t.newAlbum}
+                <FolderPlus className="w-4 h-4" aria-hidden="true" />{row.length ? t.reviewAlbums : t.fileIntoAlbum}
               </button>
             </div>}
             <div className="px-5 pb-safe-8 pt-3">
@@ -183,6 +192,36 @@ export function ReviewView({ t, session, finished, byId, debug, bin = false, alb
             </div>
           </>
         )}
+      {/* Which albums stand under the photo: every album of the phone, each a toggle; a new one at the foot. */}
+      <Sheet open={picking} title={t.reviewAlbumsTitle} closeLabel={t.close} onClose={() => setPicking(false)} action={{ label: t.done, onClick: () => setPicking(false) }}>
+        <p className="text-label text-fg-mute wrap-prose">{t.reviewAlbumsBody}</p>
+        {albums.length > 8 && <div className="mt-3"><Field label={t.reviewAlbumsFilter} value={filter} onChange={setFilter} /></div>}
+        {albums.length === 0
+          ? <p className="mt-4 text-label text-fg wrap-prose">{t.reviewAlbumsNone}</p>
+          : (
+            <ul className="mt-3 rounded-md bg-surface-2 divide-hairline-inset overflow-hidden">
+              {found.map(a => {
+                const on = pinned.includes(a.id);
+                return (
+                  <li key={a.id}>
+                    <button
+                      type="button" aria-pressed={on} onClick={() => { tapLight(); pin(a.id); }}
+                      className="w-full min-h-[52px] px-4 py-2 flex items-center gap-3 text-start press focus-visible:ring-focus"
+                    >
+                      <FolderInput className="w-5 h-5 shrink-0 text-fg-mute" aria-hidden="true" />
+                      <span className="min-w-0 flex-1 text-body text-fg wrap-compound">{a.title}</span>
+                      <span className={`w-6 h-6 shrink-0 rounded-full inline-flex items-center justify-center ${on ? 'bg-accent-fill text-accent-fill-ink' : 'ring-2 ring-inset ring-fg-faint'}`} aria-hidden="true">
+                        {on && <Check className="w-4 h-4" strokeWidth={3} />}
+                      </span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        <Button full variant="ghost" icon={Plus} className="mt-3" onClick={() => { setPicking(false); setNaming(true); }}>{t.newAlbum}</Button>
+      </Sheet>
+
       <Sheet open={naming} title={t.newAlbum} closeLabel={t.cancel} onClose={() => setNaming(false)} action={{ label: t.save, onClick: create, disabled: !title.trim() }}>
         <Field label={t.albumName} value={title} onChange={setTitle} autoFocus maxLength={80} onKeyDown={e => { if (e.key === 'Enter') create(); }} />
       </Sheet>
