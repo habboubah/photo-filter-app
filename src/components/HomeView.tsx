@@ -507,9 +507,10 @@ function ScanCard({ t, scan, first }: { t: Strings; scan: ScanView; first: boole
  * What could go, in one card (the "Suggestions" section): the space it adds up
  * to, the bar of the whole library — one segment per category that could go,
  * then the photos and videos that stay, paler — and the categories as rows
- * under it, each with its hue's dot, so the bar and the list read as one. At
- * its foot the library in two cells (photos, videos: how many, how many could
- * go — each opens them), the free space, and *Jetzt aufräumen*. Nothing in it
+ * under it, each with its hue's dot, so the bar and the list read as one.
+ * Before the rows, the library's figures: two cells (photos, videos: how many,
+ * how many could go — each opens them) and the free space; at its foot
+ * *Jetzt aufräumen*. Nothing in it
  * is red, nothing counts down: it is an overview, not an alarm.
  */
 function CleanupSection({ t, summary, cats, done, bar, countOf, library, storage, freedBytes, partial, onOpen, onPhotos, onVideos }: {
@@ -570,6 +571,36 @@ function CleanupSection({ t, summary, cats, done, bar, countOf, library, storage
           </div>
         )}
 
+        {/* The library's figures first: photos and videos, how many could go, the free space — then the categories. */}
+        {summary && (cells.length > 0 || storage || freedBytes > 0) && (
+          <div className="px-4 pb-4 space-y-3">
+            {cells.length > 0 && (
+              <div role="group" aria-label={t.analysisTitle} className={`grid gap-2 ${cells.length > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                {cells.map(c => (
+                  <button
+                    key={c.key} type="button" onClick={() => { tapLight(); c.onClick(); }}
+                    aria-label={`${c.label}: ${t.statScanned} ${num(t, c.all.count)}, ${t.statCouldGo} ${num(t, c.gone.count)}`}
+                    className="min-w-0 min-h-control rounded-md bg-surface-2 px-3 py-2.5 text-start press focus-visible:ring-focus"
+                  >
+                    <span className="flex items-center gap-1.5 text-caption font-semibold text-fg-mute" aria-hidden="true">
+                      <c.icon className="w-3.5 h-3.5 shrink-0" strokeWidth={2.4} />
+                      <span className="min-w-0 wrap-compound">{c.label}</span>
+                    </span>
+                    <span className="block title-face text-heading font-bold text-fg num mt-0.5" aria-hidden="true">{num(t, c.all.count)}</span>
+                    <span className="block text-caption text-fg-mute num wrap-prose" aria-hidden="true">{fmt(t.mediaCouldGo, { n: num(t, c.gone.count) })}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+            {(storage || freedBytes > 0) && (
+              <p className="px-1 flex flex-wrap items-center gap-x-2 gap-y-1.5 text-caption text-fg-mute num">
+                {storage && <span>{fmt(t.storageFree, { free: bytes(t, storage.free), total: bytes(t, storage.total) })}</span>}
+                {freedBytes > 0 && <span className="rounded-full bg-keep-dim text-keep font-bold px-2.5 py-0.5">{fmt(t.freedSoFar, { size: bytes(t, freedBytes) })}</span>}
+              </p>
+            )}
+          </div>
+        )}
+
         {cats.length > 0 && (
           <div className={`divide-hairline-inset ${summary ? 'border-t border-hairline' : ''}`}>
             {cats.map(c => (
@@ -595,33 +626,9 @@ function CleanupSection({ t, summary, cats, done, bar, countOf, library, storage
         )}
         {partial && cats.length > 0 && <p className="px-5 pb-3 pt-1 text-caption text-fg-mute wrap-prose">{t.suggestionsPartial}</p>}
 
-        {summary && (
-          <div className="px-4 pt-4 pb-4 border-t border-hairline space-y-3">
-            {cells.length > 0 && (
-              <div role="group" aria-label={t.analysisTitle} className={`grid gap-2 ${cells.length > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
-                {cells.map(c => (
-                  <button
-                    key={c.key} type="button" onClick={() => { tapLight(); c.onClick(); }}
-                    aria-label={`${c.label}: ${t.statScanned} ${num(t, c.all.count)}, ${t.statCouldGo} ${num(t, c.gone.count)}`}
-                    className="min-w-0 min-h-control rounded-md bg-surface-2 px-3 py-2.5 text-start press focus-visible:ring-focus"
-                  >
-                    <span className="flex items-center gap-1.5 text-caption font-semibold text-fg-mute" aria-hidden="true">
-                      <c.icon className="w-3.5 h-3.5 shrink-0" strokeWidth={2.4} />
-                      <span className="min-w-0 wrap-compound">{c.label}</span>
-                    </span>
-                    <span className="block title-face text-heading font-bold text-fg num mt-0.5" aria-hidden="true">{num(t, c.all.count)}</span>
-                    <span className="block text-caption text-fg-mute num wrap-prose" aria-hidden="true">{fmt(t.mediaCouldGo, { n: num(t, c.gone.count) })}</span>
-                  </button>
-                ))}
-              </div>
-            )}
-            {(storage || freedBytes > 0) && (
-              <p className="px-1 flex flex-wrap items-center gap-x-2 gap-y-1.5 text-caption text-fg-mute num">
-                {storage && <span>{fmt(t.storageFree, { free: bytes(t, storage.free), total: bytes(t, storage.total) })}</span>}
-                {freedBytes > 0 && <span className="rounded-full bg-keep-dim text-keep font-bold px-2.5 py-0.5">{fmt(t.freedSoFar, { size: bytes(t, freedBytes) })}</span>}
-              </p>
-            )}
-            {!nothing && <Button full variant="secondary" className="!shadow-none glass-flat" onClick={onOpen}>{t.cleanupButton}</Button>}
+        {summary && !nothing && (
+          <div className="px-4 py-4 border-t border-hairline">
+            <Button full variant="secondary" className="!shadow-none glass-flat" onClick={onOpen}>{t.cleanupButton}</Button>
           </div>
         )}
       </div>

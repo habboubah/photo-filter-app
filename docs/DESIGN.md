@@ -193,8 +193,8 @@ to the bottom with a fade above it).
 - **Home's order**: greeting, the one next step (why it is the step: a glass
   chip on its photo, never a kicker over its title), what is marked for
   deletion, *Vorschläge* — ONE card: the space, the library's bar, the
-  categories as rows whose hue dot is their segment in the bar, and at its
-  foot the photos / videos cells, the free space and *Jetzt aufräumen* —
+  photos / videos cells and the free space, then the categories as rows
+  whose hue dot is their segment in the bar, and *Jetzt aufräumen* at its foot —
   then carry on, from your library, more space, protected.
 - **Ordnen's order**: search as a field (`card`, rounded-full, 56 px), On
   this day as a large photo, the trips as tiles four to a row (name, dates,

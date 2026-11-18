@@ -125,14 +125,14 @@ is marked for deletion, then the storage overview and the rest in order.
 - **Vorschläge** [Suggestions], one card (since 18 November 2026; until then
   a separate clean-up card with a table and a list): *Platz, der frei werden
   kann · 357 MB*; a bar of the whole library — one segment per category that
-  could go, then *Gute Fotos* and *Gute Videos*, paler; then one row per
-  category — *Duplikate*, *Fast gleiche*, *Ähnliche Videos*, *Missglückt*,
+  could go, then *Gute Fotos* and *Gute Videos*, paler; then the library's
+  figures — two cells, *Fotos 95 · 31 können weg* and *Videos 6 · 3 können
+  weg* (*Fotos* opens *Monat für Monat*, *Videos* all videos), the free space
+  on the device, *Bisher freigegeben*; then one row per category — *Duplikate*, *Fast gleiche*, *Ähnliche Videos*, *Missglückt*,
   *Screenshots*, *Unwichtige Fotos* (once the AI has seen photos) — with two
   of its photos, how many could go and, on the right, **its colour's dot**
   (its segment in the bar) and the space, the most space first. At its foot
-  two cells, *Fotos 95 · 31 können weg* and *Videos 6 · 3 können weg*
-  (*Fotos* opens *Monat für Monat*, *Videos* all videos), the free space on
-  the device, *Bisher freigegeben*, and **Jetzt aufräumen** [Clean up now]
+  **Jetzt aufräumen** [Clean up now]
   (the clean-up screen). Categories with nothing left in one line under it:
   *Erledigt: Duplikate, Screenshots*.
 - **Weitermachen** [Carry on]: *Später entscheiden* with the number on the
@@ -350,8 +350,8 @@ is marked for deletion, then the storage overview and the rest in order.
   *Zoo* …); no two cards with mostly the same photos. A tap searches for it. A word the library hasn't got is not offered, and a photo of an ID
   or a bank card is never a cover. Until the AI has seen the photos, plain
   examples instead (*Zum Beispiel*).
-- **Wonach du suchen kannst** [What you can search for]: a few words to try
-  under the cards, and **Alle 247 Wörter** [All words]: a sheet with every
+- **Wonach du suchen kannst** [What you can search for], first on the screen
+  (above *In deinen Fotos*, since 18 November 2026): a few words to try, and **Alle 247 Wörter** [All words]: a sheet with every
   word by theme (*Familie und Menschen*, *Feste*, *Baby-Momente*, *Tiere*,
   *Essen und Trinken*, *Orte und Natur*, *Dokumente und Belege* … — the
   sections of ml/words.yaml) and a field that narrows it by any form of a
