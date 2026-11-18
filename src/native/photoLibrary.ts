@@ -91,6 +91,14 @@ export interface PhotoLibraryPlugin {
    * rejects if the phone can't play the file.
    */
   preview(options: { id: string; closeLabel?: string; biggerLabel?: string; smallerLabel?: string }): Promise<void>;
+  /**
+   * Where a video can be played inside the page, in the place its picture is
+   * shown (`<PlayOver>`): Android its content:// URI, iPhone a copy in the
+   * app's temporary folder (the last one is cleared; from the phone only — an
+   * iCloud-only video rejects with code `CLOUD`). Load it through `fileUrl()`.
+   * Nothing is changed; when this fails the app falls back to `preview`.
+   */
+  videoFile(options: { id: string }): Promise<{ path: string }>;
   /** iPhone: the user's own albums (not smart albums, not shared ones). Android: every folder that holds photos or videos. */
   listAlbums(): Promise<{ albums: AlbumInfo[] }>;
   /** The photo ids in these albums / folders (asked once per load, for the protected albums only). */

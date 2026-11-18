@@ -196,6 +196,15 @@ export class DemoLibrary extends WebPlugin implements PhotoLibraryPlugin {
     await playInBrowser(url, { close: closeLabel ?? 'Close', bigger: biggerLabel, smaller: smallerLabel });
   }
 
+  /** The test library's video files play inside the page; the curated demo has none. */
+  async videoFile({ id }: { id: string }) {
+    set('bildklar-demo-preview', id);
+    await ready;
+    const path = data.clipOf?.(id);
+    if (!path) throw Object.assign(new Error('The demo has no file for this video'), { code: 'PLAYBACK' });
+    return { path };
+  }
+
   /** Albums the demo made while swiping (remembered like the deleted photos). */
   private madeAlbums(): { id: string; title: string; members: string[] }[] {
     try { return JSON.parse(get('bildklar-demo-albums') ?? '[]'); } catch { return []; }

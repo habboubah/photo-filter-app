@@ -113,7 +113,12 @@ in docs/ux-research.md). Nothing native changed, but nothing ran on a phone.
       the cloud. Then play a video: it should open as a window over the dimmed
       app; AVKit's full-screen button makes it bigger and smaller; a tap beside
       the window or ✕ closes it.
-- [ ] **Android**: play a video — a window with the controls, *Größer* fills
+- [ ] **Playing in place** (`videoFile`, new Swift too): on a large file's
+      sheet, in a group of similar videos and on a review card ▶ plays the
+      video inside that picture's box, ✕ goes back. iPhone: an iCloud-only
+      video says it is in the cloud; a long video takes a moment (it is
+      copied into the temporary folder first). Android: plays at once.
+- [ ] **Android**: play a video from a grid tile — a window with the controls, *Größer* fills
       the screen, *Kleiner* brings the window back, Back closes. Portrait and
       landscape videos, light and dark, TalkBack names the three buttons.
 

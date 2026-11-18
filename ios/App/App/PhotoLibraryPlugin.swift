@@ -67,6 +67,7 @@ public class PhotoLibraryPlugin: CAPPlugin, CAPBridgedPlugin, PHPhotoLibraryChan
         CAPPluginMethod(name: "listAlbums", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "addToAlbums", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "preview", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "videoFile", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "albumMembers", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "trash", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "getState", returnType: CAPPluginReturnPromise),
@@ -657,6 +658,34 @@ public class PhotoLibraryPlugin: CAPPlugin, CAPBridgedPlugin, PHPhotoLibraryChan
                 let window = VideoWindowController(asset: avAsset, closeLabel: call.getString("closeLabel") ?? "Close")
                 presenter.present(window, animated: true) { window.play() }
                 call.resolve()
+            }
+        }
+    }
+
+    /// Where the page plays a video in place: a copy of its file in the temporary folder (the last copy is
+    /// cleared first). From the phone only — nothing is downloaded; the photo itself is not changed.
+    @objc func videoFile(_ call: CAPPluginCall) {
+        guard let id = call.getString("id"), let asset = fetch([id]).firstObject, asset.mediaType == .video else {
+            call.reject("No video")
+            return
+        }
+        let resources = PHAssetResource.assetResources(for: asset)
+        guard let resource = resources.first(where: { $0.type == .fullSizeVideo }) ?? resources.first(where: { $0.type == .video }) else {
+            call.reject("The video is not on this iPhone", "CLOUD")
+            return
+        }
+        let folder = FileManager.default.temporaryDirectory.appendingPathComponent("play", isDirectory: true)
+        try? FileManager.default.removeItem(at: folder)
+        try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        let ext = (resource.originalFilename as NSString).pathExtension
+        let file = folder.appendingPathComponent(UUID().uuidString).appendingPathExtension(ext.isEmpty ? "mov" : ext.lowercased())
+        let options = PHAssetResourceRequestOptions()
+        options.isNetworkAccessAllowed = false
+        PHAssetResourceManager.default().writeData(for: resource, toFile: file, options: options) { error in
+            if error != nil {
+                call.reject("The video is not on this iPhone", "CLOUD")
+            } else {
+                call.resolve(["path": file.path])
             }
         }
     }

@@ -296,7 +296,12 @@ then *Mehr Platz* and *Geschützt*.
   similar videos and on each of its series (picking the one to keep stays the
   tile's tap), and any video tile in a grid that opens nothing else (a
   category, screen recordings, …) — those tiles carry ▶ and the length.
-- **It starts as a window**, not full screen (since 18 November 2026): over the
+- **On a big picture it plays right there** (since 18 November 2026, evening):
+  the review card, a large file's sheet and a group's viewer turn into the
+  player in the same box — the system's controls in the WebView (play /
+  pause, the timeline, volume, full screen), ✕ goes back to the picture. The
+  card doesn't swipe while you touch the player.
+- **A grid tile starts a window**, not full screen (since 18 November 2026): over the
   dimmed app, about the size of a large photo and in the video's own shape,
   with a round close button; a tap beside it closes it too. **Größer**
   [Bigger] lets it fill the screen, **Kleiner** [Smaller] brings the window
@@ -345,6 +350,10 @@ then *Mehr Platz* and *Geschützt*.
 - Every screenshot and screen recording, newest first; *Älter als 30 Tage* [Older than 30 days]
   (the ones the clean-up card counts) or *Alle* [All]. *Durchgehen* reviews
   them, all suggested for deleting. Favourites and kept ones are left out.
+- A tap on a screenshot opens it large (zoom in, drag). Its circle picks it;
+  with some picked the button becomes *Löschen vormerken · 3 Fotos · 4 MB*
+  [Mark for deletion] (into *Zum Löschen vorgemerkt*, nothing is deleted) and
+  *Auswahl aufheben* [Clear selection] goes under it.
 
 ## Unimportant photos (on-device AI)
 - *Unwichtige Fotos* [Unimportant photos] on home: receipts, documents,
@@ -459,6 +468,9 @@ then *Mehr Platz* and *Geschützt*.
 - They are part of the clean-up card (*Zu dunkel oder zu hell*), the quick
   clean, *Alle durchgehen* and the reviews of a month, a trip and *An diesem Tag*.
 - The thresholds are provisional (`src/logic/exposure.ts`).
+- On every tab a tap opens a photo large (zoom in, drag); its circle picks it,
+  and the picked ones go to *Zum Löschen vorgemerkt* with *Löschen vormerken ·
+  n Fotos · size* (*Auswahl aufheben* under it).
 
 ## Clean-up
 - *Aufräumen* lists what the card counts (duplicates, near-identical, blurry,

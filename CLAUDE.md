@@ -93,13 +93,17 @@ scenes follow the switch (docs/PLAN.md, *Pricing*).
   files the native side writes; `<img>` loads them via `fileUrl()` (`Capacitor.convertFileSrc`).
 - **Grids are virtualised** (`PhotoGrid`). Never render a list of every photo.
 - **Videos play inside the app**: `PlayerContext` (`src/ui/play.tsx`, provided
-  in `App.tsx`) → `PhotoLibrary.preview` — a window over the dimmed app,
+  in `App.tsx`). A big picture of a video (`<PlayOver>`: a large file's sheet,
+  a group's viewer, the review card) plays it **in place**, a `<video>` in the
+  picture's own box (`PhotoLibrary.videoFile` → `fileUrl()`: Android the
+  content:// URI, iPhone a copy in the temporary folder). Everything else, and
+  a file the page can't play, goes to `PhotoLibrary.preview` — a window over the dimmed app,
   not full screen, that can be made bigger and smaller: iPhone
   `VideoWindowController` (AVPlayerViewController inline, in
   `PhotoLibraryPlugin.swift`), Android `VideoPlayer.kt` (a VideoView in a
   window), the browser `src/native/demo/player.ts`. Never hand a video to
-  another app (no `ACTION_VIEW`). A big picture of a video takes `<PlayOver>`;
-  a `PhotoGrid` without `onOpen` plays its video tiles by itself.
+  another app (no `ACTION_VIEW`). A `PhotoGrid` without `onOpen` plays its
+  video tiles in that window by itself.
 - **The first run** (docs/DESIGN.md): the welcome (`WelcomeView`), the first
   scan's screen (`FirstScanView`) and its reveal (`RevealView`) are root-level
   steps in `App.tsx` (`root`), shown once; the guided review (`ReviewGuide`),

@@ -7,7 +7,7 @@ import { AlertTriangle, FlaskConical, Images, Sparkles } from 'lucide-react';
 import { useAppStore } from './store';
 import { bytes, fmt, loadFirstRun, percent, plural, stringsFor } from './translations';
 import type { Photo, Trip, Group } from './types';
-import { PhotoLibrary, type AlbumInfo } from './native/photoLibrary';
+import { PhotoLibrary, fileUrl, type AlbumInfo } from './native/photoLibrary';
 import { PRODUCT_ID, Purchases } from './native/purchases';
 import { loadCities } from './cities';
 import { forgetThumbs } from './thumbs';
@@ -698,13 +698,15 @@ export default function App() {
   const rate = rateUrl(isAndroid() ? 'android' : isIos() || devNative() ? 'ios' : 'web');
   const byId = lib.byId;
 
-  // A video plays inside the app (src/ui/play.tsx): the native player over the app, never another app.
+  // A video plays inside the app (src/ui/play.tsx): in place where its picture is, else the native window — never another app.
   const player: Player = {
     length: id => { const p = byId.get(id); return p?.video ? p.dur ?? 0 : null; },
     play: id => {
       void PhotoLibrary.preview({ id, closeLabel: t.close, biggerLabel: t.videoBigger, smallerLabel: t.videoSmaller })
         .catch((e: { code?: string }) => show(e?.code === 'CLOUD' ? t.previewFailed : t.playFailed));
     },
+    source: id => PhotoLibrary.videoFile({ id }).then(r => fileUrl(r.path)),
+    stopLabel: t.close,
     label: id => fmt(t.playVideo, { length: duration(byId.get(id)?.dur ?? 0) }),
   };
 
@@ -842,7 +844,6 @@ export default function App() {
           guide={review.bin || !teach ? undefined : { gesture: teach, onDid: g => store.markSeen(g), onSkip: () => store.markSeen(...GESTURES) }}
           protectNote={!hasSeen(store.seen, MOMENTS.protect)} onProtectNote={() => store.markSeen(MOMENTS.protect)}
           onProtect={id => { store.protectPhotos([id], true); onDecide('keep'); show(t.protected); }}
-          onPreview={player.play}
           onLike={review.bin ? undefined : id => { if (store.vectors.has(id)) setLikeId(id); else show(t.likeNone); }}
           onFinish={() => setReview(r => (r ? { ...r, finished: true } : r))}
           onDelete={outcome => {
@@ -1016,6 +1017,7 @@ export default function App() {
           onBack={() => setShowBlurry(false)}
           onReviewBlurry={(list: Photo[]) => startReview(reviewBlurry(list))}
           onReviewExposure={(list, level) => startReview(reviewExposure(list, level))}
+          onAside={list => toBin(list.map(p => p.id))}
         />
       );
     }
@@ -1024,6 +1026,7 @@ export default function App() {
         <ScreenshotsView
           t={t} {...sorting('screenshots')} photos={shots} now={now} onBack={() => setShowScreenshots(false)}
           onReview={(list: Photo[]) => startReview(reviewScreenshots(list))}
+          onAside={list => toBin(list.map(p => p.id))}
         />
       );
     }
