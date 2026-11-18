@@ -129,8 +129,9 @@ One description per language for the **App Store and Google Play** (since
 19 November 2026): paste it unchanged into both. It names neither platform —
 Apple rejects metadata that mentions Android (guideline 2.3.10) — and says
 only what is true on both: "Handy" / "phone", "Album" (Android's galleries
-show the folders as albums), "can be recovered for 30 days" (Recently Deleted
-and the trash both keep 30 days), "if your phone offers it" for choosing
+show the folders as albums), "your phone's own bin … 30 days" (the phone keeps
+them, not the app: Recently Deleted on the iPhone, the trash on Android, both
+30 days), "if your phone offers it" for choosing
 photos (iOS, Android 14+). Open eyes for the best shot are left out (iPhone
 only).
 
@@ -150,7 +151,7 @@ KOSTENLOS UND OHNE WERBUNG
 
 DU HAST DAS LETZTE WORT
 • Bildklar löscht nie von selbst. Du bestätigst jedes Löschen, und dein Handy fragt noch einmal nach.
-• Gelöschte Fotos lassen sich 30 Tage lang wiederherstellen.
+• Gelöschte Fotos landen im Papierkorb deines Handys – nicht in Bildklar – und lassen sich dort 30 Tage lang wiederherstellen.
 • Favoriten und geschützte Alben schlägt Bildklar nie vor. Deine Fotos werden nie verändert.
 
 DEINE REISEN WERDEN ALBEN
@@ -194,7 +195,7 @@ FREE AND WITHOUT ADS
 
 YOU HAVE THE LAST WORD
 • Bildklar never deletes by itself. You confirm every deletion, and your phone asks once more.
-• Deleted photos can be recovered for 30 days.
+• Deleted photos go to your phone's own bin – not into Bildklar – where you can recover them for 30 days.
 • Favourites and protected albums are never suggested. Your photos are never changed.
 
 YOUR TRIPS BECOME ALBUMS
@@ -238,7 +239,7 @@ Go through your photos a month at a time and see how much you have done. "On thi
 
 القرار الأخير لك
 • لا يحذف Bildklar شيئًا من تلقاء نفسه. أنت تؤكّد كل حذف، ويسألك هاتفك مرة أخرى.
-• يمكن استعادة الصور المحذوفة خلال 30 يومًا.
+• تنتقل الصور المحذوفة إلى سلة المحذوفات في هاتفك – لا إلى Bildklar – ويمكن استعادتها منها خلال 30 يومًا.
 • لا يقترح Bildklar أبدًا الصور المفضّلة أو الألبومات المحميّة، ولا يغيّر صورك أبدًا.
 
 رحلاتك تصبح ألبومات
