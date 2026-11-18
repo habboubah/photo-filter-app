@@ -4,49 +4,58 @@
   "appName": "Bildklar KI: Foto Reiniger",
   "slides": {
     "home": {
-      "headline": "Deine Fotos, endlich aufgeräumt",
-      "subline": "Reisen sortiert, Doppeltes und Unscharfes gefunden",
+      "headline": "Fotos aufräumen mit KI",
+      "subline": "Doppeltes, Missglücktes und Ähnliches finden – auf deinem Gerät",
       "points": [
-        "Reisen sortiert",
-        "Doppelte & Unscharfe",
+        "Duplikate & Missglückte",
+        "KI sortiert deine Fotos",
+        "Fotos per Wort finden",
         "Alles auf deinem Gerät"
       ]
     },
     "trips": {
-      "headline": "Jede Reise von selbst gefunden",
-      "subline": "Mit Ort und Monat im Namen"
+      "headline": "Nach Reisen und Themen sortiert",
+      "subline": "Ort und Monat im Namen, Themen von der KI"
     },
     "album": {
       "headline": "Ein Album pro Reise",
       "subline": "Direkt in deiner Fotos-App"
     },
+    "duplicates": {
+      "headline": "Doppelte Fotos löschen",
+      "subline": "Das Original bleibt, die Kopien gehen"
+    },
     "group": {
-      "headline": "Das beste Foto vorgeschlagen",
+      "headline": "KI wählt das beste Foto",
       "subline": "Scharf, gut belichtet, Augen offen"
     },
+    "search": {
+      "headline": "Fotos per Wort suchen",
+      "subline": "Die KI sucht auf deinem Gerät"
+    },
+    "similar": {
+      "headline": "Ähnliche Fotos finden",
+      "subline": "Alles, was so aussieht wie dieses"
+    },
     "review": {
-      "headline": "Wischen: behalten oder weg",
+      "headline": "Wischen: behalten oder löschen",
       "subline": "Jeder Schritt lässt sich zurücknehmen"
     },
     "blurry": {
-      "headline": "Unscharfe Fotos auf einen Blick",
+      "headline": "Missglückte Fotos finden",
       "subline": "Die eindeutigen zuerst"
     },
     "cleanup": {
-      "headline": "Sieh, was frei wird",
+      "headline": "So viel Platz wird frei",
       "subline": "Bevor du irgendetwas löschst"
-    },
-    "private": {
-      "headline": "Alles bleibt auf deinem Gerät",
-      "subline": "Kein Konto, keine Cloud, keine Werbung"
     }
   },
   "featureGraphic": {
     "headline": "Bildklar",
-    "subline": "Reisen sortiert, Doppeltes und Unscharfes aufgeräumt – alles auf deinem Handy.",
+    "subline": "Doppeltes, Missglücktes und Ähnliches aufräumen, Fotos per Wort finden – alles auf deinem Handy.",
     "points": [
-      "Reisen sortiert",
-      "Fast gleiche Fotos",
+      "Duplikate & Missglückte",
+      "Fotos per Wort finden",
       "Alles auf dem Gerät"
     ]
   }

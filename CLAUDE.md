@@ -351,7 +351,7 @@ Android keeps the layout and swaps the material, through
 | The demo's real photos (keeps the manifest), then the AI's scores and the facts | `npm run demo-photos && npm run ai:demo` |
 | A real test library (~560 CC0 photos and videos, dates and places) / onto the simulator / onto Android / into `npm run dev` | `npm run test-photos` / `test-photos:sim` / `test-photos:android` / `demo-library` |
 | Every screen before and after a UI change (the first run and large text included) | `npm run ui-review` (→ `screenshots/review/`; `-- --only 54-first-scan --variant de-light` for one) |
-| Store screenshots: raw (iPhone words / Android words) / framed | `npm run screenshots` (`-- --android`) / `npm run store-screenshots` |
+| Store screenshots: raw (iPhone words / Android words) / framed | `npm run screenshots` (both; `-- --ios` / `-- --android` for one) / `npm run store-screenshots` |
 | The App Store preview video | `npm run app-preview` (needs ffmpeg) |
 | App Store preview video | `npm run app-preview` |
 | App Review recording: rehearse / record | `npm run rehearse:app-review` / `npm run record:app-review` |

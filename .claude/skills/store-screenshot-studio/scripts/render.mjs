@@ -88,7 +88,7 @@ function phoneData(spec, locale, device, where, dir) {
   try {
     size = pngSize(file);
   } catch {
-    die(`${where} points at ${path.relative(root, file)}, which is missing. Run \`npm run screenshots\` first.`);
+    die(`${where} points at ${path.relative(root, file)}, which is missing. Run \`npm run screenshots\` first (it takes the iPhone and the Android captures).`);
   }
   const place = spec.phone || spec;
   return {

@@ -165,7 +165,8 @@ const section = title => `section:has(> h2:text-is("${title}")) > div`;
  */
 export const SCREENS = [
   {
-    name: '01-scan', store: true, prefs: { scanned: false, scanStep: '400' },
+    // ui-review only since Nov 2026: a progress bar says little in a store listing.
+    name: '01-scan', prefs: { scanned: false, scanStep: '400' },
     // Slowed down to about 10 s (normally 2.6 s), so the capture and its mark
     // catch the card for sure: about a quarter through.
     wait: 1200,
@@ -243,7 +244,11 @@ export const SCREENS = [
   { name: '18-settings-end', run: async (page, w) => { await openSettings(page, w); await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight)); await pause(page, 300); } },
   { name: '19-dark', prefs: { theme: 'dark' } },
   { name: '20-dark-group', prefs: { theme: 'dark' }, run: openGroup },
-  { name: '21-duplicates', run: async (page, w) => { await page.click(`button:has-text("${w.t.duplicatesTile}")`); await pause(page, 600); } },
+  // In the store set: the exact copies, each series with the one to keep starred.
+  {
+    name: '21-duplicates', store: true, run: async (page, w) => { await page.click(`button:has-text("${w.t.duplicatesTile}")`); await pause(page, 600); },
+    marks: () => ({ 'group-1': 'main button >> nth=0', 'group-2': 'main button >> nth=1' }),
+  },
   { name: '22-screenshots', run: async (page, w) => { await page.click(`button:has-text("${w.t.screenshotsTile}")`); await pause(page, 700); } },
   {
     name: '23-quick-clean', run: async (page, w) => {
@@ -329,7 +334,8 @@ export const SCREENS = [
     },
   },
   {
-    name: '42-search-results', run: async (page, w) => {
+    // In the store set: one word, and the photos the on-device AI finds for it.
+    name: '42-search-results', store: true, run: async (page, w) => {
       await openOrganize(page, w);
       await page.click(`button${aria(w.t.searchOpen)}`);
       await pause(page, 600);
@@ -337,11 +343,19 @@ export const SCREENS = [
       await pause(page, 300);
       await page.keyboard.press('Enter');
       await pause(page, 900);
+      // The field loses its caret, so the capture shows no blinking cursor.
+      await page.locator('input').blur();
+    },
+    marks: w => {
+      // The word's chip: its label is t.searchRemove ("Stadt entfernen", "Remove city").
+      const [before, after] = w.t.searchRemove.split('{word}');
+      const chip = `main button${before ? `[aria-label^="${before}"]` : ''}${after ? `[aria-label$="${after}"]` : ''}`;
+      return { word: chip };
     },
   },
-  // Ähnliche Fotos: a search result's look-alikes.
+  // Ähnliche Fotos: a search result's look-alikes (in the store set).
   {
-    name: '43-like', run: async (page, w) => {
+    name: '43-like', store: true, run: async (page, w) => {
       await openOrganize(page, w);
       await page.click(`button${aria(w.t.searchOpen)}`);
       await pause(page, 600);
@@ -351,6 +365,7 @@ export const SCREENS = [
       await page.locator('main button[style*="position: absolute"]').first().click();
       await pause(page, 900);
     },
+    marks: () => ({ photo: 'main figure' }),
   },
   // Ähnliche Videos: the demo's two takes at Lake Garda and a copied video — their own screen, apart from the photos.
   {

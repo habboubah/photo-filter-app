@@ -4,49 +4,58 @@
   "appName": "Bildklar AI: Photo Cleaner",
   "slides": {
     "home": {
-      "headline": "Your photos, sorted at last",
-      "subline": "Trips sorted, duplicates and blurry shots found",
+      "headline": "Clean up photos with AI",
+      "subline": "Find duplicates, failed and similar shots – on your device",
       "points": [
-        "Trips sorted",
-        "Duplicates & blurry shots",
+        "Duplicates & failed shots",
+        "AI sorts your photos",
+        "Find photos by word",
         "Stays on your device"
       ]
     },
     "trips": {
-      "headline": "Every trip, found for you",
-      "subline": "Named with place and month"
+      "headline": "Sorted by trip and topic",
+      "subline": "Place and month in the name, topics by AI"
     },
     "album": {
       "headline": "An album per trip",
       "subline": "Right in your Photos app"
     },
+    "duplicates": {
+      "headline": "Delete duplicate photos",
+      "subline": "Keep the original, lose the copies"
+    },
     "group": {
-      "headline": "The best shot, suggested",
+      "headline": "AI picks the best shot",
       "subline": "Sharp, well exposed, eyes open"
     },
+    "search": {
+      "headline": "Search photos by word",
+      "subline": "The AI searches on your device"
+    },
+    "similar": {
+      "headline": "Find similar photos",
+      "subline": "Everything that looks like this one"
+    },
     "review": {
-      "headline": "Swipe: keep or delete",
+      "headline": "Swipe to keep or delete",
       "subline": "Every step can be undone"
     },
     "blurry": {
-      "headline": "Blurry photos at a glance",
+      "headline": "Find blurry and dark photos",
       "subline": "The clear cases first"
     },
     "cleanup": {
-      "headline": "See the space you'd free",
+      "headline": "See the space you'll free",
       "subline": "Before you delete anything"
-    },
-    "private": {
-      "headline": "Everything stays on your device",
-      "subline": "No account, no cloud, no ads"
     }
   },
   "featureGraphic": {
     "headline": "Bildklar",
-    "subline": "Trips sorted, duplicates and blurry shots cleaned up – all on your phone.",
+    "subline": "Duplicates, failed and similar shots cleaned up, photos found by word – all on your phone.",
     "points": [
-      "Trips sorted",
-      "Near-identical photos",
+      "Duplicates & failed shots",
+      "Find photos by word",
       "Stays on your device"
     ]
   }
