@@ -1,16 +1,13 @@
 import { useMemo, useState } from 'react';
-import { CheckCircle2, Circle, Trash2, Undo2 } from 'lucide-react';
+import { Archive, CheckCircle2, Circle, Trash2, Undo2 } from 'lucide-react';
 import type { Photo } from '../types';
-import { Strings, bytes, num, plural } from '../translations';
+import { Strings, bytes, plural } from '../translations';
 import { duration } from '../logic/large';
 import { Dock, Empty, Screen } from '../ui/Screen';
 import { Button } from '../ui/Button';
-import { PhotoGrid, Thumb } from '../ui/Photo';
-import { Sheet } from '../ui/Sheet';
+import { PhotoGrid } from '../ui/Photo';
+import { DeleteSheet } from './DeleteSheet';
 import { SafetyNets } from './SafetyNets';
-
-/** How many photos the delete sheet draws; the last tile counts the rest. */
-const SHEET_TILES = 48;
 
 /**
  * "Zum Löschen vorgemerkt" [Marked for deletion] (src/logic/bin.ts): what the user marked,
@@ -47,14 +44,13 @@ export function BinView({ t, photos, safetySeen, onSafetySeen, onBack, onRestore
   const count = (list: Photo[]) => (list.some(p => p.video) ? plural(t, 'files', list.length) : plural(t, 'photos', list.length));
   const deleteLabel = (list: Photo[]) => (list.some(p => p.video) ? plural(t, 'deleteFilesN', list.length) : plural(t, 'deleteN', list.length));
   const ids = (list: Photo[]) => list.map(p => p.id);
-  const sheetBytes = confirm?.reduce((s, p) => s + p.bytes, 0) ?? 0;
 
   return (
     <Screen
       title={t.binTitle} subtitle={photos.length ? `${count(photos)} · ${bytes(t, total)}` : undefined}
       onBack={onBack} backLabel={t.back} info={{ label: t.aboutScreen, close: t.close, body: t.binIntro }} docked={photos.length > 0}
     >
-      {photos.length === 0 ? <Empty emoji="📦" title={t.binEmpty} body={t.binEmptyBody} /> : (
+      {photos.length === 0 ? <Empty icon={Archive} tone="accent" title={t.binEmpty} body={t.binEmptyBody} back={{ label: t.emptyBack, onClick: onBack }} /> : (
         <>
           <p data-tip="tip.binScreen" className="px-1 pb-3 text-label text-fg-mute wrap-prose" aria-live="polite">{picked.length ? plural(t, 'binPicked', picked.length) : t.binTapHint}</p>
           <PhotoGrid
@@ -101,33 +97,14 @@ export function BinView({ t, photos, safetySeen, onSafetySeen, onBack, onRestore
         </Dock>
       )}
 
-      {/* Before the system's dialog: exactly what goes, and how much space it frees. Cancel is one tap (or a swipe down). */}
-      <Sheet open={!!confirm} title={confirm ? (safetySeen ? deleteLabel(confirm) : t.safetyTitle) : ''} closeLabel={t.cancel} onClose={() => setConfirm(null)}>
-        {/* The first time, before anything red: what stands between a mark and a photo that is really gone. */}
-        {confirm && !safetySeen && <SafetyNets t={t} onContinue={onSafetySeen} />}
-        {confirm && safetySeen && (
-          <div className="space-y-4 pb-1">
-            <p className="text-body text-fg num wrap-prose">{`${count(confirm)} · ${bytes(t, sheetBytes)}`}</p>
-            <div className="grid grid-cols-6 gap-[3px]" role="list" aria-label={count(confirm)}>
-              {confirm.slice(0, SHEET_TILES).map((p, i) => (
-                <div key={p.id} role="listitem" aria-label={`${when(p)}, ${bytes(t, p.bytes)}`} className="relative aspect-square rounded-[6px] overflow-hidden">
-                  <Thumb id={p.id} className="!rounded-none" />
-                  {i === SHEET_TILES - 1 && confirm.length > SHEET_TILES && (
-                    <span className="absolute inset-0 bg-veil text-on-color text-caption font-bold num inline-flex items-center justify-center">+{num(t, confirm.length - SHEET_TILES + 1)}</span>
-                  )}
-                </div>
-              ))}
-            </div>
-            <p className="text-label text-fg-mute wrap-prose">{`${t.deleteHint} ${t.deleteSystemNext}`}</p>
-            <div className="grid gap-2 pt-1">
-              <Button full size="lg" variant="destructive" icon={Trash2} onClick={() => { const list = confirm; setConfirm(null); setChosen(new Set()); onDelete(ids(list)); }}>
-                {`${deleteLabel(confirm)} · ${bytes(t, sheetBytes)}`}
-              </Button>
-              <Button full size="lg" variant="secondary" className="!shadow-none glass-flat !text-fg" onClick={() => setConfirm(null)}>{t.cancel}</Button>
-            </div>
-          </div>
-        )}
-      </Sheet>
+      {/* Before the system's dialog: exactly what goes, and how much space it frees (DeleteSheet). The first time,
+          before anything red: what stands between a mark and a photo that is really gone. */}
+      <DeleteSheet
+        t={t} photos={confirm}
+        before={safetySeen ? undefined : { title: t.safetyTitle, body: <SafetyNets t={t} onContinue={onSafetySeen} /> }}
+        onConfirm={list => { setConfirm(null); setChosen(new Set()); onDelete(ids(list)); }}
+        onCancel={() => setConfirm(null)}
+      />
     </Screen>
   );
 }

@@ -252,7 +252,10 @@ export function HomeView(p: Props) {
       {!loaded && !bigScan && !aiPass && <HomeSkeleton label={t.loading} />}
 
       {loaded && p.photoCount === 0 && !p.scan.running && (
-        <Empty title={t.emptyLibraryTitle} body={t.emptyLibraryBody} />
+        <Empty
+          icon={ImageIcon} tone="accent" title={t.emptyLibraryTitle} body={t.emptyLibraryBody}
+          action={p.access === 'limited' ? <Button onClick={p.onAddPhotos}>{t.addPhotos}</Button> : undefined}
+        />
       )}
 
       {/* The one next step first: the obvious thing to do. Then what waits to be confirmed, then the overview. */}

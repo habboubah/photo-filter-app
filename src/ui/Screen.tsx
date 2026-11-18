@@ -1,8 +1,8 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { ArrowUpRight, ChevronLeft, ChevronRight, ChevronsUpDown, Info } from 'lucide-react';
+import { ArrowUpRight, Check, ChevronLeft, ChevronRight, ChevronsUpDown, Info } from 'lucide-react';
 import { tapLight } from './haptics';
-import { IconButton } from './Button';
+import { Button, IconButton } from './Button';
 import { Sheet } from './Sheet';
 
 interface Props {
@@ -241,18 +241,38 @@ export function Away() {
 }
 
 /**
- * Empty state: what is missing, and the action that fixes it. Without an
- * emoji of its own it shows the app's bag — the one face of the app.
+ * Empty state: a small illustration — two photo frames and a mark on the one
+ * in front — one line of what is (not) there, and the way on: the action
+ * that fixes it, or the way back. `tone`: green for "nothing to do here,
+ * all tidy" (the default), teal for "nothing here yet". Never an emoji.
  */
-export function Empty({ emoji, title, body, action }: { emoji?: string; title: string; body?: string; action?: React.ReactNode }) {
+export function Empty({ icon: Icon = Check, tone = 'keep', title, body, action, back }: {
+  icon?: React.ComponentType<{ className?: string; strokeWidth?: number }>;
+  tone?: 'keep' | 'accent';
+  title: string;
+  body?: string;
+  action?: React.ReactNode;
+  /** The way back as the next step, when the screen has nothing else to offer. */
+  back?: { label: string; onClick: () => void };
+}) {
   return (
     <div className="px-6 py-12 text-center">
-      {emoji
-        ? <div className="emoji text-[64px] mb-4" aria-hidden="true">{emoji}</div>
-        : <img src="/icon.png" alt="" className="w-[104px] h-[104px] rounded-lg mx-auto mb-5" draggable={false} />}
+      <div className="relative mx-auto mb-6 w-[136px] h-[104px]" aria-hidden="true">
+        <span className="absolute start-0 top-3 w-[72px] h-[84px] rounded-sm bg-surface-2 -rotate-[9deg] rtl:rotate-[9deg]" />
+        <span className="absolute end-0 top-3 w-[72px] h-[84px] rounded-sm bg-surface-2 rotate-[9deg] rtl:-rotate-[9deg]" />
+        <span className="absolute start-1/2 -ms-[40px] top-0 w-[80px] h-[96px] rounded-sm bg-surface shadow-e2 ring-1 ring-fg/10 inline-flex items-center justify-center">
+          <span className={`w-11 h-11 rounded-full inline-flex items-center justify-center ${tone === 'keep' ? 'bg-keep-dim text-keep' : 'bg-accent-dim text-accent'}`}>
+            <Icon className="w-6 h-6" strokeWidth={2.4} />
+          </span>
+        </span>
+      </div>
       <p className="title-face text-heading font-bold text-fg wrap-compound">{title}</p>
       {body && <p className="text-label text-fg-mute mt-2 wrap-prose max-w-xs mx-auto">{body}</p>}
-      {action && <div className="mt-6 flex justify-center">{action}</div>}
+      {(action || back) && (
+        <div className="mt-6 flex justify-center">
+          {action ?? <Button variant="secondary" onClick={back!.onClick}>{back!.label}</Button>}
+        </div>
+      )}
     </div>
   );
 }

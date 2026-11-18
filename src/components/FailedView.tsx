@@ -59,7 +59,7 @@ export function FailedView({ t, blurry, dark, bright, tab: initialTab = 'blurry'
           options={[{ value: 'sure', label: t.filterSure }, { value: 'all', label: t.filterAll }]}
         />
       )}
-      {list.length === 0 ? <Empty title={empty.title} body={empty.body} /> : (
+      {list.length === 0 ? <Empty title={empty.title} body={empty.body} back={{ label: t.emptyBack, onClick: onBack }} /> : (
         <PhotoGrid
           ids={list.map(p => p.id)}
           label={id => {

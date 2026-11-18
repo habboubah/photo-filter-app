@@ -650,6 +650,9 @@ const de = {
   zoomHint: 'Tippen vergrößert, ziehen verschiebt',
   zoomIn: 'Vergrößern',
   zoomOut: 'Verkleinern',
+
+  // Empty states: the way on (ui/Screen Empty)
+  emptyBack: 'Zurück zur Übersicht',
 };
 
 /** The strings every start needs; the first run's are a chunk of their own (translations.firstRun.ts). */
@@ -1277,6 +1280,9 @@ const en: BaseStrings = {
   zoomHint: 'Tap to zoom, drag to move',
   zoomIn: 'Zoom in',
   zoomOut: 'Zoom out',
+
+  // Empty states: the way on (ui/Screen Empty)
+  emptyBack: 'Back to the overview',
 };
 
 

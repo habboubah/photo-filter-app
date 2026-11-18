@@ -27,7 +27,7 @@ export function LiveView({ t, photos: all, sort, onSort, onBack, onConvert }: {
   return (
     <Screen title={t.liveTitle} subtitle={`${plural(t, 'photos', photos.length)} · ≈ ${bytes(t, saving)}`} onBack={onBack} backLabel={t.back} info={{ label: t.aboutScreen, close: t.close, body: t.liveIntro }} docked={photos.length > 0}
       actions={<SortButton t={t} value={sort} onChange={onSort} />}>
-      {photos.length === 0 ? <Empty title={t.noLive} body={t.noLiveBody} /> : (
+      {photos.length === 0 ? <Empty title={t.noLive} body={t.noLiveBody} back={{ label: t.emptyBack, onClick: onBack }} /> : (
         <PhotoGrid
           ids={photos.map(p => p.id)}
           label={id => new Date(byId.get(id)!.t).toLocaleString(t.locale, { dateStyle: 'medium', timeStyle: 'short' })}

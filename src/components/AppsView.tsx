@@ -32,7 +32,7 @@ export function AppsView({ t, groups, sort, onSort, onBack, onReview }: {
       title={t.appsTitle} subtitle={bytes(t, total)} onBack={onBack} backLabel={t.back} info={{ label: t.aboutScreen, close: t.close, body: t.appsIntro }}
       actions={<SortButton t={t} value={sort} onChange={onSort} />}
     >
-      {groups.length === 0 ? <Empty title={t.appsNone} body={t.appsNoneBody} /> : (
+      {groups.length === 0 ? <Empty title={t.appsNone} body={t.appsNoneBody} back={{ label: t.emptyBack, onClick: onBack }} /> : (
         <div className="space-y-[10px]">
           {groups.map(g => {
             const list = sortPhotos(g.photos, sort);

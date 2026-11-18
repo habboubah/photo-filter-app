@@ -742,6 +742,9 @@ export const ar: Strings = {
   zoomHint: 'المس للتكبير واسحب للتحريك',
   zoomIn: 'تكبير',
   zoomOut: 'تصغير',
+
+  // Empty states: the way on (ui/Screen Empty)
+  emptyBack: 'العودة إلى النظرة العامة',
 };
 
 /** Android's wording (folders, the Trash, the phone). */
