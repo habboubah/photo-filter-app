@@ -114,7 +114,7 @@ try {
   await step('the permission screen, then access granted and the first scan', async () => {
     await start(page, prefs({ access: 'notDetermined', scanned: false, owned: false }));
     await page.click(`button:has-text("${w.t.permAllow}")`);
-    await page.waitForSelector(`text=${w.t.cleanupCard}`, { timeout: 15000 });
+    await page.waitForSelector(`text=${w.t.suggestionsTitle}`, { timeout: 15000 });
     await pause(page, 600);
   });
   await step(src.onSale ? 'a trip: renamed, its album made through the paywall' : 'a trip: renamed, then its album made (free)', async () => {
@@ -137,29 +137,31 @@ try {
     await page.click(`button${aria(w.t.back)}`);
     await pause(page, 400);
   });
-  await step('a similar group: another best shot picked, the others into Zum Löschen', async () => {
+  await step('a similar group: another photo looked at and kept, the others marked for deletion', async () => {
     await openGroup(page, w);
-    await page.click('main .grid button >> nth=1');
+    await page.click('main button[aria-pressed="false"] >> nth=0');
     await pause(page, 300);
-    await page.click(`button:has-text("${w.t.deleteOthers}")`);
+    await page.click(`button:has-text("${w.t.groupKeepThis}")`);
+    await pause(page, 300);
+    await page.click(`button:has-text("${w.t.groupAsideOthers}")`);
     await pause(page, 900);
   });
-  await step('the blurry photos, reviewed, into Zum Löschen', async () => {
+  await step('the blurry photos, reviewed, marked for deletion', async () => {
     await start(page, prefs({ owned: true }));
     await openBlurry(page, w);
     await page.click(`button:has-text("${w.t.reviewBlurry}")`);
     await pause(page, 600);
-    await page.click(`button${aria(w.t.delete)}`);
-    await page.click(`button${aria(w.t.delete)}`);
+    await page.click(`button${aria(w.t.aside)}`);
+    await page.click(`button${aria(w.t.aside)}`);
     await page.click(`button${aria(w.t.keep)}`);
     await page.click(`button:has-text("${w.t.finishReview}")`);
     await page.click(`button:has-text("${w.t.binAdd}")`);
     await pause(page, 900);
   });
-  await step('Zum Löschen: one put back, the rest gone through and deleted', async () => {
+  await step('Zum Löschen vorgemerkt: one put back, the rest gone through and deleted', async () => {
     await page.click(`button${aria(w.t.back)}`);
     await pause(page, 400);
-    await page.click(`button:has-text("${w.t.binTitle}")`);
+    await page.click(`button[aria-label^="${w.t.binTitle}"]`);
     await pause(page, 600);
     await page.click(`button[aria-label$="${w.t.notSelected}"] >> nth=0`);
     await page.click(`button:has-text("${w.t.binRestore}")`);

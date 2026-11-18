@@ -135,7 +135,7 @@ export async function openBlurry(page, w) {
 }
 export async function openCleanupReview(page, w) {
   await openClean(page, w);
-  await page.click(`button:has-text("${w.t.cleanupButton}")`);
+  await page.click(`button:has-text("${w.t.suggestionsAll}")`);
   await pause(page, 500);
   await page.click(`button:has-text("${w.t.reviewAll}")`);
   await pause(page, 900);
@@ -223,11 +223,11 @@ export const SCREENS = [
   { name: '11-denied', prefs: { access: 'denied', scanned: false } },
   { name: '12-limited', prefs: { access: 'limited' } },
   { name: '13-similar', run: openSimilar },
-  { name: '14-cleanup', run: async (page, w) => { await page.click(`button:has-text("${w.t.cleanupButton}")`); await pause(page, 600); } },
+  { name: '14-cleanup', run: async (page, w) => { await page.click(`button:has-text("${w.t.suggestionsAll}")`); await pause(page, 600); } },
   {
     name: '15-review-done', run: async (page, w) => {
       await openCleanupReview(page, w);
-      for (let i = 0; i < 3; i++) { await page.click(`button${aria(w.t.delete)}`); await pause(page, 120); }
+      for (let i = 0; i < 3; i++) { await page.click(`button${aria(w.t.aside)}`); await pause(page, 120); }
       await page.click(`button:has-text("${w.t.finishReview}")`);
       await pause(page, 500);
     },
@@ -241,7 +241,7 @@ export const SCREENS = [
   { name: '22-screenshots', run: async (page, w) => { await page.click(`button:has-text("${w.t.screenshotsTile}")`); await pause(page, 700); } },
   {
     name: '23-quick-clean', run: async (page, w) => {
-      await page.click(`button:has-text("${w.t.cleanupButton}")`);
+      await page.click(`button:has-text("${w.t.suggestionsAll}")`);
       await pause(page, 500);
       await page.click(`button:has-text("${w.t.quickClean}")`);
       await pause(page, 700);
@@ -308,7 +308,7 @@ export const SCREENS = [
       await page.click('main button >> nth=4');
       await pause(page, 900);
       for (let i = 0; i < 2; i++) { await page.click(`[role="group"][aria-label="${w.t.fileIntoAlbum}"] button >> nth=0`); await pause(page, 250); }
-      await page.click(`button${aria(w.t.delete)}`);
+      await page.click(`button${aria(w.t.aside)}`);
       await pause(page, 200);
       await page.click(`button:has-text("${w.t.finishReview}")`);
       await pause(page, 600);

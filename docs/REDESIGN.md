@@ -1,3 +1,46 @@
+# Redesign — "Album" on Android, calm and photo-led (18 November 2026)
+
+Ahmad asked for an Android frontend that feels like a calm, modern photo
+library rather than a storage cleaner. Android keeps the shared layout and
+gets its own material (`[data-platform="android"]` in `src/index.css`); the
+structural changes below apply on both platforms, since the screens are one.
+No detection logic, privacy guarantee or native code changes.
+
+## The three problems and what changed
+
+| Problem | Change | Where |
+|---|---|---|
+| Home opened on a storage dashboard: a big "357 MB", a nine-colour bar, a table with red "could go" counts, *Jetzt aufräumen*; six equal photo cards; month by month buried; trips and *An diesem Tag* absent | The clean-up card stays on top (calmer: the could-go counts in plain ink, *Jetzt aufräumen* a quiet button); under it **one next step** (the next month when there is progress, else the decide-later pile, else the category that frees the most, else month by month); *Zum Löschen vorgemerkt* as a section of its own; the categories as rows (photo, count, MB); *Aus deiner Mediathek* (on this day, latest trip) | `HomeView.tsx`, `App.tsx` |
+| A group could not be compared: the keeper cropped, the others small and cropped; "suggested" and "your choice" one badge; the review's reason cut off | A large **uncropped viewer** in the photo's shape, the series as a strip; swipe / arrows / ← → only look; **Vorschlag der App** and **Bleibt / Deine Wahl** apart; why in plain words only where the facts carry it (`src/logic/explain.ts`); *Dieses behalten*, *Zurück zum Vorschlag*; the review's reason wraps, **Rückgängig** in words | `GroupView.tsx`, `ReviewView.tsx` |
+| Marking for deletion looked like deleting (red, trash icon), and the real delete went straight to the system | **Marking for deletion** is teal or quiet glass with an archive icon everywhere; *Zum Löschen* renamed **Zum Löschen vorgemerkt / Marked for deletion / محددة للحذف** (the action: *Löschen vormerken*); red only for the real delete, which first shows **exactly what goes and its size** in a sheet (cancel is one tap), then Android's dialog | `ReviewView`, `GroupView`, `QuickCleanView`, `LargeView`, `BinView` |
+
+Also, from Ahmad's notes the same night:
+- **The scan no longer takes over home**: the facts are read again once the
+  photos are listed and every few seconds while they are analysed
+  (`store.ts`), so home, the categories and the clean-up screen fill in while
+  it runs; a slim card shows the progress and **how long it still takes**
+  (`src/logic/eta.ts`).
+- **Search shows its words**: a few to try under the cards and *Alle 247
+  Wörter* in a sheet, by theme, with a filter (`wordSections`, `SearchView`).
+
+## The visual system ("Album", Android)
+- Warm neutral surfaces (`#F5F3EF` page, `#FFFDFA` cards; `#12110F` /
+  `#1E1C19` at night), warm greys for text, one teal for what you tap, green
+  for what stays, red only for deleting.
+- Flat glass (no sheen), neutral icon tiles; photos carry the colour.
+- Hierarchy by type and whitespace: section headings, grouped rows, one
+  prominent button per screen; no gradients, no nested cards.
+- Contrast: `npm run audit:contrast` audits both Android themes as well.
+
+## Left for later
+- Store screenshots, the preview video and the App Review recording show the
+  old screens until they are made again (`npm run ui-review`,
+  `npm run screenshots -- --android`, `npm run rehearse:app-review`).
+- The iPhone keeps the "Glass" material; whether it should take the warm
+  palette too is Ahmad's call.
+
+---
+
 # Redesign — "Glass", the iOS 27 look (17 November 2026)
 
 The second redesign of the day. The first ("Album, modernised", below) fixed
