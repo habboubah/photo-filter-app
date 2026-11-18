@@ -36,14 +36,8 @@ const de = {
   groups_other: '{n} Gruppen',
 
   // Permission
-  permTitle: 'Bring Ordnung in deine Fotos',
   permBody: 'Bildklar findet deine Reisen, fast gleiche und unscharfe Fotos – direkt auf deinem iPhone.',
-  permPoint1: 'Jede Reise wird mit einem Tipp zum Album',
-  permPoint1Trips: 'Deine Reisen auf einen Blick – nach Ort und Datum',
-  permPoint2: 'Doppelte und verwackelte Fotos finden und aufräumen',
-  permPoint3: 'Alles bleibt auf deinem Gerät – kein Konto, keine Cloud',
   permAllow: 'Fotos freigeben',
-  permHint: 'Du kannst auch nur ausgewählte Fotos freigeben und später mehr hinzufügen.',
   deniedTitle: 'Kein Zugriff auf deine Fotos',
   deniedBody: 'Ohne Zugriff kann Bildklar nichts finden. Erlaube den Zugriff in den Einstellungen – unter „Fotos“.',
   restrictedBody: 'Der Zugriff auf Fotos ist auf diesem Gerät eingeschränkt, zum Beispiel durch die Bildschirmzeit.',
@@ -631,6 +625,34 @@ const de = {
   wordsDocuments: 'Dokumente und Belege',
   wordsThings: 'Dinge und Kleidung',
   wordsKinds: 'Fotoarten',
+
+  // Welcome (the first start, src/components/WelcomeView.tsx)
+  welcomeLine1: 'Ordnung in Zehntausenden Fotos',
+  welcomeLine2: 'Reisen – für dich gefunden',
+  welcomeLine3: 'Das beste Foto vorgeschlagen. Du entscheidest.',
+  welcomeLine4: 'Privat: Alles bleibt auf deinem Handy',
+  welcomeSkip: 'Überspringen',
+  welcomeNext: 'Weiter',
+  welcomeStart: 'Los geht’s',
+  welcomePage: 'Seite {i} von {n}',
+  welcomeTripName: 'Gardasee',
+  welcomeTripMeta: 'Juli 2026 · 48 Fotos',
+  welcomeNoCloud: 'Keine Cloud',
+  welcomeNoAccount: 'Kein Konto',
+  welcomeLabel: 'Willkommen bei Bildklar',
+
+  // Photo access (src/components/PermissionView.tsx)
+  permTitle: 'Darf Bildklar deine Fotos sehen?',
+  permNoUpload: 'Nichts wird hochgeladen – kein Konto, keine Cloud.',
+  permNoChange: 'Nichts ändert sich ohne dich: Gelöscht wird erst, wenn du es bestätigst.',
+  permChoice: 'Du hast die Wahl',
+  permAll: 'Alle Fotos',
+  permAllSub: 'Das volle Erlebnis: jede Reise, jede Serie, jedes Duplikat.',
+  permSome: 'Ausgewählte Fotos',
+  permSomeSub: 'Bildklar sieht nur, was du auswählst. Reisen und Duplikate können dann unvollständig sein – mehr Fotos kannst du jederzeit hinzufügen.',
+  permRecommended: 'Empfohlen',
+  permHint: 'Gleich fragt dein iPhone, welche Fotos Bildklar sehen darf.',
+  restrictedHint: 'Wer das Gerät eingerichtet hat, kann den Zugriff in den Einstellungen erlauben.',
 };
 
 export type Strings = { [K in keyof typeof de]: string };
@@ -658,15 +680,8 @@ const en: Strings = {
   trips_other: '{n} trips',
   groups_one: '1 group',
   groups_other: '{n} groups',
-
-  permTitle: 'Bring order to your photos',
   permBody: 'Bildklar finds your trips, near-identical and blurry photos – right on your iPhone.',
-  permPoint1: 'Turn every trip into an album with one tap',
-  permPoint1Trips: 'Your trips at a glance – by place and date',
-  permPoint2: 'Find and clear out duplicate and shaky shots',
-  permPoint3: 'Everything stays on your device – no account, no cloud',
   permAllow: 'Allow access to photos',
-  permHint: 'You can also share only selected photos and add more later.',
   deniedTitle: 'No access to your photos',
   deniedBody: 'Without access Bildklar can’t find anything. Allow access in Settings – under “Photos”.',
   restrictedBody: 'Access to photos is restricted on this device, for example by Screen Time.',
@@ -1245,6 +1260,34 @@ const en: Strings = {
   wordsDocuments: 'Documents and receipts',
   wordsThings: 'Things and clothes',
   wordsKinds: 'Kinds of photo',
+
+  // Welcome (the first start, src/components/WelcomeView.tsx)
+  welcomeLine1: 'Order in tens of thousands of photos',
+  welcomeLine2: 'Trips, found for you',
+  welcomeLine3: 'Best shot suggested. You decide.',
+  welcomeLine4: 'Private: everything stays on your phone',
+  welcomeSkip: 'Skip',
+  welcomeNext: 'Next',
+  welcomeStart: 'Get started',
+  welcomePage: 'Page {i} of {n}',
+  welcomeTripName: 'Lake Garda',
+  welcomeTripMeta: 'July 2026 · 48 photos',
+  welcomeNoCloud: 'No cloud',
+  welcomeNoAccount: 'No account',
+  welcomeLabel: 'Welcome to Bildklar',
+
+  // Photo access (src/components/PermissionView.tsx)
+  permTitle: 'May Bildklar see your photos?',
+  permNoUpload: 'Nothing is uploaded – no account, no cloud.',
+  permNoChange: 'Nothing changes without you: a photo is only deleted once you confirm.',
+  permChoice: 'It’s your choice',
+  permAll: 'All photos',
+  permAllSub: 'The full experience: every trip, every series, every duplicate.',
+  permSome: 'Selected photos',
+  permSomeSub: 'Bildklar only sees what you pick, so trips and duplicates may be incomplete. You can add more photos any time.',
+  permRecommended: 'Recommended',
+  permHint: 'Your iPhone asks next which photos Bildklar may see.',
+  restrictedHint: 'Whoever set up this device can allow access in Settings.',
 };
 
 
@@ -1273,7 +1316,6 @@ export const androidStrings: Record<Language, Partial<Strings>> = {
     albums_one: '1 Ordner',
     albums_other: '{n} Ordner',
     permBody: 'Bildklar findet deine Reisen, fast gleiche und unscharfe Fotos – direkt auf deinem Handy.',
-    permPoint1: 'Jede Reise kommt mit einem Tipp in einen eigenen Ordner',
     albumBadge: 'Ordner erstellt',
     createAlbum: 'Ordner erstellen',
     albumExists: 'Ordner erstellt am {date}',
@@ -1306,6 +1348,7 @@ export const androidStrings: Record<Language, Partial<Strings>> = {
     binAddAndFile: 'Löschen vormerken und verschieben',
     quickCleanIntro: 'Wähle, was weg darf. Es wird erst zum Löschen vorgemerkt – gelöscht wird erst, wenn du es dort bestätigst und Android noch einmal nachfragt. Mit einem Tipp geht nur, was Bildklar sicher erkennt – den Rest gehst du durch.',
     deleteSystemNext: 'Danach fragt Android noch einmal nach.',
+    permHint: 'Gleich fragt Android, welche Fotos Bildklar sehen darf.',
   },
   en: {
     resetBody: 'Bildklar forgets what you decided: kept, protected and saved-for-later photos, those marked for deletion (they come back), the best shots you picked, edited trips, months gone through and sort orders. Everything is suggested again. Your photos and folders stay as they are.',
@@ -1315,7 +1358,6 @@ export const androidStrings: Record<Language, Partial<Strings>> = {
     albums_one: '1 folder',
     albums_other: '{n} folders',
     permBody: 'Bildklar finds your trips, near-identical and blurry photos – right on your phone.',
-    permPoint1: 'Move every trip into its own folder with one tap',
     albumBadge: 'Folder made',
     createAlbum: 'Create folder',
     albumExists: 'Folder made on {date}',
@@ -1348,6 +1390,7 @@ export const androidStrings: Record<Language, Partial<Strings>> = {
     binAddAndFile: 'Mark for deletion and move into folders',
     quickCleanIntro: 'Choose what may go. It is marked for deletion first – nothing is deleted until you confirm it there and Android asks once more. One tap only takes what Bildklar is sure about – you go through the rest.',
     deleteSystemNext: 'Android asks once more after this.',
+    permHint: 'Android asks next which photos Bildklar may see.',
   },
 };
 

@@ -30,15 +30,8 @@ export const ar: Strings = {
   trips_other: '{n} رحلة',
   groups_one: 'مجموعة واحدة',
   groups_other: '{n} مجموعة',
-
-  permTitle: 'رتّب صورك',
   permBody: 'يجد Bildklar رحلاتك والصور المتشابهة والضبابية – مباشرةً على جهاز iPhone.',
-  permPoint1: 'حوّل كل رحلة إلى ألبوم بلمسة واحدة',
-  permPoint1Trips: 'رحلاتك في لمحة – حسب المكان والتاريخ',
-  permPoint2: 'اعثر على الصور المكرّرة والمهتزّة وتخلّص منها',
-  permPoint3: 'كل شيء يبقى على جهازك – بلا حساب وبلا سحابة',
   permAllow: 'السماح بالوصول إلى الصور',
-  permHint: 'يمكنك أيضًا مشاركة صور مختارة فقط وإضافة المزيد لاحقًا.',
   deniedTitle: 'لا وصول إلى صورك',
   deniedBody: 'من دون إذن الوصول لا يستطيع Bildklar العثور على شيء. اسمح بالوصول في الإعدادات – تحت «الصور».',
   restrictedBody: 'الوصول إلى الصور مقيّد على هذا الجهاز، مثلًا بواسطة «مدة استخدام الجهاز».',
@@ -617,6 +610,34 @@ export const ar: Strings = {
   wordsDocuments: 'المستندات والإيصالات',
   wordsThings: 'الأشياء والملابس',
   wordsKinds: 'أنواع الصور',
+
+  // Welcome (the first start, src/components/WelcomeView.tsx)
+  welcomeLine1: 'ترتيب لعشرات الآلاف من الصور',
+  welcomeLine2: 'رحلاتك – نجدها لك',
+  welcomeLine3: 'نقترح أفضل صورة. والقرار لك.',
+  welcomeLine4: 'خصوصية: كل شيء يبقى على هاتفك',
+  welcomeSkip: 'تخطٍّ',
+  welcomeNext: 'التالي',
+  welcomeStart: 'لنبدأ',
+  welcomePage: 'الصفحة {i} من {n}',
+  welcomeTripName: 'بحيرة غاردا',
+  welcomeTripMeta: 'يوليو 2026 · 48 صورة',
+  welcomeNoCloud: 'بلا سحابة',
+  welcomeNoAccount: 'بلا حساب',
+  welcomeLabel: 'مرحبًا بك في Bildklar',
+
+  // Photo access (src/components/PermissionView.tsx)
+  permTitle: 'هل تسمح لـ Bildklar برؤية صورك؟',
+  permNoUpload: 'لا يُرفع أي شيء – بلا حساب وبلا سحابة.',
+  permNoChange: 'لا يتغيّر شيء من دونك: لا تُحذف صورة إلا بعد تأكيدك.',
+  permChoice: 'الخيار لك',
+  permAll: 'كل الصور',
+  permAllSub: 'التجربة الكاملة: كل رحلة وكل سلسلة وكل صورة مكررة.',
+  permSome: 'صور محددة',
+  permSomeSub: 'يرى Bildklar فقط ما تختاره، فقد تكون الرحلات والمكررات غير مكتملة. يمكنك إضافة صور أخرى في أي وقت.',
+  permRecommended: 'موصى به',
+  permHint: 'سيسألك iPhone الآن عن الصور التي يمكن لـ Bildklar رؤيتها.',
+  restrictedHint: 'من أعدّ هذا الجهاز يستطيع السماح بالوصول من الإعدادات.',
 };
 
 /** Android's wording (folders, the Trash, the phone). */
@@ -628,7 +649,6 @@ export const arAndroid: Partial<Strings> = {
   albums_one: 'مجلد واحد',
   albums_other: '{n} مجلد',
   permBody: 'يجد Bildklar رحلاتك والصور المتشابهة والضبابية – مباشرةً على هاتفك.',
-  permPoint1: 'انقل كل رحلة إلى مجلد خاص بها بلمسة واحدة',
   albumBadge: 'تم إنشاء المجلد',
   createAlbum: 'إنشاء مجلد',
   albumExists: 'أُنشئ المجلد في {date}',
@@ -661,6 +681,7 @@ export const arAndroid: Partial<Strings> = {
   binAddAndFile: 'تحديد للحذف ونقل إلى مجلدات',
   quickCleanIntro: 'اختر ما يمكن أن يذهب. يُحدَّد أولًا للحذف – ولا يُحذف شيء حتى تؤكد هناك ويسألك Android مرة أخرى. بلمسة واحدة يذهب فقط ما يتأكد منه Bildklar – والباقي تراجعه بنفسك.',
   deleteSystemNext: 'بعد ذلك يسألك Android مرة أخرى.',
+  permHint: 'سيسألك Android الآن عن الصور التي يمكن لـ Bildklar رؤيتها.',
 };
 
 /** Arabic's plural forms beyond one and other: two (صورتان) and few, 3–10 (صور). */

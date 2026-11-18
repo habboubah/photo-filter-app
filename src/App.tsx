@@ -78,6 +78,8 @@ const OrganizeView = lazy(() => import('./components/OrganizeView').then(m => ({
 const SearchView = lazy(() => import('./components/SearchView').then(m => ({ default: m.SearchView })));
 const LikeView = lazy(() => import('./components/LikeView').then(m => ({ default: m.LikeView })));
 const BinView = lazy(() => import('./components/BinView').then(m => ({ default: m.BinView })));
+// The first run (docs/DESIGN.md): seen once, so never part of the main bundle.
+const WelcomeView = lazy(() => import('./components/WelcomeView').then(m => ({ default: m.WelcomeView })));
 
 /** Up to `n` ids spread over the list (its start, middle and end), for a cover of a few photos. */
 const spread = (ids: string[], n: number) =>
@@ -266,6 +268,9 @@ export default function App() {
   /** The photo whose look-alikes are shown (Ähnliche Fotos), over a review or the search. */
   const [likeId, setLikeId] = useState<string | null>(null);
 
+  /** The welcome shown again, from Einstellungen › So funktioniert Bildklar (the first start shows it by itself). */
+  const [replayWelcome, setReplayWelcome] = useState(false);
+
   const trip = tripKey ? trips.find(x => x.key === tripKey) ?? null : null;
   const group = groupKey ? groups.find(g => g.key === groupKey) ?? null : null;
   // The open group's other photos against its best one (with the iPhone's face scores laid on): their tiles' reasons.
@@ -301,6 +306,7 @@ export default function App() {
   // Screens pushed over Home, the deepest first. Every pushed screen must be
   // here: it drives the hardware back, the scroll reset and the slide.
   const pushed: [string, boolean, () => void][] = [
+    ['welcomeAgain', replayWelcome, () => setReplayWelcome(false)],
     ['like', !!likeId, () => setLikeId(null)],
     ['review', !!review, closeReview],
     ['licence', !!licence, () => setLicence(null)],
@@ -330,14 +336,24 @@ export default function App() {
   ];
   const topIndex = pushed.findIndex(([, open]) => open);
   const screen = topIndex === -1 ? 'home' : pushed[topIndex][0];
-  // The two tabs are one screen for the stack, two for the transition: switching crossfades (dir 2) instead of sliding.
-  const screenKey = screen === 'home' ? `home-${tab}` : screen;
+  // What the root shows under every pushed screen: the first run's steps one after another (the
+  // welcome, the photo access), then home. They are one screen for the stack, like the two tabs.
+  const access = store.access;
+  const hasAccess = access === 'full' || access === 'limited';
+  const root = !access ? 'loading'
+    : !store.welcomeSeen && access === 'notDetermined' ? 'welcome'
+      : !hasAccess ? 'permission'
+        : 'home';
+  // The two tabs and the first run's steps are one screen for the stack, but each its own for the
+  // transition: going from one to the next crossfades (dir 2) instead of sliding.
+  const screenKey = screen !== 'home' ? screen : root === 'home' ? `home-${tab}` : `root-${root}`;
+  const isRoot = (key: string) => key.startsWith('home-') || key.startsWith('root-');
 
   const nav = useRef({ screen: screenKey, depth: 0, dir: 0 });
   const depth = topIndex === -1 ? 0 : pushed.filter(([, open]) => open).length;
   if (nav.current.screen !== screenKey) {
-    const tabSwitch = screen === 'home' && nav.current.screen.startsWith('home-');
-    nav.current = { screen: screenKey, depth, dir: tabSwitch ? 2 : depth > nav.current.depth ? 1 : -1 };
+    const rootSwitch = screen === 'home' && isRoot(nav.current.screen);
+    nav.current = { screen: screenKey, depth, dir: rootSwitch ? 2 : depth > nav.current.depth ? 1 : -1 };
   }
   const dir = nav.current.dir;
   const rtl = t.dir === 'rtl' ? -1 : 1;
@@ -623,8 +639,6 @@ export default function App() {
 
   const rate = rateUrl(isAndroid() ? 'android' : isIos() || devNative() ? 'ios' : 'web');
   const byId = lib.byId;
-  const access = store.access;
-  const hasAccess = access === 'full' || access === 'limited';
 
   // A video plays inside the app (src/ui/play.tsx): the native player over the app, never another app.
   const player: Player = {
@@ -642,6 +656,7 @@ export default function App() {
   };
 
   const content = () => {
+    if (replayWelcome) return <WelcomeView t={t} onDone={() => setReplayWelcome(false)} />;
     if (likeId) {
       return (
         <LikeView
@@ -936,10 +951,11 @@ export default function App() {
         />
       );
     }
-    if (access && !hasAccess) {
+    if (root === 'welcome') return <WelcomeView t={t} onDone={() => store.setWelcomeSeen(true)} />;
+    if (root === 'permission' && access) {
       return (
         <PermissionView
-          t={t} access={access} albums
+          t={t} access={access}
           onAllow={async () => {
             const { access: a } = await PhotoLibrary.requestAccess().catch(() => ({ access: 'denied' as const }));
             await store.accessGranted(a);
@@ -949,7 +965,7 @@ export default function App() {
         />
       );
     }
-    if (!access) return <div className="min-h-screen" aria-busy="true" />;
+    if (root === 'loading') return <div className="min-h-screen" aria-busy="true" />;
     if (tab === 'organize') {
       return (
         <OrganizeView
@@ -1049,7 +1065,7 @@ export default function App() {
         <Suspense fallback={<div className="min-h-screen" aria-busy="true" />}>{content()}</Suspense>
       </motion.div>
 
-      {screen === 'home' && hasAccess && (
+      {screen === 'home' && root === 'home' && (
         <TabBar
           label={t.tabsLabel} current={tab} onChange={switchTab}
           tabs={[{ key: 'clean', label: t.tabClean, icon: Sparkles }, { key: 'organize', label: t.tabOrganize, icon: Images }]}

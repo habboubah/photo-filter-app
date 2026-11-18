@@ -57,9 +57,13 @@ export function words(src, lang, platform) {
   return { lang, t, onSale: src.onSale, f: (s, vars) => src.fmt(s, vars), p: (base, n) => src.plural(t, base, n) };
 }
 
-/** The demo's state before the app starts: access granted, the library scanned, the unlock bought — each can be changed per screen. */
-export function prefs({ lang = 'de', theme = 'light', access = 'full', scanned = true, owned = true, scanStep = null } = {}) {
+/** The demo's state before the app starts: access granted, the library scanned, the unlock bought, the first run behind it — each can be changed per screen. */
+export function prefs({ lang = 'de', theme = 'light', access = 'full', scanned = true, owned = true, scanStep = null, firstRun = false } = {}) {
   return {
+    // Past the first run — the welcome, the first scan's screen, the reveal, the guided review, every
+    // tip (src/logic/firstRun.ts) — unless a screen asks to see it (`firstRun: true`).
+    'bildklar-welcome': firstRun ? null : '1',
+    'bildklar-seen': firstRun ? null : '["*"]',
     'bildklar-lang': lang,
     'bildklar-theme': theme,
     'bildklar-demo-access': access,

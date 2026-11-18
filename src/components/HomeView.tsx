@@ -6,6 +6,7 @@ import type { Access } from '../native/photoLibrary';
 import type { ScanView } from '../store';
 import { Strings, ago, bytes, fmt, num, percent, plural } from '../translations';
 import { etaWords } from '../logic/eta';
+import { type Found, type FoundKey, gainOf, nextStepKind, rankCategories } from '../logic/nextStep';
 import { Empty, Group, IconTile, Next, Row, Screen, SectionHead } from '../ui/Screen';
 import { Button, IconButton } from '../ui/Button';
 import { BigNumber, Progress } from '../ui/Controls';
@@ -15,14 +16,10 @@ import { Thumb } from '../ui/Photo';
 import { LARGE } from '../thumbs';
 import { Confirm } from '../ui/Sheet';
 
-/** The categories that suggest photos to delete, each a row on home. */
-export type FoundKey = 'duplicates' | 'similar' | 'videos' | 'failed' | 'screenshots' | 'utility';
+export type { Found, FoundKey } from '../logic/nextStep';
 
 /** A count and its size. */
 export interface Stat { count: number; bytes: number }
-
-/** One category: how many of it there are (groups or photos, as its screen counts), and a few of its photos. */
-export interface Found { items: number; covers: string[] }
 
 /** The month to go on with (the newest not gone through yet), with what it holds. */
 export interface NextMonth { key: string; name: string; photos: number; bytes: number; covers: string[] }
@@ -126,17 +123,7 @@ export function HomeView(p: Props) {
   const rescanLabel = p.scan.running ? `${t.rescan}: ${t.scanUpdating}` : lastScan ? `${t.rescan} (${lastScan})` : t.rescan;
 
   // The categories, each with the space it would free (from the summary, so every figure agrees).
-  const gain = (k: FoundKey) => {
-    if (!summary) return { bytes: 0, count: 0 };
-    switch (k) {
-      case 'duplicates': return summary.duplicates;
-      case 'videos': return summary.lookalike;
-      case 'similar': return summary.similar;
-      case 'failed': return { bytes: summary.blurry.bytes + summary.exposure.bytes, count: summary.blurry.count + summary.exposure.count };
-      case 'screenshots': return summary.screenshots;
-      case 'utility': return summary.utility;
-    }
-  };
+  const gain = (k: FoundKey) => gainOf(summary, k);
   const meta: Record<FoundKey, { label: string; icon: React.ComponentType<{ className?: string; strokeWidth?: number }>; hue: string; unit: 'groups' | 'photos'; onClick: () => void }> = {
     duplicates: { label: t.duplicatesTile, icon: Sparkles, hue: 'rose', unit: 'groups', onClick: p.onDuplicates },
     similar: { label: t.similarTile, icon: Sparkles, hue: 'lilac', unit: 'groups', onClick: p.onSimilar },
@@ -146,9 +133,7 @@ export function HomeView(p: Props) {
     utility: { label: t.utilityTile, icon: Sparkles, hue: 'mint', unit: 'photos', onClick: p.onUtility },
   };
   const keys = (Object.keys(meta) as FoundKey[]).filter(k => p.found[k]);
-  const cats = keys.filter(k => p.found[k]!.items > 0)
-    .map(k => ({ key: k, ...meta[k], ...p.found[k]!, gain: gain(k) }))
-    .sort((a, b) => b.gain.bytes - a.gain.bytes || b.items - a.items);
+  const cats = rankCategories(p.found, summary).map(c => ({ ...meta[c.key], ...c }));
   const done = keys.filter(k => p.found[k]!.items === 0).map(k => meta[k].label);
   const bar = keys.map(k => ({ key: k, hue: meta[k].hue, bytes: gain(k).bytes, label: meta[k].label }));
   /** What a category row counts: the photos that could go when the summary knows them, else its groups or photos. */
@@ -157,38 +142,35 @@ export function HomeView(p: Props) {
   /* ---------------------------------------------------------- the next step */
 
   const pctText = percent(t, p.months.pct);
-  let kind: 'month' | 'later' | 'category' | 'start' | null = null;
+  // Which step it is: src/logic/nextStep.ts (the reveal after the first scan recommends the same one).
+  const kind = nextStepKind({ monthsDone: p.months.done, hasNextMonth: !!p.nextMonth, later: p.later.count, categories: cats.length, scanning: p.scan.running });
   let step: Step | null = null;
-  if (p.months.done > 0 && p.nextMonth) {
+  if (kind === 'month' && p.nextMonth) {
     // Progress exists: go on with the next month.
     const m = p.nextMonth;
-    kind = 'month';
     step = {
       eyebrow: t.nextResumeEyebrow, title: m.name, covers: m.covers,
       meta: fmt(t.nextResumeMeta, { photos: plural(t, 'photos', m.photos), pct: pctText }),
       button: fmt(t.nextResumeButton, { month: m.name }), onGo: () => p.onMonth(m.key),
       more: { label: t.nextAllMonths, onClick: p.onMonths },
     };
-  } else if (p.later.count > 0) {
+  } else if (kind === 'later') {
     // Photos put off in a review wait for a decision.
-    kind = 'later';
     step = {
       eyebrow: t.nextLaterEyebrow, title: t.laterCard, covers: p.later.cover ? [p.later.cover] : [],
       meta: fmt(t.nextLaterMeta, { photos: plural(t, 'photos', p.later.count) }), button: t.nextLaterButton, onGo: p.onLater,
     };
-  } else if (cats[0]) {
+  } else if (kind === 'category') {
     // A good place to start: the category that frees the most.
     const top = cats[0];
-    kind = 'category';
     step = {
       eyebrow: t.nextStartEyebrow, title: top.label, covers: top.covers,
       meta: top.gain.bytes > 0 ? fmt(t.nextCategoryMeta, { count: countOf(top), size: bytes(t, top.gain.bytes) }) : countOf(top),
       button: t.nextCategoryButton, onGo: top.onClick,
     };
-  } else if (p.nextMonth && !p.scan.running) {
+  } else if (kind === 'start' && p.nextMonth) {
     // Nothing found to clean up: month by month, the newest first.
     const m = p.nextMonth;
-    kind = 'start';
     step = {
       eyebrow: t.monthsCard, title: m.name, covers: m.covers, meta: t.nextMonthsStartMeta,
       button: fmt(t.nextMonthsStartButton, { month: m.name }), onGo: () => p.onMonth(m.key),
