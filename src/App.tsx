@@ -1017,6 +1017,7 @@ export default function App() {
           onBack={() => setShowBlurry(false)}
           onReviewBlurry={(list: Photo[]) => startReview(reviewBlurry(list))}
           onReviewExposure={(list, level) => startReview(reviewExposure(list, level))}
+          onAside={list => toBin(list.map(p => p.id))}
         />
       );
     }
@@ -1025,6 +1026,7 @@ export default function App() {
         <ScreenshotsView
           t={t} {...sorting('screenshots')} photos={shots} now={now} onBack={() => setShowScreenshots(false)}
           onReview={(list: Photo[]) => startReview(reviewScreenshots(list))}
+          onAside={list => toBin(list.map(p => p.id))}
         />
       );
     }

@@ -278,7 +278,7 @@ export const SCREENS = [
     name: '27-large-video', run: async (page, w) => {
       await page.click(`button:has-text("${w.t.largeTile}")`);
       await pause(page, 600);
-      await page.click('main button >> nth=4');
+      await page.click(`main button[aria-label*=", ${w.t.videoBadge} "]:not([aria-pressed]) >> nth=0`);
       await pause(page, 800);
     },
   },
@@ -331,7 +331,14 @@ export const SCREENS = [
       await pause(page, 600);
       await page.click('main button >> nth=4');
       await pause(page, 900);
-      for (let i = 0; i < 2; i++) { await page.click(`[role="group"][aria-label="${w.t.fileIntoAlbum}"] button >> nth=0`); await pause(page, 250); }
+      // Two albums chosen for the row under the photo (a sheet), then the photo filed into the first.
+      await page.click(`[role="group"][aria-label="${w.t.fileIntoAlbum}"] button[aria-haspopup="dialog"]`);
+      await pause(page, 500);
+      for (let i = 0; i < 2; i++) { await page.click(`[role="dialog"] li button >> nth=${i}`); await pause(page, 150); }
+      await page.click(`[role="dialog"] button${aria(w.t.done)}`);
+      await pause(page, 500);
+      await page.click(`[role="group"][aria-label="${w.t.fileIntoAlbum}"] button[aria-pressed] >> nth=0`);
+      await pause(page, 250);
       await page.click(`button${aria(w.t.aside)}`);
       await pause(page, 200);
       await page.click(`button:has-text("${w.t.finishReview}")`);

@@ -1,12 +1,15 @@
 import { useState } from 'react';
+import { AnimatePresence } from 'motion/react';
+import { Archive } from 'lucide-react';
 import type { Confidence, Photo } from '../types';
-import { Strings, bytes, plural } from '../translations';
+import { Strings, bytes, fmt, plural } from '../translations';
 import { blurLevel } from '../logic/blur';
 import type { ExposureLevel } from '../logic/exposure';
 import { Dock, Empty, Screen } from '../ui/Screen';
 import { Button } from '../ui/Button';
 import { Segmented } from '../ui/Controls';
 import { PhotoGrid } from '../ui/Photo';
+import { ZoomView } from '../ui/Zoom';
 import { sortPhotos, type SortKey } from '../logic/sort';
 import { SortButton } from './SortButton';
 
@@ -15,8 +18,10 @@ export type FailedTab = 'blurry' | ExposureLevel;
 /**
  * Missglückt [Failed shots]: the blurry photos (most certain first, each with
  * how sure the app is), the too dark and the too bright ones — one tab each.
+ * A tap opens one large; its circle picks it, and the picked ones go to
+ * "Zum Löschen vorgemerkt" at once.
  */
-export function FailedView({ t, blurry, dark, bright, tab: initialTab = 'blurry', sort, onSort, onBack, onReviewBlurry, onReviewExposure }: {
+export function FailedView({ t, blurry, dark, bright, tab: initialTab = 'blurry', sort, onSort, onBack, onReviewBlurry, onReviewExposure, onAside }: {
   t: Strings;
   blurry: Photo[];
   dark: Photo[];
@@ -27,14 +32,21 @@ export function FailedView({ t, blurry, dark, bright, tab: initialTab = 'blurry'
   onBack: () => void;
   onReviewBlurry: (photos: Photo[]) => void;
   onReviewExposure: (photos: Photo[], level: ExposureLevel) => void;
+  /** The picked photos into "Zum Löschen vorgemerkt" (nothing is deleted). */
+  onAside: (photos: Photo[]) => void;
 }) {
   const [tab, setTab] = useState<FailedTab>(initialTab);
+  const [open, setOpen] = useState<string | null>(null);
+  const [picked, setPicked] = useState<Set<string>>(() => new Set());
+  const toggle = (id: string) => setPicked(old => { const next = new Set(old); if (next.has(id)) next.delete(id); else next.add(id); return next; });
   const [filter, setFilter] = useState<'sure' | 'all'>('sure');
   const list = sortPhotos(tab === 'dark' ? dark : tab === 'bright' ? bright
     : filter === 'all' ? blurry : blurry.filter(p => { const l = blurLevel(p); return l === 'high' || l === 'medium'; }), sort);
   const byId = new Map(list.map(p => [p.id, p]));
   const levelText: Record<Confidence, string> = { high: t.levelHigh, medium: t.levelMedium, low: t.levelLow };
   const total = list.reduce((s, p) => s + p.bytes, 0);
+  const chosen = list.filter(p => picked.has(p.id));
+  const chosenBytes = chosen.reduce((s, p) => s + p.bytes, 0);
   const when = (p: Photo) => new Date(p.t).toLocaleString(t.locale, { dateStyle: 'medium', timeStyle: 'short' });
   const intro = tab === 'blurry' ? t.blurryIntro : t.exposureIntro;
   const empty = tab === 'blurry'
@@ -66,6 +78,9 @@ export function FailedView({ t, blurry, dark, bright, tab: initialTab = 'blurry'
             const p = byId.get(id)!;
             return tab === 'blurry' ? `${when(p)}, ${levelText[blurLevel(p) ?? 'low']}` : when(p);
           }}
+          onOpen={setOpen}
+          selected={picked} onSelect={toggle}
+          selectLabel={id => fmt(t.selectTile, { item: when(byId.get(id)!) })}
           overlay={tab !== 'blurry' ? undefined : id => {
             const level = blurLevel(byId.get(id)!);
             return (
@@ -85,8 +100,29 @@ export function FailedView({ t, blurry, dark, bright, tab: initialTab = 'blurry'
         </div>
       )}
       {list.length > 0 && (
-        <Dock><Button full size="lg" onClick={review}>{`${t.reviewBlurry} · ${plural(t, 'photos', list.length)} · ${bytes(t, total)}`}</Button></Dock>
+        <Dock>
+          {chosen.length > 0 ? (
+            <>
+              {/* Into "Zum Löschen vorgemerkt": nothing is deleted here, so teal and the archive, never red. */}
+              <Button full size="lg" icon={Archive} onClick={() => { onAside(chosen); setPicked(new Set()); }}>
+                {`${t.aside} · ${plural(t, 'photos', chosen.length)} · ${bytes(t, chosenBytes)}`}
+              </Button>
+              <Button full variant="ghost" className="mt-1" onClick={() => setPicked(new Set())}>{t.selectionClear}</Button>
+            </>
+          ) : (
+            <Button full size="lg" onClick={review}>{`${t.reviewBlurry} · ${plural(t, 'photos', list.length)} · ${bytes(t, total)}`}</Button>
+          )}
+        </Dock>
       )}
+      <AnimatePresence>
+        {open && byId.has(open) && (
+          <ZoomView
+            key="zoom" id={open} alt={when(byId.get(open)!)}
+            labels={{ close: t.close, zoomIn: t.zoomIn, zoomOut: t.zoomOut, hint: t.zoomHint }}
+            onClose={() => setOpen(null)}
+          />
+        )}
+      </AnimatePresence>
     </Screen>
   );
 }
