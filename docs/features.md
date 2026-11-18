@@ -84,9 +84,11 @@ tab again scrolls to its top; Android's back button goes from *Ordnen* to
 - **An diesem Tag** [On this day]: when photos were taken on today's date in
   earlier years, one of them as a large photo with the years; *Ansehen* [Look
   back] reviews them (extra shots and blurry ones suggested for deleting).
-- **Reisen** [Trips]: the newest three as large cards (a photo from the
-  middle of the trip as the cover, the name, photos and size, *Album
-  erstellt* once made); *Alle Reisen (4)* [All trips] opens the full list.
+- **Reisen** [Trips]: every trip as a tile, four to a row, newest first (a
+  photo from the middle of the trip, a check once its album is made; under it
+  the place, the dates and the photo count — a renamed trip shows its name);
+  *Alle Reisen (12)* [All trips] only when trips are hidden (they sit at the
+  end of that list).
 - **Auf deinen Fotos** [On your photos]: the on-device AI's categories
   (landscape, food, …), each with a photo and its count.
 
@@ -104,7 +106,7 @@ tab again scrolls to its top; Android's back button goes from *Ordnen* to
 - **Album erstellen** [Create album] (iPhone): a real album in Apple Photos with
   the trip's name; the photos stay where they are. **Ordner erstellen** [Create
   folder] (Android): the photos move into `Pictures/Bildklar/<trip>/` after
-  Android asks; nothing is copied. Needs the unlock.
+  Android asks; nothing is copied. Free for now (later the unlock).
 - *Durchgehen* [Go through]: a review of the whole trip (see Review).
 
 ## Near-identical photos
@@ -165,7 +167,7 @@ tab again scrolls to its top; Android's back button goes from *Ordnen* to
 - A tap opens the file: date, size, length, a play button on a video's
   picture, **Video verkleinern** [Make video smaller] for videos of 30 MB or
   more, and *Video/Foto löschen*.
-- **Making a video smaller** (needs the unlock): a copy at about a third of the
+- **Making a video smaller** (free for now, later the unlock): a copy at about a third of the
   bitrate (iPhone: HEVC at most 1080p; Android: HEVC where the phone can, 2–8
   Mbit/s) is saved next to the original with its date and place, with progress
   while it runs. Not saved when it would not be at least 20 % smaller. Then
@@ -192,7 +194,7 @@ tab again scrolls to its top; Android's back button goes from *Ordnen* to
   over the app with the browser's controls; the curated demo has pictures
   only, so its videos say *Dieses Video lässt sich hier nicht abspielen.*
 
-## Smaller photos (*Fotos verkleinern*, needs the unlock)
+## Smaller photos (*Fotos verkleinern*, free for now, later the unlock)
 - Home tile *Fotos verkleinern · bis zu 3,1 GB* [Smaller photos · up to …]
   when there is something to gain (estimate: half of a camera JPEG, 70 % of a PNG).
 - Which photos: JPEG or PNG, at least 1 MB, not RAW/ProRAW, not edited (re-saving
@@ -211,7 +213,7 @@ tab again scrolls to its top; Android's back button goes from *Ordnen* to
 
 ## Live Photos (iPhone)
 - Every Live Photo, newest first, with the estimated saving (≈ 3 MB each).
-  **In Fotos umwandeln** [Make plain photos] (needs the unlock) → a
+  **In Fotos umwandeln** [Make plain photos] (free for now, later the unlock) → a
   confirmation → each becomes a plain photo (the picture as edited, date,
   place, favourite flag, albums) → the system's dialog moves the Live Photos to
   Recently Deleted. Declined: both stay.
@@ -326,7 +328,7 @@ tab again scrolls to its top; Android's back button goes from *Ordnen* to
   too dark or too bright, old screenshots, unimportant photos) with sizes, *Alle durchgehen* [Go through all] and
   **Schnell aufräumen** [Quick clean]: a switch per kind (all on), the
   free space, then *35 Fotos löschen · 91 MB* → into *Zum Löschen* — or
-  *Durchgehen* [Review] for the same photos first. Needs the unlock.
+  *Durchgehen* [Review] for the same photos first. Free for now (later the unlock).
 - Favourites are never suggested, nor a photo you kept in a review before.
 
 ## Review
@@ -341,7 +343,7 @@ tab again scrolls to its top; Android's back button goes from *Ordnen* to
   **In „Zum Löschen“ legen · 4 Fotos** [Put in “To delete”] — nothing is
   deleted yet (*Noch wird nichts gelöscht …*); see *To delete*.
 - Photos you kept against the suggestion are remembered and not suggested again.
-- **Into albums while swiping** (needs the unlock): a row of album chips
+- **Into albums while swiping** (free for now, later the unlock): a row of album chips
   under the photo (the last used first) and *+ Neues Album* [New album]. A tap
   keeps the photo, files it into that album and moves on; undo takes it out
   again. Nothing is written during the review: the end screen lists
@@ -380,19 +382,17 @@ tab again scrolls to its top; Android's back button goes from *Ordnen* to
   ask about the originals right away: the copy is already saved.
 
 ## The unlock
-- **Not for sale yet — the launch phase** (`UNLOCK_ON_SALE` is `false` in
-  `src/logic/allowance.ts`, since 17 November 2026). Everything below is
-  built, but what the unlock pays for is **hidden**, not shown locked: no
-  *Album erstellen* on a trip, no album chips in a review, no *Fotos
-  verkleinern* and *Live Photos* tiles, no *Video verkleinern* in the large
-  files, no *Vollversion* section in Settings, never the paywall. Deleting has
-  **no limit** and nothing is counted. The permission screen promises the
-  trips instead of an album per trip. Someone who owns the unlock anyway (a
-  TestFlight purchase, the demo's `owned`) sees the extras.
+- **Not for sale yet — the launch phase, everything free** (`UNLOCK_ON_SALE`
+  is `false` in `src/logic/allowance.ts`; everything free since 18 November
+  2026). Every feature works for everyone: *Album erstellen* / *Ordner
+  erstellen* on a trip, the album chips in a review, *Fotos verkleinern*,
+  *Live Photos*, *Video verkleinern*. Deleting has **no limit** and nothing is
+  counted. No *Vollversion* section in Settings, never the paywall.
 - **Every start in the launch phase marks the install as early**
   (`AppState.early`, kept by *Von vorn anfangen*). When the
-  unlock goes on sale, early installs keep deleting without a limit; only the
-  extras need the purchase. New installs from then on get the 50 free deletes.
+  unlock goes on sale, early installs keep everything they had: deleting
+  without a limit and the extras. New installs from then on get the 50 free
+  deletes and buy the extras.
 - Once on sale: scanning, trips, groups, the blurry list and reviews are free. Making an
   album/folder, smaller videos, Live Photo conversion and deleting need
   **one one-time purchase** (4,99 €, no subscription). The paywall appears

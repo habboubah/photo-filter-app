@@ -48,7 +48,7 @@ import { Progress } from './ui/Controls';
 import { Sheet } from './ui/Sheet';
 import type { ReviewOutcome } from './components/ReviewView';
 import { PaywallSheet, type FreeInfo } from './components/PaywallSheet';
-import { UNLOCK_ON_SALE, deletesUnlimited, extrasShown, freeDelete, freeLeft } from './logic/allowance';
+import { UNLOCK_ON_SALE, deletesUnlimited, extrasFree, freeDelete, freeLeft } from './logic/allowance';
 
 /*
  * Screens opened less often are loaded on first use (the main bundle has a
@@ -366,15 +366,16 @@ export default function App() {
 
   /* ------------------------------------------------------------- unlock */
 
-  // The launch phase (src/logic/allowance.ts): the extras hidden, deleting unlimited.
-  const extras = extrasShown(store.owned);
+  // The launch phase (src/logic/allowance.ts): everything free, deleting unlimited. Once the unlock is
+  // for sale the extras are still always shown; needUnlock opens the paywall for a new install.
+  const free = extrasFree(store.owned, state.early);
   const unlimited = deletesUnlimited(store.owned, state.early);
   const [paywall, setPaywall] = useState(false);
   /** Set when the paywall opened for a delete larger than the free deletions left. */
   const [paywallFree, setPaywallFree] = useState<FreeInfo | null>(null);
   const afterUnlock = useRef<(() => void) | null>(null);
   const needUnlock = (then: () => void) => {
-    if (store.owned) { then(); return; }
+    if (free) { then(); return; }
     afterUnlock.current = then;
     setPaywallFree(null);
     setPaywall(true);
@@ -568,7 +569,7 @@ export default function App() {
     if (!items.length) return;
     // How sure each suggestion is, as this phone's ledger has it (src/logic/ledger.ts).
     setReview({ session: startSession(adjustItems(items, state.ledger)), finished: false, onDone, bin });
-    if (extras && !albumList) void PhotoLibrary.listAlbums().then(r => setAlbumList(r.albums)).catch(() => setAlbumList([]));
+    if (!albumList) void PhotoLibrary.listAlbums().then(r => setAlbumList(r.albums)).catch(() => setAlbumList([]));
   };
 
   /* -------------------------------------------- albums while swiping */
@@ -651,7 +652,7 @@ export default function App() {
       return (
         <ReviewView
           t={t} session={review.session} finished={review.finished} byId={review.bin ? all.byId : byId} debug={store.debug} bin={review.bin}
-          onDecide={onDecide} onUndo={onUndo} albums={chips} android={isAndroid()} onFile={extras ? onFile : undefined}
+          onDecide={onDecide} onUndo={onUndo} albums={chips} android={isAndroid()} onFile={onFile}
           onProtect={id => { store.protectPhotos([id], true); onDecide('keep'); show(t.protected); }}
           onPreview={player.play}
           onLike={review.bin ? undefined : id => { if (store.vectors.has(id)) setLikeId(id); else show(t.likeNone); }}
@@ -736,7 +737,7 @@ export default function App() {
           isMerged={state.trips.merges.some(g => g.includes(trip.key))}
           isSplit={!!state.trips.splits[base]}
           onBack={() => setTripKey(null)}
-          onCreateAlbum={extras ? () => needUnlock(() => setAlbumFor(trip)) : undefined}
+          onCreateAlbum={() => needUnlock(() => setAlbumFor(trip))}
           onReview={() => startReview(reviewTrip(trip.ids, groups, byId, kept, undefined, cos))}
           onRename={name => store.updateTrips(e => setName(e, trip.key, name))}
           onSplit={at => { store.updateTrips(e => addSplit(e, trip.key, at)); show(t.tripSplit); }}
@@ -822,7 +823,7 @@ export default function App() {
     if (showLarge) {
       return (
         <LargeView
-          t={t} {...sorting('large')} photos={large} canCompress={extras}
+          t={t} {...sorting('large')} photos={large} canCompress
           onBack={() => setShowLarge(false)}
           onReview={(list: Photo[]) => startReview(reviewLarge(list))}
           onCompress={p => needUnlock(() => { void compress(p); })}
@@ -833,7 +834,7 @@ export default function App() {
     if (showVideos) {
       return (
         <LargeView
-          t={t} {...sorting('large')} photos={allVideos} videosOnly canCompress={extras}
+          t={t} {...sorting('large')} photos={allVideos} videosOnly canCompress
           onBack={() => setShowVideos(false)}
           onReview={(list: Photo[]) => startReview(reviewLarge(list))}
           onCompress={p => needUnlock(() => { void compress(p); })}
@@ -935,7 +936,7 @@ export default function App() {
     if (access && !hasAccess) {
       return (
         <PermissionView
-          t={t} access={access} albums={extras}
+          t={t} access={access} albums
           onAllow={async () => {
             const { access: a } = await PhotoLibrary.requestAccess().catch(() => ({ access: 'denied' as const }));
             await store.accessGranted(a);
@@ -974,8 +975,8 @@ export default function App() {
           ...(aiSeen.seen > 0 ? { utility: { items: utility.length, covers: utility.slice(0, 4).map(x => x.id) } } : {}),
         }}
         large={{ count: large.length, bytes: large.reduce((sum, x) => sum + x.bytes, 0), cover: large[0]?.id }}
-        liveCount={isAndroid() || !extras ? 0 : live.length} liveCover={live[0]?.id}
-        compress={{ count: extras ? compressible.photos.length + compressible.screenshots.length : 0, saving: compressible.saving, cover: (compressible.photos[0] ?? compressible.screenshots[0])?.id }}
+        liveCount={isAndroid() ? 0 : live.length} liveCover={live[0]?.id}
+        compress={{ count: compressible.photos.length + compressible.screenshots.length, saving: compressible.saving, cover: (compressible.photos[0] ?? compressible.screenshots[0])?.id }}
         onCompress={() => setShowCompress(true)}
         apps={sourcesBytes >= APPS_TILE_MIN ? { bytes: sourcesBytes, cover: sources[0]?.photos[0]?.id } : null}
         onApps={() => setShowApps(true)}

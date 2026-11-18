@@ -1,7 +1,7 @@
 import { Check, History, MapPin, Search, Settings } from 'lucide-react';
 import type { Trip } from '../types';
 import type { MemoryLabel } from '../logic/ai';
-import { Strings, bytes, fmt, num, plural } from '../translations';
+import { Strings, fmt, num, plural } from '../translations';
 import { LARGE } from '../thumbs';
 import { Screen, SectionHead } from '../ui/Screen';
 import { IconButton } from '../ui/Button';
@@ -25,13 +25,10 @@ interface Props {
   onCategory: (label: MemoryLabel) => void;
 }
 
-/** How many trips the tab shows before "All trips". */
-const SHOWN_TRIPS = 3;
-
 /**
  * The "Ordnen" tab: the photos to keep and look back on. On this day as a
- * photo, the trips as large cover cards (each becomes an album or folder),
- * what the on-device AI saw on the photos.
+ * photo, every trip as a tile, four to a row (each becomes an album or
+ * folder), what the on-device AI saw on the photos.
  */
 export function OrganizeView(p: Props) {
   const { t } = p;
@@ -74,15 +71,16 @@ export function OrganizeView(p: Props) {
         <section aria-labelledby="trips-h">
           <SectionHead
             id="trips-h" title={t.tripsSection}
-            action={p.trips.length > SHOWN_TRIPS ? (
+            // Every trip shows here; "All trips" stays for the hidden ones (at the end of that list).
+            action={p.trips.length > visible.length ? (
               <button type="button" onClick={() => { tapLight(); p.onTrips(); }} className="text-label font-bold text-accent hit-44 focus-visible:ring-focus rounded-full">
                 {t.allTrips} ({num(t, p.trips.length)})
               </button>
             ) : undefined}
           />
           {visible.length ? (
-            <div className="space-y-[12px]">
-              {visible.slice(0, SHOWN_TRIPS).map(trip => <TripCover key={trip.key} trip={trip} t={t} onOpen={() => p.onTrip(trip.key)} />)}
+            <div className="grid grid-cols-4 gap-x-[8px] gap-y-[12px]">
+              {visible.map(trip => <TripTile key={trip.key} trip={trip} t={t} onOpen={() => p.onTrip(trip.key)} />)}
             </div>
           ) : (
             <div className="rounded-md card p-5 flex gap-3">
@@ -120,28 +118,28 @@ export function OrganizeView(p: Props) {
   );
 }
 
-/** A trip as a large card, as a memory in Photos: a photo from its middle edge to edge, its name and how many photos and how much space on a shade at its foot. */
-function TripCover({ trip, t, onOpen }: { trip: Trip; t: Strings; onOpen: () => void }) {
+/** A trip as a tile, like the categories: a photo from its middle, a check once its album is made, the place, the dates and the photo count under it. */
+function TripTile({ trip, t, onOpen }: { trip: Trip; t: Strings; onOpen: () => void }) {
   const cover = trip.ids[Math.floor(trip.ids.length / 2)];
   return (
     <button
       type="button" onClick={() => { tapLight(); onOpen(); }}
       aria-label={fmt(t.openTrip, { name: trip.title })}
-      className="relative block w-full aspect-[16/11] rounded-lg overflow-hidden bg-surface text-start press focus-visible:ring-focus"
+      className="min-w-0 self-start text-start press focus-visible:ring-focus rounded-sm"
     >
-      {cover && <Thumb id={cover} size={LARGE} className="!rounded-none absolute inset-0" />}
-      <span className="absolute inset-0 photo-shade" aria-hidden="true" />
-      {trip.album && (
-        <span className="absolute top-3 start-3 inline-flex items-center gap-1 rounded-full glass text-keep text-caption font-bold px-2.5 py-1.5">
-          <Check className="w-3.5 h-3.5" strokeWidth={3} aria-hidden="true" />{t.albumBadge}
-        </span>
-      )}
-      <span className="absolute inset-x-0 bottom-0 px-5 pb-4 text-on-color">
-        <span className="block display text-title2 wrap-compound">{trip.title}</span>
-        <span className="block text-label font-medium mt-0.5 num opacity-90">
-          {fmt(t.tripMeta, { photos: plural(t, 'photos', trip.ids.length), size: bytes(t, trip.bytes) })}
-        </span>
+      <span className="relative block aspect-square rounded-sm overflow-hidden bg-surface">
+        {cover && <Thumb id={cover} className="!rounded-none absolute inset-0" />}
+        {trip.album && (
+          <span className="absolute top-1.5 end-1.5 w-6 h-6 inline-flex items-center justify-center rounded-full glass text-keep" title={t.albumBadge}>
+            <Check className="w-3.5 h-3.5" strokeWidth={3} aria-hidden="true" />
+            <span className="sr-only">{t.albumBadge}</span>
+          </span>
+        )}
       </span>
+      {/* The place and the dates on lines of their own (a renamed trip: its name, then the dates), so neither is cut in two. */}
+      <span className="mt-1.5 px-0.5 text-caption font-semibold text-fg leading-tight line-clamp-2 hyphens-auto">{trip.title === trip.autoTitle ? trip.place : trip.title}</span>
+      <span className="block px-0.5 text-caption text-fg-mute truncate">{trip.dates}</span>
+      <span className="block px-0.5 text-caption text-fg-mute num truncate">{plural(t, 'photos', trip.ids.length)}</span>
     </button>
   );
 }

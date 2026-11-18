@@ -12,9 +12,10 @@ Android to the **Papierkorb**. Open eyes count for the best photo on the
 iPhone only.
 
 **The launch phase (now).** Nothing is for sale yet (`UNLOCK_ON_SALE` is
-`false` in `src/logic/allowance.ts`): deleting has no limit, and albums /
-folders, smaller videos and photos and Live Photos as stills are hidden in
-the app. So the texts below don't mention them or a purchase. The versions
+`false` in `src/logic/allowance.ts`): deleting has no limit, and since
+18 November 2026 albums / folders, smaller videos and photos and Live Photos
+as stills are free in the app too. The texts below mention no purchase (and
+don't yet mention the extras). The versions
 that do — for the day the unlock goes on sale — are in git history (this
 file before 17 November 2026): bring back those sections, the album slide
 and the album scene together with the switch.

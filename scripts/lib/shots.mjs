@@ -9,11 +9,10 @@
 // Garda. What a real phone would ask (photo access, the purchase) is settled
 // by localStorage keys set before the app starts (`prefs` below).
 //
-// While nothing is for sale (UNLOCK_ON_SALE in src/logic/allowance.ts) the
-// store set shows what a new user gets: the unlock not owned, so no album
-// button, no smaller videos, no Live Photos; the screens that exist only for
-// sale (`onSale`) or only show the extras (`extras`) are left out of it.
-// ui-review keeps the unlock owned and so still sees the hidden screens.
+// While nothing is for sale (UNLOCK_ON_SALE in src/logic/allowance.ts) every
+// extra is free and shown (albums, smaller videos, Live Photos), so the store
+// set shows them too; only the screens that exist for the sale (`onSale`, the
+// paywall) are left out.
 //
 // The labels the clicks need are the app's own: src/translations.ts is loaded
 // through Vite, so renaming a button in the app can't silently break a capture.
@@ -156,7 +155,7 @@ const section = title => `section:has(> h2:text-is("${title}")) > div`;
  * ui-review takes them all. `prefs` changes the demo's state for that screen.
  * `marks` names the parts of a store screen the studio may lift (see above).
  * `onSale`: only while the unlock is for sale (skipped otherwise). `extras`:
- * shows what the unlock pays for — not in the store set while nothing is sold.
+ * shows what the unlock pays for (free while nothing is sold).
  */
 export const SCREENS = [
   {
@@ -183,8 +182,7 @@ export const SCREENS = [
   },
   {
     name: '04-trip', store: true, run: (page, w) => openTrip(page, w),
-    // The album button only while albums are sold; before, the trip's own "go through" button.
-    marks: w => (w.onSale ? { album: `button:has-text("${w.t.createAlbum}")` } : { review: `button:has-text("${w.t.reviewTrip}")` }),
+    marks: w => ({ album: `button:has-text("${w.t.createAlbum}")` }),
   },
   {
     name: '05-album', store: true, extras: true, run: async (page, w) => {
@@ -442,9 +440,9 @@ export async function capture({ variants, screens, outDir, clean = true, onlyNam
   console.log('Building …');
   execSync('npx vite build', { cwd: root, stdio: 'ignore' });
   const src = await loadSource();
-  // The store set before the sale: what a new user sees (the header above).
+  // The store set before the sale: what a new user sees (no unlock owned; every extra free all the same).
   const userView = forStore && !src.onSale;
-  screens = screens.filter(s => (src.onSale || !s.onSale) && !(userView && s.extras));
+  screens = screens.filter(s => src.onSale || !s.onSale);
   const server = await preview({ root, logLevel: 'silent', preview: { port: PORT, strictPort: true, host: '127.0.0.1' } });
   const browser = await chromium.launch();
   const failed = [];

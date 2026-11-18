@@ -15,23 +15,26 @@ In order. (State: 16 November 2026, after the first build by Claude.)
 ## 0b. The launch phase: free first, sell later
 
 Since 17 November 2026 nothing is for sale (`UNLOCK_ON_SALE = false` in
-`src/logic/allowance.ts`; docs/PLAN.md, *Pricing*). Albums, smaller videos
-and photos and Live Photos are hidden, deleting has no limit.
+`src/logic/allowance.ts`; docs/PLAN.md, *Pricing*). Since 18 November 2026
+every feature is free for everyone — albums and folders, smaller videos and
+photos, Live Photos — and deleting has no limit.
 
 - [ ] **Don't put the in-app purchase into a version** while this lasts: you
       may create it in App Store Connect and the Play Console, but don't add
       it to the App Store version, and leave the Play product inactive. Play's
       content rating: *Digital purchases: No* for now.
-- [ ] Your own TestFlight account may own the unlock from earlier tests: then
-      your iPhone shows the hidden extras. That's expected — a new user
-      doesn't see them.
+- [ ] The store texts and screenshots don't show albums yet: run
+      `npm run screenshots` (the album slide is back in the set) and ask
+      Claude to add albums and folders to the store texts, if you want them
+      in the listing.
 - [ ] **The day you start selling** (after about 5,000 downloads and good
       ratings) — ask Claude for "the sale": `UNLOCK_ON_SALE = true`, the store
       texts with the purchase (`store/listing.md`, git history before
       17 Nov 2026), the album slide in the store screenshots, the album scene
       in the App Review recording, the in-app purchase submitted **with** that
       version, Play's content rating answered again. Users from the free
-      phase keep deleting without a limit; nobody loses anything.
+      phase keep deleting without a limit and keep the extras; nobody loses
+      anything.
 
 ## 0c. Videos play inside the app (18 November 2026)
 

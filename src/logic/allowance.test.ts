@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { FREE_DELETES, UNLOCK_ON_SALE, deletesUnlimited, extrasShown, freeDelete, freeLeft } from './allowance';
+import { FREE_DELETES, UNLOCK_ON_SALE, deletesUnlimited, extrasFree, freeDelete, freeLeft } from './allowance';
 import { normalizeState } from './state';
 
 describe('free deletes', () => {
@@ -27,10 +27,11 @@ describe('the launch phase', () => {
   it('sells nothing yet', () => {
     expect(UNLOCK_ON_SALE).toBe(false);
   });
-  it('hides the extras until they are for sale, unless the unlock is owned', () => {
-    expect(extrasShown(false, false)).toBe(false);
-    expect(extrasShown(true, false)).toBe(true);
-    expect(extrasShown(false, true)).toBe(true);
+  it('gives everyone the extras while nothing is for sale, and later the early installs and owners', () => {
+    expect(extrasFree(false, false, false)).toBe(true);
+    expect(extrasFree(false, false, true)).toBe(false);
+    expect(extrasFree(false, true, true)).toBe(true);
+    expect(extrasFree(true, false, true)).toBe(true);
   });
   it('deletes without a limit while nothing is for sale', () => {
     expect(deletesUnlimited(false, false, false)).toBe(true);
