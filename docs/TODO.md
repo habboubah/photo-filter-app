@@ -54,15 +54,12 @@ every changed screen in the demo. Not run on a phone — please:
 - [ ] The App Review recording (`npm run rehearse:app-review`): scene 1 now
       waits for *could go*; the rehearsal passed here in the browser.
 
-## 0. Temporary: the dry run in release builds
+## 0. The dry run is gone
 
-- [x] **Turned off again** on 18 November 2026 (`DRY_RUN_IN_RELEASE = false`).
-- [ ] ~~Turn it off again after testing.~~ Release builds show the dry run
-      switch (Einstellungen → *Nur in der Debug-Version*) too, starting **on**,
-      so a TestFlight / Play build can be tried on the phone without touching
-      the photos. Done testing? Set `DRY_RUN_IN_RELEASE` in `src/store.ts` to
-      `false` (or ask Claude to remove it). **Never send a build to review
-      while it is `true`.**
+- [x] **Removed** on 18 November 2026 for production: no switch, no banner, no
+      `dryRun` in the native calls. Every build writes for real — the older
+      checklist items below that say "dry run on" now mean: test with photos
+      you can get back from Recently Deleted / the Trash.
 
 ## 0a. The calm redesign (18 November 2026): check it on your phones
 

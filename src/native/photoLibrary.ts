@@ -81,9 +81,8 @@ export interface PhotoLibraryPlugin {
   /**
    * iPhone: a new album in Photos holding these photos. Android: these photos
    * moved into Pictures/Bildklar/<title>/ after the system asked the user.
-   * With `dryRun` nothing is written; the answer says what would have happened.
    */
-  createAlbum(options: { title: string; ids: string[]; dryRun: boolean }): Promise<{ done: number; cancelled: boolean; dryRun: boolean }>;
+  createAlbum(options: { title: string; ids: string[] }): Promise<{ done: number; cancelled: boolean }>;
   /**
    * Plays a video inside the app, over it — never in another app — as a
    * window over the dimmed app, about the size of a large photo, that the user
@@ -114,11 +113,10 @@ export interface PhotoLibraryPlugin {
    * nothing moves, and iOS asks nothing. Android: an album is a folder, so the
    * photos move there (`albumId` is its RELATIVE_PATH; a new one is
    * Pictures/<title>/) after one createWriteRequest dialog for all of them.
-   * With `dryRun` nothing is written.
    */
-  addToAlbums(options: { groups: { albumId?: string; title?: string; ids: string[] }[]; dryRun: boolean }): Promise<{ done: number; cancelled: boolean; dryRun: boolean }>;
+  addToAlbums(options: { groups: { albumId?: string; title?: string; ids: string[] }[] }): Promise<{ done: number; cancelled: boolean }>;
   /** Moves photos to Recently Deleted (iPhone) / the Trash (Android) after the system's own dialog. Never deletes for good. */
-  trash(options: { ids: string[]; dryRun: boolean }): Promise<{ trashed: string[]; cancelled: boolean; dryRun: boolean }>;
+  trash(options: { ids: string[] }): Promise<{ trashed: string[]; cancelled: boolean }>;
 
   /** The user's decisions (src/logic/state.ts) as JSON, kept in the native database. */
   getState(): Promise<{ json: string | null }>;
@@ -139,14 +137,14 @@ export interface PhotoLibraryPlugin {
    * Recently Deleted (`trash`, the system's dialog). iCloud-only originals are
    * skipped (never downloaded). Android has no Live Photos: it rejects.
    */
-  convertLive(options: { ids: string[]; dryRun: boolean }): Promise<{ converted: { from: string; to: string }[]; skipped: number; dryRun: boolean }>;
+  convertLive(options: { ids: string[] }): Promise<{ converted: { from: string; to: string }[]; skipped: number }>;
   /**
    * A smaller copy of a video (HEVC, at most 1080p) saved next to it with the
    * same date and place; progress as `compressProgress` events. When the copy
    * would not be at least 20 % smaller nothing is saved (`created` null). The
    * original stays until the app asks to trash it.
    */
-  compressVideo(options: { id: string; dryRun: boolean }): Promise<{ created: string | null; before: number; after: number; dryRun: boolean }>;
+  compressVideo(options: { id: string }): Promise<{ created: string | null; before: number; after: number }>;
   /**
    * "Fotos verkleinern": each JPEG / PNG re-saved as HEIC (Android without an
    * HEVC encoder: JPEG at quality 82) with its metadata, kept only when at
@@ -154,9 +152,9 @@ export interface PhotoLibraryPlugin {
    * favourite flag (and, on the iPhone, albums). Progress as
    * `compressProgress` events with id "photos" (0–1 within the call). The
    * originals stay until the app asks to trash them. Call with at most
-   * COMPRESS_BATCH (20) ids. With `dryRun` nothing is written.
+   * COMPRESS_BATCH (20) ids.
    */
-  compressPhotos(options: { ids: string[]; dryRun: boolean }): Promise<{ results: { from: string; to: string; before: number; after: number }[]; dryRun: boolean }>;
+  compressPhotos(options: { ids: string[] }): Promise<{ results: { from: string; to: string; before: number; after: number }[] }>;
   /**
    * What the home-screen widget shows (iPhone: WidgetKit, through the App
    * Group folder; Android: the app widget): a title and a line in the app's
@@ -166,7 +164,7 @@ export interface PhotoLibraryPlugin {
    * widget ignores them.
    */
   setWidget(options: { title: string; line: string; photoId?: string; freeable?: number; pct?: number }): Promise<void>;
-  /** True in a debug build: the dry run is on by default there. */
+  /** True in a debug build: the debug badges and the suggestion ledger show there. */
   isDebug(): Promise<{ debug: boolean }>;
 
   addListener(event: 'scanProgress', fn: (p: ScanProgress) => void): Promise<PluginListenerHandle>;

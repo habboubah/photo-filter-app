@@ -3,7 +3,7 @@ import { motion } from 'motion/react';
 import { App as CapacitorApp } from '@capacitor/app';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { KeepAwake } from '@capacitor-community/keep-awake';
-import { AlertTriangle, FlaskConical, Images, Sparkles } from 'lucide-react';
+import { AlertTriangle, Images, Sparkles } from 'lucide-react';
 import { useAppStore } from './store';
 import { bytes, fmt, loadFirstRun, plural, stringsFor } from './translations';
 import type { Photo, Trip, Group } from './types';
@@ -458,10 +458,9 @@ export default function App() {
   /** Moves photos to Recently Deleted / the Trash, through the system's own dialog. True when done. */
   const trash = async (ids: string[], keepIds: string[] = [], free = false): Promise<boolean> => {
     try {
-      const r = await PhotoLibrary.trash({ ids, dryRun: store.dryRun });
+      const r = await PhotoLibrary.trash({ ids });
       if (r.cancelled) { show(t.deleteCancelled); return false; }
       store.addKept(keepIds);
-      if (r.dryRun) { show(fmt(t.dryRunDelete, { photos: plural(t, 'photos', ids.length) })); return true; }
       store.addFreed(r.trashed.length, r.trashed.reduce((sum, id) => sum + (all.byId.get(id)?.bytes ?? 0), 0));
       store.binRemove(r.trashed);
       if (free) store.countFree(r.trashed.length);
@@ -519,10 +518,8 @@ export default function App() {
     setAlbumFor(null);
     const title = folderName(x.title);
     try {
-      const r = await PhotoLibrary.createAlbum({ title, ids: x.ids, dryRun: store.dryRun });
+      const r = await PhotoLibrary.createAlbum({ title, ids: x.ids });
       if (r.cancelled) { show(t.albumCancelled); return; }
-      const photosText = plural(t, 'photos', r.done || x.ids.length);
-      if (r.dryRun) { show(fmt(t.dryRunAlbum, { name: title, photos: photosText })); return; }
       store.recordAlbum(x.key, { title, count: r.done, at: Date.now() });
       notifySuccess();
       show(fmt(t.albumCreated, { name: title }));
@@ -690,6 +687,13 @@ export default function App() {
     const ids = g.ids.filter(id => !state.kept.includes(id));
     store.addKept(ids);
     show(t.keepAllDone, { label: t.undo, run: () => store.removeKept(ids) });
+  };
+
+  /** "Behalten" on a picked set (unimportant photos, screenshots, failed shots): kept, off the list, never suggested again; undo takes it back. */
+  const keepPhotos = (list: Photo[]) => {
+    const ids = list.map(p => p.id).filter(id => !state.kept.includes(id));
+    store.addKept(ids);
+    show(t.keptDone, { label: t.undo, run: () => store.removeKept(ids) });
   };
 
   /** The one next step after the first task: the next group to compare, else home's own next step. */
@@ -891,6 +895,7 @@ export default function App() {
             startReview(list.flatMap(p => (dark.has(p.id) ? reviewExposure([p], 'dark') : bright.has(p.id) ? reviewExposure([p], 'bright') : reviewBlurry([p]))));
           }}
           onAside={list => toBin(list.map(p => p.id))}
+          onKeep={keepPhotos}
         />
       );
     }
@@ -900,6 +905,7 @@ export default function App() {
           t={t} {...sorting('screenshots')} photos={shots} now={now} onBack={() => setShowScreenshots(false)}
           onReview={(list: Photo[]) => startReview(reviewScreenshots(list))}
           onAside={list => toBin(list.map(p => p.id))}
+          onKeep={keepPhotos}
         />
       );
     }
@@ -957,6 +963,7 @@ export default function App() {
           t={t} {...sorting('utility')} photos={utility} progress={aiSeen} onBack={() => setShowUtility(false)}
           onReview={(list: Photo[]) => startReview(reviewUtility(list))}
           onAside={list => toBin(list.map(p => p.id))}
+          onKeep={keepPhotos}
         />
       );
     }
@@ -1017,7 +1024,7 @@ export default function App() {
       return (
         <SettingsView
           t={t} language={language} themeMode={store.themeMode} access={access} owned={store.owned} onSale={UNLOCK_ON_SALE} unlimited={unlimited} freeLeft={freeLeft(state.freeUsed)}
-          debug={store.debug} dryRunAvailable={store.dryRunAvailable} dryRun={store.dryRun} ledger={state.ledger}
+          debug={store.debug} ledger={state.ledger}
           reminder={store.reminder}
           onReminder={on => { void store.setReminder(on, t.reminderTitle, t.reminderBody).then(ok => { if (on && !ok) show(t.reminderDenied); }); }}
           onBack={() => setShowSettings(false)}
@@ -1025,7 +1032,6 @@ export default function App() {
           onOpenSettings={() => { void PhotoLibrary.openSettings(); }}
           onUnlock={() => setPaywall(true)}
           onRestore={restore}
-          onDryRun={store.setDryRun}
           onRate={rate ? () => openExternal(rate) : undefined}
           onFeedback={() => openExternal(feedbackMail(t, __APP_VERSION__, systemFromAgent(navigator.userAgent)))}
           onPrivacy={() => openExternal(privacyUrl(language))}
@@ -1164,14 +1170,6 @@ export default function App() {
           label={t.tabsLabel} current={tab} onChange={switchTab}
           tabs={[{ key: 'clean', label: t.tabClean, icon: Sparkles }, { key: 'organize', label: t.tabOrganize, icon: Images }]}
         />
-      )}
-
-      {store.dryRun && (
-        <div className="fixed inset-x-0 top-0 z-40 flex justify-center pointer-events-none safe-top">
-          <span className="mt-1 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-warn-dim text-warn text-micro font-extrabold">
-            <FlaskConical className="w-3.5 h-3.5" aria-hidden="true" />{t.dryRunBanner}
-          </span>
-        </div>
       )}
 
       {taskDone && (

@@ -104,7 +104,7 @@ export function SimilarView({ t, kind = 'similar', groups: photoGroups, videoGro
             );
           })}
         </div>
-        <button type="button" onClick={open} aria-label={`${when}, ${count}`} className="w-full flex items-center gap-2 px-1 pt-2.5 rounded-[10px] text-start press focus-visible:ring-focus">
+        <button type="button" onClick={open} aria-label={`${when}, ${count}`} className="w-full flex items-center gap-2 px-1 pt-2 rounded-[10px] text-start press focus-visible:ring-focus">
           <span className="flex-1 min-w-0" aria-hidden="true">
             <span className="block text-label font-bold text-fg">{when}</span>
             <span className="block text-caption text-fg-mute">
@@ -113,22 +113,22 @@ export function SimilarView({ t, kind = 'similar', groups: photoGroups, videoGro
           </span>
           <ChevronRight className="w-5 h-5 text-fg-faint rtl:rotate-180" aria-hidden="true" />
         </button>
-        {/* Settle it here: keep all, or mark everything without a star (the starred ones are kept). */}
-        <div className="flex items-center justify-between gap-2 pt-2.5">
+        {/* Settle it here, side by side under the date: keep all, or mark everything without a star (the starred ones are kept). */}
+        <div className="grid grid-cols-2 gap-2 pt-2">
           <button
             type="button" onClick={() => { tapLight(); onKeepAll(g); }}
-            className="shrink-0 min-h-[44px] -ms-1 px-1 rounded-full text-label font-bold text-keep inline-flex items-center justify-center gap-1.5 press focus-visible:ring-focus"
+            className="min-w-0 min-h-[44px] px-3 py-1.5 rounded-full bg-keep-dim text-label font-bold text-keep inline-flex items-center justify-center gap-1.5 press focus-visible:ring-focus"
           >
-            <Check className="w-4 h-4 shrink-0" strokeWidth={3} aria-hidden="true" /><span className="whitespace-nowrap">{t.keepAll}</span>
+            <Check className="w-4 h-4 shrink-0" strokeWidth={3} aria-hidden="true" /><span className="wrap-prose leading-tight text-center">{t.keepAll}</span>
           </button>
           <button
             type="button" disabled={!extra}
             onClick={() => { tapLight(); onAsideOthers(g, others, mine.filter(id => g.ids.includes(id))); setStars(s => { const { [g.key]: _, ...rest } = s; return rest; }); }}
             aria-label={`${t.groupAsideShort}, ${plural(t, unit, extra)}`}
-            className="min-w-0 min-h-[44px] -me-1 px-1 py-1 rounded-full text-label font-bold text-accent inline-flex items-center justify-center gap-1.5 press focus-visible:ring-focus disabled:opacity-40"
+            className="min-w-0 min-h-[44px] px-3 py-1.5 rounded-full bg-neg-dim text-label font-bold text-neg inline-flex items-center justify-center gap-1.5 press focus-visible:ring-focus disabled:opacity-40"
           >
-            {/* Into "Zum Löschen vorgemerkt": nothing is deleted yet, so teal and the archive — red is only for what really deletes. */}
-            <Archive className="w-4 h-4 shrink-0" strokeWidth={2.4} aria-hidden="true" /><span className="wrap-prose leading-tight text-start">{t.groupAsideShort}</span>
+            {/* Into "Zum Löschen vorgemerkt": red, since these photos are headed for deletion; the archive icon says nothing is deleted yet. */}
+            <Archive className="w-4 h-4 shrink-0" strokeWidth={2.4} aria-hidden="true" /><span className="wrap-prose leading-tight text-center">{t.groupAsideShort}</span>
           </button>
         </div>
       </div>

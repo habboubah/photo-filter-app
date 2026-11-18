@@ -38,14 +38,11 @@ export function useAlbums({ t, store, show, recent, byId, want }: {
   /** The end screen's albums: one native call for all of them (Android: one dialog). True when done (or nothing to do). */
   const fileAlbums = async (plan: ReviewOutcome['albums']): Promise<boolean> => {
     if (!plan.length) return true;
-    const filed = plan.reduce((n, a) => n + a.ids.length, 0);
     try {
       const r = await PhotoLibrary.addToAlbums({
         groups: plan.map(a => (isNewAlbum(a.album) ? { title: a.album.slice(4), ids: a.ids } : { albumId: a.album, ids: a.ids })),
-        dryRun: store.dryRun,
       });
       if (r.cancelled) { show(t.filedCancelled); return false; }
-      if (r.dryRun) { show(fmt(t.dryRunFiled, { photos: plural(t, 'photos', filed) })); return true; }
       store.useAlbums(plan.map(a => a.album).filter(a => !isNewAlbum(a)));
       setAlbumList(null);
       if (isAndroid()) store.startScan();
@@ -99,9 +96,8 @@ export function useAlbums({ t, store, show, recent, byId, want }: {
     setAlbumPick(null);
     const albumId = 'albumId' in target ? target.albumId : undefined;
     try {
-      const r = await PhotoLibrary.addToAlbums({ groups: [albumId ? { albumId, ids } : { title: folderName(target.title), ids }], dryRun: store.dryRun });
+      const r = await PhotoLibrary.addToAlbums({ groups: [albumId ? { albumId, ids } : { title: folderName(target.title), ids }] });
       if (r.cancelled) { show(t.filedCancelled); return; }
-      if (r.dryRun) { show(fmt(t.dryRunFiled, { photos: plural(t, 'photos', ids.length) })); return; }
       if (albumId) store.useAlbums([albumId]);
       setAlbumList(null);
       if (isAndroid()) store.startScan();

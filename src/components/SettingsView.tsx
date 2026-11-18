@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BadgeCheck, FileText, FlaskConical, Globe, Images, Lightbulb, Mail, Moon, RotateCcw, ShieldCheck, Star, Unlock } from 'lucide-react';
+import { BadgeCheck, FileText, Globe, Images, Lightbulb, Mail, Moon, RotateCcw, ShieldCheck, Star, Unlock } from 'lucide-react';
 import type { ThemeMode } from '../types';
 import type { Access } from '../native/photoLibrary';
 import { Language, Strings, fmt, languageNames, languages, num, percent, plural } from '../translations';
@@ -21,10 +21,7 @@ interface Props {
   /** Deletes left without the unlock. */
   freeLeft: number;
   debug: boolean;
-  /** The dry run switch is shown (debug builds, or release while DRY_RUN_IN_RELEASE is on). */
-  dryRunAvailable: boolean;
-  dryRun: boolean;
-  /** This phone's record of deleted and kept suggestions (src/logic/ledger.ts), shown where the dry run is (testers' builds). */
+  /** This phone's record of deleted and kept suggestions (src/logic/ledger.ts), shown in debug builds only. */
   ledger?: Ledger;
   reminder: boolean;
   onReminder: (on: boolean) => void;
@@ -35,7 +32,6 @@ interface Props {
   onOpenSettings: () => void;
   onUnlock: () => void;
   onRestore: () => void;
-  onDryRun: (on: boolean) => void;
   onRate?: () => void;
   onFeedback: () => void;
   onPrivacy: () => void;
@@ -98,16 +94,7 @@ export function SettingsView(p: Props) {
         />
       </Group>
 
-      {p.dryRunAvailable && (
-        <Group title={t.devSection}>
-          <div className="flex items-start">
-            <span className="ps-[16px] pt-[14px]"><IconTile icon={FlaskConical} hue="sand" /></span>
-            <div className="flex-1"><SwitchRow label={t.dryRun} sub={t.dryRunSub} checked={p.dryRun} onChange={p.onDryRun} /></div>
-          </div>
-        </Group>
-      )}
-
-      {p.dryRunAvailable && p.ledger && Object.keys(p.ledger).length > 0 && (
+      {p.debug && p.ledger && Object.keys(p.ledger).length > 0 && (
         <Group title={t.ledgerTitle} footer={t.ledgerHint}>
           {Object.entries(p.ledger).sort((a, b) => (b[1].del + b[1].keep) - (a[1].del + a[1].keep)).map(([key, v]) => (
             <Row

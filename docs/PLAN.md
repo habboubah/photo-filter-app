@@ -126,8 +126,8 @@ either: it is one small document, so the native side writes it atomically as
 a file (`Application Support/bildklar/state.json`, `files/state.json`)
 through `getState`/`setState`. On the web (the demo) it is localStorage.
 
-**View preferences** stay `bildklar-*` keys in localStorage (language, theme,
-the dry run): losing them costs nothing.
+**View preferences** stay `bildklar-*` keys in localStorage (language,
+theme): losing them costs nothing.
 
 ## Platform mapping (APIs as checked, November 2026)
 
@@ -154,9 +154,8 @@ the dry run): losing them costs nothing.
   (`src/logic/bin.ts`, kept in the decisions file): they leave every finder
   at once and can be put back. The real delete — the system's dialog — starts
   from that list only, so a wrong swipe or tap never costs a photo.
-- **Dry run**: debug builds start with it on (Einstellungen › Nur in der
-  Debug-Version › Probelauf): every write to the library is skipped and the app
-  says what it would have done. Release builds never run dry.
+- **No dry run** (removed 18 November 2026): every write is real in every
+  build; the tap and the system's dialog are the safety.
 - On Android, files are moved only after the consent dialog; their contents
   never change.
 

@@ -3,7 +3,7 @@ import { App as CapacitorApp } from '@capacitor/app';
 import type { Photo } from './types';
 import type { useAppStore } from './store';
 import { PhotoLibrary } from './native/photoLibrary';
-import { type Strings, bytes, fmt, plural } from './translations';
+import { type Strings, fmt, plural } from './translations';
 import { batches, tally } from './logic/compress';
 
 /*
@@ -53,7 +53,7 @@ export function useMediaTools({ t, store, show, trash, onPhotosDone, onLiveDone 
       for (const [i, part] of parts.entries()) {
         if (run.current.stop) break;
         run.current.batch = i;
-        const r = await PhotoLibrary.compressPhotos({ ids: part, dryRun: store.dryRun });
+        const r = await PhotoLibrary.compressPhotos({ ids: part });
         results.push(...r.results);
         setPhotoRun(p => (p ? { ...p, progress: (i + 1) / parts.length } : p));
       }
@@ -63,7 +63,6 @@ export function useMediaTools({ t, store, show, trash, onPhotosDone, onLiveDone 
       setPhotoRun(null);
     }
     const { count, saved } = tally(results);
-    if (store.dryRun) { show(fmt(t.dryRunCompressPhotos, { photos: plural(t, 'photos', count), size: bytes(t, saved) })); return; }
     if (!count) { show(failed ? t.compressFailed : t.compressPhotosNone); return; }
     store.startScan();
     if (run.current.stop) show(fmt(t.compressPhotosStopped, { photos: plural(t, 'photos', count) }));
@@ -73,8 +72,7 @@ export function useMediaTools({ t, store, show, trash, onPhotosDone, onLiveDone 
   const compress = async (p: Photo) => {
     setCompressing({ id: p.id, progress: 0 });
     try {
-      const r = await PhotoLibrary.compressVideo({ id: p.id, dryRun: store.dryRun });
-      if (r.dryRun) { show(fmt(t.dryRunCompress, { before: bytes(t, r.before), after: bytes(t, r.after) })); return; }
+      const r = await PhotoLibrary.compressVideo({ id: p.id });
       if (!r.created) { show(t.compressNoGain); return; }
       store.startScan();
       setAfterCompress({ id: p.id, before: r.before, after: r.after });
@@ -89,8 +87,7 @@ export function useMediaTools({ t, store, show, trash, onPhotosDone, onLiveDone 
   const convertLive = async (list: Photo[]) => {
     setLiveConfirm(null);
     try {
-      const r = await PhotoLibrary.convertLive({ ids: list.map(p => p.id), dryRun: store.dryRun });
-      if (r.dryRun) { show(fmt(t.dryRunLive, { photos: plural(t, 'photos', r.converted.length) })); return; }
+      const r = await PhotoLibrary.convertLive({ ids: list.map(p => p.id) });
       if (!r.converted.length) { show(t.liveFailed); return; }
       store.startScan();
       const ok = await trash(r.converted.map(c => c.from));

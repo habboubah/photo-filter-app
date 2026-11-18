@@ -132,7 +132,7 @@ scenes follow the switch (docs/PLAN.md, *Pricing*).
   and are saved by the native plugin as a file — not localStorage (iOS may
   clear it on a full phone). Add fields as optional; bump `SCHEMA_VERSION`
   and migrate in `normalizeState` when a shape changes. View preferences
-  (language, theme, dry run) stay `bildklar-*` localStorage keys.
+  (language, theme) stay `bildklar-*` localStorage keys.
 - **The features are a spec.** `src/logic/features.ts`, `FeatureMath.swift`
   (`ios/PhotoFeatures`, also compiled into the app) and `FeatureMath.kt` must
   give the same numbers for `fixtures/features/` (`expected.json`). Change all
@@ -181,8 +181,8 @@ scenes follow the switch (docs/PLAN.md, *Pricing*).
   `toBin` too. Marking for deletion is never styled as deleting: no red, no trash icon
   (`Archive` and teal or quiet glass); red (`neg`, `destructive`) is only
   for what really deletes. (Exception: the originals after a smaller copy or a Live Photo
-  made a still — the copy is already saved. The group card's *Ohne Stern
-  vormerken* was red for a few hours on 18 November 2026; it is teal again.)
+  made a still — the copy is already saved — and, by Ahmad's choice, the group
+  card's *Ohne Stern vormerken*, a red-tinted pill beside the green *Alle behalten*.)
 - A new asset (a plain photo made from a Live Photo, a smaller copy of a video
   or of a photo) needs the user's tap and a confirmation in the app; the original stays and
   goes only through the system's delete dialog afterwards. The copy keeps the
@@ -190,8 +190,10 @@ scenes follow the switch (docs/PLAN.md, *Pricing*).
 - Deleted photos go to Recently Deleted (iPhone) / the Trash (Android) only —
   `deleteAssets` / `createTrashRequest`, never `createDeleteRequest`, never
   `MANAGE_MEDIA`.
-- **Dry run**: every native write takes `dryRun`. Debug builds start with it
-  on (`store.ts`: `debug && dryRunPref !== false`); release builds never run dry.
+- **No dry run** (removed 18 November 2026, before production): every write
+  is real in every build, debug ones included — the user's tap and the
+  system's dialog are the safety. Test deletes on a test phone or with photos
+  you can recover from Recently Deleted / the Trash.
 - On Android, files are moved (RELATIVE_PATH) only after `createWriteRequest`'s
   dialog, and their contents never change. Nothing is copied — except a smaller
   video or photo, which is a new file of the app's own next to the original.

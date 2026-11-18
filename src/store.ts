@@ -26,7 +26,7 @@ import { LocalNotifications } from '@capacitor/local-notifications';
  * All state lives here (no store library): the photo facts, the scan, the
  * access, the unlock, the user's decisions and the view preferences.
  *
- * - View preferences (language, theme, dry run, what of the first run was
+ * - View preferences (language, theme, what of the first run was
  *   seen) are `bildklar-*` keys in localStorage: losing them costs nothing —
  *   a welcome or a hint showing again is harmless.
  * - The decisions (src/logic/state.ts) go through the native plugin into
@@ -42,7 +42,6 @@ export const KEY_PREFIX = 'bildklar-';
 const K = {
   lang: 'bildklar-lang',
   theme: 'bildklar-theme',
-  dryRun: 'bildklar-dry-run',
   reminder: 'bildklar-reminder',
   /** The welcome was seen ("1"). */
   welcome: 'bildklar-welcome',
@@ -99,27 +98,12 @@ export function useAppStore() {
     return saved === 'light' || saved === 'dark' || saved === 'system' ? saved : 'system';
   });
 
-  /* ------------------------------------------------ debug and the dry run */
-
-  // TEMPORARY (November 2026): the dry run switch in release builds, so Ahmad
-  // can test a TestFlight / Play build on his phone. Set back to false (or
-  // remove) before a build goes to review — release builds must never run dry.
-  const DRY_RUN_IN_RELEASE = false;
+  /* ------------------------------------------------------------- debug */
 
   const [debug, setDebug] = useState(false);
-  // Safety (docs/PLAN.md): in a debug build the dry run is on until it is turned off by hand.
-  const [dryRunPref, setDryRunPref] = useState<boolean | null>(() => {
-    const saved = read(K.dryRun);
-    return saved === '1' ? true : saved === '0' ? false : null;
-  });
   useEffect(() => {
     PhotoLibrary.isDebug().then(r => setDebug(r.debug)).catch(() => setDebug(false));
   }, []);
-  /** Release builds never run dry; debug builds do unless it was switched off.
-   *  While DRY_RUN_IN_RELEASE is on, release builds offer it too (for testing on a phone). */
-  const dryRunAvailable = debug || DRY_RUN_IN_RELEASE;
-  const dryRun = dryRunAvailable && dryRunPref !== false;
-  const setDryRun = (on: boolean) => { setDryRunPref(on); write(K.dryRun, on ? '1' : '0'); };
 
   /* ------------------------------------------------------------ decisions */
 
@@ -587,7 +571,7 @@ export function useAppStore() {
 
   return {
     language, setLanguage, themeMode, setThemeMode,
-    debug, dryRunAvailable, dryRun, setDryRun,
+    debug,
     state, stateReady, storageError, updateTrips, recordAlbum, setBest, recordReview, addKept, removeKept, updateLater, pruneLaterPile, binAdd, binRemove, pruneBin, setSort, protectPhotos, protectTrip, protectAlbum, protectSimilar, albumMembers, useAlbums, markMonthDone, setMonthAt, addFreed, countFree, resetDecisions, restoreState,
     reminder, setReminder,
     welcomeSeen, setWelcomeSeen, seen, markSeen, replay, hideAllHints,

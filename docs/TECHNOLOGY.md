@@ -232,7 +232,7 @@ provisional. They will be tuned on about 400 real, labelled photos
 | The app talks to nobody | `scripts/privacy-check.mjs` drives the built app through every flow and fails on any request to another origin. Every URL in the bundle must be on an allowlist. The Swift and Kotlin code must contain no network calls. |
 | No tracking | No analytics, crash reporting, Firebase or ads, ever |
 | Locked-down web view | A Content Security Policy in production builds; no `console.*` in app code |
-| No surprise deletes | Every write needs a tap and the system dialog; debug builds start in **dry run** (no write to the library at all) |
+| No surprise deletes | Every write needs a tap and the system dialog |
 | Honest store texts | The Play Billing Library sends Google its own usage logs and brings the `INTERNET` permission, so the store texts never promise "no internet" |
 
 ## Tools and quality gates

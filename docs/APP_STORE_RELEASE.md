@@ -217,9 +217,8 @@ An error? → see [Troubleshooting](#troubleshooting) below.
    the blurry list, a review that deletes (check Photos › Recently Deleted),
    the paywall with a sandbox account (step 8g), Restore Purchases.
 
-TestFlight builds are release builds: **the dry run is off there** — deleting
-really moves photos to Recently Deleted. Debug builds from Xcode run dry until
-you switch it off (Einstellungen › Nur in der Debug-Version › Probelauf).
+Every build deletes for real (there is no dry run any more): deleting moves
+photos to Recently Deleted, after iOS's own dialog.
 
 You won't be asked about encryption (export compliance): the app already
 answers it (`ITSAppUsesNonExemptEncryption = NO`).
@@ -260,7 +259,7 @@ App Store Connect → Bildklar → left: **iOS App 1.0 – Prepare for Submissio
 - [ ] **Build** → *Add Build* → pick 2.0.1 (7) (visible after step 6 finished processing).
 - [ ] **App Review Information** [App-Prüfungsinformationen] → Sign-in required:
       **No**, your contact details, the note from `store/listing.md` (it explains
-      the paywall, the dry run of debug builds and where deleted photos go), and
+      the paywall and where deleted photos go), and
       the App Review screen recording (`npm run record:app-review`).
 - [ ] **In-App Purchases** [In-App-Käufe] → *+* → pick **Bildklar freischalten**
       (made in step 8g) — the first purchase must be submitted with the version.

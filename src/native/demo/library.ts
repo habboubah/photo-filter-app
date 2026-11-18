@@ -183,9 +183,9 @@ export class DemoLibrary extends WebPlugin implements PhotoLibraryPlugin {
 
   async thumbnail({ id }: { id: string; size: number }) { await ready; return { path: data.urlOf(id) }; }
 
-  async createAlbum({ ids, dryRun }: { title: string; ids: string[]; dryRun: boolean }) {
+  async createAlbum({ ids }: { title: string; ids: string[] }) {
     await wait(400);
-    return { done: ids.length, cancelled: false, dryRun };
+    return { done: ids.length, cancelled: false };
   }
 
   /**
@@ -216,9 +216,8 @@ export class DemoLibrary extends WebPlugin implements PhotoLibraryPlugin {
     try { return JSON.parse(get('bildklar-demo-albums') ?? '[]'); } catch { return []; }
   }
 
-  async addToAlbums({ groups, dryRun }: { groups: { albumId?: string; title?: string; ids: string[] }[]; dryRun: boolean }) {
+  async addToAlbums({ groups }: { groups: { albumId?: string; title?: string; ids: string[] }[] }) {
     const done = groups.reduce((n, g) => n + g.ids.length, 0);
-    if (dryRun) return { done, cancelled: false, dryRun };
     const made = this.madeAlbums();
     for (const g of groups) {
       const id = g.albumId ?? `demo-album-${(g.title ?? 'album').toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
@@ -226,7 +225,7 @@ export class DemoLibrary extends WebPlugin implements PhotoLibraryPlugin {
       album.members = [...new Set([...album.members, ...g.ids])];
     }
     set('bildklar-demo-albums', JSON.stringify(made));
-    return { done, cancelled: false, dryRun };
+    return { done, cancelled: false };
   }
 
   /** Made-up albums: the family photos at home, the Lake Garda summer, WhatsApp's and Snapchat's, and the ones made while swiping. */
@@ -256,17 +255,15 @@ export class DemoLibrary extends WebPlugin implements PhotoLibraryPlugin {
     return { ids: [...new Set(this.albums().filter(a => wanted.has(a.id)).flatMap(a => a.members))] };
   }
 
-  async trash({ ids, dryRun }: { ids: string[]; dryRun: boolean }) {
+  async trash({ ids }: { ids: string[] }) {
     await wait(400);
-    if (!dryRun) {
-      const gone = new Set<string>(JSON.parse(get(K.trashed) ?? '[]'));
-      ids.forEach(id => gone.add(id));
-      set(K.trashed, JSON.stringify([...gone]));
-    }
-    return { trashed: ids, cancelled: false, dryRun };
+    const gone = new Set<string>(JSON.parse(get(K.trashed) ?? '[]'));
+    ids.forEach(id => gone.add(id));
+    set(K.trashed, JSON.stringify([...gone]));
+    return { trashed: ids, cancelled: false };
   }
 
-  async convertLive({ ids, dryRun }: { ids: string[]; dryRun: boolean }) {
+  async convertLive({ ids }: { ids: string[] }) {
     await ready;
     await wait(500);
     const all = new Map(this.photos().map(p => [p.id, p]));
@@ -275,13 +272,13 @@ export class DemoLibrary extends WebPlugin implements PhotoLibraryPlugin {
       const p = all.get(id);
       if (!p?.live) continue;
       const to = `${id}-still`;
-      if (!dryRun) this.remember({ ...p, id: to, live: false, bytes: Math.max(500_000, p.bytes - 3_000_000) });
+      this.remember({ ...p, id: to, live: false, bytes: Math.max(500_000, p.bytes - 3_000_000) });
       converted.push({ from: id, to });
     }
-    return { converted, skipped: ids.length - converted.length, dryRun };
+    return { converted, skipped: ids.length - converted.length };
   }
 
-  async compressVideo({ id, dryRun }: { id: string; dryRun: boolean }) {
+  async compressVideo({ id }: { id: string }) {
     await ready;
     const p = this.photos().find(x => x.id === id);
     if (!p?.video) throw new Error('No video');
@@ -290,16 +287,16 @@ export class DemoLibrary extends WebPlugin implements PhotoLibraryPlugin {
       this.notifyListeners('compressProgress', { id, progress: i / 8 });
     }
     // A video the demo already made smaller would gain nothing.
-    if (id.endsWith('-small')) return { created: null, before: p.bytes, after: p.bytes, dryRun };
+    if (id.endsWith('-small')) return { created: null, before: p.bytes, after: p.bytes };
     const after = Math.round(p.bytes * 0.35);
     const created = `${id}-small`;
-    if (!dryRun) this.remember({ ...p, id: created, bytes: after, t: p.t + 1 });
-    return { created: dryRun ? null : created, before: p.bytes, after, dryRun };
+    this.remember({ ...p, id: created, bytes: after, t: p.t + 1 });
+    return { created, before: p.bytes, after };
   }
 
   /** No home screen in a browser: the widget's content is only kept, for a look in the dev tools. */
   /** Photos made smaller: half a JPEG, 30 % of a PNG, a little wait per photo; the copies show their original's picture. */
-  async compressPhotos({ ids, dryRun }: { ids: string[]; dryRun: boolean }) {
+  async compressPhotos({ ids }: { ids: string[] }) {
     await ready;
     const all = new Map(this.photos().map(p => [p.id, p]));
     const results: { from: string; to: string; before: number; after: number }[] = [];
@@ -310,10 +307,10 @@ export class DemoLibrary extends WebPlugin implements PhotoLibraryPlugin {
       if (!p || p.video || p.fmt === 'heic' || id.endsWith('-heic')) continue;
       const after = Math.round(p.bytes * (p.fmt === 'png' ? 0.3 : 0.5));
       const to = `${id}-heic`;
-      if (!dryRun) this.remember({ ...p, id: to, bytes: after, fmt: 'heic', t: p.t + 1 });
-      results.push({ from: id, to: dryRun ? '' : to, before: p.bytes, after });
+      this.remember({ ...p, id: to, bytes: after, fmt: 'heic', t: p.t + 1 });
+      results.push({ from: id, to, before: p.bytes, after });
     }
-    return { results, dryRun };
+    return { results };
   }
 
   async setWidget(options: { title: string; line: string; photoId?: string; freeable?: number; pct?: number }) {
