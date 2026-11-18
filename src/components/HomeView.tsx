@@ -7,10 +7,10 @@ import type { ScanView } from '../store';
 import { Strings, ago, bytes, fmt, num, percent, plural } from '../translations';
 import { etaWords } from '../logic/eta';
 import { greetingAt } from '../logic/greeting';
-import { type Found, type FoundKey, gainOf, nextStepKind, rankCategories } from '../logic/nextStep';
+import { type Found, type FoundKey, gainOf, nextStepKind, rankCategories, type RankedCategory } from '../logic/nextStep';
 import { Empty, Group, IconTile, Next, Row, Screen, SectionHead } from '../ui/Screen';
 import { Button, IconButton } from '../ui/Button';
-import { BigNumber, Progress } from '../ui/Controls';
+import { Progress } from '../ui/Controls';
 import { StorageBar } from '../ui/StorageBar';
 import { tapLight } from '../ui/haptics';
 import { Thumb } from '../ui/Photo';
@@ -161,7 +161,6 @@ export function HomeView(p: Props) {
   const cats = rankCategories(p.found, summary).map(c => ({ ...meta[c.key], ...c }));
   const done = keys.filter(k => p.found[k]!.items === 0).map(k => meta[k].label);
   const bar = keys.map(k => ({ key: k, hue: meta[k].hue, bytes: gain(k).bytes, label: meta[k].label }));
-  const countOf = (c: (typeof cats)[number]) => categoryCount(t, c);
 
   /* ---------------------------------------------------------- the next step */
 
@@ -224,7 +223,6 @@ export function HomeView(p: Props) {
   return (
     <Screen
       title={greeting}
-      eyebrow={t.tabClean}
       subtitle={has ? fmt(t.homeSub, { files: plural(t, 'files', p.photoCount!) }) : undefined}
       tabbed
       actions={<>
@@ -271,44 +269,12 @@ export function HomeView(p: Props) {
         </section>
       )}
 
-      {has && summary && (
-        <CleanupCard
-          t={t} summary={summary} bar={bar} library={p.analysis} storage={p.storage} freedBytes={p.freedBytes}
-          onOpen={p.onCleanup} onPhotos={p.onMonths} onVideos={p.onVideos}
+      {/* What could go, in one place: the space, the bar of the library, and its categories as rows — each row's dot is its segment in the bar. */}
+      {has && (summary || cats.length > 0 || done.length > 0) && (
+        <CleanupSection
+          t={t} summary={summary} cats={cats} done={done} bar={bar} countOf={c => categoryCount(t, c)} library={p.analysis} storage={p.storage} freedBytes={p.freedBytes}
+          partial={analysing} onOpen={p.onCleanup} onPhotos={p.onMonths} onVideos={p.onVideos}
         />
-      )}
-
-      {has && (cats.length > 0 || done.length > 0) && (
-        <section aria-labelledby="found-h">
-          <SectionHead
-            id="found-h" title={t.suggestionsTitle}
-            action={summary && <button type="button" onClick={() => { tapLight(); p.onCleanup(); }} className={link}>{t.suggestionsAll}</button>}
-          />
-          {cats.length > 0 && (
-            <Group footer={analysing ? t.suggestionsPartial : undefined}>
-              {cats.map(c => (
-                <Row
-                  key={c.key} onClick={c.onClick} label={c.label} sub={countOf(c)}
-                  ariaLabel={[c.label, countOf(c), c.gain.bytes > 0 ? bytes(t, c.gain.bytes) : null].filter(Boolean).join(', ')}
-                  leading={c.covers.length ? <RowPhoto id={c.covers[0]} second={c.covers[1]} /> : <IconTile icon={c.icon} hue={c.hue} />}
-                  lead={c.covers.length ? 48 : undefined}
-                  trailing={
-                    <span className="shrink-0 flex items-center gap-1.5">
-                      {c.gain.bytes > 0 && <span className="text-body font-bold text-fg num">{bytes(t, c.gain.bytes)}</span>}
-                      <ChevronRight className="w-5 h-5 text-fg-faint rtl:rotate-180" aria-hidden="true" />
-                    </span>
-                  }
-                />
-              ))}
-            </Group>
-          )}
-          {done.length > 0 && (
-            <p className="mt-[12px] px-1 flex items-start gap-2 text-label text-fg-mute wrap-prose">
-              <Check className="w-4 h-4 mt-0.5 shrink-0 text-keep" strokeWidth={3} aria-hidden="true" />
-              <span>{fmt(t.doneCategories, { list: done.join(', ') })}</span>
-            </p>
-          )}
-        </section>
       )}
 
       {has && (showLater || showMonths) && (
@@ -345,15 +311,15 @@ export function HomeView(p: Props) {
             id="memories-h" title={t.memoriesTitle}
             action={<button type="button" onClick={() => { tapLight(); p.onOrganize(); }} className={link}>{t.tabOrganize}</button>}
           />
-          <div className="grid grid-cols-2 gap-[12px]">
+          <div className={`grid gap-[12px] ${p.memories.onThisDay && p.memories.trip ? 'grid-cols-2' : 'grid-cols-1'}`}>
             {p.memories.onThisDay && (
-              <MemoryTile
+              <MemoryTile wide={!p.memories.trip}
                 cover={p.memories.onThisDay.cover} title={t.onThisDay} onClick={p.onOnThisDay}
                 sub={fmt(t.onThisDayBody, { photos: plural(t, 'photos', p.memories.onThisDay.photos), years: p.memories.onThisDay.years.slice(0, 3).join(', ') })}
               />
             )}
             {p.memories.trip && (
-              <MemoryTile
+              <MemoryTile wide={!p.memories.onThisDay}
                 cover={p.memories.trip.cover} title={p.memories.trip.title} onClick={() => p.onTrip(p.memories.trip!.key)}
                 sub={`${t.latestTrip} · ${plural(t, 'photos', p.memories.trip.photos)}`}
               />
@@ -476,13 +442,19 @@ function NextStep({ step }: { step: Step }) {
   return (
     <section className="rounded-lg card overflow-hidden" aria-labelledby="next-h">
       {ids.length > 0 && (
-        <div className={`aspect-[16/9] grid gap-[2px] ${layout}`} aria-hidden="true">
-          {ids.map((id, i) => <Thumb key={id} id={id} size={i === 0 ? LARGE : undefined} className="!rounded-none" />)}
+        <div className="relative">
+          <div className={`aspect-[16/9] grid gap-[2px] ${layout}`} aria-hidden="true">
+            {ids.map((id, i) => <Thumb key={id} id={id} size={i === 0 ? LARGE : undefined} className="!rounded-none" />)}
+          </div>
+          {/* Why this step, as a label on its photo rather than a kicker over the title. */}
+          <span className="absolute top-3 start-3 max-w-[calc(100%-24px)] inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full glass text-fg text-caption font-bold wrap-compound">
+            <Sparkles className="w-3.5 h-3.5 shrink-0" strokeWidth={2.4} aria-hidden="true" />{step.eyebrow}
+          </span>
         </div>
       )}
       <div className="p-5">
-        <p className="eyebrow text-fg-mute">{step.eyebrow}</p>
-        <h2 id="next-h" className="title-face text-title2 font-bold text-fg mt-0.5 wrap-compound">{step.title}</h2>
+        {!ids.length && <p className="text-label font-semibold text-fg-mute">{step.eyebrow}</p>}
+        <h2 id="next-h" className="title-face text-title2 font-bold text-fg wrap-compound">{step.title}</h2>
         <p className="text-label text-fg-mute mt-1 num wrap-prose">{step.meta}</p>
         {step.progress && <div className="mt-3"><Progress value={step.progress.value} label={step.progress.label} thin /></div>}
         <Button full size="lg" className="mt-4" onClick={step.onGo}>{step.button}</Button>
@@ -493,10 +465,10 @@ function NextStep({ step }: { step: Step }) {
 }
 
 /** A small photo tile with its name and a line under it, as Photos lays out its collections. */
-function MemoryTile({ cover, title, sub, onClick }: { cover: string; title: string; sub: string; onClick: () => void }) {
+function MemoryTile({ cover, title, sub, wide, onClick }: { cover: string; title: string; sub: string; wide?: boolean; onClick: () => void }) {
   return (
     <button type="button" onClick={() => { tapLight(); onClick(); }} className="block text-start rounded-md press focus-visible:ring-focus">
-      <span className="block aspect-[4/3] rounded-md overflow-hidden"><Thumb id={cover} className="!rounded-none" /></span>
+      <span className={`block rounded-md overflow-hidden ${wide ? 'aspect-[2/1]' : 'aspect-[4/3]'}`}><Thumb id={cover} size={wide ? LARGE : undefined} className="!rounded-none" /></span>
       <span className="block px-1 pt-2 text-label font-semibold text-fg wrap-compound">{title}</span>
       <span className="block px-1 text-caption text-fg-mute num wrap-prose">{sub}</span>
     </button>
@@ -532,121 +504,133 @@ function ScanCard({ t, scan, first }: { t: Strings; scan: ScanView; first: boole
 }
 
 /**
- * What the library holds, inside the clean-up card: one row for photos and
- * one for videos, each with how many were scanned, how many are good (not
- * marked for deleting) and how many could go — three columns under one quiet
- * header, as a table. A row opens all its photos (month by month) or all its
- * videos.
+ * What could go, in one card (the "Suggestions" section): the space it adds up
+ * to, the bar of the whole library — one segment per category that could go,
+ * then the photos and videos that stay, paler — and the categories as rows
+ * under it, each with its hue's dot, so the bar and the list read as one. At
+ * its foot the library in two cells (photos, videos: how many, how many could
+ * go — each opens them), the free space, and *Jetzt aufräumen*. Nothing in it
+ * is red, nothing counts down: it is an overview, not an alarm.
  */
-function LibraryTable({ t, library, marked, onPhotos, onVideos }: {
-  t: Strings; library: Props['analysis'];
-  /** What the card counts for deleting, photos apart from videos. */
-  marked: CleanupSummary['media'];
-  onPhotos: () => void; onVideos: () => void;
-}) {
-  const rows: { key: string; label: string; icon: React.ComponentType<{ className?: string; strokeWidth?: number }>; hue: string; all: Stat; gone: Stat; onClick: () => void }[] = [
-    { key: 'photos', label: t.statPhotos, icon: ImageIcon, hue: 'pink', all: library.photos, gone: marked.photos, onClick: onPhotos },
-    ...(library.videos.count > 0 ? [{ key: 'videos', label: t.statVideos, icon: FileVideo, hue: 'sand', all: library.videos, gone: marked.videos, onClick: onVideos }] : []),
-  ];
-  const cols = 'grid grid-cols-[minmax(0,1fr)_repeat(3,minmax(3.5rem,auto))] gap-x-3 items-center';
-  return (
-    <div role="group" aria-label={t.analysisTitle} className="-mx-2">
-      <div className={`${cols} px-2 pb-1 text-caption font-semibold text-fg-mute`} aria-hidden="true">
-        <span />
-        <span className="text-center">{t.statScanned}</span>
-        <span className="text-center">{t.statGood}</span>
-        <span className="text-center">{t.statCouldGo}</span>
-      </div>
-      {rows.map(r => {
-        const good = Math.max(0, r.all.count - r.gone.count);
-        const label = `${r.label}: ${t.statScanned} ${num(t, r.all.count)}, ${t.statGood} ${num(t, good)}, ${t.statCouldGo} ${num(t, r.gone.count)}`;
-        return (
-          <button
-            key={r.key} type="button" onClick={() => { tapLight(); r.onClick(); }} aria-label={label}
-            className={`${cols} w-full min-h-tap rounded-sm px-2 py-1.5 text-start press active:bg-surface-2 focus-visible:ring-focus`}
-          >
-            <span className="min-w-0 flex items-center gap-2.5">
-              <IconTile icon={r.icon} hue={r.hue} />
-              <span className="min-w-0 text-label font-semibold text-fg leading-tight wrap-compound">{r.label}</span>
-            </span>
-            <span className="text-center text-body font-bold text-fg num">{num(t, r.all.count)}</span>
-            <span className="text-center text-body font-bold text-keep num">{num(t, good)}</span>
-            <span className={`text-center text-body font-bold num ${r.gone.count > 0 ? 'text-fg' : 'text-fg-mute'}`}>{num(t, r.gone.count)}</span>
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
-/**
- * The card at the top of Aufräumen: the space that could be freed and how
- * much of it is photos and how much videos, a bar of the whole library — one
- * segment per category that could go, then the good photos and the good
- * videos, paler — and its legend, then the table of photos and videos (scanned,
- * good, could go), the free space and the button.
- */
-function CleanupCard({ t, summary, bar, library, storage, freedBytes, onOpen, onPhotos, onVideos }: {
-  t: Strings; summary: CleanupSummary; bar: { key: string; hue: string; bytes: number; label: string }[];
-  library: Props['analysis']; storage: Storage | null; freedBytes: number;
+function CleanupSection({ t, summary, cats, done, bar, countOf, library, storage, freedBytes, partial, onOpen, onPhotos, onVideos }: {
+  t: Strings; summary: CleanupSummary | null;
+  cats: (RankedCategory & { label: string; hue: string; icon: React.ComponentType<{ className?: string; strokeWidth?: number }>; onClick: () => void })[];
+  done: string[]; bar: { key: string; hue: string; bytes: number; label: string }[];
+  countOf: (c: RankedCategory) => string;
+  library: Props['analysis']; storage: Storage | null; freedBytes: number; partial: boolean;
   onOpen: () => void; onPhotos: () => void; onVideos: () => void;
 }) {
-  const table = (
-    <div className="mt-5 pt-3 border-t border-hairline">
-      <LibraryTable t={t} library={library} marked={summary.media} onPhotos={onPhotos} onVideos={onVideos} />
-    </div>
-  );
-  const facts = (
-    <>
-      {storage && <p className="text-caption text-fg-mute num mt-3">{fmt(t.storageFree, { free: bytes(t, storage.free), total: bytes(t, storage.total) })}</p>}
-      {freedBytes > 0 && (
-        <p className="flex flex-wrap gap-1.5 mt-2.5">
-          <span className="rounded-full bg-keep-dim text-keep text-caption font-bold num px-2.5 py-1">{fmt(t.freedSoFar, { size: bytes(t, freedBytes) })}</span>
-        </p>
-      )}
-    </>
-  );
-  if (summary.total.count === 0) {
-    return (
-      <section className="rounded-lg card p-6">
-        <span className="w-12 h-12 rounded-full bg-keep text-keep-ink sheen inline-flex items-center justify-center mb-3" aria-hidden="true">
-          <Check className="w-6 h-6" strokeWidth={2.8} />
-        </span>
-        <p className="title-face text-title2 font-bold text-fg">{t.cleanupNone}</p>
-        <p className="text-label text-fg-mute mt-1 wrap-prose">{t.cleanupNoneBody}</p>
-        {table}
-        {facts}
-      </section>
-    );
-  }
-  const { media } = summary;
-  // The good part of the library, paler, after what could go: the bar is the whole library.
-  const good = [
+  const media = summary?.media;
+  const good = media ? [
     { key: 'goodPhotos', hue: 'pink', soft: true, bytes: Math.max(0, library.photos.bytes - media.photos.bytes), label: t.goodPhotos },
     { key: 'goodVideos', hue: 'sand', soft: true, bytes: Math.max(0, library.videos.bytes - media.videos.bytes), label: t.goodVideos },
-  ];
-  const shown = [...bar, ...good].filter(b => b.bytes > 0);
+  ].filter(b => b.bytes > 0) : [];
+  const shown = [...bar.filter(b => b.bytes > 0), ...good];
+  const nothing = !!summary && summary.total.count === 0;
+  const cells: { key: string; label: string; icon: React.ComponentType<{ className?: string; strokeWidth?: number }>; all: Stat; gone: Stat; onClick: () => void }[] = media ? [
+    { key: 'photos', label: t.statPhotos, icon: ImageIcon, all: library.photos, gone: media.photos, onClick: onPhotos },
+    ...(library.videos.count > 0 ? [{ key: 'videos', label: t.statVideos, icon: FileVideo, all: library.videos, gone: media.videos, onClick: onVideos }] : []),
+  ] : [];
   return (
-    <section className="rounded-lg card p-6" aria-labelledby="cleanup-h">
-      <p id="cleanup-h" className="text-label font-semibold text-fg-mute">{t.cleanupCard}</p>
-      <p className="text-display text-fg mt-1"><BigNumber text={bytes(t, summary.total.bytes)} /></p>
-      <div className="mt-1 mb-5 text-label text-fg-mute num space-y-0.5">
-        <p>{fmt(t.freeLinePhotos, { size: bytes(t, media.photos.bytes), total: bytes(t, library.photos.bytes) })}</p>
-        {library.videos.count > 0 && <p>{fmt(t.freeLineVideos, { size: bytes(t, media.videos.bytes), total: bytes(t, library.videos.bytes) })}</p>}
+    <section aria-labelledby="found-h">
+      <SectionHead id="found-h" title={t.suggestionsTitle} />
+      <div className="rounded-lg card overflow-hidden">
+        {summary && (
+          <div className="px-5 pt-5 pb-4">
+            {nothing ? (
+              <div className="flex items-start gap-3">
+                <span className="w-10 h-10 shrink-0 rounded-full bg-keep text-keep-ink sheen inline-flex items-center justify-center" aria-hidden="true">
+                  <Check className="w-5 h-5" strokeWidth={2.8} />
+                </span>
+                <span className="min-w-0">
+                  <span className="block title-face text-heading font-bold text-fg wrap-compound">{t.cleanupNone}</span>
+                  <span className="block text-label text-fg-mute mt-0.5 wrap-prose">{t.cleanupNoneBody}</span>
+                </span>
+              </div>
+            ) : (
+              <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5">
+                <p className="text-label font-semibold text-fg-mute wrap-prose">{t.cleanupCard}</p>
+                <p className="title-face text-title1 font-bold text-fg num">{bytes(t, summary.total.bytes)}</p>
+              </div>
+            )}
+            {shown.length > 0 && (
+              <div className="mt-3">
+                <StorageBar parts={shown} label={fmt(t.storageBarLabel, { list: shown.map(b => `${b.label} ${bytes(t, b.bytes)}`).join(', ') })} />
+                {good.length > 0 && (
+                  <ul className="flex flex-wrap gap-x-3.5 gap-y-1 mt-2" aria-hidden="true">
+                    {good.map(b => (
+                      <li key={b.key} className="inline-flex items-center gap-1.5 text-caption text-fg-mute">
+                        <span data-hue={b.hue} className="w-2 h-2 rounded-full bg-hue-solid opacity-40" />{b.label}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {cats.length > 0 && (
+          <div className={`divide-hairline-inset ${summary ? 'border-t border-hairline' : ''}`}>
+            {cats.map(c => (
+              <Row
+                key={c.key} onClick={c.onClick} label={c.label} sub={countOf(c)}
+                ariaLabel={[c.label, countOf(c), c.gain.bytes > 0 ? bytes(t, c.gain.bytes) : null].filter(Boolean).join(', ')}
+                leading={c.covers.length ? <RowPhoto id={c.covers[0]} second={c.covers[1]} /> : <IconTile icon={c.icon} hue={c.hue} />}
+                lead={c.covers.length ? 48 : undefined}
+                trailing={
+                  <span className="shrink-0 flex items-center gap-2">
+                    {c.gain.bytes > 0 && (
+                      <>
+                        <span data-hue={c.hue} className="w-2 h-2 rounded-full bg-hue-solid" aria-hidden="true" />
+                        <span className="text-body font-bold text-fg num">{bytes(t, c.gain.bytes)}</span>
+                      </>
+                    )}
+                    <ChevronRight className="w-5 h-5 text-fg-faint rtl:rotate-180" aria-hidden="true" />
+                  </span>
+                }
+              />
+            ))}
+          </div>
+        )}
+        {partial && cats.length > 0 && <p className="px-5 pb-3 pt-1 text-caption text-fg-mute wrap-prose">{t.suggestionsPartial}</p>}
+
+        {summary && (
+          <div className="px-4 pt-4 pb-4 border-t border-hairline space-y-3">
+            {cells.length > 0 && (
+              <div role="group" aria-label={t.analysisTitle} className={`grid gap-2 ${cells.length > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                {cells.map(c => (
+                  <button
+                    key={c.key} type="button" onClick={() => { tapLight(); c.onClick(); }}
+                    aria-label={`${c.label}: ${t.statScanned} ${num(t, c.all.count)}, ${t.statCouldGo} ${num(t, c.gone.count)}`}
+                    className="min-w-0 min-h-control rounded-md bg-surface-2 px-3 py-2.5 text-start press focus-visible:ring-focus"
+                  >
+                    <span className="flex items-center gap-1.5 text-caption font-semibold text-fg-mute" aria-hidden="true">
+                      <c.icon className="w-3.5 h-3.5 shrink-0" strokeWidth={2.4} />
+                      <span className="min-w-0 wrap-compound">{c.label}</span>
+                    </span>
+                    <span className="block title-face text-heading font-bold text-fg num mt-0.5" aria-hidden="true">{num(t, c.all.count)}</span>
+                    <span className="block text-caption text-fg-mute num wrap-prose" aria-hidden="true">{fmt(t.mediaCouldGo, { n: num(t, c.gone.count) })}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+            {(storage || freedBytes > 0) && (
+              <p className="px-1 flex flex-wrap items-center gap-x-2 gap-y-1.5 text-caption text-fg-mute num">
+                {storage && <span>{fmt(t.storageFree, { free: bytes(t, storage.free), total: bytes(t, storage.total) })}</span>}
+                {freedBytes > 0 && <span className="rounded-full bg-keep-dim text-keep font-bold px-2.5 py-0.5">{fmt(t.freedSoFar, { size: bytes(t, freedBytes) })}</span>}
+              </p>
+            )}
+            {!nothing && <Button full variant="secondary" className="!shadow-none glass-flat" onClick={onOpen}>{t.cleanupButton}</Button>}
+          </div>
+        )}
       </div>
-      <StorageBar parts={shown} label={fmt(t.storageBarLabel, { list: shown.map(b => `${b.label} ${bytes(t, b.bytes)}`).join(', ') })} />
-      {/* The bar's legend, as in iPhone Storage: a dot and a name per segment. */}
-      <ul className="flex flex-wrap gap-x-3.5 gap-y-1 mt-2.5" aria-hidden="true">
-        {shown.map(b => (
-          <li key={b.key} className="inline-flex items-center gap-1.5 text-caption text-fg-mute">
-            <span data-hue={b.hue} className={`w-2 h-2 rounded-full bg-hue-solid ${'soft' in b ? 'opacity-40' : ''}`} />{b.label}
-          </li>
-        ))}
-      </ul>
-      {table}
-      {facts}
-      {/* Quieter than the next step below: the one prominent action on home is that card's. */}
-      <Button full variant="secondary" className="mt-5 !shadow-none glass-flat" onClick={onOpen}>{t.cleanupButton}</Button>
+      {done.length > 0 && (
+        <p className="mt-[12px] px-1 flex items-start gap-2 text-label text-fg-mute wrap-prose">
+          <Check className="w-4 h-4 mt-0.5 shrink-0 text-keep" strokeWidth={3} aria-hidden="true" />
+          <span>{fmt(t.doneCategories, { list: done.join(', ') })}</span>
+        </p>
+      )}
     </section>
   );
 }

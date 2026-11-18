@@ -94,7 +94,7 @@ export const marks = w => ({
   // The tab bar: trips live on "Ordnen", the tiles and the clean-up on "Aufräumen".
   'tab-organize': `nav ${textButton(w.t.tabOrganize)}`,
   'tab-clean': `nav ${textButton(w.t.tabClean)}`,
-  'suggestions-all': textButton(w.t.suggestionsAll),
+  'suggestions-all': textButton(w.t.cleanupButton),
 });
 
 /* -------------------------------------------------------------- the chapters */

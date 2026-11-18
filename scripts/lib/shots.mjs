@@ -141,7 +141,7 @@ export async function openBlurry(page, w) {
 }
 export async function openCleanupReview(page, w) {
   await openClean(page, w);
-  await page.click(`button:has-text("${w.t.suggestionsAll}")`);
+  await page.click(`button:has-text("${w.t.cleanupButton}")`);
   await pause(page, 500);
   await page.click(`button:has-text("${w.t.reviewAll}")`);
   await pause(page, 900);
@@ -230,7 +230,7 @@ export const SCREENS = [
   { name: '11-denied', prefs: { access: 'denied', scanned: false } },
   { name: '12-limited', prefs: { access: 'limited' } },
   { name: '13-similar', run: openSimilar },
-  { name: '14-cleanup', run: async (page, w) => { await page.click(`button:has-text("${w.t.suggestionsAll}")`); await pause(page, 600); } },
+  { name: '14-cleanup', run: async (page, w) => { await page.click(`button:has-text("${w.t.cleanupButton}")`); await pause(page, 600); } },
   {
     name: '15-review-done', run: async (page, w) => {
       await openCleanupReview(page, w);
@@ -252,7 +252,7 @@ export const SCREENS = [
   { name: '22-screenshots', run: async (page, w) => { await page.click(`button:has-text("${w.t.screenshotsTile}")`); await pause(page, 700); } },
   {
     name: '23-quick-clean', run: async (page, w) => {
-      await page.click(`button:has-text("${w.t.suggestionsAll}")`);
+      await page.click(`button:has-text("${w.t.cleanupButton}")`);
       await pause(page, 500);
       await page.click(`button:has-text("${w.t.quickClean}")`);
       await pause(page, 700);
@@ -341,7 +341,7 @@ export const SCREENS = [
   {
     name: '41-search', run: async (page, w) => {
       await openOrganize(page, w);
-      await page.click(`button${aria(w.t.searchOpen)}`);
+      await page.click(`button[aria-label^="${w.t.searchOpen}"] >> nth=0`);
       await pause(page, 700);
     },
   },
@@ -349,7 +349,7 @@ export const SCREENS = [
     // In the store set: one word, and the photos the on-device AI finds for it.
     name: '42-search-results', store: true, run: async (page, w) => {
       await openOrganize(page, w);
-      await page.click(`button${aria(w.t.searchOpen)}`);
+      await page.click(`button[aria-label^="${w.t.searchOpen}"] >> nth=0`);
       await pause(page, 600);
       await page.fill('input', w.lang === 'de' ? 'stadt' : w.lang === 'ar' ? 'مدينة' : 'city');
       await pause(page, 300);
@@ -369,7 +369,7 @@ export const SCREENS = [
   {
     name: '43-like', store: true, run: async (page, w) => {
       await openOrganize(page, w);
-      await page.click(`button${aria(w.t.searchOpen)}`);
+      await page.click(`button[aria-label^="${w.t.searchOpen}"] >> nth=0`);
       await pause(page, 600);
       await page.fill('input', w.lang === 'de' ? 'stadt' : w.lang === 'ar' ? 'مدينة' : 'city');
       await page.keyboard.press('Enter');

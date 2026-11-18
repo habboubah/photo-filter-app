@@ -99,6 +99,7 @@ export const ar: Strings = {
   statScanned: 'تم فحصها',
   statGood: 'جيدة',
   statCouldGo: 'يمكن حذفها',
+  mediaCouldGo: 'يمكن حذف {n}',
   statPhotos: 'الصور',
   statVideos: 'الفيديو',
   freeLinePhotos: 'الصور: {size} من {total}',
