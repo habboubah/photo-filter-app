@@ -61,10 +61,10 @@ and 5 are done.
    own photos. (If iOS asks during scene 1, the runner taps *Limit Access…*;
    then select the demo photos in the picker by hand once, and record again.)
 3. **Nothing to buy while the app is free** (`UNLOCK_ON_SALE` is false in
-   `src/logic/allowance.ts`). If this Apple Account bought the unlock in
-   TestFlight before, the trip shows *Create album* — the scenes don't tap
-   it. When the unlock goes on sale, bring back the album scene and buy it
-   once with the TestFlight build again.
+   `src/logic/allowance.ts`). Every feature is free, so a trip shows
+   *Create album* for everyone — the scenes don't tap it (the album scene can
+   come back: git history, "A trip becomes an album"). When the unlock goes
+   on sale, buy it once with the TestFlight build again.
 4. **Debug only:** a debug build has the dry run on, so nothing would be
    deleted — record with the TestFlight build, as App Review sees it.
 

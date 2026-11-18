@@ -117,7 +117,7 @@ try {
     await page.waitForSelector(`text=${w.t.cleanupCard}`, { timeout: 15000 });
     await pause(page, 600);
   });
-  await step(src.onSale ? 'a trip: renamed, its album made through the paywall' : 'a trip: renamed, then (as an owner) its album made', async () => {
+  await step(src.onSale ? 'a trip: renamed, its album made through the paywall' : 'a trip: renamed, then its album made (free)', async () => {
     await openTrip(page, w);
     await page.click(`button${aria(w.t.editTrip)}`);
     await page.click(`button:has-text("${w.t.rename}")`);
@@ -129,9 +129,7 @@ try {
       await page.waitForSelector('[role="dialog"]');
       await page.click(`[role="dialog"] button:has-text("€")`);
     } else {
-      // Nothing is for sale (src/logic/allowance.ts): albums show only for an owner.
-      await start(page, prefs({ owned: true }));
-      await openTrip(page, w);
+      // Nothing is for sale (src/logic/allowance.ts): albums are free.
       await page.click(`button:has-text("${w.t.createAlbum}")`);
     }
     await page.click(`[role="alertdialog"] button:has-text("${w.t.createAlbum}")`, { timeout: 5000 });

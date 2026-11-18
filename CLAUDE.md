@@ -30,12 +30,13 @@ parents on iPhone and Android. It scans the photo library on the device, turns
 trips into albums (iPhone) or folders (Android), finds near-identical and
 blurry photos and suggests what could go. Free to scan and look, and the first 50 deletes; albums and
 further deleting need one one-time purchase (`com.habboubah.bildklar.unlock`, 4,99 €).
-**For now it launches free**: `UNLOCK_ON_SALE = false` (`src/logic/allowance.ts`)
-hides the extras (never show them locked — App Review rejects "coming soon"),
-lets deleting run without a limit and marks each install `early`, which keeps
-unlimited deletes after the sale. A new paid feature asks `extrasShown()`;
-the store set, the preview video and the App Review scenes follow the switch
-(docs/PLAN.md, *Pricing*).
+**For now everything is free** (since 18 November 2026): `UNLOCK_ON_SALE = false`
+(`src/logic/allowance.ts`) — the extras work for everyone with no paywall,
+deleting has no limit, and each install is marked `early`, which keeps the
+extras and unlimited deletes after the sale. A new paid feature goes through
+`needUnlock` in `App.tsx` (free while `extrasFree()`); it is always shown,
+never as "coming soon". The store set, the preview video and the App Review
+scenes follow the switch (docs/PLAN.md, *Pricing*).
 **No backend, no account, nothing leaves the device.**
 
 ## Stack
