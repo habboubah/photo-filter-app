@@ -1212,13 +1212,6 @@ export default function App() {
         onMonth={openMonth}
         later={{ count: laterPile.length, cover: laterPile[0] }}
         bin={{ count: binned.length, bytes: binBytes, covers: binned.slice(0, 4).map(x => x.id) }}
-        memories={{
-          onThisDay: today.ids.length ? { photos: today.ids.length, years: today.years, cover: today.ids[0] } : null,
-          trip: latestTrip ? { key: latestTrip.key, title: latestTrip.title, photos: latestTrip.ids.length, cover: latestTrip.ids[Math.floor(latestTrip.ids.length / 2)] } : null,
-        }}
-        onOnThisDay={() => startReview(reviewTrip(today.ids, groups, byId, kept, undefined, cos))}
-        onTrip={setTripKey}
-        onOrganize={() => switchTab('organize')}
         onBin={() => setShowBin(true)}
         protection={{ albums: state.protect.albums.length, trips: state.protect.trips.length, photos: state.protect.ids.length }}
         onLater={() => startReview(reviewLater(laterPile))}

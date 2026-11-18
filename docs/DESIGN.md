@@ -195,7 +195,8 @@ to the bottom with a fade above it).
   deletion, *Vorschläge* — ONE card: the space, the library's bar, the
   photos / videos cells and the free space, then the categories as rows
   whose hue dot is their segment in the bar, and *Jetzt aufräumen* at its foot —
-  then carry on, from your library, more space, protected.
+  then carry on, more space, protected. On this day and the trips are
+  *Ordnen*'s, not home's.
 - **Ordnen's order**: search as a field (`card`, rounded-full, 56 px), On
   this day as a large photo, the trips as tiles four to a row (name, dates,
   count under the photo), the AI's categories as photo cards three to a row

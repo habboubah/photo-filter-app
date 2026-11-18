@@ -54,12 +54,6 @@ interface Props {
   analysis: { photos: Stat; videos: Stat };
   /** How much is protected (src/logic/protect.ts): never suggested for deleting. */
   protection: { albums: number; trips: number; photos: number };
-  /** "An diesem Tag" and the latest trip, from the Ordnen tab: one small tile each. */
-  memories: { onThisDay: { photos: number; years: number[]; cover: string } | null; trip: { key: string; title: string; photos: number; cover: string } | null };
-  onOnThisDay: () => void;
-  onTrip: (key: string) => void;
-  /** The Ordnen tab. */
-  onOrganize: () => void;
   onLater: () => void;
   onBin: () => void;
   onProtected: () => void;
@@ -218,7 +212,6 @@ export function HomeView(p: Props) {
   // A short greeting by the time of day — no name: there is no account.
   const greeting = { morning: t.greetMorning, day: t.greetDay, evening: t.greetEvening }[greetingAt(new Date().getHours())];
 
-  const link = 'min-h-tap inline-flex items-center text-label font-semibold text-accent rounded-full focus-visible:ring-focus';
 
   return (
     <Screen
@@ -302,29 +295,6 @@ export function HomeView(p: Props) {
               />
             )}
           </Group>
-        </section>
-      )}
-
-      {has && (p.memories.onThisDay || p.memories.trip) && (
-        <section aria-labelledby="memories-h">
-          <SectionHead
-            id="memories-h" title={t.memoriesTitle}
-            action={<button type="button" onClick={() => { tapLight(); p.onOrganize(); }} className={link}>{t.tabOrganize}</button>}
-          />
-          <div className={`grid gap-[12px] ${p.memories.onThisDay && p.memories.trip ? 'grid-cols-2' : 'grid-cols-1'}`}>
-            {p.memories.onThisDay && (
-              <MemoryTile wide={!p.memories.trip}
-                cover={p.memories.onThisDay.cover} title={t.onThisDay} onClick={p.onOnThisDay}
-                sub={fmt(t.onThisDayBody, { photos: plural(t, 'photos', p.memories.onThisDay.photos), years: p.memories.onThisDay.years.slice(0, 3).join(', ') })}
-              />
-            )}
-            {p.memories.trip && (
-              <MemoryTile wide={!p.memories.onThisDay}
-                cover={p.memories.trip.cover} title={p.memories.trip.title} onClick={() => p.onTrip(p.memories.trip!.key)}
-                sub={`${t.latestTrip} · ${plural(t, 'photos', p.memories.trip.photos)}`}
-              />
-            )}
-          </div>
         </section>
       )}
 
@@ -461,17 +431,6 @@ function NextStep({ step }: { step: Step }) {
         {step.more && <Button full variant="ghost" className="mt-1" onClick={step.more.onClick}>{step.more.label}</Button>}
       </div>
     </section>
-  );
-}
-
-/** A small photo tile with its name and a line under it, as Photos lays out its collections. */
-function MemoryTile({ cover, title, sub, wide, onClick }: { cover: string; title: string; sub: string; wide?: boolean; onClick: () => void }) {
-  return (
-    <button type="button" onClick={() => { tapLight(); onClick(); }} className="block text-start rounded-md press focus-visible:ring-focus">
-      <span className={`block rounded-md overflow-hidden ${wide ? 'aspect-[2/1]' : 'aspect-[4/3]'}`}><Thumb id={cover} size={wide ? LARGE : undefined} className="!rounded-none" /></span>
-      <span className="block px-1 pt-2 text-label font-semibold text-fg wrap-compound">{title}</span>
-      <span className="block px-1 text-caption text-fg-mute num wrap-prose">{sub}</span>
-    </button>
   );
 }
 

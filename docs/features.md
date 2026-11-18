@@ -140,9 +140,8 @@ is marked for deletion, then the storage overview and the rest in order.
   thin bar — the photos in months gone through, as a share of all photos
   (rounded down, so 100 % only once every month is done) — each unless it is
   the next step already.
-- **Aus deiner Mediathek** [From your library] with *Ordnen*: small tiles for
-  *An diesem Tag* and the latest trip (*Letzte Reise · 15 Fotos*); when only
-  one of them exists, one wide photo.
+- (*Aus deiner Mediathek* — On this day and the latest trip as small tiles —
+  left *Aufräumen* on 18 November 2026: both live on *Ordnen*.)
 - **Mehr Platz** [More space]: *Große Dateien* [Large files], *Fotos verkleinern* [Smaller photos], on the iPhone
   *Live Photos*, *Chats & soziale Medien* — rows with a photo.
 - *Geschützt* [Protected] at the end.
