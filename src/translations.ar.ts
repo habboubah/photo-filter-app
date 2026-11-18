@@ -612,19 +612,16 @@ export const ar: Strings = {
   wordsKinds: 'أنواع الصور',
 
   // Welcome (the first start, src/components/WelcomeView.tsx)
-  welcomeLine1: 'ترتيب لعشرات الآلاف من الصور',
-  welcomeLine2: 'رحلاتك – نجدها لك',
-  welcomeLine3: 'نقترح أفضل صورة. والقرار لك.',
-  welcomeLine4: 'خصوصية: كل شيء يبقى على هاتفك',
-  welcomeSkip: 'تخطٍّ',
-  welcomeNext: 'التالي',
   welcomeStart: 'لنبدأ',
   welcomePage: 'الصفحة {i} من {n}',
-  welcomeTripName: 'بحيرة غاردا',
-  welcomeTripMeta: 'يوليو 2026 · 48 صورة',
-  welcomeNoCloud: 'بلا سحابة',
-  welcomeNoAccount: 'بلا حساب',
   welcomeLabel: 'مرحبًا بك في Bildklar',
+  welcomeTitle: 'اعثر على الصور التي تستحق الاحتفاظ بها',
+  welcomeSimilarTitle: 'مقارنة اللقطات المتشابهة',
+  welcomeSimilar: 'يجد Bildklar الصور شبه المتطابقة ويقترح أفضلها. والقرار لك.',
+  welcomeTripsTitle: 'رحلاتك مرتبة مسبقًا',
+  welcomeTrips: 'تُجمع من مكان صورك وتاريخها – دون أن تفعل شيئًا.',
+  welcomePrivateTitle: 'على هاتفك فقط',
+  welcomePrivate: 'بلا حساب ولا سحابة. لا يُحذف شيء دونك.',
 
   // Photo access (src/components/PermissionView.tsx)
   permTitle: 'هل تسمح لـ Bildklar برؤية صورك؟',

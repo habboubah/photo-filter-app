@@ -439,14 +439,11 @@ async function markTwo(page, w) {
 }
 
 /**
- * The first run (docs/DESIGN.md), for ui-review: the welcome's four pages, the first scan's screen, the
+ * The first run (docs/DESIGN.md), for ui-review: the welcome, the first scan's screen, the
  * reveal, the guided review and its summary, a tip, the three safety nets, So funktioniert Bildklar.
  */
 export const FIRST_RUN_SCREENS = [
-  ...[0, 1, 2, 3].map(n => ({
-    name: `5${n}-welcome-${n + 1}`, prefs: NEW, wait: 2900,
-    run: async (page, w) => { for (let i = 0; i < n; i++) { await page.click(`button:has-text("${w.t.welcomeNext}")`); await pause(page, 350); } },
-  })),
+  { name: '50-welcome', prefs: NEW, wait: 2900 },
   // Slowed down (about 12 s), so the capture catches the screen half way through.
   { name: '54-first-scan', prefs: { firstRun: true, scanned: false, scanStep: '500' }, wait: 6500 },
   {

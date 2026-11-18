@@ -113,7 +113,6 @@ try {
   console.log('Requests while using the app');
   await step('the first run: the welcome, access granted, the first scan, the reveal, a guided review', async () => {
     await start(page, prefs({ firstRun: true, access: 'notDetermined', scanned: false, owned: false }));
-    for (let i = 0; i < 3; i++) { await page.click(`button:has-text("${w.t.welcomeNext}")`); await pause(page, 350); }
     await page.click(`button:has-text("${w.t.welcomeStart}")`);
     await page.click(`button:has-text("${w.t.permAllow}")`);
     await page.waitForSelector(`text=${w.t.revealTitle}`, { timeout: 20000 });
