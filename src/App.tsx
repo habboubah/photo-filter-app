@@ -44,6 +44,8 @@ import { GESTURES, MOMENTS, hasSeen, nextGesture, nextTip } from './logic/firstR
 import { TIPS, TIP_IDS } from './tips';
 import { type FoundKey, firstGroup, nextStepKind, rankCategories } from './logic/nextStep';
 import { TabBar } from './ui/TabBar';
+import { useNudges } from './useNudges';
+import { sinceWords } from './logic/nudges';
 
 import { Progress } from './ui/Controls';
 import { Sheet } from './ui/Sheet';
@@ -400,6 +402,14 @@ export default function App() {
   // The two tabs and the first run's steps are one screen for the stack, but each its own for the
   // transition: going from one to the next crossfades (dir 2) instead of sliding.
   const screenKey = screen !== 'home' ? screen : root === 'home' ? `home-${tab}` : `root-${root}`;
+
+  // Coming back (src/useNudges.ts): what is new since the last visit, a new trip, the reminder offered once, the rating after a win.
+  const nudges = useNudges({
+    photos: photos ? lib.photos : null, groups, trips, ready: scanFinished,
+    atHome: screen === 'home' && root === 'home', debug: store.debug, reminderOn: store.reminder,
+  });
+  // A trip looked at is no news any more, wherever it was opened.
+  useEffect(() => { if (tripKey) nudges.seeTrip(tripKey); }, [tripKey]); // eslint-disable-line react-hooks/exhaustive-deps
   const isRoot = (key: string) => key.startsWith('home-') || key.startsWith('root-');
 
   const nav = useRef({ screen: screenKey, depth: 0, dir: 0 });
@@ -483,6 +493,8 @@ export default function App() {
       store.binRemove(r.trashed);
       if (free) store.countFree(r.trashed.length);
       store.removePhotos(r.trashed);
+      // Space was freed: one step towards asking for a rating (src/logic/nudges.ts).
+      if (r.trashed.length) nudges.win();
       forgetThumbs(r.trashed);
       store.refreshStorage();
       notifySuccess();
@@ -736,7 +748,7 @@ export default function App() {
     if (!m) return;
     // A month left part-way goes on after the last photo decided (AppState.monthAt).
     const ids = monthRest(m, state.monthAt[key], id => lib.byId.get(id)?.t);
-    startReview(reviewTrip(ids, groups, lib.byId, kept, isOld, cos), () => store.markMonthDone(key), false, key);
+    startReview(reviewTrip(ids, groups, lib.byId, kept, isOld, cos), () => { store.markMonthDone(key); nudges.offerReminder(); }, false, key);
   };
   const onDecide = (d: Decision) => setReview(r => (r ? { ...r, session: decide(r.session, d) } : r));
   const onUndo = () => setReview(r => (r ? { ...r, session: undo(r.session), finished: false } : r));
@@ -1276,6 +1288,17 @@ export default function App() {
         later={{ count: laterPile.length, cover: laterPile[0] }}
         bin={{ count: binned.length, bytes: binBytes, covers: binned.slice(0, 4).map(x => x.id) }}
         onBin={() => setShowBin(true)}
+        since={nudges.since && nudges.sinceFrom ? {
+          when: sinceWords(nudges.sinceFrom, Date.now(), t.locale),
+          photos: nudges.since.ids.length, bytes: nudges.since.bytes, groups: nudges.since.groups,
+          covers: nudges.since.ids.filter(id => !byId.get(id)?.shot).slice(0, 4),
+          onReview: () => { const ids = nudges.since?.ids ?? []; nudges.closeSince(); startReview(reviewTrip(ids, groups, byId, kept, isOld, cos)); },
+          onClose: nudges.closeSince,
+        } : null}
+        newTrip={nudges.trip ? {
+          title: nudges.trip.title, photos: nudges.trip.ids.length, cover: nudges.trip.ids[Math.floor(nudges.trip.ids.length / 2)],
+          onOpen: () => setTripKey(nudges.trip!.key), onClose: () => nudges.seeTrip(nudges.trip!.key),
+        } : null}
         protection={{ albums: state.protect.albums.length, trips: state.protect.trips.length, photos: state.protect.ids.length }}
         onLater={() => startReview(reviewLater(laterPile))}
         onProtected={() => setShowProtected(true)}
@@ -1364,6 +1387,23 @@ export default function App() {
         onCancel={() => setAlbumFor(null)}
       />
 
+      {/* Offered once, after the first month gone through (src/useNudges.ts). */}
+      <Confirm
+        open={nudges.askReminder} title={t.reminderAskTitle} body={t.reminderAskBody}
+        confirmLabel={t.reminderAskYes} cancelLabel={t.reminderAskNo}
+        onConfirm={() => {
+          nudges.closeReminder();
+          void store.setReminder(true, t.reminderTitle, t.reminderBody).then(ok => show(ok ? t.reminderOnToast : t.reminderDenied));
+        }}
+        onCancel={nudges.closeReminder}
+      />
+      {/* Android's rating: a plain question that opens Google Play (iOS has its own prompt). */}
+      <Confirm
+        open={nudges.rateSheet} title={t.rateAskTitle} body={t.rateAskBody}
+        confirmLabel={t.rateAskYes} cancelLabel={t.rateAskLater}
+        onConfirm={() => { nudges.closeRateSheet(); if (rate) openExternal(rate); }}
+        onCancel={nudges.closeRateSheet}
+      />
       <Confirm
         open={!!liveConfirm}
         title={t.liveConfirmTitle}

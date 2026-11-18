@@ -117,6 +117,8 @@ export class DemoLibrary extends WebPlugin implements PhotoLibraryPlugin {
 
   async openSettings() { /* nothing to open in a browser */ }
 
+  async requestReview() { /* the browser has no store */ }
+
   async getScanState(): Promise<ScanState> {
     await ready;
     const scanned = get(K.scanned) === '1';
