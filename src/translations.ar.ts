@@ -598,7 +598,7 @@ export const ar: Strings = {
   groupSeries: 'السلسلة · {count}',
   groupShow: 'عرض الصورة {i} من {n}، {date}',
   groupAsideOthers: 'تحديد الباقي للحذف',
-  groupAsideShort: 'تحديد {n}',
+  groupAsideShort: 'تحديد الباقي للحذف',
   aside: 'تحديد للحذف',
   asideHint: 'تنتقل إلى «محددة للحذف» – لا يُحذف شيء بعد.',
   suggestAside: 'اقتراح: تحديد للحذف',
