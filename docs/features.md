@@ -81,9 +81,17 @@ tab again scrolls to its top; Android's back button goes from *Ordnen* to
 [Scan again] beside that.
 
 ### Aufräumen [Clean up]
-Calm and photo-led (docs/REDESIGN.md, "Album"): the clean-up card on top,
-then one next step, then the rest in order.
-- **The clean-up card** (no large title above it): the space that could be
+Calm and photo-led (docs/REDESIGN.md): a greeting, the one next step, what
+is marked for deletion, then the storage overview and the rest in order.
+- **A greeting** by the time of day as the screen's title (*Guten Morgen* ·
+  *Guten Tag* · *Guten Abend* — no name: there is no account), *Aufräumen*
+  small above it, and under it how many photos and videos there are and that
+  they stay on the device. While the facts load, the page shows its shape as
+  soft placeholders instead of blank space.
+- **The order** (since 18 November 2026): the **one next step** first — the
+  obvious thing to do — then *Zum Löschen vorgemerkt* when something waits
+  there, then the clean-up card.
+- **The clean-up card** (the storage overview): the space that could be
   freed (one big number) and how much of it is photos and videos; a bar of
   the whole library — one segment per category that could go, then *Gute
   Fotos* and *Gute Videos*, paler — with its legend; the table *Fotos* /
@@ -354,7 +362,7 @@ then one next step, then the rest in order.
   phone; *Von vorn anfangen* forgets it.
 
 ## Month by month
-- The header shows the same figure: *38 % durchgesehen · 7 von 18 Monaten* and the bar.
+- The header shows the same figure: *38 % durchgesehen · 7 von 18 Monaten*, and a ring beside the title that fills with it.
 - Every month of the library, newest first, with a photo, the number of photos
   and the size; a month gone through to its end is marked *Durchgesehen* [Done].
 - A tap reviews the month: extra shots, blurry photos and old screenshots are
@@ -402,6 +410,18 @@ then one next step, then the rest in order.
   nothing is deleted). **Rückgängig** [Undo] in words at the top right;
   *Beenden* [Finish] any time. Under *12 von 40* the space marked so far
   (*48 MB zum Löschen vorgemerkt*).
+- **Full-bleed**: the photo takes the whole width of the screen. The card
+  follows the finger, tilts, shows its stamp, and leaves on a spring that
+  takes over the finger's speed.
+- **Every decision is named** right after it, on top of the next card
+  (*Behalten* · *Vorgemerkt* · *Später*), with **Rückgängig** beside it; it
+  stays until the next decision or a few seconds. The undo at the top right
+  stays where it is.
+- **Groß ansehen** [View large] (the magnifier on the photo, in a review and
+  in a group): the photo over the whole screen, growing out of its place. A
+  tap zooms in on the spot tapped (and out again), a drag moves the zoomed
+  photo — to check sharpness and faces. It asks for a larger picture than
+  the review shows.
 - **The guided first review**: on the first real cards a hand makes one
   gesture and says it in words (*Nach rechts wischen: behalten* · *Nach links
   wischen: zum Löschen vormerken* · *Nach oben wischen: später entscheiden*,
@@ -574,6 +594,15 @@ then one next step, then the rest in order.
   like a favourite, so it becomes the best shot.
 
 ## Everywhere
+- **Before a real delete, one sheet** (`DeleteSheet`): the photos themselves,
+  their number and size, where they land and that the phone asks once more;
+  the only red button is its last one. The bin uses it, and so does the
+  question after a smaller copy of a video or of photos was saved (*Original
+  löschen* / *Beide behalten*).
+- **Empty lists** show a small illustration (two photo frames and a mark),
+  one line of what is not there, and the way on (*Zurück zur Übersicht*, or
+  the action that fixes it: *Fotos auswählen* on an empty library with
+  limited access).
 - Each list screen explains itself behind the (i) in its bar (*Worum geht’s?*
   [What is this?]); its button at the bottom says what you get
   (*Durchgehen · 7 Fotos · 20 MB* [Go through · 7 photos · 20 MB]).

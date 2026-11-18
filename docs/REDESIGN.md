@@ -103,7 +103,46 @@ all of Part 1. Decisions taken on the way:
   (`npm run rehearse:app-review` stops at "Best"). The rehearsal starts past
   the first run; the scenes are Part 2's last step, as the brief has it.
 
-**Part 2 — after the checkpoint** (Phase 3 of the brief): home (greeting,
+**Part 2, built the same day** (branch `redesign-polish`):
+
+| Area | What changed | Where |
+|---|---|---|
+| Home | A greeting by the time of day as the title; the one next step first, then *Zum Löschen vorgemerkt*, then the storage overview; a skeleton while the facts load | `HomeView.tsx`, `src/logic/greeting.ts` |
+| Review | Full-bleed photo; every decision named with its undo beside it; the card leaves on a spring with the finger's speed; *Groß ansehen* (tap to zoom on the spot, drag to pan), also in a group | `ReviewView.tsx`, `GroupView.tsx`, `src/ui/Zoom.tsx` |
+| Confirmation | One sheet before every real delete — also after a smaller copy (was a centred dialog without the photos) | `components/DeleteSheet.tsx`, `BinView.tsx`, `App.tsx` |
+| Months | The progress as a ring beside the title | `MonthsView.tsx` |
+| Empty states | An illustration, one line, the way on — in every list, category and the bin | `ui/Screen.tsx` `Empty` and its fourteen uses |
+| App Review scenes | Scenes 3 and 4 follow the app again (marking, the sheet before the delete); the rehearsal passes | `ios/AppReviewRecorder/scenes.json` |
+
+Decided, and why:
+
+- **Trips stay tiles on *Ordnen***, four to a row with place, date and
+  count (Ahmad's choice of 18 November, the morning): every trip is in view
+  at once, which a carousel hides. Rename, split, merge, *Nie vorschlagen*
+  and *Ausblenden* were already one sheet (*Reise bearbeiten*); merge and
+  split exist in `src/logic/trips.ts`. Nothing to add.
+- **No count-up on home**: home is come back to all day; a number that
+  counts up every time is noise. Numbers count up where something just
+  happened (the first scan, the reveal, a review's summary).
+- **The shared element is the photo into its zoom viewer.** A tile of a grid
+  into a pushed screen would need the screen stack to stop sliding for that
+  one case; not worth a second kind of navigation.
+- **Zoom is a tap, not a pinch**: the review's card owns every touch for the
+  swipe, and a pinch in a WebView zooms the whole page.
+
+Open issues:
+
+- **Predictive back's preview animation** (Android 14+) needs native work in
+  the Capacitor activity (`OnBackInvokedCallback` with progress); the back
+  button and gesture themselves go through the pushed stack everywhere.
+- **Home's greeting follows the clock**, so the store screenshot of home
+  reads *Guten Morgen* or *Guten Abend* depending on when it is taken.
+- **Store screenshots**: `npm run screenshots` passes with home's new order
+  (every mark is still on screen), but the set composed this morning shows
+  the old home — `npm run store-screenshots` on the Mac redoes it. The
+  preview video films the old order until `npm run app-preview` is run again.
+
+**Part 2 — the plan as it was at the checkpoint** (Phase 3 of the brief): home (greeting,
 the next step first), review and groups (full-bleed, zoom, undo snackbar),
 confirmation sheets, trips (one menu), empty states, the motion pass
 (shared-element tile → viewer, rings, skeletons, the system back gesture).

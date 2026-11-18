@@ -55,7 +55,7 @@ export function UtilityView({ t, photos, progress, sort, onSort, onBack, onRevie
           ))}
         </div>
       )}
-      {shown.length === 0 ? <Empty title={t.noUtility} body={t.noUtilityBody} /> : (
+      {shown.length === 0 ? <Empty title={t.noUtility} body={t.noUtilityBody} back={{ label: t.emptyBack, onClick: onBack }} /> : (
         <PhotoGrid
           ids={shown.map(p => p.id)}
           columns={4}

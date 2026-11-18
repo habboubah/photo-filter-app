@@ -91,6 +91,8 @@ const PermissionView = lazy(() => withFirstRun(import('./components/PermissionVi
 const TipHost = lazy(() => withFirstRun(import('./ui/Tip')).then(m => ({ default: m.TipHost })));
 const WelcomeView = lazy(() => withFirstRun(import('./components/WelcomeView')).then(m => ({ default: m.WelcomeView })));
 const FirstScanView = lazy(() => withFirstRun(import('./components/FirstScanView')).then(m => ({ default: m.FirstScanView })));
+// The one sheet that asks before a real delete (the bin has it built in; here it follows a smaller copy).
+const DeleteSheet = lazy(() => import('./components/DeleteSheet').then(m => ({ default: m.DeleteSheet })));
 const HowView = lazy(() => withFirstRun(import('./components/HowView')).then(m => ({ default: m.HowView })));
 const RevealView = lazy(() => withFirstRun(import('./components/RevealView')).then(m => ({ default: m.RevealView })));
 
@@ -1249,27 +1251,29 @@ export default function App() {
         onCancel={() => setLiveConfirm(null)}
       />
 
-      <Confirm
-        open={!!afterCompress}
-        title={t.compressDeleteTitle}
-        body={afterCompress ? fmt(t.compressDeleteBody, { before: bytes(t, afterCompress.before), after: bytes(t, afterCompress.after) }) : ''}
-        confirmLabel={t.deleteVideo}
-        cancelLabel={t.compressKeep}
-        danger
-        onConfirm={() => { const a = afterCompress; setAfterCompress(null); if (a) void trash([a.id]); }}
-        onCancel={() => { setAfterCompress(null); show(t.compressKept); }}
-      />
-
-      <Confirm
-        open={!!afterPhotos}
-        title={afterPhotos ? fmt(t.compressPhotosDone, { size: bytes(t, afterPhotos.saved) }) : ''}
-        body={afterPhotos ? fmt(t.compressPhotosDoneBody, { photos: plural(t, 'photos', afterPhotos.from.length) }) : ''}
-        confirmLabel={t.deleteOriginals}
-        cancelLabel={t.keepBoth}
-        danger
-        onConfirm={() => { const a = afterPhotos; setAfterPhotos(null); if (a) void trash(a.from); }}
-        onCancel={() => { setAfterPhotos(null); show(t.compressPhotosKept); }}
-      />
+      {/* After a smaller copy was saved: may the original go? The sheet shows it, its size and where it lands. */}
+      {afterCompress && (
+        <Suspense fallback={null}>
+          <DeleteSheet
+            t={t} photos={[all.byId.get(afterCompress.id)].filter((p): p is Photo => !!p)}
+            title={t.compressDeleteTitle} lead={fmt(t.compressDeleteBody, { before: bytes(t, afterCompress.before), after: bytes(t, afterCompress.after) })}
+            confirmLabel={t.deleteVideo} cancelLabel={t.compressKeep}
+            onConfirm={() => { const a = afterCompress; setAfterCompress(null); void trash([a.id]); }}
+            onCancel={() => { setAfterCompress(null); show(t.compressKept); }}
+          />
+        </Suspense>
+      )}
+      {afterPhotos && (
+        <Suspense fallback={null}>
+          <DeleteSheet
+            t={t} photos={afterPhotos.from.map(id => all.byId.get(id)).filter((p): p is Photo => !!p)}
+            title={fmt(t.compressPhotosDone, { size: bytes(t, afterPhotos.saved) })} lead={fmt(t.compressPhotosDoneBody, { photos: plural(t, 'photos', afterPhotos.from.length) })}
+            confirmLabel={t.deleteOriginals} cancelLabel={t.keepBoth}
+            onConfirm={() => { const a = afterPhotos; setAfterPhotos(null); void trash(a.from); }}
+            onCancel={() => { setAfterPhotos(null); show(t.compressPhotosKept); }}
+          />
+        </Suspense>
+      )}
 
       <Sheet open={!!photoRun} title={t.compressingPhotos} closeLabel={t.close} onClose={() => {}}>
         <div className="space-y-3 pb-2">

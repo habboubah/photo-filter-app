@@ -31,7 +31,7 @@ export function ScreenshotsView({ t, photos, now, sort, onSort, onBack, onReview
         label={t.screenshotsTitle} value={filter} onChange={setFilter}
         options={[{ value: 'old', label: t.filterOld }, { value: 'all', label: t.filterAll }]}
       />
-      {list.length === 0 ? <Empty title={t.noScreenshots} body={t.noScreenshotsBody} /> : (
+      {list.length === 0 ? <Empty title={t.noScreenshots} body={t.noScreenshotsBody} back={{ label: t.emptyBack, onClick: onBack }} /> : (
         <PhotoGrid
           ids={list.map(p => p.id)}
           columns={4}

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { FolderLock, MapPin, ShieldOff } from 'lucide-react';
+import { FolderLock, MapPin, Shield, ShieldOff } from 'lucide-react';
 import type { AlbumInfo } from '../native/photoLibrary';
 import { Strings, fmt, num, plural } from '../translations';
 import { Empty, Group, IconTile, Row, Screen } from '../ui/Screen';
@@ -80,7 +80,7 @@ export function ProtectedView({ t, loadAlbums, albums: chosen, trips, photos, ph
       <section aria-labelledby="protected-photos-h" className="space-y-2">
         <h2 id="protected-photos-h" className="eyebrow text-fg-mute px-[16px]">{`${t.protectedPhotos} · ${num(t, photos.length)}`}</h2>
         {photos.length === 0
-          ? <Empty title={t.protectedNoPhotos} body={t.protectedNoPhotosBody} />
+          ? <Empty icon={Shield} tone="accent" title={t.protectedNoPhotos} body={t.protectedNoPhotosBody} />
           : <PhotoGrid ids={photos} columns={4} label={id => `${photoDate(id)}, ${t.protectLift}`} onOpen={setLift} />}
       </section>
 

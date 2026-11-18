@@ -638,6 +638,21 @@ const de = {
 
   howTitle: 'So funktioniert Bildklar',
   howSub: 'Einführung, Wischen und Tipps noch einmal ansehen',
+
+  // Home's greeting (src/logic/greeting.ts)
+  greetMorning: 'Guten Morgen',
+  greetDay: 'Guten Tag',
+  greetEvening: 'Guten Abend',
+  homeSub: '{files} · alles bleibt auf deinem Gerät',
+
+  // Zoom: a photo large, to check its sharpness (src/ui/Zoom.tsx)
+  zoomOpen: 'Groß ansehen',
+  zoomHint: 'Tippen vergrößert, ziehen verschiebt',
+  zoomIn: 'Vergrößern',
+  zoomOut: 'Verkleinern',
+
+  // Empty states: the way on (ui/Screen Empty)
+  emptyBack: 'Zurück zur Übersicht',
 };
 
 /** The strings every start needs; the first run's are a chunk of their own (translations.firstRun.ts). */
@@ -1253,6 +1268,21 @@ const en: BaseStrings = {
 
   howTitle: 'How Bildklar works',
   howSub: 'See the welcome, the gestures and the tips again',
+
+  // Home's greeting (src/logic/greeting.ts)
+  greetMorning: 'Good morning',
+  greetDay: 'Good afternoon',
+  greetEvening: 'Good evening',
+  homeSub: '{files} · everything stays on your device',
+
+  // Zoom: a photo large, to check its sharpness (src/ui/Zoom.tsx)
+  zoomOpen: 'View large',
+  zoomHint: 'Tap to zoom, drag to move',
+  zoomIn: 'Zoom in',
+  zoomOut: 'Zoom out',
+
+  // Empty states: the way on (ui/Screen Empty)
+  emptyBack: 'Back to the overview',
 };
 
 

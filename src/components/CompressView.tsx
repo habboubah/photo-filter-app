@@ -39,7 +39,7 @@ export function CompressView({ t, photos, screenshots, onBack, onRun }: {
           options={[{ value: 'photos', label: t.filterPhotos }, { value: 'screenshots', label: t.screenshotsTile }]}
         />
       )}
-      {list.length === 0 ? <Empty title={t.compressNone} body={t.compressNoneBody} /> : (
+      {list.length === 0 ? <Empty title={t.compressNone} body={t.compressNoneBody} back={{ label: t.emptyBack, onClick: onBack }} /> : (
         <PhotoGrid
           ids={list.map(p => p.id)}
           label={id => { const p = byId.get(id)!; return `${when(p)}, ${fmt(t.upTo, { size: bytes(t, estimatedSaving(p)) })}, ${left.has(id) ? t.notSelected : t.selected}`; }}

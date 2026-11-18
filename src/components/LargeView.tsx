@@ -49,7 +49,7 @@ export function LargeView({ t, photos, videosOnly, canCompress, sort, onSort, on
           options={[{ value: 'all', label: t.filterAll }, { value: 'videos', label: t.filterVideos }, { value: 'photos', label: t.filterPhotos }]}
         />
       )}
-      {list.length === 0 ? <Empty title={videosOnly ? t.noVideos : t.noLarge} body={videosOnly ? t.noVideosBody : t.noLargeBody} /> : (
+      {list.length === 0 ? <Empty title={videosOnly ? t.noVideos : t.noLarge} body={videosOnly ? t.noVideosBody : t.noLargeBody} back={{ label: t.emptyBack, onClick: onBack }} /> : (
         <PhotoGrid
           ids={list.map(p => p.id)}
           label={id => { const p = byId.get(id)!; return `${when(p)}, ${size(p)}${p.video ? `, ${t.videoBadge} ${duration(p.dur ?? 0)}` : ''}`; }}

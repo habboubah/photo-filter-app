@@ -257,6 +257,10 @@ scenes follow the switch (docs/PLAN.md, *Pricing*).
   close button `glass-flat`, their confirm button teal with `sheen`.
 - Motion: short and soft; transform and opacity only; all of it collapses
   under reduced motion. The review card follows the finger and flies out.
+- Home (*Aufräumen*) is a greeting, then the one next step, then what is
+  marked for deletion, then the storage overview. An empty list is `<Empty>`
+  (illustration, one line, the way on); a real delete asks through
+  `<DeleteSheet>`; a photo looked at closely opens `<ZoomView>`.
 - A screen says what it is for behind an (i) in its bar (`<Screen info>`,
   a sheet), never in a paragraph above its content; its subtitle carries the
   count and the size, its Dock button says what you get

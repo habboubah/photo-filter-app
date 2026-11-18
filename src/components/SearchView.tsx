@@ -1,6 +1,6 @@
 import type React from 'react';
 import { useEffect, useMemo, useState } from 'react';
-import { ChevronRight, X } from 'lucide-react';
+import { ChevronRight, SearchX, Sparkles, X } from 'lucide-react';
 import type { Photo } from '../types';
 import { Strings, bytes, fmt, percent, plural } from '../translations';
 import {
@@ -179,6 +179,7 @@ export function SearchView({ t, lang, vectors, byId, aiSeen, onBack, onOpen, onR
 
       {!ready && (
         <Empty
+          icon={Sparkles} tone="accent"
           title={t.searchWaiting}
           body={fmt(t.searchWaitingBody, { pct: percent(t, aiSeen.total ? Math.floor((aiSeen.seen / aiSeen.total) * 100) : 0) })}
         />
@@ -186,7 +187,7 @@ export function SearchView({ t, lang, vectors, byId, aiSeen, onBack, onOpen, onR
 
       {ready && tokens.length > 0 && (ids.length
         ? <PhotoGrid ids={ids} columns={3} label={date} onOpen={onOpen} />
-        : <Empty title={t.searchNone} body={t.searchNoneBody} />)}
+        : <Empty icon={SearchX} tone="accent" title={t.searchNone} body={t.searchNoneBody} />)}
 
       {docked && (
         <Dock>
