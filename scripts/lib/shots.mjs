@@ -426,6 +426,13 @@ async function openGuidedReview(page, w) {
   await pause(page, 800);
   await openCleanupReview(page, w);
 }
+/** The reveal's first step: the first group of near-identical photos, opened as the first task. */
+async function openFirstGroup(page, w) {
+  await page.waitForSelector(`text=${w.t.revealTitle}`, { timeout: 20000 });
+  await pause(page, 700);
+  await page.click(`button:has-text("${w.t.revealCompare}")`);
+  await pause(page, 900);
+}
 /** Two photos marked in a review and put into "Zum Löschen vorgemerkt", then back on home. */
 async function markTwo(page, w) {
   await openCleanupReview(page, w);
@@ -476,6 +483,25 @@ export const FIRST_RUN_SCREENS = [
       await page.click('body > div.fixed.bottom-0 button >> nth=0');
     },
     wait: 1500,
+  },
+  { name: '61-first-group', prefs: { firstRun: true, scanned: false }, run: openFirstGroup, wait: 1500 },
+  {
+    // Side by side, both photos zoomed to the same spot by one tap.
+    name: '62-compare', prefs: { firstRun: true, scanned: false }, run: async (page, w) => {
+      await openFirstGroup(page, w);
+      await page.click(`button:has-text("${w.t.compareOpen}")`);
+      await pause(page, 700);
+      const box = await page.locator('[role="dialog"] figure >> nth=0').boundingBox();
+      if (box) await page.mouse.click(box.x + box.width * 0.5, box.y + box.height * 0.4);
+    },
+    wait: 900,
+  },
+  {
+    name: '63-first-task', prefs: { firstRun: true, scanned: false }, run: async (page, w) => {
+      await openFirstGroup(page, w);
+      await page.click(`button:has-text("${w.t.groupAsideOthers}")`);
+    },
+    wait: 1400,
   },
   { name: '60-how', run: async (page, w) => { await openSettings(page, w); await page.click(`main button:has-text("${w.t.howTitle}")`); }, wait: 800 },
 ];

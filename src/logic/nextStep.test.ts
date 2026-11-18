@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { CleanupSummary } from '../types';
-import { gainOf, nextStepKind, rankCategories } from './nextStep';
+import { firstGroup, gainOf, nextStepKind, rankCategories } from './nextStep';
 
 const stat = (count = 0, bytes = 0) => ({ count, bytes });
 const summary = (over: Partial<CleanupSummary> = {}): CleanupSummary => ({
@@ -43,5 +43,25 @@ describe('the categories, the one that frees the most first', () => {
   it('knows no gain without a summary', () => {
     expect(gainOf(null, 'similar')).toEqual({ count: 0, bytes: 0 });
     expect(rankCategories({ similar: { items: 2, covers: [] } }, null)[0].gain.bytes).toBe(0);
+  });
+});
+
+describe('the first group to compare', () => {
+  const g = (key: string, n: number, best: string, kind = 'similar') => ({ key, kind, ids: Array.from({ length: n }, (_, i) => `${key}${i}`), best });
+  const times: Record<string, number> = { a0: 10, b0: 30, c0: 20, d0: 40 };
+  const time = (id: string) => times[id];
+
+  it('takes the newest small group of near-identical photos', () => {
+    expect(firstGroup([g('a', 3, 'a0'), g('b', 4, 'b0'), g('c', 2, 'c0')], time)?.key).toBe('b');
+  });
+
+  it('prefers a group of two to six over a long burst, even an older one', () => {
+    expect(firstGroup([g('d', 14, 'd0'), g('a', 3, 'a0')], time)?.key).toBe('a');
+    expect(firstGroup([g('d', 14, 'd0')], time)?.key).toBe('d');
+  });
+
+  it('leaves out copies and offers nothing without a similar group', () => {
+    expect(firstGroup([g('b', 2, 'b0', 'duplicate')], time)).toBeNull();
+    expect(firstGroup([], time)).toBeNull();
   });
 });

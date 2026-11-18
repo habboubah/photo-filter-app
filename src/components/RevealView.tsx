@@ -1,32 +1,37 @@
 import { motion } from 'motion/react';
-import { Check, Map as MapIcon } from 'lucide-react';
+import { Check, Map as MapIcon, Sparkles } from 'lucide-react';
 import type { RankedCategory } from '../logic/nextStep';
-import { Strings, bytes, fmt, plural } from '../translations';
+import { Strings, bytes, fmt, num, plural } from '../translations';
 import { categoryCount, categoryWords } from './HomeView';
 import { Button } from '../ui/Button';
-import { BigNumber } from '../ui/Controls';
-import { CountUp, Foot, SETTLE } from '../ui/FirstRun';
+import { Foot, SETTLE } from '../ui/FirstRun';
 import { Thumb } from '../ui/Photo';
 import { LARGE } from '../thumbs';
+
+/** The first group to compare (src/logic/nextStep.ts firstGroup): the reveal's first step when there is one. */
+export interface RevealGroup { ids: string[]; suggested: string; date: string }
 
 /** The one step the reveal recommends: home's own next step (src/logic/nextStep.ts), worded by App.tsx. */
 export interface RevealStep { eyebrow: string; title: string; meta: string; covers: string[]; /** The button's words; "Jetzt durchsehen" without. */ button?: string }
 
 /**
- * After the first scan, one calm overview: what Bildklar found, per category
- * with the space it could free — in home's units, in plain ink, nothing in
- * red, nothing that hurries — the trips it put together, and ONE recommended
- * first step, the same choice home's next-step card makes. A quiet second
- * way: just look around. Shown once; home says the same things from then on.
+ * After the first scan, one calm overview that leads with ONE useful task, not
+ * with a storage figure: when a group of near-identical photos exists, its
+ * photos side by side and *Compare your first group* (docs/ux-research.md,
+ * idea A); without one, the step home's next-step card would choose. Under it,
+ * what was found per category with the space it could free — in home's
+ * units, in plain ink, nothing in red, nothing that hurries — and the trips.
+ * A quiet second way: just look around. Shown once; home says the same
+ * things from then on.
  */
-export function RevealView({ t, files, categories, freeable, trips, tripCover, aiRunning, step, onGo, onLookAround }: {
+export function RevealView({ t, files, categories, first, trips, tripCover, aiRunning, step, onGo, onLookAround }: {
   t: Strings;
   /** Photos and videos looked at. */
   files: number;
   /** What was found, the category that frees the most first. */
   categories: RankedCategory[];
-  /** What could be freed in all (the clean-up summary's total). */
-  freeable: number;
+  /** The first group to compare; when set, it is the step and `onGo` opens it. */
+  first: RevealGroup | null;
   trips: number;
   tripCover?: string;
   /** The AI's pass still runs: more suggestions will come. */
@@ -54,16 +59,9 @@ export function RevealView({ t, files, categories, freeable, trips, tripCover, a
         </header>
 
         <div className="mt-6 space-y-6 rise-children">
-          {!nothing && freeable > 0 && (
-            <section className="rounded-lg card p-6">
-              <p className="text-display text-fg">
-                <CountUp value={freeable} seconds={0.9} format={n => <BigNumber text={bytes(t, n)} />} />
-              </p>
-              <p className="text-label font-semibold text-fg-mute mt-1 wrap-prose">{t.revealFree}</p>
-            </section>
-          )}
+          {first && <FirstGroup t={t} group={first} />}
 
-          {step && (
+          {!first && step && (
             <section className="rounded-lg card overflow-hidden" aria-labelledby="reveal-step">
               {ids.length > 0 && (
                 <div className={`aspect-[16/9] grid gap-[2px] ${layout}`} aria-hidden="true">
@@ -116,9 +114,9 @@ export function RevealView({ t, files, categories, freeable, trips, tripCover, a
         </div>
 
         <Foot inset={16}>
-          {step ? (
+          {first || step ? (
             <>
-              <Button full size="lg" onClick={onGo}>{step.button ?? t.revealGo}</Button>
+              <Button full size="lg" onClick={onGo}>{first ? t.revealCompare : step?.button ?? t.revealGo}</Button>
               <Button full variant="ghost" className="mt-1" onClick={onLookAround}>{t.revealLook}</Button>
             </>
           ) : <Button full size="lg" onClick={onLookAround}>{t.revealHome}</Button>}
@@ -126,5 +124,46 @@ export function RevealView({ t, files, categories, freeable, trips, tripCover, a
         </Foot>
       </main>
     </div>
+  );
+}
+
+/**
+ * The first group, the way the comparison will show it: its photos side by
+ * side in the same shape, the app's suggestion marked with the neutral
+ * sparkle (never green: green is the user's choice, made on the next screen).
+ */
+function FirstGroup({ t, group }: { t: Strings; group: RevealGroup }) {
+  // At most three side by side; the suggestion is always among them.
+  const shown = group.ids.includes(group.suggested)
+    ? [group.suggested, ...group.ids.filter(id => id !== group.suggested)].slice(0, 3).sort((a, b) => group.ids.indexOf(a) - group.ids.indexOf(b))
+    : group.ids.slice(0, 3);
+  const more = group.ids.length - shown.length;
+  return (
+    <section className="rounded-lg card overflow-hidden" aria-labelledby="reveal-first">
+      <div className={`grid gap-[3px] p-[3px] ${shown.length === 2 ? 'grid-cols-2' : 'grid-cols-3'}`} aria-hidden="true">
+        {shown.map((id, i) => (
+          <span key={id} className="relative block aspect-[3/4] overflow-hidden rounded-[13px] bg-surface-2">
+            <Thumb id={id} size={LARGE} className="!rounded-none" />
+            {id === group.suggested && (
+              <span className="absolute top-1.5 end-1.5 w-7 h-7 rounded-full glass text-fg inline-flex items-center justify-center">
+                <Sparkles className="w-4 h-4" strokeWidth={2.4} />
+              </span>
+            )}
+            {more > 0 && i === shown.length - 1 && (
+              <span className="absolute bottom-1.5 end-1.5 px-2 py-0.5 rounded-full bg-veil text-on-color text-caption font-bold num">{fmt(t.revealMore, { n: num(t, more) })}</span>
+            )}
+          </span>
+        ))}
+      </div>
+      <div className="px-5 pt-3 pb-5">
+        <p className="eyebrow text-fg-mute">{t.revealFirstEyebrow}</p>
+        <h2 id="reveal-first" className="title-face text-title2 font-bold text-fg mt-0.5 wrap-compound">{fmt(t.revealFirstTitle, { photos: plural(t, 'photos', group.ids.length) })}</h2>
+        <p className="text-label text-fg-mute mt-1 num wrap-prose">{group.date}</p>
+        <p className="text-label text-fg mt-2 wrap-prose inline-flex items-start gap-1.5">
+          <Sparkles className="w-4 h-4 mt-[3px] shrink-0 text-fg-mute" strokeWidth={2.4} aria-hidden="true" />
+          <span>{t.revealFirstMeta}</span>
+        </p>
+      </div>
+    </section>
   );
 }

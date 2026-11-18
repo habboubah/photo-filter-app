@@ -63,3 +63,21 @@ export function nextStepKind(i: {
   if (i.hasNextMonth && !i.scanning) return 'start';
   return null;
 }
+
+/**
+ * The first useful task after the first scan (docs/ux-research.md, idea A):
+ * one group of near-identical photos to compare. A small group is easier to
+ * judge than a long burst, so groups of two to six come first; among those
+ * the newest (the moment the user remembers best). Videos and exact copies
+ * are left out: comparing them teaches nothing about choosing a favourite.
+ * Null when there is no such group — the reveal then offers home's next step.
+ */
+export function firstGroup<G extends { key: string; kind: string; ids: string[]; best: string }>(
+  groups: readonly G[], time: (id: string) => number | undefined,
+): G | null {
+  const similar = groups.filter(g => g.kind === 'similar' && g.ids.length >= 2);
+  if (!similar.length) return null;
+  const small = similar.filter(g => g.ids.length <= 6);
+  const pool = small.length ? small : similar;
+  return pool.reduce((a, g) => ((time(g.best) ?? 0) > (time(a.best) ?? 0) ? g : a));
+}

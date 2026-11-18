@@ -24,7 +24,7 @@ import path from 'path';
 import { chromium } from 'playwright';
 import { build, preview } from 'vite';
 import {
-  ORIGIN, PORT, aria, loadSource, openBlurry, openGroup, openSettings, openTrip, pause, prefs, root, start, words,
+  ORIGIN, PORT, aria, loadSource, openBlurry, openCleanupReview, openGroup, openSettings, openTrip, pause, prefs, root, start, words,
 } from './lib/shots.mjs';
 
 const dist = path.join(root, 'dist');
@@ -111,13 +111,24 @@ try {
   };
 
   console.log('Requests while using the app');
-  await step('the first run: the welcome, access granted, the first scan, the reveal, a guided review', async () => {
+  await step('the first run: the welcome, access granted, the first scan, the reveal, the first group, a guided review', async () => {
     await start(page, prefs({ firstRun: true, access: 'notDetermined', scanned: false, owned: false }));
     await page.click(`button:has-text("${w.t.welcomeStart}")`);
     await page.click(`button:has-text("${w.t.permAllow}")`);
     await page.waitForSelector(`text=${w.t.revealTitle}`, { timeout: 20000 });
-    await page.click(`button:has-text("${w.t.revealGo}")`);
+    await page.click(`button:has-text("${w.t.revealCompare}")`);
     await pause(page, 900);
+    await page.click(`button:has-text("${w.t.compareOpen}")`);
+    await pause(page, 600);
+    await page.mouse.click(200, 300);
+    await pause(page, 400);
+    await page.click(`button${aria(w.t.close)} >> nth=-1`);
+    await pause(page, 400);
+    await page.click(`button:has-text("${w.t.groupAsideOthers}")`);
+    await pause(page, 900);
+    await page.click(`button:has-text("${w.t.undo}")`);
+    await pause(page, 600);
+    await openCleanupReview(page, w);
     for (const key of ['ArrowRight', 'ArrowLeft', 'ArrowUp']) { await page.keyboard.press(key); await pause(page, 450); }
     await page.click(`button:has-text("${w.t.finishReview}")`);
     await pause(page, 600);
