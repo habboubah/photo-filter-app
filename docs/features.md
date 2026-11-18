@@ -350,7 +350,9 @@ is marked for deletion, then the storage overview and the rest in order.
   or a bank card is never a cover. Until the AI has seen the photos, plain
   examples instead (*Zum Beispiel*).
 - **Wonach du suchen kannst** [What you can search for], first on the screen
-  (above *In deinen Fotos*, since 18 November 2026): a few words to try, and **Alle 247 Wörter** [All words]: a sheet with every
+  (above *In deinen Fotos*, since 18 November 2026) and still there while a
+  search is shown (without the words already chosen; a tap adds one): a few
+  words to try, and **Alle 247 Wörter** [All words]: a sheet with every
   word by theme (*Familie und Menschen*, *Feste*, *Baby-Momente*, *Tiere*,
   *Essen und Trinken*, *Orte und Natur*, *Dokumente und Belege* … — the
   sections of ml/words.yaml) and a field that narrows it by any form of a
