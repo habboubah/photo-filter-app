@@ -156,7 +156,7 @@ notes. Testers get it as an update a few minutes later.
   with it, Play Console wants a Google Payments merchant account before a
   closed test can start (18 November 2026). Put it back the day the unlock
   goes on sale (TODO.md, 0b).
-- **Portrait only**, as on the iPhone.
+- **Portrait only**, as on the iPhone — but the portrait screen is declared optional (`<uses-feature android:name="android.hardware.screen.portrait" android:required="false" />`), or Play blocks the release for restricting tablets, Chromebooks and Android XR (19 November 2026).
 
 ## The INTERNET permission
 
