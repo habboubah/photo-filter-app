@@ -87,7 +87,7 @@ export function SearchView({ t, lang, vectors, byId, aiSeen, onBack, onOpen, onR
   const date = (id: string) => new Date(byId.get(id)?.t ?? 0).toLocaleString(t.locale, { dateStyle: 'medium', timeStyle: 'short' });
   const ready = vectors.size > 0;
   const docked = ready && tokens.length > 0 && ids.length > 0;
-  // A few words to try under the cards (none a card already shows), then every word in a sheet.
+  // A few words to try above the cards (none a card already shows), then every word in a sheet.
   const tryWords = useMemo(() => {
     const shown = new Set((cards ?? []).map(c => c.concept));
     return TRY_WORDS.map(w => conceptByWord(FILE, w)).filter(c => c >= 0 && !shown.has(c)).slice(0, 8);
@@ -135,6 +135,14 @@ export function SearchView({ t, lang, vectors, byId, aiSeen, onBack, onOpen, onR
           : <p className="text-label text-fg-mute px-1 wrap-prose">{t.searchNoWord}</p>
       )}
 
+      {/* What can be searched for first, as words to tap; the photo cards of the library under them. */}
+      {!typed.trim() && !tokens.length && ready && cards !== null && cards.length > 0 && (
+        <section className="space-y-2" aria-labelledby="search-words-h">
+          <h2 id="search-words-h" className="eyebrow text-fg-mute px-1">{t.searchWordsTitle}</h2>
+          <WordChips words={tryWords.map(c => ({ concept: c, word: conceptWord(FILE, c, lang) }))} onPick={add} after={allWordsButton} />
+        </section>
+      )}
+
       {!typed.trim() && !tokens.length && ready && cards === null && (
         <div className="grid grid-cols-3 min-[560px]:grid-cols-4 gap-[8px]" aria-hidden="true">
           {[0, 1, 2, 3, 4, 5].map(i => <div key={i} className="aspect-square rounded-sm bg-surface" />)}
@@ -158,13 +166,6 @@ export function SearchView({ t, lang, vectors, byId, aiSeen, onBack, onOpen, onR
               </button>
             ))}
           </div>
-        </section>
-      )}
-
-      {!typed.trim() && !tokens.length && ready && cards !== null && cards.length > 0 && (
-        <section className="space-y-2" aria-labelledby="search-words-h">
-          <h2 id="search-words-h" className="eyebrow text-fg-mute px-1">{t.searchWordsTitle}</h2>
-          <WordChips words={tryWords.map(c => ({ concept: c, word: conceptWord(FILE, c, lang) }))} onPick={add} after={allWordsButton} />
         </section>
       )}
 
