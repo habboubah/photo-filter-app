@@ -316,9 +316,10 @@ export const SCREENS = [
   { name: '40-organize-end', run: async (page, w) => { await openOrganize(page, w); await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight)); await pause(page, 400); } },
   // Missglückt: the too dark photos (the demo's pocket shot).
   {
+    // One grid since 18 November 2026: "Alle" adds the photos that are only maybe blurry to the dark and bright ones.
     name: '32-failed-dark', run: async (page, w) => {
       await openBlurry(page, w);
-      await page.click(`button:has-text("${w.t.failedDark}")`);
+      await page.click(`main button[role="radio"]:has-text("${w.t.filterAll}")`);
       await pause(page, 500);
     },
   },
@@ -414,7 +415,7 @@ export const SCREENS = [
       await openSimilar(page, w);
       await page.click(`main button[role="radio"]:has-text("${w.t.statVideos}")`);
       await pause(page, 800);
-      await page.locator('main button').first().click();
+      await page.locator('main .card button').first().click();
       await pause(page, 900);
       // The demo has no player: it remembers what it was asked to play.
       await page.locator(`main figure ${aria(w.t.playVideo.split('{')[0]).replace('aria-label=', 'aria-label^=')}`).click();

@@ -19,7 +19,8 @@ the root; every other document lives in `docs/` (only `README.md` stays here):
 | `docs/DEVELOPMENT.md` | The project layout, the single checks, the native tests, the demo library, the test library, the city table, icons |
 | `docs/DESIGN.md` | The design system: tone, tokens, type, spacing, motion, component states, the first run |
 | `docs/ux-research.md` | Six comparable apps, one interaction each with sources, and the three ideas adopted |
-| `docs/features.md` | Every feature, as the user sees it |
+| `docs/features.md` | Every feature, as the user sees it — how it is now |
+| `docs/CHANGELOG.md` | What changed or left, and when (history goes here, not into features.md) |
 | `docs/TODO.md` | What only Ahmad can do: devices, Xcode, the stores, photos |
 | `docs/APP_STORE_RELEASE.md`, `docs/ANDROID_RELEASE.md` | The store releases step by step |
 | `docs/CITIES.md` | The offline city table and its licence (GeoNames, CC BY 4.0) |
@@ -112,9 +113,21 @@ scenes follow the switch (docs/PLAN.md, *Pricing*).
   useful task is comparing one group (`firstGroup` in `src/logic/nextStep.ts`):
   the reveal opens it, `FirstTaskSheet` says once what happened. **A tip is
   an entry in `src/tips.ts` and a `data-tip="<id>"` on its control** — one
-  host (`ui/Tip.tsx`), one at a time; no screen builds its own hint. Home's
-  next step and the reveal's recommendation are one choice
-  (`src/logic/nextStep.ts`).
+  host (`ui/Tip.tsx`), one at a time; no screen builds its own hint. The
+  reveal's recommendation and the step after the first group are one choice
+  (`src/logic/nextStep.ts`). The guided review teaches **two** gestures
+  (right keeps, left marks); *Später* is a button, never a swipe.
+- **Coming back** (`src/useNudges.ts`, pure logic in `src/logic/nudges.ts`):
+  the *Seit …* card for photos taken since the last visit, the new-trip card,
+  the weekly reminder offered once (after the first month gone through) and
+  the rating after two real deletes (iPhone: `PhotoLibrary.requestReview` →
+  StoreKit's `AppStore.requestReview`; Android: a plain sheet to Google Play;
+  never in debug builds or the browser). View state in `bildklar-*` keys.
+  Nothing else speaks up by itself: no new nudge without a line here.
+- **Hooks beside App.tsx** hold self-contained parts of its state:
+  `useAlbums` (the phone's albums, the chips, filing), `useMediaTools`
+  (smaller videos and photos, Live Photos), `useWidget`, `useNudges`. A new
+  self-contained part goes into a hook of its own rather than into App.tsx.
 - **The user's decisions** (`src/logic/state.ts`) go through `normalizeState()`
   and are saved by the native plugin as a file — not localStorage (iOS may
   clear it on a full phone). Add fields as optional; bump `SCHEMA_VERSION`
@@ -167,10 +180,9 @@ scenes follow the switch (docs/PLAN.md, *Pricing*).
   into the bin too (`closeReview`). A new place that deletes goes through
   `toBin` too. Marking for deletion is never styled as deleting: no red, no trash icon
   (`Archive` and teal or quiet glass); red (`neg`, `destructive`) is only
-  for what really deletes. (Exceptions: the originals after a smaller copy or a Live Photo
-  made a still — the copy is already saved; and, Ahmad's call of 18 November
-  2026, a group card's *Ohne Stern zum Löschen vormerken*: red words with the
-  trash icon, no fill.)
+  for what really deletes. (Exception: the originals after a smaller copy or a Live Photo
+  made a still — the copy is already saved. The group card's *Ohne Stern
+  vormerken* was red for a few hours on 18 November 2026; it is teal again.)
 - A new asset (a plain photo made from a Live Photo, a smaller copy of a video
   or of a photo) needs the user's tap and a confirmation in the app; the original stays and
   goes only through the system's delete dialog afterwards. The copy keeps the
@@ -270,9 +282,10 @@ scenes follow the switch (docs/PLAN.md, *Pricing*).
   close button `glass-flat`, their confirm button teal with `sheen`.
 - Motion: short and soft; transform and opacity only; all of it collapses
   under reduced motion. The review card follows the finger and flies out.
-- Home (*Aufräumen*) is a greeting, then *Vorschläge* (one card: the space,
+- Home (*Aufräumen*) is a greeting, then — only when there is news — the
+  *Seit …* and new-trip cards (closable), then *Vorschläge* (one card: the space,
   the two-part bar (can go · stays), the figures, the categories, *Jetzt
-  aufräumen*), then what is marked for deletion (a warm sand card of its
+  aufräumen* → quick clean), then what is marked for deletion (a warm sand card of its
   own, never red), then *Mehr Platz* (month by month first). No next-step
   card on home (the reveal after the first scan keeps one). *Ordnen* opens with
   search as a field. An empty list is `<Empty>`

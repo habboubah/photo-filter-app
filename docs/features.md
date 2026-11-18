@@ -109,56 +109,38 @@ then *Mehr Platz* and *Geschützt*.
   *Guten Tag* · *Guten Abend* — no name: there is no account), and under it how many photos and videos there are and that
   they stay on the device. While the facts load, the page shows its shape as
   soft placeholders instead of blank space.
-- **The order** (since 18 November 2026, Ahmad's call that evening):
-  **Vorschläge** first — the space you could free up on top — then *Zum
-  Löschen vorgemerkt* when something waits there, then *Mehr Platz*.
-- (*The one next step* — a large photo card such as *Ein guter Anfang ·
-  Unwichtige Fotos · Ansehen* — left home on 18 November 2026: the same
-  categories are rows in *Vorschläge*. The reveal after the first scan still
-  recommends one step.)
-- **One next step**, a card made of its photos with one button; why it is
-  the step (*Ein guter Anfang*, *Weiter, wo du warst* …) is a small label on
-  its photo:
-  - progress exists (a month gone through) → the next month not gone through,
-    newest first: *Weiter, wo du warst · Oktober 2026 · 148 Fotos · 12 %
-    deiner Mediathek durchgesehen* → **Weiter mit Oktober 2026** (and *Alle
-    Monate*);
-  - else photos wait on the decide-later pile → *Noch offen · Später
-    entscheiden* → **Jetzt entscheiden**;
-  - else the category that frees the most → *Ein guter Anfang · Fast gleiche ·
-    11 Fotos · bis zu 32 MB* → **Ansehen**;
-  - else month by month from the newest month → **Mit November 2026
-    anfangen**; with nothing at all, *Alles aufgeräumt*.
+- **The order**: what is new since the last visit and a new trip (see
+  *Coming back*) when there is any, then **Vorschläge** — the space you could
+  free up — then *Zum Löschen vorgemerkt* when something waits there, then
+  *Mehr Platz*.
 - **Zum Löschen vorgemerkt** [Marked for deletion], a section of its own while anything waits there,
   **in its own colour** — a warm sand card with the archive's tile (never
   red: nothing is deleted yet): a strip of its photos (the last tile counts
   the rest), *72 Fotos · 173 MB*, *Noch nicht gelöscht*; a tap opens it (see
   *Marked for deletion*).
-- **Vorschläge** [Suggestions], one card (since 18 November 2026; until then
-  a separate clean-up card with a table and a list): **357 MB können frei
-  werden** [357 MB can be freed] — *Von 873 MB in deiner Mediathek – was
-  genau, steht unten*; a bar of the whole library in **two parts only**, each
+- **Vorschläge** [Suggestions], one card: **357 MB könnten weg** [357 MB
+  could go] — *Von 873 MB in deiner Mediathek – was genau, steht unten*; on
+  the iPhone a quiet line that iCloud-only originals free iCloud, not the
+  phone (*Liegen Originale nur in iCloud, wird der Platz dort frei*); a bar of the whole library in **two parts only**, each
   named with its size under it: *Kann weg · 357 MB* (sand) and *Bleibt · 516
   MB* (grey); then the library's
   figures — two cells, *Fotos 95 · 31 können weg* and *Videos 6 · 3 können
   weg* (*Fotos* opens *Monat für Monat*, *Videos* all videos), the free space
-  on the device, *Bisher freigegeben*; then one row per category — *Duplikate*, *Fast gleiche*, *Ähnliche Videos*, *Missglückt*,
+  on the device, *Bisher freigegeben* with a line that the space comes back
+  once *Zuletzt gelöscht* / the Trash is emptied; then one row per category —
+  *Duplikate*, *Fast gleiche* (with the similar videos), *Missglückt*,
   *Screenshots*, *Unwichtige Fotos* (once the AI has seen photos) — with two
   of its photos, how many could go and, on the right, the space, the most
   space first. At its foot
   **Jetzt aufräumen** [Clean up now]
-  (the clean-up screen). Categories with nothing left in one line under it:
+  (quick clean, see *Clean-up*). Categories with nothing left in one line under it:
   *Erledigt: Duplikate, Screenshots*.
-- (*Weitermachen* [Carry on] is gone since 18 November 2026: its two rows
-  moved into *Mehr Platz*.)
-- (*Aus deiner Mediathek* — On this day and the latest trip as small tiles —
-  left *Aufräumen* on 18 November 2026: both live on *Ordnen*.)
 - **Mehr Platz** [More space]: *Monat für Monat* with *38 % durchgesehen* and
   a thin bar — the photos in months gone through, as a share of all photos
   (rounded down, so 100 % only once every month is done) — and *Später
-  entscheiden* with the number on the pile (see *Review*); then *Große Dateien* [Large files], *Fotos
-  verkleinern* [Smaller photos], on the iPhone *Live Photos*, *Chats &
-  soziale Medien* — rows with a photo.
+  entscheiden* with the number on the pile (see *Review*); then *Große Dateien* [Large files]
+  (*Fotos verkleinern* opens from there), on the iPhone *Live Photos*, *Chats &
+  soziale Medien* (only when such photos exist) — rows with a photo.
 - *Geschützt* [Protected] at the end.
 
 ### Ordnen [Organise]
@@ -248,9 +230,8 @@ then *Mehr Platz* and *Geschützt*.
   is what stays — the app's pick, a favourite, a photo kept before. Every
   other photo carries a **grey star**: tap it to keep that one too (several
   can be starred). Under the photos, as words without a fill: **Alle behalten**
-  in green with a check (the group leaves the list) and, in red with the
-  delete icon, **Ohne Stern zum Löschen vormerken** [Mark unstarred for
-  deletion] — every photo without a star goes to *Zum Löschen vorgemerkt*
+  in green with a check (the group leaves the list) and, in teal with the
+  archive icon, **Ohne Stern vormerken** [Mark unstarred] — every photo without a star goes to *Zum Löschen vorgemerkt*
   (nothing is deleted yet), the starred ones are kept from now on — each with
   undo, without opening the group. A tap on the photos still opens it.
 - **The best shot**: the sharpest, well exposed one; on the iPhone also the
@@ -280,9 +261,10 @@ then *Mehr Platz* and *Geschützt*.
 ## Similar videos (*Ähnliche Videos*)
 - The same scene filmed twice within two hours — two takes, a clip and its
   longer retry — found by the on-device AI's picture of each video's poster
-  frame (not only exact copies). With the copies of a video they have their
-  own card and screen, *Ähnliche Videos*, apart from the photos (also in the
-  clean-up list and in *Schnell aufräumen*); the best take is the longest
+  frame (not only exact copies). With the copies of a video they are the
+  **Videos** side of a *Fotos · Videos* switch on *Fast gleiche Fotos* (home
+  counts them in that one row; quick clean still has its own switch for
+  them); the best take is the longest
   sharp one, then the larger file. The threshold is provisional
   (`src/logic/lookalike.ts`).
 
@@ -341,8 +323,8 @@ then *Mehr Platz* and *Geschützt*.
   hier nicht abspielen.*
 
 ## Smaller photos (*Fotos verkleinern*, free for now, later the unlock)
-- Home tile *Fotos verkleinern · bis zu 3,1 GB* [Smaller photos · up to …]
-  when there is something to gain (estimate: half of a camera JPEG, 70 % of a PNG).
+- A row at the top of *Große Dateien*, *Fotos verkleinern · bis zu 3,1 GB*
+  [Smaller photos · up to …], when there is something to gain (estimate: half of a camera JPEG, 70 % of a PNG).
 - Which photos: JPEG or PNG, at least 1 MB, not RAW/ProRAW, not edited (re-saving
   would bake the edit in), not a Live Photo, not protected. PNG screenshots are
   their own tab.
@@ -425,7 +407,8 @@ then *Mehr Platz* and *Geschützt*.
   unknown word says so. Nothing is sent anywhere.
 
 ## Similar photos of one photo (*Ähnliche Fotos*)
-- In a review, the button *Ähnliche Fotos zeigen* [Show similar photos] opens
+- In a review's *Groß ansehen* (the magnifier on the photo), the button
+  *Ähnliche Fotos zeigen* [Show similar photos] at its foot opens
   every photo like this one, from any year: the same document photographed
   twice, the same view on every holiday. *Durchgehen* reviews them.
 
@@ -460,7 +443,7 @@ then *Mehr Platz* and *Geschützt*.
 - A tap reviews the month: extra shots, blurry photos and old screenshots are
   suggested for deleting, the rest for keeping. **Left part-way, a month
   remembers its place** (the last photo decided; src/logic/months.ts) and
-  goes on there next time; home's next step offers *Weiter mit Juli 2026*
+  goes on there next time; the next step after the first group offers *Weiter mit Juli 2026*
   with the month's own bar. (Since 18 November 2026.)
 - **Videos** join the month (and *An diesem Tag*) in time order: a copy of
   another video → delete; a screen recording older than 30 days → delete;
@@ -471,13 +454,14 @@ then *Mehr Platz* and *Geschützt*.
   photos only.
 
 ## Failed shots (*Missglückt*)
-- The home tile *Missglückt* [Failed shots] opens one screen with three tabs:
-  *Unscharf · Zu dunkel · Zu hell* [Blurry · Too dark · Too bright].
+- The home row *Missglückt* [Failed shots] opens one grid of every photo that
+  didn't come out, each with a small chip that says why: *Unscharf*, *Zu
+  dunkel*, *Zu hell* [Blurry, Too dark, Too bright] (a blurry one with its
+  level's dot). *Durchgehen* reviews all of them, each with its own reason.
 - **Blurry**: every photo's sharpness, as three levels: *Sehr wahrscheinlich*,
   *Wahrscheinlich*, *Vielleicht unscharf* [Very likely / Probably / Maybe
   blurry]. Photos with little to see (fog, a dark room) are judged more gently.
-  *Sicher* [Sure] shows the first two levels, *Alle* [All] all three, as a grid
-  with a coloured dot each. *Durchgehen* reviews them.
+  *Sicher* [Sure] shows the first two levels, *Alle* [All] all three.
 - **Too dark / too bright**: photos with almost nothing to see — a pocket shot,
   the lens cap, a picture washed out by the sun — from the brightness and
   contrast the scan already measures. Night photos with lights stay out. The
@@ -487,24 +471,27 @@ then *Mehr Platz* and *Geschützt*.
 - They are part of the clean-up card (*Zu dunkel oder zu hell*), the quick
   clean, *Alle durchgehen* and the reviews of a month, a trip and *An diesem Tag*.
 - The thresholds are provisional (`src/logic/exposure.ts`).
-- On every tab a tap opens a photo large (zoom in, drag); its circle picks it,
+- A tap opens a photo large (zoom in, drag); its circle picks it,
   and the picked ones go to *Zum Löschen vorgemerkt* with *Löschen vormerken ·
   n Fotos · size* (*Auswahl aufheben* under it).
 
 ## Clean-up
-- *Aufräumen* lists what the card counts (duplicates, near-identical, blurry,
-  too dark or too bright, old screenshots, unimportant photos) with sizes, *Alle durchgehen* [Go through all] and
-  **Schnell aufräumen** [Quick clean]: a switch per kind (all on), the
-  free space, then *Löschen vormerken · 35 Fotos · 91 MB* → into *Zum Löschen vorgemerkt* — or
+- Home's *Jetzt aufräumen* opens **Schnell aufräumen** [Quick clean] (the
+  clean-up screen that listed the kinds again is gone): a switch per kind
+  (all on), the free space, *Unsichere durchgehen* for what Bildklar isn't
+  sure about, **Alle durchgehen** [Go through all] — every photo home counts,
+  one by one, the unimportant and the unsure ones too — then *Löschen
+  vormerken · 35 Fotos · 91 MB* → into *Zum Löschen vorgemerkt*, or
   *Durchgehen* [Review] for the same photos first. Free for now (later the unlock).
 - Favourites are never suggested, nor a photo you kept in a review before.
 
 ## Review
 - One photo at a time, with all the room left, and the suggestion with its
   reason in words that wrap (*Vorschlag: vormerken · Unschärfer als das
-  beste*). Swipe left to **mark for deletion**, right to keep, up for **Später**
-  [Later] — or the three labelled buttons (*Löschen vormerken*, *Später*,
-  *Behalten*), or the arrow keys (← → ↑). Marking is quiet (no red:
+  beste*). Swipe left to **mark for deletion**, right to keep — or the three
+  labelled buttons (*Löschen vormerken*, **Später** [Later], *Behalten*), or
+  the arrow keys (← → ↑). Deciding later is a button only (a swipe up until
+  18 November 2026: two gestures are easier to learn than three). Marking is quiet (no red:
   nothing is deleted). **Rückgängig** [Undo] in words at the top right;
   *Beenden* [Finish] any time. Under *12 von 40* the space marked so far
   (*48 MB zum Löschen vorgemerkt*).
@@ -519,13 +506,15 @@ then *Mehr Platz* and *Geschützt*.
   in a group): the photo over the whole screen, growing out of its place. A
   tap zooms in on the spot tapped (and out again), a drag moves the zoomed
   photo — to check sharpness and faces. It asks for a larger picture than
-  the review shows.
+  the review shows. In a review it also has *Ähnliche Fotos zeigen* at its foot.
+- **The swipe in words** (*Links: zum Löschen vormerken · rechts: behalten.*)
+  stands under the buttons only while the guided review still teaches it, and
+  in the bin; after that the labelled buttons say it.
 - **The guided first review**: on the first real cards a hand makes one
   gesture and says it in words (*Nach rechts wischen: behalten* · *Nach links
-  wischen: zum Löschen vormerken* · *Nach oben wischen: später entscheiden*,
-  *Probier's aus · 1 von 3*), one gesture per card until it was done once —
-  by a swipe, its button or its arrow key; whichever of the three is done
-  counts. Each decision is named right after it (*Vorgemerkt – noch nicht
+  wischen: zum Löschen vormerken*, *Probier's aus · 1 von 2*), one gesture
+  per card until it was done once — by a swipe, its button or its arrow key;
+  whichever of the two is done counts. Each decision is named right after it (*Vorgemerkt – noch nicht
   gelöscht*). The hint leaves the moment the card is touched, ✕ hides the
   hints for good, and under reduced motion it is a still arrow with the same
   words. Then two tips: the buttons and *Rückgängig*, and what a suggestion is.
@@ -540,8 +529,7 @@ then *Mehr Platz* and *Geschützt*.
 - Photos you kept against the suggestion are remembered and not suggested again.
 - **Closed before the end** (✕): what was marked by then is put into *Zum
   Löschen vorgemerkt* — it said *Löschen vormerken*, so it is not forgotten —
-  with a toast and *Rückgängig*; nothing is deleted. Until 18 November 2026
-  those marks were dropped. (On the summary, *Fertig* instead of *Löschen
+  with a toast and *Rückgängig*; nothing is deleted. (On the summary, *Fertig* instead of *Löschen
   vormerken* still leaves them unmarked: that is the summary's own choice.) A month remembers where it was left (see *Month
   by month*).
 - **Into albums while swiping** (free for now, later the unlock): under the
@@ -558,8 +546,8 @@ then *Mehr Platz* and *Geschützt*.
   Android: an album is a folder, so the photos move there after one system
   dialog (*Die Fotos werden in den Ordner verschoben*). Albums made here show
   up in *Aufräumen* › Geschützt.
-- **Decide later**: photos swiped up land on a pile; the end screen says
-  *3 für später gemerkt* [3 saved for later]. *Aufräumen* › *Weitermachen* shows *Später entscheiden (3)*
+- **Decide later**: photos put off with *Später* land on a pile; the end screen says
+  *3 für später gemerkt* [3 saved for later]. *Aufräumen* › *Mehr Platz* shows *Später entscheiden (3)*
   [Decide later] while the pile isn't empty; it goes through the pile with no
   suggestion. A photo leaves the pile once it is kept or deleted, or when it
   is gone from the library.
@@ -585,13 +573,13 @@ then *Mehr Platz* and *Geschützt*.
   selection] — the screen's button never deletes itself (since 18 November
   2026; before, it was the red *12 Fotos löschen*). It opens a sheet with
   **exactly what goes** (the photos,
-  their count and size; *Sie kommen in den Papierkorb … Danach fragt Android
+  their count and size; *Sie kommen in den Papierkorb … Den Platz bekommst du zurück, sobald du den Papierkorb leerst … Danach fragt Android
   noch einmal nach*) and the one red button of the app, **12 Fotos löschen**,
   or **Abbrechen** (or a swipe down); then
   the system's dialog → Recently Deleted (iPhone) / the Trash (Android) — the
   only place that deletes. *Noch einmal durchgehen* [Go through them again]:
   a review without a suggestion, swiped left is deleted at the end (red
-  here), right goes back, up stays in the list.
+  here), right goes back, *Später* stays in the list.
 - Free deletes (before the unlock) are counted here, when the photos really
   go. It is kept with the decisions (it survives a restart); *Von vorn
   anfangen* [Start over] in Settings empties it too — the photos come back —
@@ -642,7 +630,30 @@ then *Mehr Platz* and *Geschützt*.
   widgets: the home-screen widget stays the only one there.
 - **Wöchentliche Erinnerung** [Weekly reminder] in Settings (off by default):
   the system asks once for notifications, then one notification every Sunday
-  at 18:00, scheduled on the phone — no server.
+  at 18:00, scheduled on the phone — no server. Offered once by itself, after
+  the first month gone through (see *Coming back*).
+
+## Coming back (since 18 November 2026; src/useNudges.ts, src/logic/nudges.ts)
+- **Seit Sonntag** [Since Sunday]: coming back at least 12 hours after the
+  last visit, with at least five photos or videos taken since, home opens
+  with a card — four of the new photos, *Seit Sonntag* (a weekday within the
+  week, else the date), *84 Fotos neu · 412 MB*, *3 Gruppen fast gleich*
+  when new photos are in groups, and **Neue Fotos durchgehen** (a review of
+  them with suggestions, like a month). ✕ closes it until the next return.
+- **Neue Reise gefunden** [New trip found]: a trip that ended in the last 60
+  days, without an album and not shown before, gets a card with its photo,
+  name and count, and **Reise ansehen**. On the first settled library every
+  trip found counts as shown (the reveal shows them).
+- **The weekly reminder, offered once**: after the first month gone through,
+  *Jeden Sonntag kurz erinnern?* — *Ja, erinnern* / *Nein danke*. Never again.
+- **The rating**: after two real deletes that freed space, on home a moment
+  later — iPhone: iOS's own rating prompt (StoreKit; iOS decides whether it
+  shows, at most three times a year, never in TestFlight); Android: *Gefällt
+  dir Bildklar?* → *Bewerten* opens Google Play. At most three asks, never
+  twice for one version, four months apart. Debug builds and the browser
+  never ask.
+- All of it is view state in `bildklar-*` keys: losing it shows a card once
+  more, nothing else.
 
 ## Settings
 - **Fotos** (only with limited access): *Zugriff auf alle Fotos erlauben*
