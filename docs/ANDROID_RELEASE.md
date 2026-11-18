@@ -151,7 +151,11 @@ notes. Testers get it as an update a few minutes later.
 - **No Google services of our own**: no Firebase, no Play Services, no
   analytics, no ML Kit. Permissions: the photo permissions,
   `ACCESS_MEDIA_LOCATION`, `INTERNET`, `VIBRATE` (haptics), and from the Play
-  Billing Library `BILLING` and `ACCESS_NETWORK_STATE`.
+  Billing Library `ACCESS_NETWORK_STATE`. Its `BILLING` permission is
+  removed in the manifest (`tools:node="remove"`) while nothing is for sale:
+  with it, Play Console wants a Google Payments merchant account before a
+  closed test can start (18 November 2026). Put it back the day the unlock
+  goes on sale (TODO.md, 0b).
 - **Portrait only**, as on the iPhone.
 
 ## The INTERNET permission

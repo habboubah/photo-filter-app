@@ -72,4 +72,12 @@
          minutes late is fine, and Google Play reserves exact alarms for clocks and calendars. The
          plugin then schedules inexactly. -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" tools:node="remove" />
+
+    <!-- The launch phase: nothing is for sale (UNLOCK_ON_SALE = false), so the BILLING permission the
+         Play Billing Library brings is removed. With it in the bundle, Play Console asks for a
+         Google Payments merchant account before the app may start a closed test. Without it, the
+         Purchases plugin's connection fails and every call rejects, which the app already ignores
+         (store.ts catches isOwned; the paywall is never shown while nothing is on sale).
+         The day the unlock goes on sale: delete this line (docs/TODO.md, 0b). -->
+    <uses-permission android:name="com.android.vending.BILLING" tools:node="remove" />
 </manifest>

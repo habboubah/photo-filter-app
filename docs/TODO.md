@@ -204,7 +204,11 @@ photos, Live Photos — and deleting has no limit.
       Claude to add albums and folders to the store texts, if you want them
       in the listing.
 - [ ] **The day you start selling** (after about 5,000 downloads and good
-      ratings) — ask Claude for "the sale": `UNLOCK_ON_SALE = true`, the store
+      ratings) — ask Claude for "the sale": create a Google Payments
+      merchant account in the Play Console first (*Settings › Payments
+      profile*), delete the `com.android.vending.BILLING` … `tools:node="remove"`
+      line in `android/app/src/main/AndroidManifest.xml` (without the
+      permission no purchase can work on Android), `UNLOCK_ON_SALE = true`, the store
       texts with the purchase (`store/listing.md`, git history before
       17 Nov 2026), the album slide in the store screenshots, the album scene
       in the App Review recording, the in-app purchase submitted **with** that

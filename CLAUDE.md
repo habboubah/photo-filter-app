@@ -369,6 +369,9 @@ Android keeps the layout and swaps the material, through
   `fixtures/faces/`). No Google services, no Firebase, no ML Kit.
 - The home-screen widget: `BildklarWidget.kt` (AppWidgetProvider, layout
   `widget_bildklar.xml`), fed by `PhotoLibrary.setWidget`.
+- `com.android.vending.BILLING` (brought by the Play Billing Library) is
+  removed in the manifest while nothing is for sale — with it Play asks for a
+  merchant account before a closed test. Put it back with `UNLOCK_ON_SALE = true`.
 - `SCHEDULE_EXACT_ALARM` (brought by `@capacitor/local-notifications`) is
   removed in the manifest: the weekly reminder may be a little late, and Play
   keeps exact alarms for clocks and calendars.
