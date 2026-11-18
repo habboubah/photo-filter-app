@@ -565,8 +565,6 @@ export const ar: Strings = {
   nextMonthsStartButton: 'ابدأ بـ{month}',
   suggestionsAll: 'نظرة عامة',
   suggestionsPartial: 'مؤقت – ما زال Bildklar يتفحّص الصور.',
-  memoriesTitle: 'من مكتبتك',
-  latestTrip: 'آخر رحلة',
   whyFavourite: 'معلّمة كمفضلة',
   whyProtected: 'محمية من قبلك',
   whyBurstPick: 'اختيرت كأفضل لقطة في السلسلة',
