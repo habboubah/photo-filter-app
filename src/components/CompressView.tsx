@@ -7,6 +7,7 @@ import { Dock, Empty, Screen } from '../ui/Screen';
 import { Button } from '../ui/Button';
 import { Segmented } from '../ui/Controls';
 import { PhotoGrid } from '../ui/Photo';
+import { SelectBar } from '../ui/SelectBar';
 
 /**
  * "Fotos verkleinern" [Make photos smaller]: the photos that qualify
@@ -28,6 +29,7 @@ export function CompressView({ t, photos, screenshots, onBack, onRun }: {
   const chosen = list.filter(p => !left.has(p.id));
   const saving = chosen.reduce((s, p) => s + estimatedSaving(p), 0);
   const all = left.size === 0 || list.every(p => !left.has(p.id));
+  const none = chosen.length === 0;
   const toggle = (id: string) => setLeft(s => { const next = new Set(s); if (next.has(id)) next.delete(id); else next.add(id); return next; });
   const when = (p: Photo) => new Date(p.t).toLocaleString(t.locale, { dateStyle: 'medium', timeStyle: 'short' });
 
@@ -39,7 +41,12 @@ export function CompressView({ t, photos, screenshots, onBack, onRun }: {
           options={[{ value: 'photos', label: t.filterPhotos }, { value: 'screenshots', label: t.screenshotsTile }]}
         />
       )}
-      {list.length === 0 ? <Empty title={t.compressNone} body={t.compressNoneBody} back={{ label: t.emptyBack, onClick: onBack }} /> : (
+      {list.length === 0 ? <Empty title={t.compressNone} body={t.compressNoneBody} back={{ label: t.emptyBack, onClick: onBack }} /> : (<>
+        <SelectBar
+          text={plural(t, 'binPicked', chosen.length)} all={all} none={none}
+          onAll={() => setLeft(new Set())} onNone={() => setLeft(new Set(list.map(p => p.id)))}
+          labels={{ all: t.pickAll, none: t.pickNone }}
+        />
         <PhotoGrid
           ids={list.map(p => p.id)}
           label={id => { const p = byId.get(id)!; return `${when(p)}, ${fmt(t.upTo, { size: bytes(t, estimatedSaving(p)) })}, ${left.has(id) ? t.notSelected : t.selected}`; }}
@@ -59,17 +66,12 @@ export function CompressView({ t, photos, screenshots, onBack, onRun }: {
             );
           }}
         />
-      )}
+      </>)}
       {list.length > 0 && (
         <Dock>
-          <div className="flex gap-2">
-            <Button size="lg" variant="secondary" onClick={() => setLeft(all ? new Set(list.map(p => p.id)) : new Set())}>
-              {all ? t.selectNone : t.selectAll}
-            </Button>
-            <Button full size="lg" icon={Minimize2} disabled={!chosen.length} onClick={() => onRun(chosen)}>
-              {plural(t, 'compressN', chosen.length)}
-            </Button>
-          </div>
+          <Button full size="lg" icon={Minimize2} disabled={!chosen.length} onClick={() => onRun(chosen)}>
+            {plural(t, 'compressN', chosen.length)}
+          </Button>
         </Dock>
       )}
     </Screen>

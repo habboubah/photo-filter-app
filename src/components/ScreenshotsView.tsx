@@ -7,6 +7,7 @@ import { isOldShot } from '../logic/screenshots';
 import { Dock, Empty, Screen } from '../ui/Screen';
 import { Button } from '../ui/Button';
 import { Segmented } from '../ui/Controls';
+import { SelectBar } from '../ui/SelectBar';
 import { PhotoGrid } from '../ui/Photo';
 import { ZoomView } from '../ui/Zoom';
 import { sortPhotos, type SortKey } from '../logic/sort';
@@ -47,6 +48,14 @@ export function ScreenshotsView({ t, photos, now, sort, onSort, onBack, onReview
         options={[{ value: 'old', label: t.filterOld }, { value: 'all', label: t.filterAll }]}
       />
       {list.length === 0 ? <Empty title={t.noScreenshots} body={t.noScreenshotsBody} back={{ label: t.emptyBack, onClick: onBack }} /> : (
+        <>
+        <SelectBar
+          text={chosen.length ? plural(t, 'binPicked', chosen.length) : t.pickHint}
+          all={chosen.length === list.length} none={chosen.length === 0}
+          onAll={() => setPicked(old => new Set([...old, ...list.map(p => p.id)]))}
+          onNone={() => setPicked(new Set())}
+          labels={{ all: t.pickAll, none: t.pickNone }}
+        />
         <PhotoGrid
           ids={list.map(p => p.id)}
           columns={4}
@@ -55,16 +64,15 @@ export function ScreenshotsView({ t, photos, now, sort, onSort, onBack, onReview
           selected={picked} onSelect={toggle}
           selectLabel={id => fmt(t.selectTile, { item: when(id) })}
         />
+        </>
       )}
       {list.length > 0 && (
         <Dock>
           {chosen.length > 0 ? (
-            <>
-              {/* Into "Zum Löschen vorgemerkt": nothing is deleted here, so teal and the archive, never red. */}
+            <>{/* Into "Zum Löschen vorgemerkt": nothing is deleted here, so teal and the archive, never red. */}
               <Button full size="lg" icon={Archive} onClick={() => { onAside(chosen); setPicked(new Set()); }}>
                 {`${t.aside} · ${plural(t, 'photos', chosen.length)} · ${bytes(t, chosenBytes)}`}
               </Button>
-              <Button full variant="ghost" className="mt-1" onClick={() => setPicked(new Set())}>{t.selectionClear}</Button>
             </>
           ) : (
             <Button full size="lg" onClick={() => onReview(list)}>{`${t.reviewScreenshots} · ${plural(t, 'photos', list.length)} · ${bytes(t, total)}`}</Button>
