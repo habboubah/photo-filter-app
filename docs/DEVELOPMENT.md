@@ -181,9 +181,9 @@ node scripts/icon-assets.mjs && npm run assets:generate
 
 ## Screenshots
 
-`npm run screenshots` captures the nine store screens from the demo, with
-`<screen>.marks.json` beside each (`-- --android`: the same with Android's
-words, for Google Play); `npm run store-screenshots` composes the App Store
+`npm run screenshots` captures the ten store screens from the demo, with
+`<screen>.marks.json` beside each, for the iPhone and with Android's words for
+Google Play (`-- --ios` / `-- --android`: only one); `npm run store-screenshots` composes the App Store
 and Play sets (headlines in
 `.claude/skills/store-screenshot-studio/config/copy.<de|en>.json`).
 `npm run app-preview` films the App Store preview video from the demo

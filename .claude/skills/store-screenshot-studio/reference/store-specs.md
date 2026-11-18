@@ -50,7 +50,7 @@ differently, which is why they are switched per target (`"ribbon"` in
 
 | Store | Rule | What this project does |
 |---|---|---|
-| App Store | Guideline 2.3.7: app names, subtitles, screenshots and previews may not include prices or terms. App Review counts "free" as a price reference and rejects the version until it is gone | `iphone-6.3` has `"ribbon": false`: no ribbon, no price points. `validate.py` warns if that changes |
+| App Store | Guideline 2.3.7: app names, subtitles, screenshots and previews may not include prices or terms. App Review counts "free" as a price reference and rejects the version until it is gone | `iphone` has `"ribbon": false`: no ribbon, no price points. `validate.py` warns if that changes |
 | Google Play | The preview-asset guidelines ask to avoid price and promotional words on the feature graphic and screenshots and name "Free" among the examples. Not following them does not take the listing down; it can change how the assets are shown and limits promotion and recommendation by Play | `play-phone` and the feature graphic have `"ribbon": false` too |
 
 Whatever the store, the words have to be true. Bildklar is a free download
@@ -67,6 +67,6 @@ it; Play Console Help → *Add preview assets to showcase your app* (both read
 
 | Target | Pixels | Format | Reason |
 |---|---|---|---|
-| `iphone-6.3` | 1206 × 2622 | PNG | The required iPhone slot; App Store Connect scales it for other iPhones |
+| `iphone` | 1206 × 2622 | PNG | The required iPhone slot; App Store Connect scales it for other iPhones |
 | `play-phone` | 1080 × 1920 | JPEG | 9 : 16 at 1080 wide is what Play asks of screenshots it features; inside the 2:1 limit; JPEG for the alpha rule |
 | `play-feature` | 1024 × 500 | JPEG | The feature graphic's one size |

@@ -10,8 +10,8 @@ Google Play feature graphic and a contact sheet per store.
 - `npm install` (Playwright is already a devDependency of this repo)
 - Chromium, once per machine: `npx playwright install chromium --only-shell`
 - Python 3 for the validator — **standard library only**, nothing to install
-- Raw captures present, with their marks: `npm run screenshots` and, for the
-  Play set, `npm run screenshots -- --android` (each writes
+- Raw captures present, with their marks: `npm run screenshots` (the iPhone
+  captures for the App Store and the Android ones for the Play set; it writes
   `<capture>.marks.json` next to each capture — where the clean-up card, a trip,
   the best shot … is — and the call-outs are found by those names)
 
@@ -41,14 +41,14 @@ python3 .claude/skills/store-screenshot-studio/scripts/validate.py
 
 ```
 screenshots/store/
-  iphone-6.3/{de,en}/01-home.png … 08-private.png      1206×2622 PNG
-  play-phone/{de,en}/01-home.jpg … 07-private.jpg      1080×1920 JPEG, from the Android captures
+  iphone/{de,en}/01-home.png … 09-cleanup.png          1206×2622 PNG
+  play-phone/{de,en}/01-home.jpg … 08-blurry.jpg       1080×1920 JPEG, from the Android captures
   play-feature/{de,en}/feature-graphic.jpg             1024×500 JPEG
   contact-sheet.png                                    the iPhone set
   contact-sheet-play-phone.png                         the Play set and the feature graphics
 ```
 
-`iphone-6.3` is the set for App Store Connect's required *iPhone with Dynamic
+`iphone` is the set for App Store Connect's required *iPhone with Dynamic
 Island (medium display)* slot; `play-phone` and `play-feature` are Google
 Play's. Each run deletes and rewrites only the folders this script makes,
 including ones from older configs (`apple-6.9`, `apple-6.5`); files next to

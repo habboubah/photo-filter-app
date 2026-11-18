@@ -5,7 +5,7 @@ description: Turn the raw app captures in screenshots/<locale>/ into polished, s
 
 > From budget-app (Spartopf) by way of the shopping list, set up for Bildklar
 > on 16 November 2026: the store captures of `scripts/screenshots.mjs` per
-> language (01-scan … 09-paywall), the icon's teal, DE / EN copy, an App Store
+> language (02-home … 43-like), the icon's teal, DE / EN copy, an App Store
 > target (8 slides) and a Google Play target (7 slides, from the Android
 > captures) with its feature graphic. No ribbon, no price words: Bildklar has an
 > in-app purchase. **The demo photos are drawn** — swap in licensed photos
@@ -46,8 +46,7 @@ the numbers — read it before changing a composition):
 ## Run it
 
 ```bash
-npm run screenshots                  # only when the app's screens changed: captures + marks
-npm run screenshots -- --android     # the same with Android's words (Ordner, Papierkorb), for Google Play
+npm run screenshots                  # only when the app's screens changed: captures + marks, iPhone and Android (Ordner, Papierkorb)
 npm run store-screenshots            # export → feature graphic → contact sheets → validate
 ```
 
