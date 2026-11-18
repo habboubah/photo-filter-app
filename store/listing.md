@@ -1,10 +1,12 @@
 # Store listing — Bildklar KI: Foto Reiniger
 
 Everything to copy into **App Store Connect** and the **Google Play Console**,
-in German (primary) and English. Every text below fits the store's limit
-(counted with `node scripts/listing-lengths.mjs` on 16 November 2026 — run it
-again after editing). Arabic: the app has no Arabic texts yet, so the listing
-has none either.
+in German (primary), English and Arabic. Every text below fits the store's limit
+(counted with `node scripts/listing-lengths.mjs` — run it again after editing).
+The texts of 18 November 2026 lead with trust (no subscription, no ads,
+nothing leaves the phone), then what other cleaners don't have: the side by
+side comparison, search by what is in a photo, trips that become albums.
+The Arabic texts are new and Claude's: please read them once before they go in.
 
 The two stores get slightly different texts, because the app does slightly
 different things: on the iPhone deleted photos go to **Zuletzt gelöscht**, on
@@ -58,7 +60,7 @@ claims the app can't keep ("deletes duplicates automatically", "no internet").
 | Field | Limit | Deutsch (primary) | English (U.K. and U.S.) |
 |---|---|---|---|
 | Name | 30 | `Bildklar KI: Foto Reiniger` | `Bildklar AI: Photo Cleaner` |
-| Subtitle | 30 | `Reisen & Doppelte finden` | `Trips & duplicate finder` |
+| Subtitle | 30 | `Doppelte & Reisen · privat` | `Duplicates & trips · private` |
 
 **Keywords** (100 bytes, comma-separated, no spaces after commas):
 
@@ -68,32 +70,53 @@ claims the app can't keep ("deletes duplicates automatically", "no internet").
 Rules followed: no word repeated from the name or subtitle (Apple combines
 them already), no "kostenlos" / "free" / "best", no other app names.
 
+**Arabic** (an *Arabic* localization in App Store Connect; the app has spoken
+Arabic since 17 November 2026 — Ahmad, please read it once as a native speaker):
+
+| Field | Limit | العربية |
+|---|---|---|
+| Name | 30 | `Bildklar: منظّف الصور الذكي` |
+| Subtitle | 30 | `المكرّر والرحلات · بخصوصية` |
+
+- **AR:** `ضبابية,مشابهة,مساحة,سفر,أطفال,عائلة,ألبوم,تنظيف`
+
 ### 2.2 Promotional text (170, can be changed any time without review)
 
 **DE:**
 ```
-Hunderte Urlaubsfotos, zehnmal dasselbe Motiv, einige verwackelt? Bildklar findet deine Reisen und zeigt, was weg kann – alles auf deinem iPhone.
+Kein Abo, keine Werbung, nichts verlässt dein iPhone. Bildklar findet fast gleiche Fotos, Duplikate und deine Reisen – und du entscheidest, was bleibt.
 ```
 
 **EN:**
 ```
-Hundreds of holiday photos, ten of the same shot, some of them blurry? Bildklar finds your trips and shows what can go – all on your iPhone.
+No subscription, no ads, nothing leaves your iPhone. Bildklar finds near-identical photos, duplicates and your trips – and you decide what stays.
+```
+
+**AR:**
+```
+بلا اشتراك، بلا إعلانات، ولا شيء يغادر iPhone. يجد Bildklar الصور شبه المتطابقة والمكرّرة ورحلاتك – وأنت تقرّر ما يبقى.
 ```
 
 ### 2.3 Description (4000)
 
 **DE:**
 ```
-Kinderfotos, Urlaubsfotos, Serienbilder: Nach ein paar Jahren sind es zehntausende. Bildklar bringt Ordnung hinein – auf deinem iPhone, ohne Konto und ohne Cloud.
+Kinderfotos, Urlaubsfotos, Serienbilder: Nach ein paar Jahren sind es zehntausende. Bildklar bringt Ordnung hinein – auf deinem iPhone, ohne Konto und ohne Cloud. Kein Abo, keine Werbung: Du entscheidest, was bleibt.
 
 DEINE REISEN, VON SELBST GEFUNDEN
-Bildklar erkennt an Ort und Zeit deiner Fotos, wann du unterwegs warst, und gibt jeder Reise einen Namen wie „Paris, Mai 2026“. Namen ändern, zwei Reisen zusammenlegen, eine teilen oder ausblenden – du hast das letzte Wort.
+Bildklar erkennt an Ort und Zeit deiner Fotos, wann du unterwegs warst, und gibt jeder Reise einen Namen wie „Paris, Mai 2026“. Namen ändern, zwei Reisen zusammenlegen, eine teilen oder ausblenden – du hast das letzte Wort. Mit einem Tipp wird aus einer Reise ein Album in Fotos.
 
 FAST GLEICHE FOTOS
 Zwanzig Mal dasselbe Lächeln? Bildklar fasst fast gleiche Aufnahmen zu Gruppen zusammen und schlägt das beste Foto vor: das schärfste, gut belichtet, mit offenen Augen. Du behältst es und löschst den Rest – oder wählst selbst.
 
+NEBENEINANDER VERGLEICHEN
+Zwei Aufnahmen gleich groß nebeneinander, ein Tipp zoomt beide auf dieselbe Stelle – so siehst du sofort, wo die Augen offen sind.
+
 DUPLIKATE
 Dasselbe Bild noch einmal aus dem Messenger gespeichert? Bildklar findet Kopien, auch wenn Wochen dazwischen liegen, und schlägt vor, das Original zu behalten.
+
+SUCHEN, WAS AUF DEM FOTO IST
+„Hund“, „Strand“, „Geburtstag“, „Kassenzettel“: Bildklar findet Fotos nach dem, was darauf zu sehen ist – mit einer KI, die nur auf deinem iPhone läuft.
 
 MISSGLÜCKTE FOTOS
 Verwackelt, unscharf, viel zu dunkel oder überbelichtet: Bildklar listet solche Fotos, die eindeutigen zuerst.
@@ -108,7 +131,7 @@ VIDEOS UND FOTOS IN EINEM DURCHGANG
 Beim Durchgehen Monat für Monat sind auch deine Videos dabei. Kopien und ähnliche Videos schlägt Bildklar zum Löschen vor.
 
 AUFRÄUMEN IN RUHE
-Auf einen Blick siehst du, wie viel Speicher Duplikate, fast gleiche und unscharfe Fotos und alte Screenshots belegen – und wie viel Platz auf dem Gerät noch frei ist. Beim Durchgehen wischst du nach rechts zum Behalten, nach links zum Aussortieren und nach oben, wenn du später entscheiden willst – jeder Schritt lässt sich zurücknehmen. Oder du wählst beim schnellen Aufräumen, welche Arten weg dürfen, und bestätigst einmal.
+Auf einen Blick siehst du, wie viel Speicher Duplikate, fast gleiche und unscharfe Fotos und alte Screenshots belegen – und wie viel Platz auf dem Gerät noch frei ist. Beim Durchgehen wischst du nach rechts zum Behalten und nach links zum Aussortieren; „Später“ legt ein Foto zur Seite – jeder Schritt lässt sich zurücknehmen. Oder du wählst beim schnellen Aufräumen, welche Arten weg dürfen, und bestätigst einmal.
 
 GESCHÜTZTE ALBEN
 Favoriten, geschützte Alben, Reisen und einzelne Fotos schlägt Bildklar nie vor.
@@ -129,21 +152,27 @@ PRIVAT
 OHNE KAUF, OHNE ABO, OHNE WERBUNG
 Alles, was du in Bildklar siehst, nutzt du ohne Kauf – auch das Löschen, so viel du willst.
 
-Gemacht von einem Vater mit viel zu vielen Kinderfotos. Auf Deutsch und Englisch.
+Gemacht von einem Vater mit viel zu vielen Kinderfotos. Auf Deutsch, Englisch und Arabisch.
 ```
 
 **EN:**
 ```
-Photos of the kids, holidays, burst shots: after a few years there are tens of thousands. Bildklar brings order to them – on your iPhone, without an account and without a cloud.
+Photos of the kids, holidays, burst shots: after a few years there are tens of thousands. Bildklar brings order to them – on your iPhone, without an account and without a cloud. No subscription, no ads: you decide what stays.
 
 YOUR TRIPS, FOUND FOR YOU
-From where and when your photos were taken, Bildklar works out when you were away and names each trip, like "Paris, May 2026". Rename a trip, merge two, split one or hide it – you have the last word.
+From where and when your photos were taken, Bildklar works out when you were away and names each trip, like "Paris, May 2026". Rename a trip, merge two, split one or hide it – you have the last word. One tap turns a trip into an album in Photos.
 
 NEAR-IDENTICAL PHOTOS
 The same smile twenty times? Bildklar groups near-identical shots and suggests the best one: the sharpest, well exposed, eyes open. Keep it and delete the rest – or pick your own.
 
+SIDE BY SIDE
+Two shots the same size next to each other; one tap zooms both to the same spot – so you see at once where the eyes are open.
+
 DUPLICATES
 Saved the same picture again from a messenger? Bildklar finds copies, even weeks apart, and suggests keeping the original.
+
+SEARCH FOR WHAT IS IN THE PHOTO
+“Dog”, “beach”, “birthday”, “receipt”: Bildklar finds photos by what they show – with an AI that runs only on your iPhone.
 
 FAILED SHOTS
 Shaky, out of focus, far too dark or washed out – taken by accident in a pocket: Bildklar lists such photos, the clear cases first.
@@ -158,7 +187,7 @@ VIDEOS AND PHOTOS IN ONE GO
 Going through your library month by month includes your videos. Copies and similar videos – the same scene filmed twice – are suggested for deleting; you keep all the others.
 
 CLEAN UP AT YOUR OWN PACE
-See at a glance how much space duplicates, near-identical and blurry photos and old screenshots take up – and how much space is left on the device. Going through them, swipe right to keep, left to sort out and up to decide later – and undo any step. Or use the quick clean: choose which kinds may go and confirm once.
+See at a glance how much space duplicates, near-identical and blurry photos and old screenshots take up – and how much space is left on the device. Going through them, swipe right to keep and left to sort out; “Later” puts a photo aside – and undo any step. Or use the quick clean: choose which kinds may go and confirm once.
 
 PROTECTED ALBUMS
 What matters to you is never suggested: favourites, protected albums, trips and single photos you protect with one tap.
@@ -179,7 +208,43 @@ PRIVATE
 NO PURCHASE, NO SUBSCRIPTION, NO ADS
 Everything you see in Bildklar is yours without buying anything – deleting too, as much as you like.
 
-Made by a father with far too many photos of his kids. In German and English.
+Made by a father with far too many photos of his kids. In German, English and Arabic.
+```
+
+**AR:**
+```
+صور الأطفال، صور العطلات، اللقطات المتتابعة: بعد بضع سنوات تصبح عشرات الآلاف. يرتّبها Bildklar – على iPhone، بلا حساب وبلا سحابة. بلا اشتراك وبلا إعلانات: أنت تقرّر ما يبقى.
+
+رحلاتك، تُكتشف تلقائيًا
+من مكان التقاط صورك ووقتها يعرف Bildklar متى كنت مسافرًا، ويسمّي كل رحلة مثل «Paris، مايو 2026». غيّر الاسم، ادمج رحلتين، قسّم رحلة أو أخفها – القرار لك. وبلمسة واحدة تصبح الرحلة ألبومًا في تطبيق الصور.
+
+صور شبه متطابقة
+الابتسامة نفسها عشرين مرة؟ يجمع Bildklar اللقطات شبه المتطابقة في مجموعات ويقترح أفضلها: الأوضح والأفضل إضاءة وبعيون مفتوحة. احتفظ بها وحدّد الباقي للحذف – أو اختر بنفسك.
+
+مقارنة جنبًا إلى جنب
+لقطتان بالحجم نفسه، ولمسة واحدة تكبّر الاثنتين على الموضع نفسه – فترى فورًا أين العيون مفتوحة.
+
+المكرّرات
+الصورة نفسها محفوظة مرة أخرى من تطبيق مراسلة؟ يجد Bildklar النسخ ويقترح الاحتفاظ بالأصل.
+
+ابحث عمّا في الصورة
+«كلب»، «شاطئ»، «عيد ميلاد»، «إيصال»: يجد Bildklar الصور بحسب ما يظهر فيها – بذكاء اصطناعي يعمل على iPhone فقط.
+
+صور فاشلة ولقطات شاشة وملفات كبيرة
+الضبابية والمظلمة جدًا والساطعة جدًا، ولقطات الشاشة القديمة، وأكبر الصور والفيديوهات أولًا.
+
+شهرًا بعد شهر
+راجع مكتبتك شهرًا بعد شهر: اسحب يمينًا للاحتفاظ ويسارًا للتحديد للحذف – ويمكن التراجع عن كل خطوة. و«في مثل هذا اليوم» يريك ما صوّرته في السنوات الماضية.
+
+آمن
+• لا يحذف Bildklar شيئًا من تلقاء نفسه. أنت تؤكّد كل حذف، ويسألك iPhone مرة أخرى.
+• تنتقل الصور المحذوفة إلى «المحذوفة مؤخرًا» ويمكن استعادتها خلال 30 يومًا.
+
+خاص
+• كل شيء يحدث على جهازك: بلا حساب، بلا خادم، بلا إعلانات، بلا تحليلات.
+• لا يرسل Bildklar أي صور أو بيانات إلى أي مكان.
+
+صنعه أب لديه صور أطفال كثيرة جدًا. بالعربية والألمانية والإنجليزية.
 ```
 
 ### 2.4 What's New (4000)
@@ -284,22 +349,35 @@ development, not for selling a photo app.
 | Field | Limit | Deutsch | English |
 |---|---|---|---|
 | App name | 30 | `Bildklar KI: Foto Reiniger` | `Bildklar AI: Photo Cleaner` |
-| Short description | 80 | `Reisen finden, fast gleiche und unscharfe Fotos aussortieren – privat.` | `Trips found, near-identical and blurry photos sorted out – privately.` |
+| Short description | 80 | `Fast gleiche Fotos, Duplikate, Reisen – ohne Abo, nichts verlässt dein Handy.` | `Near-identical photos, duplicates, trips – no subscription, all on your phone.` |
+
+Arabic (a translation in the Play Console, *Store presence › Main store listing › Manage translations*):
+
+| Field | Limit | العربية |
+|---|---|---|
+| App name | 30 | `Bildklar: منظّف الصور الذكي` |
+| Short description | 80 | `صور شبه متطابقة ومكرّرة ورحلات – بلا اشتراك، وكل شيء على هاتفك.` |
 
 ### 3.2 Full description (4000)
 
 **DE:**
 ```
-Kinderfotos, Urlaubsfotos, Serienbilder: Nach ein paar Jahren sind es zehntausende. Bildklar bringt Ordnung hinein – auf deinem Handy, ohne Konto und ohne Cloud.
+Kinderfotos, Urlaubsfotos, Serienbilder: Nach ein paar Jahren sind es zehntausende. Bildklar bringt Ordnung hinein – auf deinem Handy, ohne Konto und ohne Cloud. Kein Abo, keine Werbung: Du entscheidest, was bleibt.
 
 DEINE REISEN, VON SELBST GEFUNDEN
-Bildklar erkennt an Ort und Zeit deiner Fotos, wann du unterwegs warst, und gibt jeder Reise einen Namen wie „Paris, Mai 2026“. Namen ändern, zwei Reisen zusammenlegen, eine teilen oder ausblenden – du hast das letzte Wort.
+Bildklar erkennt an Ort und Zeit deiner Fotos, wann du unterwegs warst, und gibt jeder Reise einen Namen wie „Paris, Mai 2026“. Namen ändern, zwei Reisen zusammenlegen, eine teilen oder ausblenden – du hast das letzte Wort. Mit einem Tipp wird aus einer Reise ein Ordner in deiner Galerie.
 
 FAST GLEICHE FOTOS
 Bildklar fasst fast gleiche Aufnahmen zu Gruppen zusammen und schlägt das beste Foto vor: das schärfste und am besten belichtete. Du behältst es und löschst den Rest – oder wählst selbst.
 
+NEBENEINANDER VERGLEICHEN
+Zwei Aufnahmen gleich groß nebeneinander, ein Tipp zoomt beide auf dieselbe Stelle – so siehst du sofort, wo die Augen offen sind.
+
 DUPLIKATE
 Dasselbe Bild noch einmal aus dem Messenger gespeichert? Bildklar findet Kopien, auch wenn Wochen dazwischen liegen, und schlägt vor, das Original zu behalten.
+
+SUCHEN, WAS AUF DEM FOTO IST
+„Hund“, „Strand“, „Geburtstag“, „Kassenzettel“: Bildklar findet Fotos nach dem, was darauf zu sehen ist – mit einer KI, die nur auf deinem Handy läuft.
 
 MISSGLÜCKTE FOTOS
 Verwackelt, unscharf, viel zu dunkel oder überbelichtet: Bildklar listet solche Fotos, die eindeutigen zuerst.
@@ -314,7 +392,7 @@ VIDEOS UND FOTOS IN EINEM DURCHGANG
 Beim Durchgehen Monat für Monat sind auch deine Videos dabei. Kopien und ähnliche Videos schlägt Bildklar zum Löschen vor.
 
 AUFRÄUMEN IN RUHE
-Auf einen Blick siehst du, wie viel Speicher Duplikate, fast gleiche und unscharfe Fotos und alte Screenshots belegen – und wie viel Platz auf dem Gerät noch frei ist. Beim Durchgehen wischst du nach rechts zum Behalten, nach links zum Aussortieren und nach oben, wenn du später entscheiden willst – jeder Schritt lässt sich zurücknehmen. Oder du wählst beim schnellen Aufräumen, welche Arten weg dürfen, und bestätigst einmal.
+Auf einen Blick siehst du, wie viel Speicher Duplikate, fast gleiche und unscharfe Fotos und alte Screenshots belegen – und wie viel Platz auf dem Gerät noch frei ist. Beim Durchgehen wischst du nach rechts zum Behalten und nach links zum Aussortieren; „Später“ legt ein Foto zur Seite – jeder Schritt lässt sich zurücknehmen. Oder du wählst beim schnellen Aufräumen, welche Arten weg dürfen, und bestätigst einmal.
 
 GESCHÜTZTE ORDNER
 Favoriten, geschützte Ordner, Reisen und einzelne Fotos schlägt Bildklar nie vor.
@@ -338,21 +416,27 @@ PRIVAT
 OHNE KAUF, OHNE ABO, OHNE WERBUNG
 Alles, was du in Bildklar siehst, nutzt du ohne Kauf – auch das Löschen, so viel du willst.
 
-Gemacht von einem Vater mit viel zu vielen Kinderfotos. Auf Deutsch und Englisch.
+Gemacht von einem Vater mit viel zu vielen Kinderfotos. Auf Deutsch, Englisch und Arabisch.
 ```
 
 **EN:**
 ```
-Photos of the kids, holidays, burst shots: after a few years there are tens of thousands. Bildklar brings order to them – on your phone, without an account and without a cloud.
+Photos of the kids, holidays, burst shots: after a few years there are tens of thousands. Bildklar brings order to them – on your phone, without an account and without a cloud. No subscription, no ads: you decide what stays.
 
 YOUR TRIPS, FOUND FOR YOU
-From where and when your photos were taken, Bildklar works out when you were away and names each trip, like "Paris, May 2026". Rename a trip, merge two, split one or hide it – you have the last word.
+From where and when your photos were taken, Bildklar works out when you were away and names each trip, like "Paris, May 2026". Rename a trip, merge two, split one or hide it – you have the last word. One tap turns a trip into a folder in your gallery.
 
 NEAR-IDENTICAL PHOTOS
 The same smile twenty times? Bildklar groups near-identical shots and suggests the best one: the sharpest and best exposed. Keep it and delete the rest – or pick your own.
 
+SIDE BY SIDE
+Two shots the same size next to each other; one tap zooms both to the same spot – so you see at once where the eyes are open.
+
 DUPLICATES
 Saved the same picture again from a messenger? Bildklar finds copies, even weeks apart, and suggests keeping the original.
+
+SEARCH FOR WHAT IS IN THE PHOTO
+“Dog”, “beach”, “birthday”, “receipt”: Bildklar finds photos by what they show – with an AI that runs only on your phone.
 
 FAILED SHOTS
 Shaky, out of focus, far too dark or washed out – taken by accident in a pocket: Bildklar lists such photos, the clear cases first.
@@ -367,7 +451,7 @@ VIDEOS AND PHOTOS IN ONE GO
 Going through your library month by month includes your videos. Copies and similar videos – the same scene filmed twice – are suggested for deleting; you keep all the others.
 
 CLEAN UP AT YOUR OWN PACE
-See at a glance how much space duplicates, near-identical and blurry photos and old screenshots take up – and how much space is left on the device. Going through them, swipe right to keep, left to sort out and up to decide later – and undo any step. Or use the quick clean: choose which kinds may go and confirm once.
+See at a glance how much space duplicates, near-identical and blurry photos and old screenshots take up – and how much space is left on the device. Going through them, swipe right to keep and left to sort out; “Later” puts a photo aside – and undo any step. Or use the quick clean: choose which kinds may go and confirm once.
 
 PROTECTED FOLDERS
 What matters to you is never suggested: favourites, protected folders, trips and single photos you protect with one tap.
@@ -391,7 +475,43 @@ PRIVATE
 NO PURCHASE, NO SUBSCRIPTION, NO ADS
 Everything you see in Bildklar is yours without buying anything – deleting too, as much as you like.
 
-Made by a father with far too many photos of his kids. In German and English.
+Made by a father with far too many photos of his kids. In German, English and Arabic.
+```
+
+**AR:**
+```
+صور الأطفال، صور العطلات، اللقطات المتتابعة: بعد بضع سنوات تصبح عشرات الآلاف. يرتّبها Bildklar – على هاتفك، بلا حساب وبلا سحابة. بلا اشتراك وبلا إعلانات: أنت تقرّر ما يبقى.
+
+رحلاتك، تُكتشف تلقائيًا
+من مكان التقاط صورك ووقتها يعرف Bildklar متى كنت مسافرًا، ويسمّي كل رحلة مثل «Paris، مايو 2026». غيّر الاسم، ادمج رحلتين، قسّم رحلة أو أخفها – القرار لك. وبلمسة واحدة تصبح الرحلة مجلدًا في معرض صورك.
+
+صور شبه متطابقة
+الابتسامة نفسها عشرين مرة؟ يجمع Bildklar اللقطات شبه المتطابقة في مجموعات ويقترح أفضلها: الأوضح والأفضل إضاءة وبعيون مفتوحة. احتفظ بها وحدّد الباقي للحذف – أو اختر بنفسك.
+
+مقارنة جنبًا إلى جنب
+لقطتان بالحجم نفسه، ولمسة واحدة تكبّر الاثنتين على الموضع نفسه – فترى فورًا أين العيون مفتوحة.
+
+المكرّرات
+الصورة نفسها محفوظة مرة أخرى من تطبيق مراسلة؟ يجد Bildklar النسخ ويقترح الاحتفاظ بالأصل.
+
+ابحث عمّا في الصورة
+«كلب»، «شاطئ»، «عيد ميلاد»، «إيصال»: يجد Bildklar الصور بحسب ما يظهر فيها – بذكاء اصطناعي يعمل على هاتفك فقط.
+
+صور فاشلة ولقطات شاشة وملفات كبيرة
+الضبابية والمظلمة جدًا والساطعة جدًا، ولقطات الشاشة القديمة، وأكبر الصور والفيديوهات أولًا.
+
+شهرًا بعد شهر
+راجع مكتبتك شهرًا بعد شهر: اسحب يمينًا للاحتفاظ ويسارًا للتحديد للحذف – ويمكن التراجع عن كل خطوة. و«في مثل هذا اليوم» يريك ما صوّرته في السنوات الماضية.
+
+آمن
+• لا يحذف Bildklar شيئًا من تلقاء نفسه. أنت تؤكّد كل حذف، ويسألك Android مرة أخرى.
+• تنتقل الصور المحذوفة إلى سلة المهملات ويمكن استعادتها خلال 30 يومًا.
+
+خاص
+• كل شيء يحدث على جهازك: بلا حساب، بلا خادم، بلا إعلانات، بلا تحليلات.
+• لا يرسل Bildklar أي صور أو بيانات إلى أي مكان.
+
+صنعه أب لديه صور أطفال كثيرة جدًا. بالعربية والألمانية والإنجليزية.
 ```
 
 ### 3.3 Store settings
