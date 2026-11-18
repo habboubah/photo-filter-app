@@ -9,6 +9,7 @@ import { duration } from '../logic/large';
 import { BigNumber } from '../ui/Controls';
 import { Button, IconButton } from '../ui/Button';
 import { Thumb } from '../ui/Photo';
+import { PlayOver } from '../ui/play';
 import { Sheet } from '../ui/Sheet';
 import { Field } from '../ui/Field';
 import { LARGE, thumbUrl } from '../thumbs';
@@ -31,7 +32,7 @@ const THRESHOLD = 110;
 /** What the end screen writes: the photos marked for deleting, and the photos filed into albums (Session.albums). */
 export interface ReviewOutcome { deleteIds: string[]; albums: { album: string; ids: string[] }[] }
 
-export function ReviewView({ t, session, finished, byId, debug, bin = false, albums, android, guide, protectNote, onProtectNote, onDecide: decideRaw, onFile, onProtect, onPreview, onLike, onUndo, onFinish, onDelete, onClose }: {
+export function ReviewView({ t, session, finished, byId, debug, bin = false, albums, android, guide, protectNote, onProtectNote, onDecide: decideRaw, onFile, onProtect, onLike, onUndo, onFinish, onDelete, onClose }: {
   t: Strings;
   session: Session;
   finished: boolean;
@@ -58,7 +59,6 @@ export function ReviewView({ t, session, finished, byId, debug, bin = false, alb
   /** The shield: the photo is kept and protected for good (src/logic/protect.ts). */
   onProtect: (id: string) => void;
   /** A video: played inside the app (src/ui/play.tsx). */
-  onPreview: (id: string) => void;
   /** The photos like this one (src/logic/search.ts likeThis); absent for a photo without the AI's vector. */
   onLike?: (id: string) => void;
   onUndo: () => void;
@@ -151,7 +151,7 @@ export function ReviewView({ t, session, finished, byId, debug, bin = false, alb
               </div>
             </div>
             <Card
-              key={item.id} t={t} item={item} photo={byId.get(item.id)} debug={debug} bin={bin} guide={guide} said={said} onUndo={undoNow} onDecide={onDecide} onProtect={() => onProtect(item.id)} onPreview={() => onPreview(item.id)}
+              key={item.id} t={t} item={item} photo={byId.get(item.id)} debug={debug} bin={bin} guide={guide} said={said} onUndo={undoNow} onDecide={onDecide} onProtect={() => onProtect(item.id)}
               onLike={onLike ? () => onLike(item.id) : undefined}
             />
             {onFile && <div role="group" aria-label={t.fileIntoAlbum} className="flex gap-2 overflow-x-auto no-scrollbar px-[12px] pt-3 pb-1">
@@ -229,9 +229,9 @@ export function ReviewView({ t, session, finished, byId, debug, bin = false, alb
   );
 }
 
-function Card({ t, item, photo, debug, bin, guide, said, onUndo, onDecide, onProtect, onPreview, onLike }: {
+function Card({ t, item, photo, debug, bin, guide, said, onUndo, onDecide, onProtect, onLike }: {
   t: Strings; item: ReviewItem; photo?: Photo; debug: boolean; bin: boolean; guide?: Guide; said: { key: number; text: string } | null; onUndo: () => void;
-  onDecide: (d: Decision) => void; onProtect: () => void; onPreview: () => void; onLike?: () => void;
+  onDecide: (d: Decision) => void; onProtect: () => void; onLike?: () => void;
 }) {
   const reduce = useReducedMotion();
   // The guide's hand leaves the moment the card is touched, and comes back if it is let go undecided.
@@ -347,16 +347,7 @@ function Card({ t, item, photo, debug, bin, guide, said, onUndo, onDecide, onPro
             <Play className="w-3.5 h-3.5" fill="currentColor" strokeWidth={0} aria-hidden="true" />{t.videoBadge} · {duration(photo.dur ?? 0)}
           </span>
         )}
-        {photo?.video && (
-          <button
-            type="button" aria-label={fmt(t.playVideo, { length: duration(photo.dur ?? 0) })}
-            onPointerDownCapture={e => e.stopPropagation()}
-            onClick={() => { tapLight(); onPreview(); }}
-            className="absolute top-1/2 start-1/2 -translate-x-1/2 -translate-y-1/2 w-[72px] h-[72px] rounded-full bg-veil text-on-color inline-flex items-center justify-center press focus-visible:ring-focus"
-          >
-            <Play className="w-8 h-8 ms-1" fill="currentColor" strokeWidth={0} aria-hidden="true" />
-          </button>
-        )}
+        {photo?.video && <PlayOver id={item.id} />}
         {!photo?.video && (
           <button
             type="button" aria-label={t.zoomOpen} title={t.zoomOpen}

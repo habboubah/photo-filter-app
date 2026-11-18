@@ -705,6 +705,13 @@ class PhotoLibraryPlugin : Plugin() {
         }
     }
 
+    /** Where the page plays a video in place: its content:// URI (Capacitor serves it, with ranges). */
+    @PluginMethod
+    fun videoFile(call: PluginCall) {
+        val id = call.getString("id")?.takeIf { it.contains(':') && isVideo(it) } ?: run { call.reject("No video"); return }
+        call.resolve(JSObject().put("path", contentUri(id).toString()))
+    }
+
     /**
      * Android's "albums" for Settings › Geschützt: every folder (RELATIVE_PATH)
      * that holds photos or videos, titled by its last part, with how many.
