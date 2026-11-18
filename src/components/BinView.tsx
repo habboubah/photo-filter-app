@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Archive, CheckCircle2, Circle, ListChecks, Undo2 } from 'lucide-react';
+import { Archive, CheckCircle2, Circle, ListChecks, Trash2, Undo2 } from 'lucide-react';
 import type { Photo } from '../types';
 import { Strings, bytes, plural } from '../translations';
 import { duration } from '../logic/large';
@@ -82,8 +82,9 @@ export function BinView({ t, photos, safetySeen, onSafetySeen, onBack, onRestore
               <Button full size="lg" icon={Undo2} onClick={() => { onRestore(ids(picked)); setChosen(new Set()); }}>
                 {`${t.binRestore} · ${count(picked)}`}
               </Button>
-              <Button full variant="ghost" className="mt-1" icon={ListChecks} onClick={() => setConfirm(picked)}>
-                {`${t.binReviewOnly} · ${bytes(t, pickedBytes)}`}
+              {/* Red: this way leads to deleting them (after the sheet that shows exactly what goes, and the system's dialog). */}
+              <Button full variant="ghost" className="mt-1 !text-neg" icon={Trash2} onClick={() => setConfirm(picked)}>
+                {`${t.binDeleteThese} · ${bytes(t, pickedBytes)}`}
               </Button>
             </>
           ) : (

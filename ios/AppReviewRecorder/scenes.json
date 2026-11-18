@@ -53,7 +53,7 @@
     {"optional": [{"systemAlert": ["Limit Access…", "Zugriff beschränken …"], "timeout": 3}, {"note": "The photo permission dialog was shown: the test can't pick photos in the system's picker — give Limited Access by hand before recording (README.md)."}]},
     {"see": "Clean up", "timeout": 30},
     {"pause": 4},
-    {"see": "Space you could free up", "timeout": 60},
+    {"see": "can be freed", "timeout": 60},
     {"pause": 2}
   ]},
   { "name": "A trip, found by itself", "steps": [

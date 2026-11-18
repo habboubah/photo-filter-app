@@ -985,7 +985,7 @@ export default function App() {
           t={t} groups={similarGroups} byId={byId} kept={kept} shown={similarShown}
           onMore={() => setSimilarShown(n => n + 40)}
           onBack={() => setShowSimilar(false)} onOpen={setGroupKey}
-          onKeepAll={keepGroup} onAsideOthers={(_, ids) => toBin(ids)}
+          onKeepAll={keepGroup} onAsideOthers={(_, ids, keep) => toBin(ids, keep)}
         />
       );
     }
@@ -995,7 +995,7 @@ export default function App() {
           t={t} kind="duplicate" groups={dupGroups} byId={byId} kept={kept} shown={duplicatesShown}
           onMore={() => setDuplicatesShown(n => n + 40)}
           onBack={() => setShowDuplicates(false)} onOpen={setGroupKey}
-          onKeepAll={keepGroup} onAsideOthers={(_, ids) => toBin(ids)}
+          onKeepAll={keepGroup} onAsideOthers={(_, ids, keep) => toBin(ids, keep)}
         />
       );
     }
@@ -1005,7 +1005,7 @@ export default function App() {
           t={t} kind="lookalike" groups={videoGroups} byId={byId} kept={kept} shown={videoGroupsShown}
           onMore={() => setVideoGroupsShown(n => n + 40)}
           onBack={() => setShowVideoGroups(false)} onOpen={setGroupKey}
-          onKeepAll={keepGroup} onAsideOthers={(_, ids) => toBin(ids)}
+          onKeepAll={keepGroup} onAsideOthers={(_, ids, keep) => toBin(ids, keep)}
         />
       );
     }

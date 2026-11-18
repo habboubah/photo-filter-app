@@ -19,7 +19,10 @@ Calm, photo-first, private, never pushy.
   leaderboards, no confetti, no "only today". Space is stated in the same
   quiet units everywhere (`bytes()`).
 - **Marking is not deleting.** *Löschen vormerken* is teal or quiet glass with
-  an archive icon. Red and the trash icon appear only where a tap really
+  an archive icon. Two exceptions by Ahmad's call (18 November 2026): a group
+  card's *Ohne Stern zum Löschen vormerken* is red (with the archive icon,
+  not the trash), and the bin's *Diese löschen* is red text — it leads to
+  the delete sheet. Red and the trash icon appear only where a tap really
   deletes: the delete sheet's one button. The bin's dock reviews the
   selection (*Auswahl prüfen*), it never deletes by itself.
 - Sentence case in every language. German strings are long: they wrap, a
@@ -196,8 +199,10 @@ to the bottom with a fade above it).
   own colour, so waiting reads apart from everything else, and never red.
   No next-step card on home since 18 November 2026 (the reveal keeps one).
   *Vorschläge* is ONE card: the space, the library's bar, the
-  photos / videos cells and the free space, then the categories as rows
-  whose hue dot is their segment in the bar, and *Jetzt aufräumen* at its foot —
+  photos / videos cells and the free space, then the categories as rows,
+  and *Jetzt aufräumen* at its foot. Its bar has two parts only — *Kann weg*
+  (sand) and *Bleibt* (grey) — both named with their size under it: a colour
+  nobody can name is not shown —
   then more space (month by month and the later pile first), protected. On this day and the trips are
   *Ordnen*'s, not home's.
 - **Ordnen's order**: search as a field (`card`, rounded-full, 56 px), On
