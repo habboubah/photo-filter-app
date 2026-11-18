@@ -96,6 +96,34 @@
       }
     },
     {
+      "//": "The exact copies: the first two series lifted out, each with the one to keep starred.",
+      "id": "duplicates",
+      "raw": "21-duplicates.png",
+      "layout": "top",
+      "device": "iphone",
+      "background": "teal",
+      "callouts": [
+        {
+          "mark": "group-1",
+          "scale": 1.12,
+          "tilt": -3,
+          "shift": [
+            -0.02,
+            0
+          ]
+        },
+        {
+          "mark": "group-2",
+          "scale": 1.12,
+          "tilt": 3,
+          "shift": [
+            0.03,
+            0.02
+          ]
+        }
+      ]
+    },
+    {
       "id": "group",
       "raw": "06-group.png",
       "layout": "bottom",
@@ -106,6 +134,41 @@
           "mark": "best",
           "scale": 1.12,
           "tilt": -4
+        }
+      ]
+    },
+    {
+      "//": "One word typed, the photos the on-device AI finds for it. The word's chip lifted: the search is the promise.",
+      "id": "search",
+      "raw": "42-search-results.png",
+      "layout": "top",
+      "device": "iphone",
+      "background": "teal",
+      "callouts": [
+        {
+          "mark": "word",
+          "scale": 1.5,
+          "tilt": -4,
+          "anchor": "start",
+          "shift": [
+            0.02,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "//": "Similar photos: the photo tapped on top, everything that looks like it below.",
+      "id": "similar",
+      "raw": "43-like.png",
+      "layout": "bottom",
+      "device": "iphone",
+      "background": "teal",
+      "callouts": [
+        {
+          "mark": "photo",
+          "scale": 1.1,
+          "tilt": 4
         }
       ]
     },
@@ -147,20 +210,6 @@
           "scale": 1.15
         }
       ]
-    },
-    {
-      "//": "The scan, with its line about staying on the device.",
-      "id": "private",
-      "raw": "01-scan.png",
-      "layout": "bottom",
-      "device": "iphone",
-      "background": "teal",
-      "callouts": [
-        {
-          "mark": "scan",
-          "scale": 1.12
-        }
-      ]
     }
   ],
   "//stickers": "Drawings from assets/stickers/, anchored to a slide by id. x: in slide widths from that slide's leading edge to the sticker's centre — 1 is the seam to the next slide, so the sticker shows half on each and the listing reads as one strip. y: in slide heights from the top. size: its width, in App Store canvas widths. rotate: degrees. layer: front (default) or back (behind the phone). Keep them out of the copy: y roughly between 0.3 and 0.7 is clear on both layouts. A target with its own slide list keeps each sticker on its slide; the spill goes to whichever slide comes next there.",
@@ -200,19 +249,19 @@
     },
     {
       "art": "snapshot-hills",
-      "slide": "blurry",
+      "slide": "review",
       "x": 1.0,
       "y": 0.64,
       "size": 0.26,
       "rotate": 6
     }
   ],
-  "//targets": "Exact export pixels. App Store Connect requires the \"iPhone with Dynamic Island (medium display)\" slot (iPhone 6.1\"/6.3\"), which accepts only 1206x2622 or 1179x2556 portrait; the large 6.9\"/6.5\" slots are optional and scaled from it. So one target, one folder: screenshots/store/iphone-6.3/<locale>/. Google Play is the second target, with its own captures (rawDir).",
+  "//targets": "Exact export pixels. App Store Connect requires the \"iPhone with Dynamic Island (medium display)\" slot (iPhone 6.1\"/6.3\"), which accepts only 1206x2622 or 1179x2556 portrait; the large 6.9\"/6.5\" slots are optional and scaled from it. So one target, one folder: screenshots/store/iphone/<locale>/. Google Play is the second target, with its own captures (rawDir).",
   "//ribbon": "The corner ribbon with the copy file's `ribbon` word, per target and on the feature graphic: true = every slide, \"first\" = the first slide only, false or absent = none. The same switch lets a target show the price points of the copy files ({ \"text\": …, \"price\": true }). Bildklar has an in-app purchase, so it is off everywhere and the copy files have no ribbon and no price points: \"free\" on a screenshot of an app that sells something is misleading on Play and rejected by Apple (guideline 2.3.7). See reference/store-specs.md.",
   "targets": [
     {
       "//": "While nothing is for sale (UNLOCK_ON_SALE in src/logic/allowance.ts) albums are hidden in the app, so the \"album\" slide is left out; put it back after \"trips\" when the unlock goes on sale.",
-      "id": "iphone-6.3",
+      "id": "iphone",
       "store": "apple",
       "width": 1206,
       "height": 2622,
@@ -221,16 +270,18 @@
       "slides": [
         "home",
         "trips",
+        "duplicates",
         "group",
+        "search",
+        "similar",
         "review",
         "blurry",
-        "cleanup",
-        "private"
+        "cleanup"
       ],
       "ribbon": false
     },
     {
-      "//": "Google Play phone screenshots, from the Android captures (`npm run screenshots -- --android`: Ordner, Papierkorb, Google Play). `device` overrides each slide's frame (no iPhone on Play); `slides` picks the seven that fit Android — not \"album\" (Android makes a folder).",
+      "//": "Google Play phone screenshots, from the Android captures (screenshots/<locale>-android/, made by `npm run screenshots` with the iPhone ones: Ordner, Papierkorb, Google Play). `device` overrides each slide's frame (no iPhone on Play); `slides` picks the eight that fit Android (Play takes 2–8) — not \"album\" (Android makes a folder), not \"cleanup\" (home on the first slide already shows the number).",
       "id": "play-phone",
       "store": "play",
       "width": 1080,
@@ -242,11 +293,12 @@
       "slides": [
         "home",
         "trips",
+        "duplicates",
         "group",
+        "search",
+        "similar",
         "review",
-        "blurry",
-        "cleanup",
-        "private"
+        "blurry"
       ],
       "ribbon": false,
       "rawDir": "screenshots/{locale}-android"
