@@ -47,8 +47,13 @@ every changed screen in the demo. Not run on a phone — please:
 - [ ] **Read the Arabic store texts** in `store/listing.md` (2.1, 2.2, 2.3,
       3.1, 3.2) and `release-notes/2.0.16/ar.txt`, then add Arabic in both
       consoles if you want the Arabic listing.
-- [ ] **The new subtitle** *Doppelte & Reisen · privat* (was *Reisen &
-      Doppelte finden*) — keep it or say which you prefer.
+- [ ] **The privacy-first store texts** (18 Nov 2026, late evening,
+      `store/listing.md`): new App Store subtitle *Doppelte Fotos – 100%
+      offline* (was *Doppelte Fotos & Reisealben*), keywords, promotional
+      text, descriptions and Play's short description. Paste them into App
+      Store Connect (DE, EN, AR) and update the Play Console drafts — the
+      drafts saved earlier today still have the previous texts. Try
+      "Probier es im Flugmodus aus" once yourself on both phones before it goes live.
 - [ ] Once the app is live on the App Store: `APP_STORE_ID` in
       `src/links.ts` (the Settings row *Bildklar bewerten* appears then).
 - [ ] The App Review recording (`npm run rehearse:app-review`): scene 1 now

@@ -3,16 +3,27 @@
 Everything to copy into **App Store Connect** and the **Google Play Console**,
 in German (primary), English and Arabic. Every text below fits the store's limit
 (counted with `node scripts/listing-lengths.mjs` — run it again after editing).
-The texts of 18 November 2026 (evening) were rewritten after a look at the
-other cleaners' listings (Cleanup, Clever Cleaner, CleanMy®Phone, Swipewipe,
-Slidebox, the German "AI Cleaner" apps). Their 1-star reviews are about
-weekly subscriptions and trials, wrong photos marked as "similar", and
-photos sent to servers. So every text opens with what Bildklar does
-differently — no subscription, no ads, no account, nothing leaves the phone,
-never deletes by itself, favourites never suggested — then a "Warum
-Bildklar" list, then what the others don't have: trips that become
-albums/folders, side by side with one zoom, search by what is in a photo,
-chats sorted by app. No "speed up" or "junk" claims (the app can't keep them).
+The texts of 18 November 2026 (late evening) put **privacy first**, after a
+second look at the other cleaners on both stores (TidyHero, Slean, Clean Up,
+Clean Kit, Swipe & Tidy, Clever Cleaner, Cleanup, CleanMy®Phone, Play's
+offline duplicate finders). "Your photos never leave your device" is now in
+nearly every listing, so on its own it no longer sets Bildklar apart. What
+does is saying it in ways the reader can check: **we** can't see your photos
+(no server, no account, no upload); it works **completely offline**, the AI
+and the place names too — "try it in airplane mode"; the App Store label says
+*Data Not Collected*; and **for now everything is free, with no ads** — most
+of the others are subscriptions with a thin free tier (Clever Cleaner is the
+one that wins on "free, no ads", and it doesn't say offline). So every
+description opens with "Wir sehen deine Fotos nie", then three short blocks
+(your photos stay with you · free and no ads · you have the last word), then
+what the others don't have: trips that become albums/folders, side by side
+with one zoom, search by what is in a photo, chats sorted by app. Still no
+"speed up" or "junk" claims (the app can't keep them).
+"Offline" / "ohne Internet" is true and checked (`npm run check:privacy`: the
+app makes no request at all; a restore of the purchase only on a tap) — but
+never "no internet permission": Android's Billing Library brings it
+(`docs/ANDROID_RELEASE.md`). **When the unlock goes on sale**, the "for now
+everything is free" lines (promotional text, the descriptions) change with it.
 The Arabic texts are new and Claude's: please read them once before they go in.
 
 The two stores get slightly different texts, because the app does slightly
@@ -23,8 +34,8 @@ iPhone only.
 **The launch phase (now).** Nothing is for sale yet (`UNLOCK_ON_SALE` is
 `false` in `src/logic/allowance.ts`): deleting has no limit, and since
 18 November 2026 albums / folders, smaller videos and photos and Live Photos
-as stills are free in the app too. The texts below mention no purchase (and
-don't yet mention the extras). The versions
+as stills are free in the app too. The texts below say that everything is
+free *for now* and mention no purchase. The versions
 that do — for the day the unlock goes on sale — are in git history (this
 file before 17 November 2026): bring back those sections, the album slide
 and the album scene together with the switch.
@@ -55,8 +66,10 @@ deleting without a limit (`AppState.early`).
 
 **Rules for every text and image:** no price and no "kostenlos/free" in the
 name, subtitle, keywords or screenshots (App Store guideline 2.3.7, Play's
-metadata policy — the store shows the price itself); no other app names; no
-claims the app can't keep ("deletes duplicates automatically", "no internet").
+metadata policy — the store shows the price itself; the promotional text and
+the descriptions may say it); no other app names; no claims the app can't
+keep ("deletes duplicates automatically", "no internet permission" — "works
+offline" / "ohne Internet" is true and fine).
 
 ---
 
@@ -67,17 +80,18 @@ claims the app can't keep ("deletes duplicates automatically", "no internet").
 | Field | Limit | Deutsch (primary) | English (U.K. and U.S.) |
 |---|---|---|---|
 | Name | 30 | `Bildklar KI: Foto Reiniger` | `Bildklar AI: Photo Cleaner` |
-| Subtitle | 30 | `Doppelte Fotos & Reisealben` | `Duplicate photos & trip albums` |
+| Subtitle | 30 | `Doppelte Fotos – 100% offline` | `Duplicate photos, 100% offline` |
 
 The subtitle names the search people type most ("doppelte Fotos" /
-"duplicate photos") and the one thing no other cleaner does: trips that
-become albums. "Privat" moved into the promotional text and the first line
-of the description, where there is room to say it properly.
+"duplicate photos") and the promise a reader can check: it works offline
+(nothing leaves the phone because nothing *can*). The trip albums — the thing
+no other cleaner does — moved to the description's first lines and the
+keywords. Before 18 November 2026 (late evening): `Doppelte Fotos & Reisealben`.
 
 **Keywords** (100 bytes, comma-separated, no spaces after commas):
 
-- **DE:** `duplikate,ähnlich,unscharf,speicher,löschen,aufräumen,urlaub,galerie,kinder,familie,album,privat`
-- **EN:** `similar,blurry,storage,space,delete,clean,vacation,holiday,travel,gallery,kids,family,organizer`
+- **DE:** `duplikate,ähnlich,unscharf,speicher,löschen,aufräumen,privat,datenschutz,urlaub,album,kinder`
+- **EN:** `similar,blurry,storage,space,delete,clean,private,privacy,trip,travel,album,vacation,kids,family`
 
 Rules followed: no word repeated from the name or subtitle (Apple combines
 them already), no "kostenlos" / "free" / "best", no other app names.
@@ -88,39 +102,48 @@ Arabic since 17 November 2026 — Ahmad, please read it once as a native speaker
 | Field | Limit | العربية |
 |---|---|---|
 | Name | 30 | `Bildklar: منظّف الصور الذكي` |
-| Subtitle | 30 | `المكرّر وألبومات الرحلات` |
+| Subtitle | 30 | `الصور المكرّرة – دون إنترنت` |
 
-- **AR:** `ضبابية,مشابهة,مساحة,سفر,أطفال,عائلة,ألبوم,تنظيف,حذف`
+- **AR:** `ضبابية,مشابهة,مساحة,خصوصية,رحلات,ألبوم,أطفال,تنظيف,حذف`
 
 ### 2.2 Promotional text (170, can be changed any time without review)
 
 **DE:**
 ```
-Kein Abo, keine Werbung, kein Konto. Bildklar findet doppelte und fast gleiche Fotos und macht aus Reisen Alben – alles nur auf deinem iPhone. Du entscheidest.
+Wir sehen deine Fotos nie: Bildklar arbeitet nur auf deinem iPhone, auch ohne Internet. Im Moment kostenlos – ohne Werbung, ohne Abo, ohne Konto. Du entscheidest.
 ```
 
 **EN:**
 ```
-No subscription, no ads, no account. Bildklar finds duplicate and near-identical photos and turns trips into albums – all on your iPhone. You decide what goes.
+We never see your photos: Bildklar works only on your iPhone, even offline. Free for now – no ads, no subscription, no account. You decide what stays.
 ```
 
 **AR:**
 ```
-بلا اشتراك، بلا إعلانات، بلا حساب. يجد Bildklar الصور المكرّرة وشبه المتطابقة ويحوّل رحلاتك إلى ألبومات – كل ذلك على iPhone فقط. وأنت تقرّر.
+لا نرى صورك أبدًا: يعمل Bildklar على iPhone فقط، حتى دون إنترنت. مجاني حاليًا – بلا إعلانات، بلا اشتراك، بلا حساب. وأنت تقرّر.
 ```
 
 ### 2.3 Description (4000)
 
 **DE:**
 ```
-Bildklar räumt deine Fotos auf – ohne Abo, ohne Werbung, ohne Konto, und ohne dass ein einziges Foto dein iPhone verlässt. Doppelte und fast gleiche Fotos finden, Missglücktes aussortieren, aus Reisen Alben machen: Du entscheidest, was bleibt.
+Wir sehen deine Fotos nie. Bildklar räumt sie trotzdem auf – ganz auf deinem iPhone, ohne Internet, ohne Konto und ohne Werbung. Doppelte und fast gleiche Fotos finden, Missglücktes aussortieren, aus Reisen Alben machen: Du entscheidest, was bleibt.
 
-WARUM BILDKLAR
-• Kein Abo, keine Probewoche, keine Werbung, kein Konto.
-• Alles passiert auf deinem iPhone – auch die KI. Kein Server, keine Analyse.
-• Bildklar löscht nie von selbst. Favoriten und geschützte Alben schlägt es nie vor.
-• Es räumt nicht nur auf, es ordnet auch: Aus Reisen werden Alben.
-• Ehrlich: Bildklar sagt dir, wann der Platz wirklich frei wird.
+DEINE FOTOS BLEIBEN BEI DIR
+• Wir können deine Fotos nicht sehen: Es gibt keinen Server, kein Konto und keinen Upload.
+• Nichts verlässt dein iPhone – keine Fotos, keine Orte, keine Nutzungsdaten. Keine Analyse, keine Tracker.
+• Funktioniert komplett offline, auch die KI und die Ortsnamen. Probier es im Flugmodus aus.
+• Im App Store steht bei Bildklar: „Keine Daten erfasst“.
+• Du kannst Bildklar auch nur ausgewählte Fotos zeigen.
+
+KOSTENLOS UND OHNE WERBUNG
+• Im Moment ist in Bildklar alles kostenlos – auch das Löschen, so viel du willst.
+• Keine Werbung, kein Abo, keine Probewoche, kein Konto.
+
+DU HAST DAS LETZTE WORT
+• Bildklar löscht nie von selbst. Du bestätigst jedes Löschen, und das iPhone fragt noch einmal nach.
+• Gelöschte Fotos landen in „Zuletzt gelöscht“ und lassen sich 30 Tage lang wiederherstellen.
+• Favoriten und geschützte Alben schlägt Bildklar nie vor. Deine Fotos werden nie verändert.
 
 DEINE REISEN WERDEN ALBEN
 Bildklar erkennt an Ort und Zeit deiner Fotos, wann du unterwegs warst, und gibt jeder Reise einen Namen wie „Paris, Mai 2026“. Mit einem Tipp wird daraus ein Album in Fotos. Namen ändern, zwei Reisen zusammenlegen, eine teilen oder ausblenden – du hast das letzte Wort.
@@ -132,7 +155,7 @@ DUPLIKATE
 Dasselbe Bild noch einmal aus dem Messenger gespeichert? Bildklar findet Kopien, auch wenn Wochen dazwischen liegen, und schlägt vor, das Original zu behalten.
 
 SUCHEN, WAS AUF DEM FOTO IST
-„Hund“, „Strand“, „Geburtstag“, „Kassenzettel“: Bildklar findet Fotos nach dem, was darauf zu sehen ist – mit einer KI, die nur auf deinem iPhone läuft.
+„Hund“, „Strand“, „Geburtstag“, „Kassenzettel“: Bildklar findet Fotos nach dem, was darauf zu sehen ist – mit einer KI, die nur auf deinem iPhone läuft, auch ohne Internet.
 
 MISSGLÜCKTES, SCREENSHOTS, GROSSE DATEIEN
 Verwackelt, unscharf, viel zu dunkel oder überbelichtet; alte Screenshots und Bildschirmaufnahmen; die größten Fotos und Videos zuerst – damit du weißt, wo der Speicher steckt. Kopien und ähnliche Videos findet Bildklar auch.
@@ -146,31 +169,28 @@ Auf einen Blick siehst du, wie viel Platz jede Art belegt. Beim Durchgehen wisch
 MONAT FÜR MONAT
 Geh deine Mediathek Monat für Monat durch und sieh, wie viel schon geschafft ist. „An diesem Tag“ zeigt dir, was du vor Jahren fotografiert hast – auch als Widget. Auf Wunsch erinnert dich Bildklar einmal pro Woche.
 
-SICHER
-• Du bestätigst jedes Löschen, und das iPhone fragt noch einmal nach.
-• Gelöschte Fotos landen in „Zuletzt gelöscht“ und lassen sich 30 Tage lang wiederherstellen.
-• Deine Fotos werden nie verändert.
-
-PRIVAT
-• Kein Konto, kein Server, keine Werbung, keine Analyse.
-• Bildklar sendet weder Fotos noch Daten irgendwohin; die Ortsnamen stammen aus einer Liste in der App.
-• Du kannst Bildklar auch nur ausgewählte Fotos zeigen.
-
-Alles, was du in Bildklar siehst, nutzt du ohne Kauf – auch das Löschen, so viel du willst.
-
 Gemacht von einem Vater mit viel zu vielen Kinderfotos. Auf Deutsch, Englisch und Arabisch.
 ```
 
 **EN:**
 ```
-Bildklar tidies up your photos – no subscription, no ads, no account, and not a single photo ever leaves your iPhone. Find duplicate and near-identical photos, sort out failed shots, turn trips into albums: you decide what stays.
+We never see your photos. Bildklar still tidies them up – entirely on your iPhone, with no internet, no account and no ads. Find duplicate and near-identical photos, sort out failed shots, turn trips into albums: you decide what stays.
 
-WHY BILDKLAR
-• No subscription, no trial, no ads, no account.
-• Everything happens on your iPhone – the AI too. No server, no analytics.
-• Bildklar never deletes by itself. Favourites and protected albums are never suggested.
-• It organizes as well as cleans: trips become albums.
-• Honest: Bildklar tells you when the space is really freed.
+YOUR PHOTOS STAY WITH YOU
+• We can't see your photos: there is no server, no account and no upload.
+• Nothing leaves your iPhone – no photos, no places, no usage data. No analytics, no trackers.
+• Works completely offline, the AI and the place names too. Try it in airplane mode.
+• Bildklar's App Store privacy label: "Data Not Collected".
+• You can also let Bildklar see only the photos you choose.
+
+FREE AND WITHOUT ADS
+• For now everything in Bildklar is free – deleting too, as much as you like.
+• No ads, no subscription, no trial, no account.
+
+YOU HAVE THE LAST WORD
+• Bildklar never deletes by itself. You confirm every deletion, and your iPhone asks once more.
+• Deleted photos go to Recently Deleted, where you can recover them for 30 days.
+• Favourites and protected albums are never suggested. Your photos are never changed.
 
 YOUR TRIPS BECOME ALBUMS
 From where and when your photos were taken, Bildklar works out when you were away and names each trip, like "Paris, May 2026". One tap turns it into an album in Photos. Rename a trip, merge two, split one or hide it – you have the last word.
@@ -182,7 +202,7 @@ DUPLICATES
 Saved the same picture again from a messenger? Bildklar finds copies, even weeks apart, and suggests keeping the original.
 
 SEARCH FOR WHAT IS IN THE PHOTO
-"Dog", "beach", "birthday", "receipt": Bildklar finds photos by what they show – with an AI that runs only on your iPhone.
+"Dog", "beach", "birthday", "receipt": Bildklar finds photos by what they show – with an AI that runs only on your iPhone, even offline.
 
 FAILED SHOTS, SCREENSHOTS, LARGE FILES
 Shaky, out of focus, far too dark or washed out; old screenshots and screen recordings; the biggest photos and videos first – so you know where the space went. Copies and similar videos too.
@@ -196,30 +216,30 @@ See at a glance how much space each kind takes up. Going through them, swipe rig
 MONTH BY MONTH
 Go through your library a month at a time and see how much you have done. "On this day" shows what you photographed years ago – also as a widget. If you like, Bildklar reminds you once a week.
 
-SAFE
-• You confirm every deletion, and your iPhone asks once more.
-• Deleted photos go to Recently Deleted, where you can recover them for 30 days.
-• Your photos are never changed.
-
-PRIVATE
-• No account, no server, no ads, no analytics.
-• Bildklar sends no photos and no data anywhere; place names come from a list built into the app.
-• You can also let Bildklar see only the photos you choose.
-
-Everything you see in Bildklar is yours without buying anything – deleting too, as much as you like.
-
 Made by a father with far too many photos of his kids. In German, English and Arabic.
 ```
 
 **AR:**
 ```
-يرتّب Bildklar صورك – بلا اشتراك، بلا إعلانات، بلا حساب، ودون أن تغادر صورة واحدة جهاز iPhone. اعثر على الصور المكرّرة وشبه المتطابقة، تخلّص من اللقطات الفاشلة، وحوّل رحلاتك إلى ألبومات: أنت تقرّر ما يبقى.
+لا نرى صورك أبدًا. ومع ذلك يرتّبها Bildklar – على iPhone فقط، دون إنترنت، بلا حساب وبلا إعلانات. اعثر على الصور المكرّرة وشبه المتطابقة، تخلّص من اللقطات الفاشلة، وحوّل رحلاتك إلى ألبومات: أنت تقرّر ما يبقى.
 
-لماذا Bildklar
-• بلا اشتراك، بلا فترة تجريبية، بلا إعلانات، بلا حساب.
-• كل شيء يحدث على iPhone – والذكاء الاصطناعي أيضًا. بلا خادم وبلا تحليلات.
-• لا يحذف Bildklar شيئًا من تلقاء نفسه، ولا يقترح أبدًا الصور المفضّلة أو الألبومات المحميّة.
-• لا ينظّف فقط بل يرتّب أيضًا: رحلاتك تصبح ألبومات.
+صورك تبقى معك
+• لا نستطيع رؤية صورك: لا خادم ولا حساب ولا رفع للصور.
+• لا شيء يغادر iPhone – لا صور ولا أماكن ولا بيانات استخدام. بلا تحليلات وبلا تتبّع.
+• يعمل دون إنترنت تمامًا، والذكاء الاصطناعي وأسماء الأماكن أيضًا. جرّبه في وضع الطيران.
+• في قسم الخصوصية في App Store: لا يجمع Bildklar أي بيانات.
+• يمكنك أيضًا أن تُري Bildklar الصور التي تختارها فقط.
+
+مجاني وبلا إعلانات
+• كل شيء في Bildklar مجاني حاليًا – والحذف أيضًا، بقدر ما تريد.
+• بلا إعلانات، بلا اشتراك، بلا فترة تجريبية، بلا حساب.
+
+القرار الأخير لك
+• لا يحذف Bildklar شيئًا من تلقاء نفسه. أنت تؤكّد كل حذف، ويسألك iPhone مرة أخرى.
+• تنتقل الصور المحذوفة إلى «المحذوفة مؤخرًا» ويمكن استعادتها خلال 30 يومًا.
+• لا يقترح Bildklar أبدًا الصور المفضّلة أو الألبومات المحميّة، ولا يغيّر صورك أبدًا.
+
+رحلاتك تصبح ألبومات.
 • صادق: يخبرك Bildklar متى تتحرّر المساحة فعلًا.
 
 رحلاتك تصبح ألبومات
@@ -232,7 +252,7 @@ Made by a father with far too many photos of his kids. In German, English and Ar
 الصورة نفسها محفوظة مرة أخرى من تطبيق مراسلة؟ يجد Bildklar النسخ ويقترح الاحتفاظ بالأصل.
 
 ابحث عمّا في الصورة
-«كلب»، «شاطئ»، «عيد ميلاد»، «إيصال»: يجد Bildklar الصور بحسب ما يظهر فيها – بذكاء اصطناعي يعمل على iPhone فقط.
+«كلب»، «شاطئ»، «عيد ميلاد»، «إيصال»: يجد Bildklar الصور بحسب ما يظهر فيها – بذكاء اصطناعي يعمل على iPhone فقط، حتى دون إنترنت.
 
 صور فاشلة ولقطات شاشة وملفات كبيرة
 الضبابية والمظلمة جدًا والساطعة جدًا، ولقطات الشاشة القديمة، وأكبر الصور والفيديوهات أولًا – لتعرف أين ذهبت المساحة.
@@ -242,16 +262,6 @@ Made by a father with far too many photos of his kids. In German, English and Ar
 
 شهرًا بعد شهر
 راجع مكتبتك شهرًا بعد شهر: اسحب يمينًا للاحتفاظ ويسارًا للتحديد للحذف – ويمكن التراجع عن كل خطوة. و«في مثل هذا اليوم» يريك ما صوّرته في السنوات الماضية.
-
-آمن
-• أنت تؤكّد كل حذف، ويسألك iPhone مرة أخرى.
-• تنتقل الصور المحذوفة إلى «المحذوفة مؤخرًا» ويمكن استعادتها خلال 30 يومًا.
-
-خاص
-• بلا حساب، بلا خادم، بلا إعلانات، بلا تحليلات.
-• لا يرسل Bildklar أي صور أو بيانات إلى أي مكان.
-
-كل ما تراه في Bildklar متاح دون شراء – والحذف أيضًا، بقدر ما تريد.
 
 صنعه أب لديه صور أطفال كثيرة جدًا. بالعربية والألمانية والإنجليزية.
 ```
@@ -358,32 +368,42 @@ development, not for selling a photo app.
 | Field | Limit | Deutsch | English |
 |---|---|---|---|
 | App name | 30 | `Bildklar KI: Foto Reiniger` | `Bildklar AI: Photo Cleaner` |
-| Short description | 80 | `Doppelte & fast gleiche Fotos finden, Reisen als Ordner — privat auf dem Handy` | `Find duplicate & near-identical photos, trips become folders — all on device` |
+| Short description | 80 | `Doppelte Fotos finden, Reisen ordnen — offline, nichts verlässt dein Handy` | `Find duplicate photos, sort your trips — offline, nothing leaves your phone` |
 
 The short description says what the app does, not what it costs: Google's
 metadata policy counts "free", "no ads" and the like as promotional text in
 the title and the short description. "No subscription, no ads" stays in the
-full description. Play asks for an em dash (—) here; it flagged the en dash.
+full description. "Offline" and "nothing leaves your phone" are facts, not
+promotion, so they may stand here. Play asks for an em dash (—) here; it
+flagged the en dash.
 
 Arabic (a translation in the Play Console, *Store presence › Main store listing › Manage translations*):
 
 | Field | Limit | العربية |
 |---|---|---|
 | App name | 30 | `Bildklar: منظّف الصور الذكي` |
-| Short description | 80 | `اعثر على الصور المكرّرة وشبه المتطابقة، ورحلاتك تصبح مجلدات — كل شيء على هاتفك` |
+| Short description | 80 | `اعثر على الصور المكرّرة ورتّب رحلاتك — دون إنترنت، ولا شيء يغادر هاتفك` |
 
 ### 3.2 Full description (4000)
 
 **DE:**
 ```
-Bildklar räumt deine Fotos auf – ohne Abo, ohne Werbung, ohne Konto, und ohne dass ein einziges Foto dein Handy verlässt. Doppelte und fast gleiche Fotos finden, Missglücktes aussortieren, aus Reisen Ordner machen: Du entscheidest, was bleibt.
+Wir sehen deine Fotos nie. Bildklar räumt sie trotzdem auf – ganz auf deinem Handy, ohne Internet, ohne Konto und ohne Werbung. Doppelte und fast gleiche Fotos finden, Missglücktes aussortieren, aus Reisen Ordner machen: Du entscheidest, was bleibt.
 
-WARUM BILDKLAR
-• Kein Abo, keine Probewoche, keine Werbung, kein Konto.
-• Alles passiert auf deinem Handy – auch die KI. Kein Server, keine Analyse.
-• Bildklar löscht nie von selbst. Favoriten und geschützte Ordner schlägt es nie vor.
-• Es räumt nicht nur auf, es ordnet auch: Aus Reisen werden Ordner.
-• Ehrlich: Bildklar sagt dir, wann der Platz wirklich frei wird.
+DEINE FOTOS BLEIBEN BEI DIR
+• Wir können deine Fotos nicht sehen: Es gibt keinen Server, kein Konto und keinen Upload.
+• Nichts verlässt dein Handy – keine Fotos, keine Orte, keine Nutzungsdaten. Keine Analyse, keine Tracker.
+• Funktioniert komplett offline, auch die KI und die Ortsnamen. Probier es im Flugmodus aus.
+• Auf Android 14 und neuer kannst du Bildklar auch nur ausgewählte Fotos zeigen.
+
+KOSTENLOS UND OHNE WERBUNG
+• Im Moment ist in Bildklar alles kostenlos – auch das Löschen, so viel du willst.
+• Keine Werbung, kein Abo, keine Probewoche, kein Konto.
+
+DU HAST DAS LETZTE WORT
+• Bildklar löscht nie von selbst. Du bestätigst jedes Löschen, und Android fragt noch einmal nach.
+• Gelöschte Fotos landen im Papierkorb und lassen sich dort 30 Tage lang wiederherstellen.
+• Favoriten und geschützte Ordner schlägt Bildklar nie vor. Deine Fotos werden nie verändert – in Ordner werden sie nur verschoben.
 
 DEINE REISEN WERDEN ORDNER
 Bildklar erkennt an Ort und Zeit deiner Fotos, wann du unterwegs warst, und gibt jeder Reise einen Namen wie „Paris, Mai 2026“. Mit einem Tipp kommen ihre Fotos in einen eigenen Ordner (Bilder/Bildklar) – Android fragt vorher nach. Namen ändern, zwei Reisen zusammenlegen, eine teilen oder ausblenden – du hast das letzte Wort.
@@ -395,7 +415,7 @@ DUPLIKATE
 Dasselbe Bild noch einmal aus dem Messenger gespeichert? Bildklar findet Kopien, auch wenn Wochen dazwischen liegen, und schlägt vor, das Original zu behalten.
 
 SUCHEN, WAS AUF DEM FOTO IST
-„Hund“, „Strand“, „Geburtstag“, „Kassenzettel“: Bildklar findet Fotos nach dem, was darauf zu sehen ist – mit einer KI, die nur auf deinem Handy läuft.
+„Hund“, „Strand“, „Geburtstag“, „Kassenzettel“: Bildklar findet Fotos nach dem, was darauf zu sehen ist – mit einer KI, die nur auf deinem Handy läuft, auch ohne Internet.
 
 MISSGLÜCKTES, SCREENSHOTS, GROSSE DATEIEN
 Verwackelt, unscharf, viel zu dunkel oder überbelichtet; alte Screenshots und Bildschirmaufnahmen; die größten Fotos und Videos zuerst – damit du weißt, wo der Speicher steckt. Kopien und ähnliche Videos findet Bildklar auch.
@@ -409,31 +429,27 @@ Auf einen Blick siehst du, wie viel Platz jede Art belegt. Beim Durchgehen wisch
 MONAT FÜR MONAT
 Geh deine Mediathek Monat für Monat durch und sieh, wie viel schon geschafft ist. „An diesem Tag“ zeigt dir, was du vor Jahren fotografiert hast – auch als Widget auf dem Startbildschirm. Auf Wunsch erinnert dich Bildklar einmal pro Woche.
 
-SICHER
-• Du bestätigst jedes Löschen, und Android fragt noch einmal nach.
-• Gelöschte Fotos landen im Papierkorb und lassen sich dort 30 Tage lang wiederherstellen.
-• Deine Fotos werden nie verändert – in Ordner werden sie nur verschoben.
-
-PRIVAT
-• Kein Konto, kein Server, keine Werbung, keine Analyse.
-• Bildklar sendet weder Fotos noch Daten irgendwohin; die Ortsnamen stammen aus einer Liste in der App.
-• Auf Android 14 und neuer kannst du Bildklar auch nur ausgewählte Fotos zeigen.
-
-Alles, was du in Bildklar siehst, nutzt du ohne Kauf – auch das Löschen, so viel du willst.
-
 Gemacht von einem Vater mit viel zu vielen Kinderfotos. Auf Deutsch, Englisch und Arabisch.
 ```
 
 **EN:**
 ```
-Bildklar tidies up your photos – no subscription, no ads, no account, and not a single photo ever leaves your phone. Find duplicate and near-identical photos, sort out failed shots, turn trips into folders: you decide what stays.
+We never see your photos. Bildklar still tidies them up – entirely on your phone, with no internet, no account and no ads. Find duplicate and near-identical photos, sort out failed shots, turn trips into folders: you decide what stays.
 
-WHY BILDKLAR
-• No subscription, no trial, no ads, no account.
-• Everything happens on your phone – the AI too. No server, no analytics.
-• Bildklar never deletes by itself. Favourites and protected folders are never suggested.
-• It organizes as well as cleans: trips become folders.
-• Honest: Bildklar tells you when the space is really freed.
+YOUR PHOTOS STAY WITH YOU
+• We can't see your photos: there is no server, no account and no upload.
+• Nothing leaves your phone – no photos, no places, no usage data. No analytics, no trackers.
+• Works completely offline, the AI and the place names too. Try it in airplane mode.
+• On Android 14 and newer you can also let Bildklar see only the photos you choose.
+
+FREE AND WITHOUT ADS
+• For now everything in Bildklar is free – deleting too, as much as you like.
+• No ads, no subscription, no trial, no account.
+
+YOU HAVE THE LAST WORD
+• Bildklar never deletes by itself. You confirm every deletion, and Android asks once more.
+• Deleted photos go to the trash, where you can recover them for 30 days.
+• Favourites and protected folders are never suggested. Your photos are never changed – folders only move them.
 
 YOUR TRIPS BECOME FOLDERS
 From where and when your photos were taken, Bildklar works out when you were away and names each trip, like "Paris, May 2026". One tap moves its photos into a folder of their own (Pictures/Bildklar) – Android asks first. Rename a trip, merge two, split one or hide it – you have the last word.
@@ -445,7 +461,7 @@ DUPLICATES
 Saved the same picture again from a messenger? Bildklar finds copies, even weeks apart, and suggests keeping the original.
 
 SEARCH FOR WHAT IS IN THE PHOTO
-"Dog", "beach", "birthday", "receipt": Bildklar finds photos by what they show – with an AI that runs only on your phone.
+"Dog", "beach", "birthday", "receipt": Bildklar finds photos by what they show – with an AI that runs only on your phone, even offline.
 
 FAILED SHOTS, SCREENSHOTS, LARGE FILES
 Shaky, out of focus, far too dark or washed out; old screenshots and screen recordings; the biggest photos and videos first – so you know where the space went. Copies and similar videos too.
@@ -459,30 +475,29 @@ See at a glance how much space each kind takes up. Going through them, swipe rig
 MONTH BY MONTH
 Go through your library a month at a time and see how much you have done. "On this day" shows what you photographed years ago – also as a home-screen widget. If you like, Bildklar reminds you once a week.
 
-SAFE
-• You confirm every deletion, and Android asks once more.
-• Deleted photos go to the trash, where you can recover them for 30 days.
-• Your photos are never changed – folders only move them.
-
-PRIVATE
-• No account, no server, no ads, no analytics.
-• Bildklar sends no photos and no data anywhere; place names come from a list built into the app.
-• On Android 14 and newer you can also let Bildklar see only the photos you choose.
-
-Everything you see in Bildklar is yours without buying anything – deleting too, as much as you like.
-
 Made by a father with far too many photos of his kids. In German, English and Arabic.
 ```
 
 **AR:**
 ```
-يرتّب Bildklar صورك – بلا اشتراك، بلا إعلانات، بلا حساب، ودون أن تغادر صورة واحدة هاتفك. اعثر على الصور المكرّرة وشبه المتطابقة، تخلّص من اللقطات الفاشلة، وحوّل رحلاتك إلى مجلدات: أنت تقرّر ما يبقى.
+لا نرى صورك أبدًا. ومع ذلك يرتّبها Bildklar – على هاتفك فقط، دون إنترنت، بلا حساب وبلا إعلانات. اعثر على الصور المكرّرة وشبه المتطابقة، تخلّص من اللقطات الفاشلة، وحوّل رحلاتك إلى مجلدات: أنت تقرّر ما يبقى.
 
-لماذا Bildklar
-• بلا اشتراك، بلا فترة تجريبية، بلا إعلانات، بلا حساب.
-• كل شيء يحدث على هاتفك – والذكاء الاصطناعي أيضًا. بلا خادم وبلا تحليلات.
-• لا يحذف Bildklar شيئًا من تلقاء نفسه، ولا يقترح أبدًا الصور المفضّلة أو المجلدات المحميّة.
-• لا ينظّف فقط بل يرتّب أيضًا: رحلاتك تصبح مجلدات.
+صورك تبقى معك
+• لا نستطيع رؤية صورك: لا خادم ولا حساب ولا رفع للصور.
+• لا شيء يغادر هاتفك – لا صور ولا أماكن ولا بيانات استخدام. بلا تحليلات وبلا تتبّع.
+• يعمل دون إنترنت تمامًا، والذكاء الاصطناعي وأسماء الأماكن أيضًا. جرّبه في وضع الطيران.
+• على Android 14 والأحدث يمكنك أيضًا أن تُري Bildklar الصور التي تختارها فقط.
+
+مجاني وبلا إعلانات
+• كل شيء في Bildklar مجاني حاليًا – والحذف أيضًا، بقدر ما تريد.
+• بلا إعلانات، بلا اشتراك، بلا فترة تجريبية، بلا حساب.
+
+القرار الأخير لك
+• لا يحذف Bildklar شيئًا من تلقاء نفسه. أنت تؤكّد كل حذف، ويسألك Android مرة أخرى.
+• تنتقل الصور المحذوفة إلى سلة المهملات ويمكن استعادتها خلال 30 يومًا.
+• لا يقترح Bildklar أبدًا الصور المفضّلة أو المجلدات المحميّة، ولا يغيّر صورك أبدًا.
+
+رحلاتك تصبح مجلدات.
 • صادق: يخبرك Bildklar متى تتحرّر المساحة فعلًا.
 
 رحلاتك تصبح مجلدات
@@ -495,7 +510,7 @@ Made by a father with far too many photos of his kids. In German, English and Ar
 الصورة نفسها محفوظة مرة أخرى من تطبيق مراسلة؟ يجد Bildklar النسخ ويقترح الاحتفاظ بالأصل.
 
 ابحث عمّا في الصورة
-«كلب»، «شاطئ»، «عيد ميلاد»، «إيصال»: يجد Bildklar الصور بحسب ما يظهر فيها – بذكاء اصطناعي يعمل على هاتفك فقط.
+«كلب»، «شاطئ»، «عيد ميلاد»، «إيصال»: يجد Bildklar الصور بحسب ما يظهر فيها – بذكاء اصطناعي يعمل على هاتفك فقط، حتى دون إنترنت.
 
 صور فاشلة ولقطات شاشة وملفات كبيرة
 الضبابية والمظلمة جدًا والساطعة جدًا، ولقطات الشاشة القديمة، وأكبر الصور والفيديوهات أولًا – لتعرف أين ذهبت المساحة.
@@ -505,16 +520,6 @@ Made by a father with far too many photos of his kids. In German, English and Ar
 
 شهرًا بعد شهر
 راجع مكتبتك شهرًا بعد شهر: اسحب يمينًا للاحتفاظ ويسارًا للتحديد للحذف – ويمكن التراجع عن كل خطوة. و«في مثل هذا اليوم» يريك ما صوّرته في السنوات الماضية.
-
-آمن
-• أنت تؤكّد كل حذف، ويسألك Android مرة أخرى.
-• تنتقل الصور المحذوفة إلى سلة المهملات ويمكن استعادتها خلال 30 يومًا.
-
-خاص
-• بلا حساب، بلا خادم، بلا إعلانات، بلا تحليلات.
-• لا يرسل Bildklar أي صور أو بيانات إلى أي مكان.
-
-كل ما تراه في Bildklar متاح دون شراء – والحذف أيضًا، بقدر ما تريد.
 
 صنعه أب لديه صور أطفال كثيرة جدًا. بالعربية والألمانية والإنجليزية.
 ```
