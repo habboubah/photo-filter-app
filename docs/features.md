@@ -230,8 +230,9 @@ then *Mehr Platz* and *Geschützt*.
   *Fast gleiche Fotos*, *Duplikate* and *Ähnliche Videos* the **green star**
   is what stays — the app's pick, a favourite, a photo kept before. Every
   other photo carries a **grey star**: tap it to keep that one too (several
-  can be starred). Under the photos: **Alle behalten** (the group leaves the
-  list) and, in red, **Ohne Stern zum Löschen vormerken** [Mark unstarred for
+  can be starred). Under the photos, as words without a fill: **Alle behalten**
+  in green with a check (the group leaves the list) and, in red with the
+  delete icon, **Ohne Stern zum Löschen vormerken** [Mark unstarred for
   deletion] — every photo without a star goes to *Zum Löschen vorgemerkt*
   (nothing is deleted yet), the starred ones are kept from now on — each with
   undo, without opening the group. A tap on the photos still opens it.

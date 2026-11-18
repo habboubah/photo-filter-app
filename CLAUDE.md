@@ -169,8 +169,8 @@ scenes follow the switch (docs/PLAN.md, *Pricing*).
   (`Archive` and teal or quiet glass); red (`neg`, `destructive`) is only
   for what really deletes. (Exceptions: the originals after a smaller copy or a Live Photo
   made a still — the copy is already saved; and, Ahmad's call of 18 November
-  2026, a group card's red *Ohne Stern zum Löschen vormerken*, which keeps
-  the archive icon.)
+  2026, a group card's *Ohne Stern zum Löschen vormerken*: red words with the
+  trash icon, no fill.)
 - A new asset (a plain photo made from a Live Photo, a smaller copy of a video
   or of a photo) needs the user's tap and a confirmation in the app; the original stays and
   goes only through the system's delete dialog afterwards. The copy keeps the
