@@ -88,8 +88,13 @@ export const marks = w => ({
   'cleanup-button': textButton(w.t.cleanupButton),
   'review-all': textButton(w.t.reviewAll),
   keep: button(w.t.keep),
-  delete: button(w.t.delete),
+  // The review's left button: "Löschen vormerken" (nothing is deleted until the end).
+  delete: button(w.t.aside),
   back: button(w.t.back),
+  // The tab bar: trips live on "Ordnen", the tiles and the clean-up on "Aufräumen".
+  'tab-organize': `nav ${textButton(w.t.tabOrganize)}`,
+  'tab-clean': `nav ${textButton(w.t.tabClean)}`,
+  'suggestions-all': textButton(w.t.suggestionsAll),
 });
 
 /* -------------------------------------------------------------- the chapters */
@@ -113,6 +118,9 @@ export const chapters = [
     caption: ON_SALE ? 'trips' : 'tripsFound',
     hold: 2.0,
     run: async a => {
+      // The trips are on the "Ordnen" tab.
+      await a.tap('tab-organize');
+      await a.pause(0.6);
       await a.scrollTo('paris', { block: 'center' });
       await a.pause(0.4);
       await a.tap('paris');
@@ -136,6 +144,8 @@ export const chapters = [
     setup: async a => {
       await a.tap('back', { dot: false });
       await a.pause(0.5);
+      await a.tap('tab-clean', { dot: false });
+      await a.pause(0.5);
       await a.page.evaluate(() => window.scrollTo(0, 0));
       await a.tap('similar', { dot: false });
       await a.pause(0.6);
@@ -157,7 +167,7 @@ export const chapters = [
       await a.tap('back', { dot: false });
       await a.pause(0.5);
       await a.page.evaluate(() => window.scrollTo(0, 0));
-      await a.tap('cleanup-button', { dot: false });
+      await a.tap('suggestions-all', { dot: false });
       await a.pause(0.5);
       await a.tap('review-all', { dot: false });
       await a.pause(0.7);
