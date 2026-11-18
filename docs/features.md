@@ -59,7 +59,7 @@ then one next step, then the rest in order.
   Fotos* and *Gute Videos*, paler — with its legend; the table *Fotos* /
   *Videos* × *Gescannt* · *Gut* · *Kann weg* (*Fotos* opens *Monat für
   Monat*, *Videos* all videos); the free space on the device, *Bisher
-  freigegeben*, the streak; *Jetzt aufräumen* as a quiet button (the
+  freigegeben* (no streak: it left on 18 November 2026); *Jetzt aufräumen* as a quiet button (the
   clean-up screen).
 - **One next step**, a card made of its photos with one button:
   - progress exists (a month gone through) → the next month not gone through,

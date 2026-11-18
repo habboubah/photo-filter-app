@@ -215,7 +215,7 @@ export function useAppStore() {
   const countFree = (n: number) => {
     if (n > 0) setState(s => ({ ...s, freeUsed: s.freeUsed + n }));
   };
-  /** Today counts for the streak: something was cleaned up. */
+  /** Today had a clean-up (AppState.days; nothing shows it since the streak left home, 18 November 2026). */
   const markDay = () => setState(s => {
     const days = addDay(s.days, Date.now());
     return days === s.days ? s : { ...s, days };

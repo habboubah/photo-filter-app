@@ -44,7 +44,6 @@ interface Props {
   apps: { bytes: number; cover?: string } | null;
   storage: Storage | null;
   freedBytes: number;
-  streak: number;
   /** Months gone through, and the share of all photos in them (src/logic/months.ts progress). */
   months: { done: number; total: number; pct: number };
   /** The newest month not gone through yet (none when every month is done). */
@@ -245,7 +244,7 @@ export function HomeView(p: Props) {
 
       {has && summary && (
         <CleanupCard
-          t={t} summary={summary} bar={bar} library={p.analysis} storage={p.storage} freedBytes={p.freedBytes} streak={p.streak}
+          t={t} summary={summary} bar={bar} library={p.analysis} storage={p.storage} freedBytes={p.freedBytes}
           onOpen={p.onCleanup} onPhotos={p.onMonths} onVideos={p.onVideos}
         />
       )}
@@ -542,9 +541,9 @@ function LibraryTable({ t, library, marked, onPhotos, onVideos }: {
  * videos, paler — and its legend, then the table of photos and videos (scanned,
  * good, could go), the free space and the button.
  */
-function CleanupCard({ t, summary, bar, library, storage, freedBytes, streak, onOpen, onPhotos, onVideos }: {
+function CleanupCard({ t, summary, bar, library, storage, freedBytes, onOpen, onPhotos, onVideos }: {
   t: Strings; summary: CleanupSummary; bar: { key: string; hue: string; bytes: number; label: string }[];
-  library: Props['analysis']; storage: Storage | null; freedBytes: number; streak: number;
+  library: Props['analysis']; storage: Storage | null; freedBytes: number;
   onOpen: () => void; onPhotos: () => void; onVideos: () => void;
 }) {
   const table = (
@@ -555,10 +554,9 @@ function CleanupCard({ t, summary, bar, library, storage, freedBytes, streak, on
   const facts = (
     <>
       {storage && <p className="text-caption text-fg-mute num mt-3">{fmt(t.storageFree, { free: bytes(t, storage.free), total: bytes(t, storage.total) })}</p>}
-      {(freedBytes > 0 || streak >= 2) && (
+      {freedBytes > 0 && (
         <p className="flex flex-wrap gap-1.5 mt-2.5">
-          {freedBytes > 0 && <span className="rounded-full bg-keep-dim text-keep text-caption font-bold num px-2.5 py-1">{fmt(t.freedSoFar, { size: bytes(t, freedBytes) })}</span>}
-          {streak >= 2 && <span className="rounded-full bg-accent-dim text-accent text-caption font-bold num px-2.5 py-1">{fmt(t.streakLine, { n: num(t, streak) })}</span>}
+          <span className="rounded-full bg-keep-dim text-keep text-caption font-bold num px-2.5 py-1">{fmt(t.freedSoFar, { size: bytes(t, freedBytes) })}</span>
         </p>
       )}
     </>

@@ -31,7 +31,6 @@ import { APPS_TILE_MIN, groupBySource, reviewSource } from './logic/sources';
 import { cleanParts } from './logic/smartClean';
 import { type Verdict, groupVerdict } from './logic/confidence';
 import { adjustItems, strictUtility } from './logic/ledger';
-import { streak } from './logic/streak';
 import { binOutcome, binPhotos, withoutBin } from './logic/bin';
 import { feedbackMail, openExternal, privacyUrl, rateUrl, systemFromAgent } from './links';
 import { devNative, isAndroid, isIos } from './platform';
@@ -992,7 +991,7 @@ export default function App() {
         onCompress={() => setShowCompress(true)}
         apps={sourcesBytes >= APPS_TILE_MIN ? { bytes: sourcesBytes, cover: sources[0]?.photos[0]?.id } : null}
         onApps={() => setShowApps(true)}
-        storage={store.storage} freedBytes={state.freed.bytes} streak={streak(state.days, now)}
+        storage={store.storage} freedBytes={state.freed.bytes}
         months={{ done: months.filter(m => doneMonths.has(m.key)).length, total: months.length, pct }}
         nextMonth={nextMonth}
         onMonth={openMonth}

@@ -80,7 +80,6 @@ export const ar: Strings = {
   cleanupScreenshots: 'لقطات شاشة قديمة',
   storageFree: '{free} من {total} متاحة على هذا الجهاز',
   freedSoFar: 'تم تحريرها حتى الآن: {size}',
-  streakLine: '{n} أيام متتالية من الترتيب',
   monthsCard: 'شهرًا بشهر',
   progressDone: 'تمت مراجعة {pct}',
   widgetProgress: 'تمت مراجعة {pct} من صورك',
