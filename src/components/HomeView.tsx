@@ -1,20 +1,19 @@
 import type React from 'react';
 import { useState } from 'react';
-import { Aperture, CalendarDays, Check, ChevronRight, Clock, FileVideo, Image as ImageIcon, ImagePlus, MessageCircle, Minimize2, RefreshCw, Search, Settings, Shield, Sparkles, Video } from 'lucide-react';
+import { Aperture, Archive, CalendarDays, Check, ChevronRight, Clock, FileVideo, Image as ImageIcon, ImagePlus, MessageCircle, Minimize2, RefreshCw, Search, Settings, Shield, Sparkles, Video } from 'lucide-react';
 import type { CleanupSummary, Storage } from '../types';
 import type { Access } from '../native/photoLibrary';
 import type { ScanView } from '../store';
 import { Strings, ago, bytes, fmt, num, percent, plural } from '../translations';
 import { etaWords } from '../logic/eta';
 import { greetingAt } from '../logic/greeting';
-import { type Found, type FoundKey, gainOf, nextStepKind, rankCategories, type RankedCategory } from '../logic/nextStep';
+import { type Found, type FoundKey, gainOf, rankCategories, type RankedCategory } from '../logic/nextStep';
 import { Empty, Group, IconTile, Next, Row, Screen, SectionHead } from '../ui/Screen';
 import { Button, IconButton } from '../ui/Button';
 import { Progress } from '../ui/Controls';
 import { StorageBar } from '../ui/StorageBar';
 import { tapLight } from '../ui/haptics';
 import { Thumb } from '../ui/Photo';
-import { LARGE } from '../thumbs';
 import { Confirm } from '../ui/Sheet';
 
 export type { Found, FoundKey } from '../logic/nextStep';
@@ -44,8 +43,6 @@ interface Props {
   freedBytes: number;
   /** Months gone through, and the share of all photos in them (src/logic/months.ts progress). */
   months: { done: number; total: number; pct: number };
-  /** The newest month not gone through yet (none when every month is done). */
-  nextMonth: NextMonth | null;
   /** The decide-later pile (photos swiped up in a review). */
   later: { count: number; cover?: string };
   /** "Zum Löschen vorgemerkt" (src/logic/bin.ts): what the user set aside, waiting for the real delete; a few of its photos. */
@@ -74,8 +71,6 @@ interface Props {
   onScreenshots: () => void;
   onUtility: () => void;
   onMonths: () => void;
-  /** Goes through one month (the next one) at once. */
-  onMonth: (key: string) => void;
   onLarge: () => void;
   onLive: () => void;
   onCompress: () => void;
@@ -114,18 +109,15 @@ export function categoryMeta(t: Strings, c: { key: FoundKey; items: number; gain
   return c.gain.bytes > 0 ? fmt(t.nextCategoryMeta, { count: categoryCount(t, c), size: bytes(t, c.gain.bytes) }) : categoryCount(t, c);
 }
 
-type Step = { eyebrow: string; title: string; meta: string; covers: string[]; button: string; onGo: () => void; more?: { label: string; onClick: () => void }; progress?: { value: number; label: string } };
-
 /**
  * Home, the "Aufräumen" tab, calm and photo-led ("Album", docs/REDESIGN.md):
- * the clean-up card on top (the space that could be freed, the bar of the
- * library, photos and videos — scanned, fine, could go), then ONE next step
- * as a photo card (the next month when there is progress, else what is
- * waiting, else a good place to start), what is marked for deletion, the
- * categories as rows to scan by count and space, what is open, a small look
- * at the Ordnen tab (on this day, the latest trip), the tools that make room
- * without deleting, and what is kept safe. A scan runs above it all as a slim
- * progress card: the app stays usable while it fills in.
+ * *Vorschläge* on top (the space that could be freed, the bar of the library,
+ * photos and videos, then the categories as rows to scan by count and space),
+ * what is marked for deletion in its own warm colour, *Mehr Platz* (month by
+ * month, the later pile, the tools that make room without deleting) and what
+ * is kept safe. A scan runs above it all as a slim progress card: the app
+ * stays usable while it fills in. (The one next-step card left home on
+ * 18 November 2026; the reveal after the first scan still recommends one.)
  */
 export function HomeView(p: Props) {
   const { t, summary } = p;
@@ -156,58 +148,15 @@ export function HomeView(p: Props) {
   const done = keys.filter(k => p.found[k]!.items === 0).map(k => meta[k].label);
   const bar = keys.map(k => ({ key: k, hue: meta[k].hue, bytes: gain(k).bytes, label: meta[k].label }));
 
-  /* ---------------------------------------------------------- the next step */
-
   const pctText = percent(t, p.months.pct);
-  // Which step it is: src/logic/nextStep.ts (the reveal after the first scan recommends the same one).
-  const kind = nextStepKind({ monthsDone: p.months.done, monthStarted: !!p.nextMonth?.share, hasNextMonth: !!p.nextMonth, later: p.later.count, categories: cats.length, scanning: p.scan.running });
-  let step: Step | null = null;
-  if (kind === 'month' && p.nextMonth) {
-    // Progress exists: go on with the next month.
-    const m = p.nextMonth;
-    // A month left part-way says how far into it the user is, and its bar shows it (docs/ux-research.md, idea B).
-    const monthPct = percent(t, Math.floor((m.share ?? 0) * 100));
-    step = {
-      eyebrow: t.nextResumeEyebrow, title: m.name, covers: m.covers,
-      meta: m.share ? fmt(t.nextMonthMeta, { photos: plural(t, 'photos', m.photos), pct: monthPct }) : fmt(t.nextResumeMeta, { photos: plural(t, 'photos', m.photos), pct: pctText }),
-      progress: m.share ? { value: m.share, label: fmt(t.progressDone, { pct: monthPct }) } : undefined,
-      button: fmt(t.nextResumeButton, { month: m.name }), onGo: () => p.onMonth(m.key),
-      more: { label: t.nextAllMonths, onClick: p.onMonths },
-    };
-  } else if (kind === 'later') {
-    // Photos put off in a review wait for a decision.
-    step = {
-      eyebrow: t.nextLaterEyebrow, title: t.laterCard, covers: p.later.cover ? [p.later.cover] : [],
-      meta: fmt(t.nextLaterMeta, { photos: plural(t, 'photos', p.later.count) }), button: t.nextLaterButton, onGo: p.onLater,
-    };
-  } else if (kind === 'category') {
-    // A good place to start: the category that frees the most.
-    const top = cats[0];
-    step = {
-      eyebrow: t.nextStartEyebrow, title: top.label, covers: top.covers,
-      meta: categoryMeta(t, top),
-      button: t.nextCategoryButton, onGo: top.onClick,
-    };
-  } else if (kind === 'start' && p.nextMonth) {
-    // Nothing found to clean up: month by month, the newest first.
-    const m = p.nextMonth;
-    step = {
-      eyebrow: t.monthsCard, title: m.name, covers: m.covers, meta: t.nextMonthsStartMeta,
-      button: fmt(t.nextMonthsStartButton, { month: m.name }), onGo: () => p.onMonth(m.key),
-      more: { label: t.nextAllMonths, onClick: p.onMonths },
-    };
-  }
-
-  /* -------------------------------------------------------------- the rest */
-
   const tools: { key: string; label: string; value: string; cover?: string; icon: React.ComponentType<{ className?: string; strokeWidth?: number }>; hue: string; onClick: () => void }[] = [
     { key: 'large', label: t.largeTile, value: p.large.count ? fmt(t.sizeAndCount, { size: bytes(t, p.large.bytes), count: plural(t, 'files', p.large.count) }) : plural(t, 'files', 0), cover: p.large.cover, icon: FileVideo, hue: 'stone', onClick: p.onLarge },
     ...(p.compress.count > 0 ? [{ key: 'compress', label: t.compressPhotosTile, value: fmt(t.upTo, { size: bytes(t, p.compress.saving) }), cover: p.compress.cover, icon: Minimize2, hue: 'sky', onClick: p.onCompress }] : []),
     ...(p.liveCount > 0 ? [{ key: 'live', label: t.liveTile, value: plural(t, 'photos', p.liveCount), cover: p.liveCover, icon: Aperture, hue: 'mint', onClick: p.onLive }] : []),
     ...(p.apps ? [{ key: 'apps', label: t.appsTile, value: bytes(t, p.apps.bytes), cover: p.apps.cover, icon: MessageCircle, hue: 'lilac', onClick: p.onApps }] : []),
   ];
-  const showLater = p.later.count > 0 && kind !== 'later';
-  const showMonths = p.months.total > 0 && kind !== 'month' && kind !== 'start';
+  const showLater = p.later.count > 0;
+  const showMonths = p.months.total > 0;
 
   // A short greeting by the time of day — no name: there is no account.
   const greeting = { morning: t.greetMorning, day: t.greetDay, evening: t.greetEvening }[greetingAt(new Date().getHours())];
@@ -260,8 +209,7 @@ export function HomeView(p: Props) {
         />
       )}
 
-      {/* Then the one next step, then what waits to be confirmed. */}
-      {has && step && <NextStep step={step} />}
+      {/* Then what waits to be confirmed, in its own colour. */}
 
       {has && p.bin.count > 0 && (
         <section aria-labelledby="aside-h">
@@ -323,7 +271,7 @@ export function HomeView(p: Props) {
   );
 }
 
-/** Home while the facts load: the next step's card and a few rows as soft shapes. */
+/** Home while the facts load: a card and a few rows as soft shapes. */
 function HomeSkeleton({ label }: { label: string }) {
   return (
     <div role="status" aria-label={label} className="space-y-6 skeleton">
@@ -359,9 +307,10 @@ function RowPhoto({ id, second }: { id: string; second?: string }) {
 }
 
 /**
- * "Zum Löschen vorgemerkt", a section of its own: the photos set aside in a strip (they
- * are not deleted yet — the card says so), what they hold, and a tap opens
- * them to put some back or to delete them for real.
+ * "Zum Löschen vorgemerkt", a section of its own, in its own colour (the warm
+ * sand of "waiting", never red: nothing is deleted yet): the photos set aside
+ * in a strip, what they hold with the archive's tile, and a tap opens them to
+ * put some back or to delete them for real.
  */
 function AsideCard({ t, bin, onClick }: { t: Strings; bin: Props['bin']; onClick: () => void }) {
   const shown = bin.covers.slice(0, 4);
@@ -370,7 +319,8 @@ function AsideCard({ t, bin, onClick }: { t: Strings; bin: Props['bin']; onClick
   return (
     <button
       type="button" data-tip="tip.bin" onClick={() => { tapLight(); onClick(); }} aria-label={`${t.binTitle}: ${line}. ${t.binCardBody}`}
-      className="w-full rounded-md card p-3 text-start press focus-visible:ring-focus"
+      data-hue="sand"
+      className="w-full rounded-md bg-hue-bg p-3 text-start press focus-visible:ring-focus"
     >
       <span className="grid grid-cols-4 gap-[4px]" aria-hidden="true">
         {shown.map((id, i) => (
@@ -383,46 +333,16 @@ function AsideCard({ t, bin, onClick }: { t: Strings; bin: Props['bin']; onClick
         ))}
       </span>
       <span className="flex items-center gap-3 px-1 pt-3 pb-0.5">
-        <span className="min-w-0 flex-1">
-          <span className="block text-body font-semibold text-fg num">{line}</span>
-          <span className="block text-caption text-fg-mute wrap-prose">{t.binCardBody}</span>
+        <span className="w-10 h-10 shrink-0 rounded-[11px] bg-hue-solid text-on-color inline-flex items-center justify-center" aria-hidden="true">
+          <Archive className="w-5 h-5" strokeWidth={2.4} />
         </span>
-        <ChevronRight className="w-5 h-5 text-fg-faint shrink-0 rtl:rotate-180" aria-hidden="true" />
+        <span className="min-w-0 flex-1">
+          <span className="block text-body font-bold text-hue-ink num">{line}</span>
+          <span className="block text-caption text-hue-ink wrap-prose">{t.binCardBody}</span>
+        </span>
+        <ChevronRight className="w-5 h-5 text-hue-ink shrink-0 rtl:rotate-180" aria-hidden="true" />
       </span>
     </button>
-  );
-}
-
-/**
- * The one next step: its photos on top, edge to edge (one large and two
- * small when there are three), then what it is, one line of why, and one
- * button — a quieter link under it where there is a broader way in.
- */
-function NextStep({ step }: { step: Step }) {
-  const ids = step.covers.slice(0, 3);
-  const layout = ids.length >= 3 ? 'grid-cols-[2fr_1fr] grid-rows-2 [&>*:first-child]:row-span-2' : ids.length === 2 ? 'grid-cols-2' : 'grid-cols-1';
-  return (
-    <section className="rounded-lg card overflow-hidden" aria-labelledby="next-h">
-      {ids.length > 0 && (
-        <div className="relative">
-          <div className={`aspect-[16/9] grid gap-[2px] ${layout}`} aria-hidden="true">
-            {ids.map((id, i) => <Thumb key={id} id={id} size={i === 0 ? LARGE : undefined} className="!rounded-none" />)}
-          </div>
-          {/* Why this step, as a label on its photo rather than a kicker over the title. */}
-          <span className="absolute top-3 start-3 max-w-[calc(100%-24px)] inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full glass text-fg text-caption font-bold wrap-compound">
-            <Sparkles className="w-3.5 h-3.5 shrink-0" strokeWidth={2.4} aria-hidden="true" />{step.eyebrow}
-          </span>
-        </div>
-      )}
-      <div className="p-5">
-        {!ids.length && <p className="text-label font-semibold text-fg-mute">{step.eyebrow}</p>}
-        <h2 id="next-h" className="title-face text-title2 font-bold text-fg wrap-compound">{step.title}</h2>
-        <p className="text-label text-fg-mute mt-1 num wrap-prose">{step.meta}</p>
-        {step.progress && <div className="mt-3"><Progress value={step.progress.value} label={step.progress.label} thin /></div>}
-        <Button full size="lg" className="mt-4" onClick={step.onGo}>{step.button}</Button>
-        {step.more && <Button full variant="ghost" className="mt-1" onClick={step.more.onClick}>{step.more.label}</Button>}
-      </div>
-    </section>
   );
 }
 

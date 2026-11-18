@@ -191,8 +191,10 @@ to the bottom with a fade above it).
 - **Loading**: the shape of what comes, breathing softly (`skeleton`), never
   a spinner on a blank page.
 - **Home's order**: greeting, *Vorschläge* first (Ahmad: the space you could
-  free up on top), then the one next step (why it is the step: a glass chip
-  on its photo, never a kicker over its title), what is marked for deletion.
+  free up on top), then what is marked for deletion — a `data-hue="sand"`
+  card (`bg-hue-bg`, ink `text-hue-ink`, the archive on `bg-hue-solid`): its
+  own colour, so waiting reads apart from everything else, and never red.
+  No next-step card on home since 18 November 2026 (the reveal keeps one).
   *Vorschläge* is ONE card: the space, the library's bar, the
   photos / videos cells and the free space, then the categories as rows
   whose hue dot is their segment in the bar, and *Jetzt aufräumen* at its foot —

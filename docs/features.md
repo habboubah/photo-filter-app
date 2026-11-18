@@ -98,16 +98,19 @@ tab again scrolls to its top; Android's back button goes from *Ordnen* to
 
 ### Aufräumen [Clean up]
 Calm and photo-led (docs/REDESIGN.md): a greeting, *Vorschläge* (the space
-that could be freed and the library's figures), the one next step, what is
-marked for deletion, then *Mehr Platz* and *Geschützt*.
+that could be freed and the library's figures), what is marked for deletion,
+then *Mehr Platz* and *Geschützt*.
 - **A greeting** by the time of day as the screen's title (*Guten Morgen* ·
   *Guten Tag* · *Guten Abend* — no name: there is no account), and under it how many photos and videos there are and that
   they stay on the device. While the facts load, the page shows its shape as
   soft placeholders instead of blank space.
 - **The order** (since 18 November 2026, Ahmad's call that evening):
-  **Vorschläge** first — the space you could free up on top — then the one
-  next step, then *Zum Löschen vorgemerkt* when something waits there, then
-  *Mehr Platz*.
+  **Vorschläge** first — the space you could free up on top — then *Zum
+  Löschen vorgemerkt* when something waits there, then *Mehr Platz*.
+- (*The one next step* — a large photo card such as *Ein guter Anfang ·
+  Unwichtige Fotos · Ansehen* — left home on 18 November 2026: the same
+  categories are rows in *Vorschläge*. The reveal after the first scan still
+  recommends one step.)
 - **One next step**, a card made of its photos with one button; why it is
   the step (*Ein guter Anfang*, *Weiter, wo du warst* …) is a small label on
   its photo:
@@ -121,9 +124,11 @@ marked for deletion, then *Mehr Platz* and *Geschützt*.
     11 Fotos · bis zu 32 MB* → **Ansehen**;
   - else month by month from the newest month → **Mit November 2026
     anfangen**; with nothing at all, *Alles aufgeräumt*.
-- **Zum Löschen vorgemerkt** [Marked for deletion], a section of its own while anything waits there:
-  a strip of its photos (the last tile counts the rest), *72 Fotos · 173 MB*,
-  *Noch nicht gelöscht*; a tap opens it (see *Marked for deletion*).
+- **Zum Löschen vorgemerkt** [Marked for deletion], a section of its own while anything waits there,
+  **in its own colour** — a warm sand card with the archive's tile (never
+  red: nothing is deleted yet): a strip of its photos (the last tile counts
+  the rest), *72 Fotos · 173 MB*, *Noch nicht gelöscht*; a tap opens it (see
+  *Marked for deletion*).
 - **Vorschläge** [Suggestions], one card (since 18 November 2026; until then
   a separate clean-up card with a table and a list): *Platz, der frei werden
   kann · 357 MB*; a bar of the whole library — one segment per category that
@@ -144,8 +149,7 @@ marked for deletion, then *Mehr Platz* and *Geschützt*.
 - **Mehr Platz** [More space]: *Monat für Monat* with *38 % durchgesehen* and
   a thin bar — the photos in months gone through, as a share of all photos
   (rounded down, so 100 % only once every month is done) — and *Später
-  entscheiden* with the number on the pile (see *Review*), each unless it is
-  the next step already; then *Große Dateien* [Large files], *Fotos
+  entscheiden* with the number on the pile (see *Review*); then *Große Dateien* [Large files], *Fotos
   verkleinern* [Smaller photos], on the iPhone *Live Photos*, *Chats &
   soziale Medien* — rows with a photo.
 - *Geschützt* [Protected] at the end.

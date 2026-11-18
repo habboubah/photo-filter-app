@@ -1220,8 +1220,6 @@ export default function App() {
         onApps={() => setShowApps(true)}
         storage={store.storage} freedBytes={state.freed.bytes}
         months={{ done: months.filter(m => doneMonths.has(m.key)).length, total: months.length, pct }}
-        nextMonth={nextMonth}
-        onMonth={openMonth}
         later={{ count: laterPile.length, cover: laterPile[0] }}
         bin={{ count: binned.length, bytes: binBytes, covers: binned.slice(0, 4).map(x => x.id) }}
         onBin={() => setShowBin(true)}
