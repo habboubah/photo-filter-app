@@ -23,7 +23,7 @@ export type { Found, FoundKey } from '../logic/nextStep';
 export interface Stat { count: number; bytes: number }
 
 /** The month to go on with (the newest not gone through yet), with what it holds. */
-export interface NextMonth { key: string; name: string; photos: number; bytes: number; covers: string[] }
+export interface NextMonth { key: string; name: string; photos: number; bytes: number; covers: string[]; /** How far into it the user is, 0–1 (a month left part-way; src/logic/months.ts monthShare). */ share?: number }
 
 interface Props {
   t: Strings;
@@ -120,7 +120,7 @@ export function categoryMeta(t: Strings, c: { key: FoundKey; items: number; gain
   return c.gain.bytes > 0 ? fmt(t.nextCategoryMeta, { count: categoryCount(t, c), size: bytes(t, c.gain.bytes) }) : categoryCount(t, c);
 }
 
-type Step = { eyebrow: string; title: string; meta: string; covers: string[]; button: string; onGo: () => void; more?: { label: string; onClick: () => void } };
+type Step = { eyebrow: string; title: string; meta: string; covers: string[]; button: string; onGo: () => void; more?: { label: string; onClick: () => void }; progress?: { value: number; label: string } };
 
 /**
  * Home, the "Aufräumen" tab, calm and photo-led ("Album", docs/REDESIGN.md):
@@ -167,14 +167,17 @@ export function HomeView(p: Props) {
 
   const pctText = percent(t, p.months.pct);
   // Which step it is: src/logic/nextStep.ts (the reveal after the first scan recommends the same one).
-  const kind = nextStepKind({ monthsDone: p.months.done, hasNextMonth: !!p.nextMonth, later: p.later.count, categories: cats.length, scanning: p.scan.running });
+  const kind = nextStepKind({ monthsDone: p.months.done, monthStarted: !!p.nextMonth?.share, hasNextMonth: !!p.nextMonth, later: p.later.count, categories: cats.length, scanning: p.scan.running });
   let step: Step | null = null;
   if (kind === 'month' && p.nextMonth) {
     // Progress exists: go on with the next month.
     const m = p.nextMonth;
+    // A month left part-way says how far into it the user is, and its bar shows it (docs/ux-research.md, idea B).
+    const monthPct = percent(t, Math.floor((m.share ?? 0) * 100));
     step = {
       eyebrow: t.nextResumeEyebrow, title: m.name, covers: m.covers,
-      meta: fmt(t.nextResumeMeta, { photos: plural(t, 'photos', m.photos), pct: pctText }),
+      meta: m.share ? fmt(t.nextMonthMeta, { photos: plural(t, 'photos', m.photos), pct: monthPct }) : fmt(t.nextResumeMeta, { photos: plural(t, 'photos', m.photos), pct: pctText }),
+      progress: m.share ? { value: m.share, label: fmt(t.progressDone, { pct: monthPct }) } : undefined,
       button: fmt(t.nextResumeButton, { month: m.name }), onGo: () => p.onMonth(m.key),
       more: { label: t.nextAllMonths, onClick: p.onMonths },
     };
@@ -481,6 +484,7 @@ function NextStep({ step }: { step: Step }) {
         <p className="eyebrow text-fg-mute">{step.eyebrow}</p>
         <h2 id="next-h" className="title-face text-title2 font-bold text-fg mt-0.5 wrap-compound">{step.title}</h2>
         <p className="text-label text-fg-mute mt-1 num wrap-prose">{step.meta}</p>
+        {step.progress && <div className="mt-3"><Progress value={step.progress.value} label={step.progress.label} thin /></div>}
         <Button full size="lg" className="mt-4" onClick={step.onGo}>{step.button}</Button>
         {step.more && <Button full variant="ghost" className="mt-1" onClick={step.more.onClick}>{step.more.label}</Button>}
       </div>

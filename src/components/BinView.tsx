@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Archive, CheckCircle2, Circle, Trash2, Undo2 } from 'lucide-react';
+import { Archive, CheckCircle2, Circle, ListChecks, Undo2 } from 'lucide-react';
 import type { Photo } from '../types';
 import { Strings, bytes, plural } from '../translations';
 import { duration } from '../logic/large';
@@ -10,13 +10,14 @@ import { DeleteSheet } from './DeleteSheet';
 import { SafetyNets } from './SafetyNets';
 
 /**
- * "Zum Löschen vorgemerkt" [Marked for deletion] (src/logic/bin.ts): what the user marked,
- * waiting — nothing of it is deleted yet. The last put aside first. A tap
- * selects a photo to put back (it returns to its group and every count);
- * with nothing selected, the Dock deletes them all, or goes through them once
- * more. Deleting is the one red action of the app: it first shows exactly
- * what goes and how much space it frees (a sheet that cancels with one tap),
- * then the system's own dialog moves it to the Trash / Recently Deleted.
+ * "Zum Löschen vorgemerkt" [Marked for deletion] (src/logic/bin.ts): a review
+ * tray (docs/ux-research.md, idea C) — what the user marked, waiting, nothing
+ * of it deleted yet. The last put aside first, every photo in view. A tap
+ * selects a photo to put back (it returns to its group and every count). The
+ * Dock never deletes: *Auswahl prüfen* opens the one sheet that shows exactly
+ * what goes and how much space it frees (DeleteSheet), and only that sheet's
+ * red button deletes — then the system's own dialog moves it to the Trash /
+ * Recently Deleted. *Noch einmal durchgehen* reviews them one by one.
  */
 export function BinView({ t, photos, safetySeen, onSafetySeen, onBack, onRestore, onDelete, onReview }: {
   t: Strings;
@@ -42,7 +43,6 @@ export function BinView({ t, photos, safetySeen, onSafetySeen, onBack, onRestore
   const toggle = (id: string) => setChosen(s => { const next = new Set(s); if (next.has(id)) next.delete(id); else next.add(id); return next; });
   const when = (p: Photo) => new Date(p.t).toLocaleString(t.locale, { dateStyle: 'medium', timeStyle: 'short' });
   const count = (list: Photo[]) => (list.some(p => p.video) ? plural(t, 'files', list.length) : plural(t, 'photos', list.length));
-  const deleteLabel = (list: Photo[]) => (list.some(p => p.video) ? plural(t, 'deleteFilesN', list.length) : plural(t, 'deleteN', list.length));
   const ids = (list: Photo[]) => list.map(p => p.id);
 
   return (
@@ -82,14 +82,14 @@ export function BinView({ t, photos, safetySeen, onSafetySeen, onBack, onRestore
               <Button full size="lg" icon={Undo2} onClick={() => { onRestore(ids(picked)); setChosen(new Set()); }}>
                 {`${t.binRestore} · ${count(picked)}`}
               </Button>
-              <Button full variant="ghost" className="mt-1 !text-neg" onClick={() => setConfirm(picked)}>
-                {`${t.binDeleteOnly} · ${bytes(t, pickedBytes)}`}
+              <Button full variant="ghost" className="mt-1" icon={ListChecks} onClick={() => setConfirm(picked)}>
+                {`${t.binReviewOnly} · ${bytes(t, pickedBytes)}`}
               </Button>
             </>
           ) : (
             <>
-              <Button full size="lg" variant="destructive" icon={Trash2} onClick={() => setConfirm(photos)}>
-                {`${deleteLabel(photos)} · ${bytes(t, total)}`}
+              <Button full size="lg" icon={ListChecks} onClick={() => setConfirm(photos)}>
+                {`${t.binReviewSelection} · ${count(photos)} · ${bytes(t, total)}`}
               </Button>
               <Button full variant="ghost" className="mt-1" onClick={() => onReview(ids(photos))}>{t.binReview}</Button>
             </>

@@ -16,13 +16,13 @@ import { buildGroups, buildTrips, cleanupBlurry, detect, findBlurry, makeLibrary
 import { folderName } from './logic/naming';
 import { addMerge, addSplit, removeMerge, removeSplits, setIgnored, setName } from './logic/trips';
 import {
-  Decision, ReviewItem, Session, decide, fileTo, isDone, isNewAlbum, keptAgainstSuggestion, laterIds, reviewBlurry, reviewCleanup, reviewGroup,
+  Decision, ReviewItem, Session, decide, fileTo, isDone, isNewAlbum, keptAgainstSuggestion, laterIds, toDelete, reviewBlurry, reviewCleanup, reviewGroup,
   reviewBin, reviewExposure, reviewFound, reviewLarge, reviewLater, reviewScreenshots, reviewTrip, reviewUtility, settledIds, startSession, undo,
 } from './logic/review';
 import { aiProgress, categories, findSensitive, findUtility, type MemoryLabel } from './logic/ai';
 import { findScreenshots, isOldShot, oldShots } from './logic/screenshots';
 import { duration, findLarge, findLive } from './logic/large';
-import { buildMonths, onThisDay, progress } from './logic/months';
+import { buildMonths, monthRest, monthShare, onThisDay, progress } from './logic/months';
 import { findExposure } from './logic/exposure';
 import { sortFor, type SortScreen } from './logic/sort';
 import { likeProtected, protectedIds } from './logic/protect';
@@ -41,7 +41,7 @@ import { notifySuccess, tapLight } from './ui/haptics';
 import { HomeView, categoryMeta, categoryWords } from './components/HomeView';
 import { GESTURES, MOMENTS, hasSeen, nextGesture, nextTip } from './logic/firstRun';
 import { TIPS, TIP_IDS } from './tips';
-import { type FoundKey, nextStepKind, rankCategories } from './logic/nextStep';
+import { type FoundKey, firstGroup, nextStepKind, rankCategories } from './logic/nextStep';
 import { TabBar } from './ui/TabBar';
 
 import type { FailedTab } from './components/FailedView';
@@ -49,6 +49,7 @@ import { Progress } from './ui/Controls';
 import { Sheet } from './ui/Sheet';
 import type { ReviewOutcome } from './components/ReviewView';
 import { PaywallSheet, type FreeInfo } from './components/PaywallSheet';
+import type { TaskDone, TaskNext } from './components/FirstTaskSheet';
 import { UNLOCK_ON_SALE, deletesUnlimited, extrasFree, freeDelete, freeLeft } from './logic/allowance';
 
 /*
@@ -95,6 +96,7 @@ const FirstScanView = lazy(() => withFirstRun(import('./components/FirstScanView
 const DeleteSheet = lazy(() => import('./components/DeleteSheet').then(m => ({ default: m.DeleteSheet })));
 const HowView = lazy(() => withFirstRun(import('./components/HowView')).then(m => ({ default: m.HowView })));
 const RevealView = lazy(() => withFirstRun(import('./components/RevealView')).then(m => ({ default: m.RevealView })));
+const FirstTaskSheet = lazy(() => withFirstRun(import('./components/FirstTaskSheet')).then(m => ({ default: m.FirstTaskSheet })));
 
 /** Up to `n` ids spread over the list (its start, middle and end), for a cover of a few photos. */
 const spread = (ids: string[], n: number) =>
@@ -104,7 +106,7 @@ const spread = (ids: string[], n: number) =>
  * `onDone`: what happens once the review was gone through to its end (a month marked as done).
  * `bin`: "Zum Löschen" gone through again — the end deletes for real, what was kept goes back.
  */
-interface Review { session: Session; finished: boolean; onDone?: () => void; bin?: boolean }
+interface Review { session: Session; finished: boolean; onDone?: () => void; bin?: boolean; /** A month by month review: where to go on next time if it is left part-way. */ month?: string }
 
 export default function App() {
   const store = useAppStore();
@@ -254,6 +256,10 @@ export default function App() {
   const [showSimilar, setShowSimilar] = useState(false);
   const [similarShown, setSimilarShown] = useState(40);
   const [groupKey, setGroupKey] = useState<string | null>(null);
+  // The first task after the first scan (docs/ux-research.md, idea A): the group opened from the reveal,
+  // and what was done with it — shown once in a sheet (FirstTaskSheet) instead of the usual toast.
+  const [firstTask, setFirstTask] = useState(false);
+  const [taskDone, setTaskDone] = useState<(TaskDone & { undo: () => void }) | null>(null);
   const [showBlurry, setShowBlurry] = useState(false);
   const [failedTab, setFailedTab] = useState<FailedTab>('blurry');
   const openFailed = (tab: FailedTab) => { setFailedTab(tab); setShowBlurry(true); };
@@ -313,8 +319,15 @@ export default function App() {
       if (restore.length) show(plural(t, 'binRestored', restore.length));
     } else if (review) {
       store.recordReview(review.session);
-      store.addKept(keptAgainstSuggestion(review.session));
       applyLater(review.session);
+      if (!review.finished && !isDone(review.session)) {
+        // Left part-way: what was marked by then is put aside (it said "Löschen vormerken"), not forgotten —
+        // with undo; and a month remembers where to go on (docs/ux-research.md, ideas B and C).
+        toBin(toDelete(review.session), keptAgainstSuggestion(review.session));
+        const last = review.session.items[review.session.index - 1];
+        const at = last ? lib.byId.get(last.id)?.t : undefined;
+        if (review.month && at !== undefined) store.setMonthAt(review.month, at);
+      } else store.addKept(keptAgainstSuggestion(review.session));
       if (isDone(review.session)) review.onDone?.();
     }
     setReview(null);
@@ -331,7 +344,7 @@ export default function App() {
     ['how', showHow, () => setShowHow(false)],
     ['protected', showProtected, () => setShowProtected(false)],
     ['bin', showBin, () => setShowBin(false)],
-    ['group', !!group, () => setGroupKey(null)],
+    ['group', !!group, () => { setGroupKey(null); setFirstTask(false); }],
     ['trip', !!trip, () => setTripKey(null)],
     ['similar', showSimilar, () => setShowSimilar(false)],
     ['duplicates', showDuplicates, () => setShowDuplicates(false)],
@@ -626,10 +639,10 @@ export default function App() {
   /** A list screen's order and how to change it (src/logic/sort.ts). */
   const sorting = (screen: SortScreen) => ({ sort: sortFor(state.sort, screen), onSort: (k: Parameters<typeof store.setSort>[1]) => store.setSort(screen, k) });
 
-  const startReview = (items: ReviewItem[], onDone?: () => void, bin?: boolean) => {
+  const startReview = (items: ReviewItem[], onDone?: () => void, bin?: boolean, month?: string) => {
     if (!items.length) return;
     // How sure each suggestion is, as this phone's ledger has it (src/logic/ledger.ts).
-    setReview({ session: startSession(adjustItems(items, state.ledger)), finished: false, onDone, bin });
+    setReview({ session: startSession(adjustItems(items, state.ledger)), finished: false, onDone, bin, month });
     if (!albumList) void PhotoLibrary.listAlbums().then(r => setAlbumList(r.albums)).catch(() => setAlbumList([]));
   };
 
@@ -669,7 +682,10 @@ export default function App() {
   const isOld = (p: Photo) => isOldShot(p, now);
   const openMonth = (key: string) => {
     const m = months.find(x => x.key === key);
-    if (m) startReview(reviewTrip(m.ids, groups, lib.byId, kept, isOld, cos), () => { store.markMonthDone(key); store.markDay(); });
+    if (!m) return;
+    // A month left part-way goes on after the last photo decided (AppState.monthAt).
+    const ids = monthRest(m, state.monthAt[key], id => lib.byId.get(id)?.t);
+    startReview(reviewTrip(ids, groups, lib.byId, kept, isOld, cos), () => { store.markMonthDone(key); store.markDay(); }, false, key);
   };
   const onDecide = (d: Decision) => setReview(r => (r ? { ...r, session: decide(r.session, d) } : r));
   const onUndo = () => setReview(r => (r ? { ...r, session: undo(r.session), finished: false } : r));
@@ -731,13 +747,19 @@ export default function App() {
     ...(aiSeen.seen > 0 ? { utility: { items: utility.length, covers: utility.slice(0, 4).map(x => x.id) } } : {}),
   };
   // Home's one next step (src/components/HomeView.tsx): the newest month not gone through, and the latest trip for its small tile.
-  const next = months.find(m => !doneMonths.has(m.key));
+  // A month left part-way comes first (AppState.monthAt): home's next step goes on with it.
+  const monthTime = (id: string) => byId.get(id)?.t;
+  const started = months.find(m => !doneMonths.has(m.key) && monthShare(m, false, state.monthAt[m.key], monthTime) > 0);
+  const next = started ?? months.find(m => !doneMonths.has(m.key));
   const nextMonth = next ? {
     key: next.key, photos: next.ids.length, bytes: next.bytes,
+    share: monthShare(next, false, state.monthAt[next.key], monthTime),
     name: new Date(next.year, next.month, 1).toLocaleDateString(t.locale, { month: 'long', year: 'numeric' }),
     covers: spread(next.ids.filter(id => !byId.get(id)?.shot && !byId.get(id)?.video), 3),
   } : null;
   const latestTrip = trips.filter(x => !x.ignored).reduce<Trip | null>((a, x) => (!a || x.start > a.start ? x : a), null);
+  // The first useful task: a group of near-identical photos to compare (src/logic/nextStep.ts).
+  const firstOf = useMemo(() => firstGroup(similarGroups, id => lib.byId.get(id)?.t), [similarGroups, lib]);
 
   /** One category gone through as a review: a group's best shot first (keep), then its extra shots; the single photos as their screens review them. */
   const reviewCategory = (key: FoundKey) => {
@@ -755,7 +777,7 @@ export default function App() {
   // The reveal's one recommended step: the choice home's next-step card makes (src/logic/nextStep.ts).
   const revealStep = () => {
     const ranked = rankCategories(found, summary);
-    const kind = nextStepKind({ monthsDone: doneMonths.size, hasNextMonth: !!nextMonth, later: laterPile.length, categories: ranked.length, scanning: store.scan.running });
+    const kind = nextStepKind({ monthsDone: doneMonths.size, monthStarted: !!nextMonth?.share, hasNextMonth: !!nextMonth, later: laterPile.length, categories: ranked.length, scanning: store.scan.running });
     const top = ranked[0];
     if (kind === 'category' && top) {
       return {
@@ -779,6 +801,19 @@ export default function App() {
       };
     }
     return { ranked, step: null, go: () => {} };
+  };
+
+  /** The one next step after the first task: the next group to compare, else home's own next step. */
+  const taskNext = (): TaskNext | null => {
+    if (firstOf) {
+      return {
+        title: fmt(t.revealFirstTitle, { photos: plural(t, 'photos', firstOf.ids.length) }),
+        meta: fmt(t.taskNextGroupMeta, { groups: plural(t, 'groups', similarGroups.length) }),
+        button: t.taskNextGroup, go: () => setGroupKey(firstOf.key),
+      };
+    }
+    const r = revealStep();
+    return r.step ? { title: r.step.title, meta: r.step.meta, button: r.step.button ?? t.revealGo, go: r.go } : null;
   };
 
   const content = () => {
@@ -872,7 +907,7 @@ export default function App() {
       return (
         <GroupView
           t={t} group={group} byId={byId} kept={kept} verdicts={groupVerdicts} debug={store.debug}
-          onBack={() => setGroupKey(null)}
+          onBack={() => { setGroupKey(null); setFirstTask(false); }}
           onPick={id => {
             const chosen = lib.byId.get(id);
             const suggested = lib.byId.get(group.suggested);
@@ -881,11 +916,23 @@ export default function App() {
               id !== group.suggested && chosen && suggested ? { chosen: withFaces(chosen)!, suggested: withFaces(suggested)! } : undefined);
           }}
           onReview={() => startReview(reviewGroup(group, kept, byId, cos))}
-          onDeleteOthers={ids => toBin(ids, [], () => setGroupKey(null))}
+          onDeleteOthers={ids => {
+            if (!firstTask) { toBin(ids, [], () => setGroupKey(null)); return; }
+            store.binAdd(ids);
+            tapLight();
+            setFirstTask(false);
+            setGroupKey(null);
+            setTaskDone({ kind: 'aside', keep: group.best, ids, bytes: ids.reduce((n, id) => n + (byId.get(id)?.bytes ?? 0), 0), undo: () => store.binRemove(ids) });
+          }}
           onKeepAll={() => {
             const ids = group.ids.filter(id => !state.kept.includes(id));
             store.addKept(ids);
             setGroupKey(null);
+            if (firstTask) {
+              setFirstTask(false);
+              setTaskDone({ kind: 'kept', keep: group.best, ids: group.ids.filter(id => id !== group.best), bytes: 0, undo: () => store.removeKept(ids) });
+              return;
+            }
             show(t.keepAllDone, { label: t.undo, run: () => store.removeKept(ids) });
           }}
           onScoreFaces={ids => { void store.scoreFaces(ids); }}
@@ -1056,7 +1103,7 @@ export default function App() {
     if (showMonths) {
       return (
         <MonthsView
-          t={t} months={months} done={doneMonths} byId={byId} shown={monthsShown}
+          t={t} months={months} done={doneMonths} at={state.monthAt} byId={byId} shown={monthsShown}
           onMore={() => setMonthsShown(n => n + 24)}
           onBack={() => setShowMonths(false)} onOpen={openMonth}
         />
@@ -1116,18 +1163,21 @@ export default function App() {
       return (
         <FirstScanView
           t={t} scan={store.scan} onLookAround={endFirstScan}
+          firstFind={firstOf ? { ids: firstOf.ids, suggested: firstOf.suggested } : null}
           found={{ trips: trips.filter(x => !x.ignored).length, similar: similarGroups.length, duplicates: dupGroups.length, screenshots: shots.length }}
         />
       );
     }
     if (root === 'reveal') {
       const r = revealStep();
+      const fg = firstOf;
       return (
         <RevealView
-          t={t} files={photos?.length ?? 0} categories={r.ranked} freeable={summary?.total.bytes ?? 0}
+          t={t} files={photos?.length ?? 0} categories={r.ranked}
+          first={fg ? { ids: fg.ids, suggested: fg.suggested, date: new Date(byId.get(fg.best)?.t ?? 0).toLocaleDateString(t.locale, { dateStyle: 'long' }) } : null}
           trips={trips.filter(x => !x.ignored).length} tripCover={latestTrip ? latestTrip.ids[Math.floor(latestTrip.ids.length / 2)] : undefined}
           aiRunning={store.scan.running} step={r.step}
-          onGo={() => { endFirstScan(); r.go(); }} onLookAround={endFirstScan}
+          onGo={() => { endFirstScan(); if (fg) { setFirstTask(true); setGroupKey(fg.key); } else r.go(); }} onLookAround={endFirstScan}
         />
       );
     }
@@ -1229,6 +1279,15 @@ export default function App() {
         </div>
       )}
 
+      {taskDone && (
+        <Suspense fallback={null}>
+          <FirstTaskSheet
+            t={t} done={taskDone} next={taskNext()} onUndo={taskDone.undo}
+            onOpenBin={() => { setTaskDone(null); setShowBin(true); }} onClose={() => setTaskDone(null)}
+          />
+        </Suspense>
+      )}
+
       <PaywallSheet t={t} open={paywall} free={store.owned ? undefined : paywallFree ?? { left: freeLeft(state.freeUsed) }} onClose={closePaywall} onOwned={unlocked} toast={label => show(label)} />
 
       <Confirm
@@ -1290,7 +1349,7 @@ export default function App() {
       </Sheet>
 
       {/* The one tip that is due: loaded (with its words) only when there is one. */}
-      {due && <Suspense fallback={null}><TipHost t={t} tip={due} onSeen={store.markSeen} /></Suspense>}
+      {due && !taskDone && <Suspense fallback={null}><TipHost t={t} tip={due} onSeen={store.markSeen} /></Suspense>}
 
       <Toast toast={toast} onDone={hide} raised={screen === 'bin' ? 'high' : ['trip', 'group', 'blurry', 'screenshots', 'utility', 'quickClean', 'large', 'live', 'compress', 'cleanup', 'review', 'search', 'like'].includes(screen)} />
     </div>

@@ -1,7 +1,7 @@
 A clear start for new users:
-• A short welcome in four pages – skip it any time
+• A one-screen welcome – what Bildklar does, in three lines
 • Photo access explained honestly: all photos or only selected ones
-• The first scan shows what it has found so far and how long it still takes
-• Learn the swipes on a real photo: right keeps, left marks, up decides later
+• First, compare one group of near-identical photos – side by side, with one zoom for both
+• Learn the swipes on a real photo, with undo
+• Month by month shows how far you are and picks up where you stopped
 • Before the first delete: the three safety nets at a glance
-• One-time tips – replay them under “How Bildklar works” in Settings

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { Archive, Check, ChevronLeft, ChevronRight, Play, Shield, Sparkles, ZoomIn } from 'lucide-react';
+import { Archive, Check, ChevronLeft, ChevronRight, Columns2, Play, Shield, Sparkles, ZoomIn } from 'lucide-react';
 import type { Group, Photo } from '../types';
 import type { Detail, Verdict } from '../logic/confidence';
 import { type KeeperWhy, keeperWhy } from '../logic/explain';
@@ -11,6 +11,7 @@ import { Thumb } from '../ui/Photo';
 import { LARGE } from '../thumbs';
 import { tapLight } from '../ui/haptics';
 import { ZoomView, zoomLayoutId } from '../ui/Zoom';
+import { CompareView } from '../ui/Compare';
 import { PlayOver, usePlayer } from '../ui/play';
 
 /**
@@ -49,6 +50,8 @@ export function GroupView({ t, group, byId, kept, verdicts, debug, onBack, onPic
   const [looking, setLooking] = useState(group.best);
   // The photo looked at, large (ui/Zoom): to check sharpness and faces before choosing.
   const [zoom, setZoom] = useState(false);
+  // Side by side (ui/Compare): the photo that stays next to another, with one shared zoom; the id compared with.
+  const [pair, setPair] = useState<string | null>(null);
   const focus = group.ids.includes(looking) ? looking : group.best;
   const at = group.ids.indexOf(focus);
   const move = (by: number) => {
@@ -124,6 +127,14 @@ export function GroupView({ t, group, byId, kept, verdicts, debug, onBack, onPic
               <Thumb id={focus} size={LARGE} alt={`${when(focus)}. ${state(focus)}`} className="!rounded-none !object-contain !bg-transparent" />
             </motion.div>
           </motion.div>
+          {!videos && group.ids.length > 1 && !byId.get(focus)?.video && (
+            <button
+              type="button" onClick={() => { tapLight(); setPair(focus !== group.best ? focus : group.ids.find(id => id !== group.best) ?? null); }}
+              className="absolute bottom-2 start-16 h-12 ps-3.5 pe-4 rounded-full glass text-fg text-label font-bold inline-flex items-center gap-2 press focus-visible:ring-focus"
+            >
+              <Columns2 className="w-5 h-5" aria-hidden="true" />{t.compareOpen}
+            </button>
+          )}
           {!byId.get(focus)?.video && (
             <button
               type="button" aria-label={t.zoomOpen} title={t.zoomOpen} onClick={() => { tapLight(); setZoom(true); }}
@@ -138,6 +149,24 @@ export function GroupView({ t, group, byId, kept, verdicts, debug, onBack, onPic
                 key="zoom" id={focus} alt={`${when(focus)}. ${state(focus)}`}
                 labels={{ close: t.close, zoomIn: t.zoomIn, zoomOut: t.zoomOut, hint: t.zoomHint }}
                 onClose={() => setZoom(false)}
+              />
+            )}
+          </AnimatePresence>
+          <AnimatePresence>
+            {pair && pair !== group.best && group.ids.includes(pair) && (
+              <CompareView
+                key="pair"
+                a={{ id: group.best, label: `${when(group.best)} · ${state(group.best)}`, keeps: true, suggested: group.best === group.suggested, chip: changed ? t.groupYourChoice : t.groupKeeps }}
+                b={{
+                  id: pair, label: [when(pair), verdicts.get(pair)?.detail ? details[verdicts.get(pair)!.detail!] : null].filter(Boolean).join(' · '),
+                  suggested: pair === group.suggested, chip: pair === group.suggested ? t.groupSuggested : fate(pair) === 'safe' ? t.groupAlsoKept : undefined,
+                }}
+                series={group.ids.filter(id => id !== group.best).map((id, i) => ({ id, label: fmt(t.groupShow, { i: num(t, i + 1), n: num(t, group.ids.length - 1), date: when(id) }) }))}
+                ratio={ratio}
+                labels={{ title: t.compareOpen, close: t.close, zoomIn: t.zoomIn, zoomOut: t.zoomOut, hint: t.compareHint, keep: t.groupKeepThis, series: t.compareWith }}
+                onPickB={id => { setPair(id); setLooking(id); }}
+                onKeep={id => { const old = group.best; onPick(id); setLooking(id); setPair(old); }}
+                onClose={() => setPair(null)}
               />
             )}
           </AnimatePresence>
@@ -169,9 +198,6 @@ export function GroupView({ t, group, byId, kept, verdicts, debug, onBack, onPic
                 className="absolute end-2 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full glass text-fg inline-flex items-center justify-center press focus-visible:ring-focus">
                 <ChevronRight className="w-6 h-6 rtl:rotate-180" strokeWidth={2.4} aria-hidden="true" />
               </button>
-              <span className="absolute bottom-3 end-3 px-2.5 py-1 rounded-full bg-veil text-on-color text-caption font-bold num" aria-hidden="true">
-                {`${num(t, at + 1)} / ${num(t, group.ids.length)}`}
-              </span>
             </>
           )}
           {debug && photo && (
@@ -231,7 +257,7 @@ export function GroupView({ t, group, byId, kept, verdicts, debug, onBack, onPic
         </div>
 
         <figcaption className="px-1 space-y-1" aria-live="polite">
-          <p className="text-caption text-fg-mute num">{[when(focus), photo ? bytes(t, photo.bytes) : null].filter(Boolean).join(' · ')}</p>
+          <p className="text-caption text-fg-mute num">{[group.ids.length > 1 ? `${num(t, at + 1)} / ${num(t, group.ids.length)}` : null, when(focus), photo ? bytes(t, photo.bytes) : null].filter(Boolean).join(' · ')}</p>
           {reason && <p className="text-label text-fg wrap-prose">{reason}</p>}
           {changed && focus === group.best && <p className="text-label text-fg-mute wrap-prose">{t.groupChangedNote}</p>}
         </figcaption>

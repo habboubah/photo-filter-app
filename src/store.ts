@@ -227,7 +227,13 @@ export function useAppStore() {
     return days === s.days ? s : { ...s, days };
   });
   /** A month of "Month by month" gone through to the end. */
-  const markMonthDone = (key: string) => setState(s => (s.months.includes(key) ? s : { ...s, months: [...s.months, key] }));
+  const markMonthDone = (key: string) => setState(s => {
+    if (s.months.includes(key) && !(key in s.monthAt)) return s;
+    const { [key]: _, ...monthAt } = s.monthAt;
+    return { ...s, months: s.months.includes(key) ? s.months : [...s.months, key], monthAt };
+  });
+  /** A month left part-way: where to go on (the time of the last photo decided in it; AppState.monthAt). */
+  const setMonthAt = (key: string, at: number) => setState(s => (s.monthAt[key] === at || s.months.includes(key) ? s : { ...s, monthAt: { ...s.monthAt, [key]: at } }));
   /** Photos moved to Recently Deleted / the Trash: added to the "freed so far" count. */
   const addFreed = (count: number, bytes: number) => {
     if (count > 0) setState(s => ({ ...s, freed: { count: s.freed.count + count, bytes: s.freed.bytes + Math.max(0, bytes) } }));
@@ -588,7 +594,7 @@ export function useAppStore() {
   return {
     language, setLanguage, themeMode, setThemeMode,
     debug, dryRunAvailable, dryRun, setDryRun,
-    state, stateReady, storageError, updateTrips, recordAlbum, setBest, recordReview, addKept, removeKept, updateLater, pruneLaterPile, binAdd, binRemove, pruneBin, setSort, protectPhotos, protectTrip, protectAlbum, protectSimilar, albumMembers, useAlbums, markMonthDone, addFreed, markDay, countFree, resetDecisions, restoreState,
+    state, stateReady, storageError, updateTrips, recordAlbum, setBest, recordReview, addKept, removeKept, updateLater, pruneLaterPile, binAdd, binRemove, pruneBin, setSort, protectPhotos, protectTrip, protectAlbum, protectSimilar, albumMembers, useAlbums, markMonthDone, setMonthAt, addFreed, markDay, countFree, resetDecisions, restoreState,
     reminder, setReminder,
     welcomeSeen, setWelcomeSeen, seen, markSeen, replay, hideAllHints,
     owned: isOwned, setOwned,

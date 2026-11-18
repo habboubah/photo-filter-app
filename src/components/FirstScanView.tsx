@@ -2,11 +2,12 @@ import { useEffect, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { Archive, CalendarDays, Check, Lock, MapPin, Sparkles } from 'lucide-react';
 import type { ScanView } from '../store';
-import { Strings, fmt, num, percent } from '../translations';
+import { Strings, fmt, num, percent, plural } from '../translations';
 import { etaText } from './HomeView';
 import { Button } from '../ui/Button';
 import { CountUp, Dots, Foot, Ring, SETTLE } from '../ui/FirstRun';
 import { tapLight } from '../ui/haptics';
+import { Thumb } from '../ui/Photo';
 
 /** How long one explaining card stays before the next comes by itself. */
 const CARD_MS = 6500;
@@ -20,13 +21,18 @@ export interface FoundSoFar { trips: number; similar: number; duplicates: number
  * the wait used to explain what Bildklar does — five cards, one sentence and
  * a small animation each, coming by themselves (not under reduced motion)
  * or by a tap. The scan never blocks the app: *Schon mal umsehen* goes to
- * home, where the slim card carries on. Only the first scan looks like
- * this; later ones stay the slim card.
+ * home, where the slim card carries on. As soon as the scan has found a
+ * group of near-identical photos, its real photos take the cards' place —
+ * "found already", the comparison that waits after the scan — so the wait
+ * shows results instead of promises (nothing here is invented: no group, no
+ * card). Only the first scan looks like this; later ones stay the slim card.
  */
-export function FirstScanView({ t, scan, found, onLookAround }: {
+export function FirstScanView({ t, scan, found, firstFind, onLookAround }: {
   t: Strings;
   scan: ScanView;
   found: FoundSoFar;
+  /** The first group of near-identical photos found so far (src/logic/nextStep.ts firstGroup): real photos, shown as soon as they exist. */
+  firstFind?: { ids: string[]; suggested: string } | null;
   onLookAround: () => void;
 }) {
   const reduce = useReducedMotion();
@@ -88,6 +94,30 @@ export function FirstScanView({ t, scan, found, onLookAround }: {
           </dl>
         </section>
 
+        {firstFind ? (
+          <motion.section
+            className="mt-5 pb-2" aria-labelledby="first-find"
+            initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ ...SETTLE, duration: 0.5 }}
+          >
+            <h2 id="first-find" className="px-1 pb-2 text-label font-semibold text-fg-mute">{t.firstScanFirstFind}</h2>
+            <div className="rounded-md card p-3 flex items-center gap-3">
+              <span className="flex -space-x-5 rtl:space-x-reverse shrink-0" aria-hidden="true">
+                {firstFind.ids.slice(0, 3).map((id, i) => (
+                  <span key={id} className="relative block w-16 h-20 rounded-[10px] overflow-hidden ring-2 ring-surface" style={{ zIndex: 3 - i }}>
+                    <Thumb id={id} className="!rounded-none" />
+                    {id === firstFind.suggested && (
+                      <span className="absolute top-1 end-1 w-5 h-5 rounded-full glass text-fg inline-flex items-center justify-center"><Sparkles className="w-3 h-3" strokeWidth={2.6} /></span>
+                    )}
+                  </span>
+                ))}
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-label font-bold text-fg wrap-compound">{fmt(t.revealFirstTitle, { photos: plural(t, 'photos', firstFind.ids.length) })}</span>
+                <span className="block text-caption text-fg-mute mt-0.5 wrap-prose">{t.firstScanFirstFindBody}</span>
+              </span>
+            </div>
+          </motion.section>
+        ) : (
         <section className="mt-5 pb-2" aria-label={t.firstScanCards}>
           <button
             type="button"
@@ -114,6 +144,7 @@ export function FirstScanView({ t, scan, found, onLookAround }: {
             <Dots count={cards.length} index={card} label={fmt(t.welcomePage, { i: num(t, card + 1), n: num(t, cards.length) })} />
           </div>
         </section>
+        )}
 
         <Foot>
           <Button full size="lg" variant="secondary" onClick={onLookAround}>{t.firstScanLook}</Button>

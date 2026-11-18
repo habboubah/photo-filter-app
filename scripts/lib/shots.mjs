@@ -259,6 +259,18 @@ export const SCREENS = [
     },
   },
   { name: '24-months', run: async (page, w) => { await page.click(`button:has-text("${w.t.monthsCard}")`); await pause(page, 700); } },
+  {
+    // A month left part-way: three photos kept, the review closed — the tile shows the share and "Continue".
+    name: '45-months-resume', run: async (page, w) => {
+      await page.click(`button:has-text("${w.t.monthsCard}")`);
+      await pause(page, 700);
+      await page.click('main [data-tip="tip.months"] button >> nth=4');
+      await pause(page, 900);
+      for (let i = 0; i < 3; i++) { await page.keyboard.press('ArrowRight'); await pause(page, 450); }
+      await page.click(`button${aria(w.t.close)}`);
+      await pause(page, 900);
+    },
+  },
   { name: '25-home-end', run: async page => { await page.evaluate(() => window.scrollTo(0, 900)); await pause(page, 400); } },
   { name: '26-large', run: async (page, w) => { await page.click(`button:has-text("${w.t.largeTile}")`); await pause(page, 700); } },
   {
@@ -426,6 +438,13 @@ async function openGuidedReview(page, w) {
   await pause(page, 800);
   await openCleanupReview(page, w);
 }
+/** The reveal's first step: the first group of near-identical photos, opened as the first task. */
+async function openFirstGroup(page, w) {
+  await page.waitForSelector(`text=${w.t.revealTitle}`, { timeout: 20000 });
+  await pause(page, 700);
+  await page.click(`button:has-text("${w.t.revealCompare}")`);
+  await pause(page, 900);
+}
 /** Two photos marked in a review and put into "Zum Löschen vorgemerkt", then back on home. */
 async function markTwo(page, w) {
   await openCleanupReview(page, w);
@@ -439,14 +458,11 @@ async function markTwo(page, w) {
 }
 
 /**
- * The first run (docs/DESIGN.md), for ui-review: the welcome's four pages, the first scan's screen, the
+ * The first run (docs/DESIGN.md), for ui-review: the welcome, the first scan's screen, the
  * reveal, the guided review and its summary, a tip, the three safety nets, So funktioniert Bildklar.
  */
 export const FIRST_RUN_SCREENS = [
-  ...[0, 1, 2, 3].map(n => ({
-    name: `5${n}-welcome-${n + 1}`, prefs: NEW, wait: 2900,
-    run: async (page, w) => { for (let i = 0; i < n; i++) { await page.click(`button:has-text("${w.t.welcomeNext}")`); await pause(page, 350); } },
-  })),
+  { name: '50-welcome', prefs: NEW, wait: 2900 },
   // Slowed down (about 12 s), so the capture catches the screen half way through.
   { name: '54-first-scan', prefs: { firstRun: true, scanned: false, scanStep: '500' }, wait: 6500 },
   {
@@ -479,6 +495,34 @@ export const FIRST_RUN_SCREENS = [
       await page.click('body > div.fixed.bottom-0 button >> nth=0');
     },
     wait: 1500,
+  },
+  { name: '61-first-group', prefs: { firstRun: true, scanned: false }, run: openFirstGroup, wait: 1500 },
+  {
+    // Side by side, both photos zoomed to the same spot by one tap.
+    name: '62-compare', prefs: { firstRun: true, scanned: false }, run: async (page, w) => {
+      await openFirstGroup(page, w);
+      await page.click(`button:has-text("${w.t.compareOpen}")`);
+      await pause(page, 700);
+      const box = await page.locator('[role="dialog"] figure >> nth=0').boundingBox();
+      if (box) await page.mouse.click(box.x + box.width * 0.5, box.y + box.height * 0.4);
+    },
+    wait: 900,
+  },
+  {
+    name: '63-first-task', prefs: { firstRun: true, scanned: false }, run: async (page, w) => {
+      await openFirstGroup(page, w);
+      await page.click(`button:has-text("${w.t.groupAsideOthers}")`);
+    },
+    wait: 1400,
+  },
+  {
+    // Marked for deletion as a review tray: every staged photo, the dock reviews the selection (never deletes by itself).
+    name: '64-bin', prefs: { seen: ['*'] }, run: async (page, w) => {
+      await markTwo(page, w);
+      await pause(page, 5200); // the toast of the marking is gone
+      await page.click('button[data-tip="tip.bin"]');
+    },
+    wait: 900,
   },
   { name: '60-how', run: async (page, w) => { await openSettings(page, w); await page.click(`main button:has-text("${w.t.howTitle}")`); }, wait: 800 },
 ];

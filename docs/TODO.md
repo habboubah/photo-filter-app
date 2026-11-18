@@ -77,6 +77,35 @@ real iPhone and a real Android phone, please check:
       new labels and pass the rehearsal; run `npm run record:app-review` on
       the iPhone before the next submission.
 
+## 0a4. The first task (18 November 2026, evening): check it on your phones
+
+Built in the cloud against the demo library (docs/REDESIGN.md, top; research
+in docs/ux-research.md). Nothing native changed, but nothing ran on a phone.
+
+- [ ] **A fresh install on Android**: one welcome screen → photo access →
+      the first scan (do the first group's photos appear while it runs?) →
+      *Deine erste Gruppe vergleichen* → *Nebeneinander* → *Die anderen zum
+      Löschen vormerken* → the sheet *Erledigt – nichts gelöscht* → *Nächste
+      Gruppe vergleichen*. Dry run on.
+- [ ] **Nebeneinander on a real photo of the boys**: does one tap land both
+      photos on the same face? Is the larger picture sharp enough on Android
+      (the thumbnail loader may cap its size)?
+- [ ] **A month left part-way**: swipe a few photos of a month, ✕, open
+      *Monat für Monat* — the tile shows the share and *Weitermachen*, and the
+      month goes on where you stopped. What you marked before ✕ is now in
+      *Zum Löschen vorgemerkt* (a toast says so, with undo) — say if that
+      surprises you.
+- [ ] **The bin**: the dock now says *Auswahl prüfen*; the red button is
+      only in the sheet. Does that read clearly?
+- [ ] **Large German text and TalkBack** on the welcome, the reveal's first
+      group, *Nebeneinander* and the sheet.
+- [ ] **Arabic**: the new strings are my translation (`src/translations.ar.ts`:
+      `welcome*`, `revealFirst*`, `task*`, `compare*`, `month*`, `binReview*`).
+- [ ] **Store set and preview video**: `npm run screenshots`,
+      `npm run store-screenshots`, `npm run app-preview` on the Mac (the
+      welcome and the reveal changed); `npm run rehearse:app-review` (the bin's
+      dock is *Review selection* now — scene 4 was updated).
+
 ## 0b. The launch phase: free first, sell later
 
 Since 17 November 2026 nothing is for sale (`UNLOCK_ON_SALE = false` in
