@@ -27,7 +27,8 @@ export function gainOf(summary: CleanupSummary | null, key: FoundKey): Gain {
   switch (key) {
     case 'duplicates': return summary.duplicates;
     case 'videos': return summary.lookalike;
-    case 'similar': return summary.similar;
+    // Similar videos are listed with the near-identical photos (a filter on that screen, since 18 November 2026).
+    case 'similar': return { bytes: summary.similar.bytes + summary.lookalike.bytes, count: summary.similar.count + summary.lookalike.count };
     case 'failed': return { bytes: summary.blurry.bytes + summary.exposure.bytes, count: summary.blurry.count + summary.exposure.count };
     case 'screenshots': return summary.screenshots;
     case 'utility': return summary.utility;

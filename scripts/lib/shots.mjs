@@ -131,7 +131,8 @@ export async function openSimilar(page, w) {
 }
 export async function openGroup(page, w) {
   await openSimilar(page, w);
-  await page.click('main button >> nth=0');
+  // The first group's photos (the Fotos · Videos switch, when there are similar videos, comes before the cards).
+  await page.click('main .card button >> nth=0');
   await pause(page, 800);
 }
 export async function openBlurry(page, w) {
@@ -231,8 +232,7 @@ export const SCREENS = [
   { name: '11-denied', prefs: { access: 'denied', scanned: false } },
   { name: '12-limited', prefs: { access: 'limited' } },
   { name: '13-similar', run: openSimilar },
-  { name: '14-cleanup', run: async (page, w) => { await page.click(`button:has-text("${w.t.cleanupButton}")`); await pause(page, 600); } },
-  {
+    {
     name: '15-review-done', run: async (page, w) => {
       await openCleanupReview(page, w);
       for (let i = 0; i < 3; i++) { await page.click(`button${aria(w.t.aside)}`); await pause(page, 120); }
@@ -254,8 +254,6 @@ export const SCREENS = [
   {
     name: '23-quick-clean', run: async (page, w) => {
       await page.click(`button:has-text("${w.t.cleanupButton}")`);
-      await pause(page, 500);
-      await page.click(`button:has-text("${w.t.quickClean}")`);
       await pause(page, 700);
     },
   },
@@ -387,17 +385,19 @@ export const SCREENS = [
     },
     marks: () => ({ photo: 'main figure' }),
   },
-  // Ähnliche Videos: the demo's two takes at Lake Garda and a copied video — their own screen, apart from the photos.
+  // Ähnliche Videos: the demo's two takes at Lake Garda and a copied video — the Videos switch on the near-identical screen.
   {
     name: '35-lookalike', run: async (page, w) => {
-      await page.click(`main button:has-text("${w.t.lookalikeTitle}")`);
+      await openSimilar(page, w);
+      await page.click(`main button[role="radio"]:has-text("${w.t.statVideos}")`);
       await pause(page, 800);
     },
   },
   // One series of similar videos: the one to keep plays from its picture (inside the app), each take from its own button.
   {
     name: '44-lookalike-group', run: async (page, w) => {
-      await page.click(`main button:has-text("${w.t.lookalikeTitle}")`);
+      await openSimilar(page, w);
+      await page.click(`main button[role="radio"]:has-text("${w.t.statVideos}")`);
       await pause(page, 800);
       await page.locator('main button').first().click();
       await pause(page, 900);
@@ -408,7 +408,7 @@ export const SCREENS = [
     },
   },
   // Fotos verkleinern: the photos that qualify, the largest saving first.
-  { name: '34-compress', run: async (page, w) => { await page.click(`button:has-text("${w.t.compressPhotosTile}")`); await pause(page, 800); } },
+  { name: '34-compress', run: async (page, w) => { await page.click(`button:has-text("${w.t.largeTile}")`); await pause(page, 700); await page.click(`button:has-text("${w.t.compressPhotosTile}")`); await pause(page, 800); } },
   // Aufräumen › Geschützt (the last rows of home): one album switched on (the demo's family album).
   {
     name: '33-protected', run: async (page, w) => {

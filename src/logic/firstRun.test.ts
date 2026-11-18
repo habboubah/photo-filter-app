@@ -36,11 +36,12 @@ describe('what of the first run was seen', () => {
     expect(withoutSeen(new Set(['a', 'b']), null)).toEqual(new Set());
   });
 
-  it('teaches the gestures in order: right, left, up', () => {
+  it('teaches the gestures in order: right, then left', () => {
     expect(nextGesture(new Set())).toBe('swipeRight');
     expect(nextGesture(new Set(['swipeRight']))).toBe('swipeLeft');
     expect(nextGesture(new Set(['swipeRight', 'swipeUp']))).toBe('swipeLeft');
-    expect(nextGesture(new Set(['swipeRight', 'swipeLeft', 'swipeUp']))).toBeNull();
+    // Two gestures only: "Später" is a button, not a swipe.
+    expect(nextGesture(new Set(['swipeRight', 'swipeLeft']))).toBeNull();
     expect(nextGesture(new Set([ALL]))).toBeNull();
   });
 });

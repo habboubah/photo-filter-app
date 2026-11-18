@@ -41,8 +41,6 @@ export interface AppState {
   monthAt: Record<string, number>;
   /** What the app has moved to Recently Deleted / the Trash so far (not in a dry run). */
   freed: { count: number; bytes: number };
-  /** Days ("2026-11-16") with a clean-up (src/logic/streak.ts addDay). Kept, but no longer shown: the streak left home on 18 November 2026. */
-  days: string[];
   /** Photos deleted without the unlock (src/logic/allowance.ts). */
   freeUsed: number;
   /** Bildklar ran on this phone while nothing was for sale: deleting stays unlimited (src/logic/allowance.ts). */
@@ -72,7 +70,6 @@ export const emptyState = (): AppState => ({
   months: [],
   monthAt: {},
   freed: { count: 0, bytes: 0 },
-  days: [],
   freeUsed: 0,
   early: false,
   later: [],
@@ -166,6 +163,5 @@ export function normalizeState(raw: unknown): AppState {
   }
   if (typeof raw.freeUsed === 'number' && Number.isFinite(raw.freeUsed) && raw.freeUsed > 0) s.freeUsed = Math.round(raw.freeUsed);
   s.early = raw.early === true;
-  s.days = [...new Set(strings(raw.days).filter(k => /^\d{4}-\d{2}-\d{2}$/.test(k)))].sort().slice(-60);
   return s;
 }

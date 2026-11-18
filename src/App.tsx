@@ -45,7 +45,6 @@ import { TIPS, TIP_IDS } from './tips';
 import { type FoundKey, firstGroup, nextStepKind, rankCategories } from './logic/nextStep';
 import { TabBar } from './ui/TabBar';
 
-import type { FailedTab } from './components/FailedView';
 import { Progress } from './ui/Controls';
 import { Sheet } from './ui/Sheet';
 import type { ReviewOutcome } from './components/ReviewView';
@@ -77,7 +76,6 @@ const CategoryView = lazy(() => import('./components/CategoryView').then(m => ({
 const TripsView = lazy(() => import('./components/TripsView').then(m => ({ default: m.TripsView })));
 const SettingsView = lazy(() => import('./components/SettingsView').then(m => ({ default: m.SettingsView })));
 const TripView = lazy(() => import('./components/TripView').then(m => ({ default: m.TripView })));
-const CleanupView = lazy(() => import('./components/CleanupView').then(m => ({ default: m.CleanupView })));
 const SimilarView = lazy(() => import('./components/SimilarView').then(m => ({ default: m.SimilarView })));
 const GroupView = lazy(() => import('./components/GroupView').then(m => ({ default: m.GroupView })));
 const ReviewView = lazy(() => withFirstRun(import('./components/ReviewView')).then(m => ({ default: m.ReviewView })));
@@ -255,7 +253,6 @@ export default function App() {
 
   const [showTrips, setShowTrips] = useState(false);
   const [tripKey, setTripKey] = useState<string | null>(null);
-  const [showCleanup, setShowCleanup] = useState(false);
   const [showSimilar, setShowSimilar] = useState(false);
   const [similarShown, setSimilarShown] = useState(40);
   const [groupKey, setGroupKey] = useState<string | null>(null);
@@ -264,11 +261,7 @@ export default function App() {
   const [firstTask, setFirstTask] = useState(false);
   const [taskDone, setTaskDone] = useState<(TaskDone & { undo: () => void }) | null>(null);
   const [showBlurry, setShowBlurry] = useState(false);
-  const [failedTab, setFailedTab] = useState<FailedTab>('blurry');
-  const openFailed = (tab: FailedTab) => { setFailedTab(tab); setShowBlurry(true); };
   const [showDuplicates, setShowDuplicates] = useState(false);
-  const [showVideoGroups, setShowVideoGroups] = useState(false);
-  const [videoGroupsShown, setVideoGroupsShown] = useState(40);
   const [showVideos, setShowVideos] = useState(false);
   const [duplicatesShown, setDuplicatesShown] = useState(40);
   const [showScreenshots, setShowScreenshots] = useState(false);
@@ -353,17 +346,16 @@ export default function App() {
     ['trip', !!trip, () => setTripKey(null)],
     ['similar', showSimilar, () => setShowSimilar(false)],
     ['duplicates', showDuplicates, () => setShowDuplicates(false)],
-    ['videoGroups', showVideoGroups, () => setShowVideoGroups(false)],
     ['blurry', showBlurry, () => setShowBlurry(false)],
     ['screenshots', showScreenshots, () => setShowScreenshots(false)],
     ['quickClean', showQuickClean, () => setShowQuickClean(false)],
+    // Fotos verkleinern opens from the large files: above them in the stack.
+    ['compress', showCompress, () => setShowCompress(false)],
     ['large', showLarge, () => setShowLarge(false)],
     ['videos', showVideos, () => setShowVideos(false)],
     ['utility', showUtility, () => setShowUtility(false)],
     ['live', showLive, () => setShowLive(false)],
-    ['compress', showCompress, () => setShowCompress(false)],
     ['apps', showApps, () => setShowApps(false)],
-    ['cleanup', showCleanup, () => setShowCleanup(false)],
     ['album', !!albumKey, () => setAlbumKey(null)],
     ['category', !!category, () => setCategory(null)],
     ['months', showMonths, () => setShowMonths(false)],
@@ -489,7 +481,6 @@ export default function App() {
       if (r.dryRun) { show(fmt(t.dryRunDelete, { photos: plural(t, 'photos', ids.length) })); return true; }
       store.addFreed(r.trashed.length, r.trashed.reduce((sum, id) => sum + (all.byId.get(id)?.bytes ?? 0), 0));
       store.binRemove(r.trashed);
-      store.markDay();
       if (free) store.countFree(r.trashed.length);
       store.removePhotos(r.trashed);
       forgetThumbs(r.trashed);
@@ -602,7 +593,6 @@ export default function App() {
     if (store.dryRun) { show(fmt(t.dryRunCompressPhotos, { photos: plural(t, 'photos', count), size: bytes(t, saved) })); return; }
     if (!count) { show(failed ? t.compressFailed : t.compressPhotosNone); return; }
     store.startScan();
-    store.markDay();
     if (run.current.stop) show(fmt(t.compressPhotosStopped, { photos: plural(t, 'photos', count) }));
     setShowCompress(false);
     setAfterPhotos({ from: results.map(r => r.from), saved });
@@ -614,7 +604,6 @@ export default function App() {
       if (r.dryRun) { show(fmt(t.dryRunCompress, { before: bytes(t, r.before), after: bytes(t, r.after) })); return; }
       if (!r.created) { show(t.compressNoGain); return; }
       store.startScan();
-      store.markDay();
       setAfterCompress({ id: p.id, before: r.before, after: r.after });
     } catch {
       show(t.compressFailed);
@@ -631,7 +620,6 @@ export default function App() {
       if (r.dryRun) { show(fmt(t.dryRunLive, { photos: plural(t, 'photos', r.converted.length) })); return; }
       if (!r.converted.length) { show(t.liveFailed); return; }
       store.startScan();
-      store.markDay();
       const ok = await trash(r.converted.map(c => c.from));
       if (!ok) show(t.liveKeptBoth);
       else setShowLive(false);
@@ -748,7 +736,7 @@ export default function App() {
     if (!m) return;
     // A month left part-way goes on after the last photo decided (AppState.monthAt).
     const ids = monthRest(m, state.monthAt[key], id => lib.byId.get(id)?.t);
-    startReview(reviewTrip(ids, groups, lib.byId, kept, isOld, cos), () => { store.markMonthDone(key); store.markDay(); }, false, key);
+    startReview(reviewTrip(ids, groups, lib.byId, kept, isOld, cos), () => store.markMonthDone(key), false, key);
   };
   const onDecide = (d: Decision) => setReview(r => (r ? { ...r, session: decide(r.session, d) } : r));
   const onUndo = () => setReview(r => (r ? { ...r, session: undo(r.session), finished: false } : r));
@@ -805,8 +793,8 @@ export default function App() {
   const failedAll = [...blurry, ...exposureAll];
   const found: Partial<Record<FoundKey, { items: number; covers: string[] }>> = {
     duplicates: { items: dupGroups.length, covers: dupGroups.slice(0, 4).map(g => g.ids.find(id => id !== g.suggested) ?? g.ids[0]) },
-    videos: { items: videoGroups.length, covers: videoGroups.slice(0, 4).map(g => g.ids.find(id => id !== g.suggested) ?? g.ids[0]) },
-    similar: { items: similarGroups.length, covers: similarGroups.slice(0, 4).map(g => g.suggested) },
+    // The similar videos are a switch on the near-identical screen (since 18 November 2026): one row for both.
+    similar: { items: similarGroups.length + videoGroups.length, covers: [...similarGroups, ...videoGroups].slice(0, 4).map(g => g.suggested) },
     failed: { items: failedAll.length, covers: failedAll.slice(0, 4).map(x => x.id) },
     screenshots: { items: shots.length, covers: shots.slice(0, 4).map(x => x.id) },
     ...(aiSeen.seen > 0 ? { utility: { items: utility.length, covers: utility.slice(0, 4).map(x => x.id) } } : {}),
@@ -830,7 +818,7 @@ export default function App() {
   const reviewCategory = (key: FoundKey) => {
     const series = (list: typeof groups) => list.flatMap(g => reviewGroup(g, kept, byId, cos));
     startReview(
-      key === 'similar' ? series(similarGroups)
+      key === 'similar' ? series([...similarGroups, ...videoGroups])
         : key === 'duplicates' ? series(dupGroups)
           : key === 'videos' ? series(videoGroups)
             : key === 'failed' ? reviewCleanup([], cleanupBlurry(blurry, kept), kept, byId, [], [], exposureAll, cos)
@@ -1046,7 +1034,7 @@ export default function App() {
     if (showSimilar) {
       return (
         <SimilarView
-          t={t} groups={similarGroups} byId={byId} kept={kept} shown={similarShown}
+          t={t} groups={similarGroups} videoGroups={videoGroups} byId={byId} kept={kept} shown={similarShown}
           onMore={() => setSimilarShown(n => n + 40)}
           onBack={() => setShowSimilar(false)} onOpen={setGroupKey}
           onKeepAll={keepGroup} onAsideOthers={(_, ids, keep) => toBin(ids, keep)}
@@ -1063,23 +1051,16 @@ export default function App() {
         />
       );
     }
-    if (showVideoGroups) {
-      return (
-        <SimilarView
-          t={t} kind="lookalike" groups={videoGroups} byId={byId} kept={kept} shown={videoGroupsShown}
-          onMore={() => setVideoGroupsShown(n => n + 40)}
-          onBack={() => setShowVideoGroups(false)} onOpen={setGroupKey}
-          onKeepAll={keepGroup} onAsideOthers={(_, ids, keep) => toBin(ids, keep)}
-        />
-      );
-    }
     if (showBlurry) {
       return (
         <FailedView
-          t={t} {...sorting('failed')} blurry={blurry} dark={exposure.dark} bright={exposure.bright} tab={failedTab}
+          t={t} {...sorting('failed')} blurry={blurry} dark={exposure.dark} bright={exposure.bright}
           onBack={() => setShowBlurry(false)}
-          onReviewBlurry={(list: Photo[]) => startReview(reviewBlurry(list))}
-          onReviewExposure={(list, level) => startReview(reviewExposure(list, level))}
+          onReview={(list: Photo[]) => {
+            // In the grid's order, each photo with its own reason (blurry, too dark, too bright).
+            const dark = new Set(exposure.dark.map(p => p.id)), bright = new Set(exposure.bright.map(p => p.id));
+            startReview(list.flatMap(p => (dark.has(p.id) ? reviewExposure([p], 'dark') : bright.has(p.id) ? reviewExposure([p], 'bright') : reviewBlurry([p]))));
+          }}
           onAside={list => toBin(list.map(p => p.id))}
         />
       );
@@ -1103,6 +1084,16 @@ export default function App() {
             startReview(ids.map(id => reasons.get(id)).filter((i): i is ReviewItem => !!i));
           }}
           onDelete={ids => toBin(ids, [], () => setShowQuickClean(false))}
+          onReviewAll={() => startReview(reviewCleanup(groups, cleanupBlurry(blurry, kept), kept, byId, old, utility, exposureAll, cos))}
+        />
+      );
+    }
+    if (showCompress) {
+      return (
+        <CompressView
+          t={t} photos={compressible.photos} screenshots={compressible.screenshots}
+          onBack={() => setShowCompress(false)}
+          onRun={list => needUnlock(() => { void compressPhotos(list); })}
         />
       );
     }
@@ -1110,6 +1101,7 @@ export default function App() {
       return (
         <LargeView
           t={t} {...sorting('large')} photos={large} canCompress
+          smaller={compressible.photos.length + compressible.screenshots.length > 0 ? { saving: compressible.saving, onOpen: () => setShowCompress(true) } : null}
           onBack={() => setShowLarge(false)}
           onReview={(list: Photo[]) => startReview(reviewLarge(list))}
           onCompress={p => needUnlock(() => { void compress(p); })}
@@ -1148,32 +1140,8 @@ export default function App() {
         />
       );
     }
-    if (showCompress) {
-      return (
-        <CompressView
-          t={t} photos={compressible.photos} screenshots={compressible.screenshots}
-          onBack={() => setShowCompress(false)}
-          onRun={list => needUnlock(() => { void compressPhotos(list); })}
-        />
-      );
-    }
     if (showLive) {
       return <LiveView t={t} {...sorting('live')} photos={live} onBack={() => setShowLive(false)} onConvert={list => needUnlock(() => setLiveConfirm(list))} />;
-    }
-    if (showCleanup && summary) {
-      return (
-        <CleanupView
-          t={t} summary={summary} onBack={() => setShowCleanup(false)}
-          onDuplicates={() => setShowDuplicates(true)}
-          onVideoGroups={() => setShowVideoGroups(true)}
-          onSimilar={() => setShowSimilar(true)} onBlurry={() => openFailed('blurry')}
-          onExposure={() => openFailed(exposure.dark.length ? 'dark' : 'bright')}
-          onScreenshots={() => setShowScreenshots(true)}
-          onUtility={() => setShowUtility(true)}
-          onReviewAll={() => startReview(reviewCleanup(groups, cleanupBlurry(blurry, kept), kept, byId, old, utility, exposureAll, cos))}
-          onQuickClean={() => setShowQuickClean(true)}
-        />
-      );
     }
     if (albumKey) {
       const a = albumList?.find(x => x.id === albumKey);
@@ -1301,8 +1269,6 @@ export default function App() {
         found={found}
         large={{ count: large.length, bytes: large.reduce((sum, x) => sum + x.bytes, 0), cover: large[0]?.id }}
         liveCount={isAndroid() ? 0 : live.length} liveCover={live[0]?.id}
-        compress={{ count: compressible.photos.length + compressible.screenshots.length, saving: compressible.saving, cover: (compressible.photos[0] ?? compressible.screenshots[0])?.id }}
-        onCompress={() => setShowCompress(true)}
         apps={sourcesBytes >= APPS_TILE_MIN ? { bytes: sourcesBytes, cover: sources[0]?.photos[0]?.id } : null}
         onApps={() => setShowApps(true)}
         storage={store.storage} freedBytes={state.freed.bytes}
@@ -1317,11 +1283,10 @@ export default function App() {
         onSettings={() => setShowSettings(true)}
         onSearch={() => setShowSearch(true)}
         onAddPhotos={addPhotos}
-        onCleanup={() => setShowCleanup(true)}
+        onCleanup={() => setShowQuickClean(true)}
         onSimilar={() => setShowSimilar(true)}
-        onBlurry={() => openFailed('blurry')}
+        onBlurry={() => setShowBlurry(true)}
         onDuplicates={() => setShowDuplicates(true)}
-        onVideoGroups={() => setShowVideoGroups(true)}
         onVideos={() => setShowVideos(true)}
         analysis={{ photos: totals.photos, videos: totals.videos }}
         onScreenshots={() => setShowScreenshots(true)}
@@ -1450,7 +1415,7 @@ export default function App() {
       {/* The one tip that is due: loaded (with its words) only when there is one. */}
       {due && !taskDone && <Suspense fallback={null}><TipHost t={t} tip={due} onSeen={store.markSeen} /></Suspense>}
 
-      <Toast toast={toast} onDone={hide} raised={screen === 'bin' ? 'high' : ['trip', 'group', 'blurry', 'screenshots', 'utility', 'quickClean', 'large', 'live', 'compress', 'cleanup', 'review', 'search', 'like'].includes(screen)} />
+      <Toast toast={toast} onDone={hide} raised={screen === 'bin' ? 'high' : ['trip', 'group', 'blurry', 'screenshots', 'utility', 'quickClean', 'large', 'live', 'compress', 'review', 'search', 'like'].includes(screen)} />
     </div>
     </PlayerContext.Provider>
   );

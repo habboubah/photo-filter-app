@@ -1,6 +1,6 @@
 import type React from 'react';
 import { useState } from 'react';
-import { Aperture, Archive, CalendarDays, Check, ChevronRight, Clock, FileVideo, Image as ImageIcon, ImagePlus, MessageCircle, Minimize2, RefreshCw, Search, Settings, Shield, Sparkles, Video } from 'lucide-react';
+import { Aperture, Archive, CalendarDays, Check, ChevronRight, Clock, FileVideo, Image as ImageIcon, ImagePlus, MessageCircle, RefreshCw, Search, Settings, Shield, Sparkles, Video } from 'lucide-react';
 import type { CleanupSummary, Storage } from '../types';
 import type { Access } from '../native/photoLibrary';
 import type { ScanView } from '../store';
@@ -35,8 +35,6 @@ interface Props {
   large: { count: number; bytes: number; cover?: string };
   liveCount: number;
   liveCover?: string;
-  /** "Fotos verkleinern" (src/logic/compress.ts): how many qualify and what they could save. */
-  compress: { count: number; saving: number; cover?: string };
   /** "Aus Apps" (Android): shown once the apps' photos hold at least 100 MB. */
   apps: { bytes: number; cover?: string } | null;
   storage: Storage | null;
@@ -64,8 +62,6 @@ interface Props {
   onSimilar: () => void;
   onBlurry: () => void;
   onDuplicates: () => void;
-  /** The similar videos (lookalike takes and copies of a video). */
-  onVideoGroups: () => void;
   /** Every video of the library. */
   onVideos: () => void;
   onScreenshots: () => void;
@@ -73,7 +69,6 @@ interface Props {
   onMonths: () => void;
   onLarge: () => void;
   onLive: () => void;
-  onCompress: () => void;
   onApps: () => void;
 }
 
@@ -168,7 +163,7 @@ export function HomeView(p: Props) {
   const meta: Record<FoundKey, { label: string; icon: React.ComponentType<{ className?: string; strokeWidth?: number }>; hue: string; unit: 'groups' | 'photos'; onClick: () => void }> = {
     duplicates: { ...words.duplicates, icon: Sparkles, hue: 'rose', onClick: p.onDuplicates },
     similar: { ...words.similar, icon: Sparkles, hue: 'lilac', onClick: p.onSimilar },
-    videos: { ...words.videos, icon: Video, hue: 'cyan', onClick: p.onVideoGroups },
+    videos: { ...words.videos, icon: Video, hue: 'cyan', onClick: p.onSimilar },
     failed: { ...words.failed, icon: Sparkles, hue: 'sand', onClick: p.onBlurry },
     screenshots: { ...words.screenshots, icon: Sparkles, hue: 'sky', onClick: p.onScreenshots },
     utility: { ...words.utility, icon: Sparkles, hue: 'mint', onClick: p.onUtility },
@@ -180,7 +175,6 @@ export function HomeView(p: Props) {
   const pctText = percent(t, p.months.pct);
   const tools: { key: string; label: string; value: string; cover?: string; icon: React.ComponentType<{ className?: string; strokeWidth?: number }>; hue: string; onClick: () => void }[] = [
     { key: 'large', label: t.largeTile, value: p.large.count ? fmt(t.sizeAndCount, { size: bytes(t, p.large.bytes), count: plural(t, 'files', p.large.count) }) : plural(t, 'files', 0), cover: p.large.cover, icon: FileVideo, hue: 'stone', onClick: p.onLarge },
-    ...(p.compress.count > 0 ? [{ key: 'compress', label: t.compressPhotosTile, value: fmt(t.upTo, { size: bytes(t, p.compress.saving) }), cover: p.compress.cover, icon: Minimize2, hue: 'sky', onClick: p.onCompress }] : []),
     ...(p.liveCount > 0 ? [{ key: 'live', label: t.liveTile, value: plural(t, 'photos', p.liveCount), cover: p.liveCover, icon: Aperture, hue: 'mint', onClick: p.onLive }] : []),
     ...(p.apps ? [{ key: 'apps', label: t.appsTile, value: bytes(t, p.apps.bytes), cover: p.apps.cover, icon: MessageCircle, hue: 'lilac', onClick: p.onApps }] : []),
   ];

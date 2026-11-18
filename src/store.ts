@@ -9,7 +9,6 @@ import { AI_VERSION, LABELS, type LabelModel, labelModel, scoreInto, scoreLabels
 import { PRODUCT_ID, Purchases } from './native/purchases';
 import { AppState, RECENT_ALBUMS, SCHEMA_VERSION, emptyState, normalizeState, pruneLater } from './logic/state';
 import type { TripEdits } from './logic/trips';
-import { addDay } from './logic/streak';
 import { type EtaPoint, secondsLeft } from './logic/eta';
 import { learnPick } from './logic/best';
 import { addToBin, removeFromBin } from './logic/bin';
@@ -221,11 +220,6 @@ export function useAppStore() {
   const countFree = (n: number) => {
     if (n > 0) setState(s => ({ ...s, freeUsed: s.freeUsed + n }));
   };
-  /** Today had a clean-up (AppState.days; nothing shows it since the streak left home, 18 November 2026). */
-  const markDay = () => setState(s => {
-    const days = addDay(s.days, Date.now());
-    return days === s.days ? s : { ...s, days };
-  });
   /** A month of "Month by month" gone through to the end. */
   const markMonthDone = (key: string) => setState(s => {
     if (s.months.includes(key) && !(key in s.monthAt)) return s;
@@ -243,7 +237,7 @@ export function useAppStore() {
     const before = state;
     // Everything decided goes, "Zum Löschen vorgemerkt" too: those photos come back into their groups
     // (Ahmad, 18 November 2026: starting over means starting over). The toast's undo brings it all back.
-    setState(s => ({ ...emptyState(), owned: s.owned, freed: s.freed, days: s.days, freeUsed: s.freeUsed, early: s.early }));
+    setState(s => ({ ...emptyState(), owned: s.owned, freed: s.freed, freeUsed: s.freeUsed, early: s.early }));
     return before;
   };
   const restoreState = (s: AppState) => setState(s);
@@ -594,7 +588,7 @@ export function useAppStore() {
   return {
     language, setLanguage, themeMode, setThemeMode,
     debug, dryRunAvailable, dryRun, setDryRun,
-    state, stateReady, storageError, updateTrips, recordAlbum, setBest, recordReview, addKept, removeKept, updateLater, pruneLaterPile, binAdd, binRemove, pruneBin, setSort, protectPhotos, protectTrip, protectAlbum, protectSimilar, albumMembers, useAlbums, markMonthDone, setMonthAt, addFreed, markDay, countFree, resetDecisions, restoreState,
+    state, stateReady, storageError, updateTrips, recordAlbum, setBest, recordReview, addKept, removeKept, updateLater, pruneLaterPile, binAdd, binRemove, pruneBin, setSort, protectPhotos, protectTrip, protectAlbum, protectSimilar, albumMembers, useAlbums, markMonthDone, setMonthAt, addFreed, countFree, resetDecisions, restoreState,
     reminder, setReminder,
     welcomeSeen, setWelcomeSeen, seen, markSeen, replay, hideAllHints,
     owned: isOwned, setOwned,

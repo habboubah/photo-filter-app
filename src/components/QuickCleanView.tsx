@@ -8,20 +8,23 @@ import { Button } from '../ui/Button';
 import { SwitchRow } from '../ui/Controls';
 
 /**
- * Quick clean (the plan's "Smart Clean"): each kind the clean-up card counts
+ * Quick clean (the plan's "Smart Clean"), what home's *Jetzt aufräumen* opens
+ * (since 18 November 2026 the clean-up screen in between is gone): each kind home counts
  * with a switch, all on, then one system dialog for everything switched on —
  * or a review of the same photos first. Only what the app is sure about goes
  * in one tap (src/logic/confidence.ts); the photos to check are offered as a
  * review of their own. Nothing is deleted without the system's own dialog
  * (CLAUDE.md, Safety rules).
  */
-export function QuickCleanView({ t, parts, storage, onBack, onReview, onDelete }: {
+export function QuickCleanView({ t, parts, storage, onBack, onReview, onDelete, onReviewAll }: {
   t: Strings;
   parts: CleanPart[];
   storage: Storage | null;
   onBack: () => void;
   onReview: (ids: string[]) => void;
   onDelete: (ids: string[]) => void;
+  /** Everything home's suggestions count, one by one — the unimportant photos and the unsure ones too. */
+  onReviewAll: () => void;
 }) {
   const present = parts.filter(p => p.ids.length > 0 || p.check.length > 0);
   const [on, setOn] = useState<Set<CleanKind>>(() => new Set(present.map(p => p.kind)));
@@ -56,6 +59,9 @@ export function QuickCleanView({ t, parts, storage, onBack, onReview, onDelete }
           <Row label={t.quickCleanCheckReview} trailing={<Next value={num(t, unsure.length)} />} onClick={() => onReview(unsure)} />
         </Group>
       )}
+      <Group footer={t.reviewAllFoot}>
+        <Row label={t.reviewAll} trailing={<Next />} onClick={onReviewAll} />
+      </Group>
       <Dock>
         <div className="grid gap-1">
           {/* Into "Zum Löschen vorgemerkt": nothing is deleted yet, so the quiet teal, not red. */}
