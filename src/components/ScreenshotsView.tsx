@@ -50,7 +50,7 @@ export function ScreenshotsView({ t, photos, now, sort, onSort, onBack, onReview
       {list.length === 0 ? <Empty title={t.noScreenshots} body={t.noScreenshotsBody} back={{ label: t.emptyBack, onClick: onBack }} /> : (
         <>
         <SelectBar
-          text={chosen.length ? plural(t, 'binPicked', chosen.length) : t.pickHint}
+          text={chosen.length ? plural(t, 'binPicked', chosen.length) : t.selectHint}
           all={chosen.length === list.length} none={chosen.length === 0}
           onAll={() => setPicked(old => new Set([...old, ...list.map(p => p.id)]))}
           onNone={() => setPicked(new Set())}

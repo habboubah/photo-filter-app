@@ -60,7 +60,7 @@ export function LargeView({ t, photos, videosOnly, canCompress, sort, onSort, on
       {list.length === 0 ? <Empty title={videosOnly ? t.noVideos : t.noLarge} body={videosOnly ? t.noVideosBody : t.noLargeBody} back={{ label: t.emptyBack, onClick: onBack }} /> : (
         <>
         <SelectBar
-          text={chosen.length ? plural(t, 'binPicked', chosen.length) : t.pickHint}
+          text={chosen.length ? plural(t, 'binPicked', chosen.length) : t.selectHint}
           all={chosen.length === list.length} none={chosen.length === 0}
           onAll={() => setPicked(old => new Set([...old, ...list.map(p => p.id)]))}
           onNone={() => setPicked(new Set())}

@@ -75,7 +75,7 @@ export function FailedView({ t, blurry, dark, bright, tab: initialTab = 'blurry'
       {list.length === 0 ? <Empty title={empty.title} body={empty.body} back={{ label: t.emptyBack, onClick: onBack }} /> : (
         <>
         <SelectBar
-          text={chosen.length ? plural(t, 'binPicked', chosen.length) : t.pickHint}
+          text={chosen.length ? plural(t, 'binPicked', chosen.length) : t.selectHint}
           all={chosen.length === list.length} none={chosen.length === 0}
           onAll={() => setPicked(old => new Set([...old, ...list.map(p => p.id)]))}
           onNone={() => setPicked(new Set())}

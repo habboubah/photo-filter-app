@@ -234,7 +234,7 @@ export const ar: Strings = {
   selectionClear: 'إلغاء التحديد',
   pickAll: 'تحديد الكل',
   pickNone: 'إلغاء تحديد الكل',
-  pickHint: 'المس للعرض، والدائرة للتحديد.',
+  selectHint: 'المس للعرض، والدائرة للتحديد.',
   selectNone: 'لا شيء',
   selected: 'محدّدة',
   notSelected: 'غير محدّدة',
