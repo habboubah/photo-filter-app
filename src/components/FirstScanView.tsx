@@ -78,7 +78,7 @@ export function FirstScanView({ t, scan, found, onLookAround }: {
 
         <section className="mt-6" aria-labelledby="found-so-far">
           <h2 id="found-so-far" className="px-1 pb-2 text-label font-semibold text-fg-mute">{t.firstScanFound}</h2>
-          <dl className="rounded-md card px-2 py-3 grid grid-cols-4 gap-1">
+          <dl className="rounded-md card px-1 py-3 grid grid-cols-4">
             {tiles.map(x => (
               <div key={x.key} className="min-w-0 flex flex-col-reverse items-center text-center">
                 <dt className="text-caption text-fg-mute wrap-compound leading-tight mt-0.5">{x.label}</dt>
