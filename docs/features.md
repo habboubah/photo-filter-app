@@ -223,7 +223,7 @@ marked for deletion, then *Mehr Platz* and *Geschützt*.
 - **Settled from the list** (since 18 November 2026): every group card on
   *Fast gleiche Fotos*, *Duplikate* and *Ähnliche Videos* has the same two
   choices under its photos — **Alle behalten** (the group leaves the list)
-  and **1 vormerken** [Mark 1] (the others go to *Zum Löschen vorgemerkt*;
+  and **Rest zum Löschen vormerken** [Mark the rest for deletion] (the others go to *Zum Löschen vorgemerkt*;
   the one to keep, favourites and kept photos stay) — each with undo, without
   opening the group. A tap on the photos still opens it to compare.
 - **The best shot**: the sharpest, well exposed one; on the iPhone also the
