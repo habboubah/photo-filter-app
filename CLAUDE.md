@@ -78,7 +78,7 @@ scenes follow the switch (docs/PLAN.md, *Pricing*).
   Named exports, props typed above.
 - **Shared primitives** in `src/ui/` (`Screen`, `SectionHead`, `Group`, `Row`, `MenuRow`,
   `IconTile`, `Next`, `Away`, `Dock`, `TabBar`, `StorageBar`, `Empty`, `Sheet`, `Confirm`, `Button`,
-  `IconButton`, `Field`, `Toast`, `Progress`, `SwitchRow`, `Segmented`,
+  `IconButton`, `Field`, `Toast`, `Progress`, `SwitchRow`, `Segmented`, `SelectBar`,
   `Badge`, `Thumb`, `PhotoGrid`, `Mosaic`, `SortMenu`, `haptics`; for the first
   run `TipHost`, `Dots`, `CountUp`, `Ring`, `PhotoFrame`, `Foot`). Compose them.
 - **Screens opened less often are lazy** (`lazy()` in `App.tsx`, under one
@@ -279,7 +279,9 @@ scenes follow the switch (docs/PLAN.md, *Pricing*).
   (illustration, one line, the way on); a real delete asks through
   `<DeleteSheet>`; a photo looked at closely opens `<ZoomView>`.
 - A screen says what it is for behind an (i) in its bar (`<Screen info>`,
-  a sheet), never in a paragraph above its content; its subtitle carries the
+  a sheet, `how: t.infoHow`; the text's first line says what it is for, every
+  further line is a numbered step), never in a paragraph above its content;
+  a grid you pick from has a `<SelectBar>` (select all / deselect all) above it; its subtitle carries the
   count and the size, its Dock button says what you get
   (*Durchgehen · 6 Dateien · 585 MB*).
 - Type scale in rem (follows Dynamic Type, `dynamicType.ts`); touch targets

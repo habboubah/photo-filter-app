@@ -65,7 +65,12 @@ Every feature, as the user sees it (German labels, English in brackets).
   as a slim card with a bar and **how long it still takes** (*12.340 von 48.210
   Fotos angesehen · noch etwa 4 Min.*: the speed so far in this phase applied to
   what is left, said after a few seconds; src/logic/eta.ts); the first time
-  takes a few minutes and keeps the screen on.
+  takes a few minutes and keeps the screen on. Since 18 November 2026 the card
+  (and the first scan's screen) also shows the **percent**, the time left down
+  to seconds (*noch etwa 40 Sek.*, *gleich fertig*; *Restzeit wird berechnet …*
+  until it can say) and **photos and videos apart**, each *done of total*
+  (*Fotos 1.234 von 5.000 · Videos 20 von 80*; the native scan counts the
+  videos of each phase).
 - **The app stays usable while it scans.** Once the photos are counted, home
   fills in: the library's photos, months, trips and the categories appear and
   grow every few seconds as photos are analysed (*Vorläufig – Bildklar sieht
@@ -171,9 +176,21 @@ then *Mehr Platz* and *Geschützt*.
   long dates wrap instead of being cut);
   *Alle Reisen (12)* [All trips] only when trips are hidden (they sit at the
   end of that list).
+- **Alben** [Albums] (Android: **Ordner** [Folders], since 18 November 2026):
+  the albums the phone already has, four to a row like the trips — the newest
+  photo of each, its name and count under it; the last used first, then the
+  largest; *Alle zeigen (n)* past eight. A tap opens the album: its photos
+  (sortable), a tap opens one large, the circle picks (*Alle auswählen* /
+  *Alle abwählen*), *Löschen vormerken* for the picked ones, *Durchgehen* to
+  review the album. Nothing in the album itself changes there.
 - **Auf deinen Fotos** [On your photos]: the on-device AI's categories
   (landscape, food, …) as photo cards, three to a row, the name and the count
-  white on the photo's shade.
+  white on the photo's shade. A category opens like an album: a tap opens a
+  photo large, the circle picks; as with a trip, **Album erstellen · 41 Fotos**
+  makes an album (Android: a folder, the photos move there after Android's
+  dialog) of all of it, named after the category (the name can be changed),
+  and with photos picked **Zum Album hinzufügen** [Add to album] opens a sheet
+  of the phone's albums (a filter past eight) and *Neues Album*.
 
 ## Trips
 - Found by themselves: photos taken more than 50 km from home over at least
@@ -361,7 +378,8 @@ then *Mehr Platz* and *Geschützt*.
   whiteboards and notes, photos of a screen, saved screenshots, memes, QR
   codes and accidental shots, found by the AI on the phone (SigLIP 2, docs/AI.md).
   Chips filter by kind (*Kassenzettel · 2*); *Durchgehen* reviews them, each
-  suggested for deleting with its reason (*KI: Kassenzettel*).
+  suggested for deleting with its reason (*KI: Kassenzettel*). A tap opens a
+  photo large; the circle picks it and *Löschen vormerken* marks the picked ones.
 - What the AI looks for (33 labels, docs/AI.md): receipts, documents,
   whiteboards, photos of a screen, saved chats, memes, QR and barcodes,
   accidental shots, tickets, product photos (taken while shopping), parking
@@ -689,6 +707,14 @@ then *Mehr Platz* and *Geschützt*.
   like a favourite, so it becomes the best shot.
 
 ## Everywhere
+- **Picking from a grid** (Large files, Screenshots, Failed shots, Unimportant
+  photos, an album, a category, *Zum Löschen vorgemerkt*, Smaller photos): a
+  line above the grid says how many are picked (or how it works) with
+  **Alle auswählen** [Select all] while not all are and **Alle abwählen**
+  [Deselect all] while any is (`SelectBar`).
+- **Every screen's (i)** says in one line what the screen is for, then
+  **So geht's** [How it works] with numbered steps — which tap does what,
+  and that marking deletes nothing yet.
 - **Before a real delete, one sheet** (`DeleteSheet`): the photos themselves,
   their number and size, where they land and that the phone asks once more;
   the only red button is its last one. The bin uses it, and so does the

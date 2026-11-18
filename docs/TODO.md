@@ -106,6 +106,18 @@ in docs/ux-research.md). Nothing native changed, but nothing ran on a phone.
       welcome and the reveal changed); `npm run rehearse:app-review` (the bin's
       dock is *Review selection* now — scene 4 was updated).
 
+## 0a6. Albums on Ordnen, the scan's counts (18 November 2026, late evening)
+
+- [ ] **iPhone: build in Xcode** — `ScanStore.pendingVideoCount` /
+      `aiPendingVideoCount` and the `videos` / `videosDone` in the scan's
+      progress are new Swift. Then scan again: the card shows *Fotos x von y ·
+      Videos x von y*, the percent and the time left.
+- [ ] **Ordnen › Alben** on both phones: covers appear, an album opens with
+      its photos; on Android the folders (Camera, WhatsApp Images, …).
+- [ ] **A category into an album**: *Album erstellen* and *Zum Album
+      hinzufügen* — iPhone adds to the album (nothing moves); Android moves the
+      files after its own dialog.
+
 ## 0a5. The video player as a window (18 November 2026, evening)
 
 - [ ] **iPhone: build in Xcode** (`npm run build:ios`) — `VideoWindowController`
