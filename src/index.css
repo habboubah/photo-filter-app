@@ -208,6 +208,80 @@
   color-scheme: dark;
 }
 
+/* ============ Android: "Album" — warm, calm, photo-led (18 November 2026) =
+   The same layers, retuned for Android: a warm paper page and warm white
+   cards instead of the cool grouped grey, warm greys for text, the one teal
+   kept for what you tap and red kept for deleting only. The glass is flat
+   on Android (a solid fill, a hairline edge and a soft shadow — no sheen),
+   and a row's icon tile is a quiet neutral squircle instead of a coloured
+   one, so the photos carry the colour. docs/REDESIGN.md, "Album". */
+[data-platform="android"][data-theme="light"] {
+  --t-bg:        #F5F3EF;
+  --t-surface:   #FFFDFA;
+  --t-surface-2: rgb(120 108 90 / 0.12);
+  --t-hairline:  rgb(70 60 45 / 0.14);
+
+  --t-fg:        #1D1B18;
+  --t-fg-mute:   #5E5951;
+  --t-fg-faint:  #ADA79E;
+
+  --t-accent:          #006B63;
+  --t-accent-dim:      rgb(0 110 100 / 0.10);
+  --t-accent-fill:     #00776D;
+  --t-accent-fill-ink: #FFFFFF;
+
+  --t-keep:     #1F6E3A;
+  --t-keep-dim: rgb(46 140 80 / 0.14);
+  --t-keep-ink: #FFFFFF;
+  --t-neg:      #B3261E;
+  --t-neg-dim:  rgb(179 38 30 / 0.10);
+  --t-neg-ink:  #FFFFFF;
+  --t-warn:     #8A5300;
+  --t-warn-dim: rgb(230 150 30 / 0.16);
+
+  --t-glass:       rgb(255 253 250 / 0.96);
+  --t-glass-sheen: rgb(255 255 255 / 0);
+  --t-glass-hi:    rgb(255 255 255 / 0);
+  --t-glass-edge:  rgb(60 50 35 / 0.12);
+
+  --t-scrim:    rgb(24 18 10 / 0.36);
+  --t-shadow-1: rgb(40 30 15 / 0.06);
+  --t-shadow-2: rgb(40 30 15 / 0.16);
+}
+[data-platform="android"][data-theme="dark"] {
+  --t-bg:        #12110F;
+  --t-surface:   #1E1C19;
+  --t-surface-2: rgb(150 140 125 / 0.20);
+  --t-hairline:  rgb(120 110 95 / 0.40);
+
+  --t-fg:        #F4F1EC;
+  --t-fg-mute:   #ADA79E;
+  --t-fg-faint:  #6F6A62;
+
+  --t-accent:          #5CCFBF;
+  --t-accent-dim:      rgb(92 207 191 / 0.14);
+  --t-accent-fill:     #5CCFBF;
+  --t-accent-fill-ink: #00241F;
+
+  --t-keep:     #5BCB86;
+  --t-keep-dim: rgb(91 203 134 / 0.14);
+  --t-keep-ink: #04290F;
+  --t-neg:      #F2867D;
+  --t-neg-dim:  rgb(242 134 125 / 0.14);
+  --t-neg-ink:  #3A0805;
+  --t-warn:     #F3BE5A;
+  --t-warn-dim: rgb(243 190 90 / 0.14);
+
+  --t-glass:       rgb(40 38 34 / 0.96);
+  --t-glass-sheen: rgb(255 255 255 / 0);
+  --t-glass-hi:    rgb(255 255 255 / 0.06);
+  --t-glass-edge:  rgb(255 255 255 / 0.09);
+
+  --t-scrim:    rgb(0 0 0 / 0.6);
+  --t-shadow-1: rgb(0 0 0 / 0.4);
+  --t-shadow-2: rgb(0 0 0 / 0.6);
+}
+
 [data-hue="sky"]   { --hue-bg: var(--t-sky-bg);   --hue-ink: var(--t-sky-ink);   --hue-solid: var(--t-sky-solid); }
 [data-hue="sand"]  { --hue-bg: var(--t-sand-bg);  --hue-ink: var(--t-sand-ink);  --hue-solid: var(--t-sand-solid); }
 [data-hue="mint"]  { --hue-bg: var(--t-mint-bg);  --hue-ink: var(--t-mint-ink);  --hue-solid: var(--t-mint-solid); }
@@ -228,7 +302,8 @@
 
 @utility pb-safe-8 { padding-bottom: calc(2rem + var(--safe-area-inset-bottom, env(safe-area-inset-bottom))); }
 /* Clears a docked button (ui/Screen Dock), which floats above the home indicator. */
-@utility pb-safe-dock { padding-bottom: calc(176px + var(--safe-area-inset-bottom, env(safe-area-inset-bottom))); }
+/* --dock-h: the dock's measured height (ui/Screen Dock), which grows with large text. */
+@utility pb-safe-dock { padding-bottom: max(calc(176px + var(--safe-area-inset-bottom, env(safe-area-inset-bottom))), calc(var(--dock-h, 0px) + 12px)); }
 /* The tab bar (ui/TabBar) floats like the dock; pb-safe-tabs clears it. */
 @utility pb-tabbar { padding-bottom: calc(max(var(--safe-area-inset-bottom, env(safe-area-inset-bottom)) - 6px, 14px) + 4px); }
 @utility pb-safe-tabs { padding-bottom: calc(112px + var(--safe-area-inset-bottom, env(safe-area-inset-bottom))); }
@@ -391,6 +466,17 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* Android ("Album"): the glass is flat — a solid fill, a hairline edge and a
+   soft shadow, no specular sheen — and a prominent fill is plain. A row's
+   icon tile is a neutral squircle with the ink in it (ui/Screen IconTile). */
+[data-platform="android"] .glass {
+  background-image: none;
+  box-shadow: inset 0 0 0 1px var(--t-glass-edge), 0 1px 2px var(--t-shadow-1), 0 6px 18px -8px var(--t-shadow-2);
+}
+[data-platform="android"] .glass-flat { box-shadow: inset 0 0 0 1px var(--t-glass-edge); }
+[data-platform="android"] .sheen { background-image: none; box-shadow: none; }
+[data-platform="android"] .icon-tile { background-color: var(--t-surface-2); color: var(--t-fg); }
 
 /* Right to left (Arabic, once it comes): numbers stay left to right. */
 [dir="rtl"] .num:not(.text-center) { text-align: right; }
