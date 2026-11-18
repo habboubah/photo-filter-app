@@ -100,22 +100,15 @@ tab again scrolls to its top; Android's back button goes from *Ordnen* to
 Calm and photo-led (docs/REDESIGN.md): a greeting, the one next step, what
 is marked for deletion, then the storage overview and the rest in order.
 - **A greeting** by the time of day as the screen's title (*Guten Morgen* ·
-  *Guten Tag* · *Guten Abend* — no name: there is no account), *Aufräumen*
-  small above it, and under it how many photos and videos there are and that
+  *Guten Tag* · *Guten Abend* — no name: there is no account), and under it how many photos and videos there are and that
   they stay on the device. While the facts load, the page shows its shape as
   soft placeholders instead of blank space.
 - **The order** (since 18 November 2026): the **one next step** first — the
   obvious thing to do — then *Zum Löschen vorgemerkt* when something waits
-  there, then the clean-up card.
-- **The clean-up card** (the storage overview): the space that could be
-  freed (one big number) and how much of it is photos and videos; a bar of
-  the whole library — one segment per category that could go, then *Gute
-  Fotos* and *Gute Videos*, paler — with its legend; the table *Fotos* /
-  *Videos* × *Gescannt* · *Gut* · *Kann weg* (*Fotos* opens *Monat für
-  Monat*, *Videos* all videos); the free space on the device, *Bisher
-  freigegeben* (no streak: it left on 18 November 2026); *Jetzt aufräumen* as a quiet button (the
-  clean-up screen).
-- **One next step**, a card made of its photos with one button:
+  there, then *Vorschläge*.
+- **One next step**, a card made of its photos with one button; why it is
+  the step (*Ein guter Anfang*, *Weiter, wo du warst* …) is a small label on
+  its photo:
   - progress exists (a month gone through) → the next month not gone through,
     newest first: *Weiter, wo du warst · Oktober 2026 · 148 Fotos · 12 %
     deiner Mediathek durchgesehen* → **Weiter mit Oktober 2026** (and *Alle
@@ -129,36 +122,49 @@ is marked for deletion, then the storage overview and the rest in order.
 - **Zum Löschen vorgemerkt** [Marked for deletion], a section of its own while anything waits there:
   a strip of its photos (the last tile counts the rest), *72 Fotos · 173 MB*,
   *Noch nicht gelöscht*; a tap opens it (see *Marked for deletion*).
-- **Vorschläge** [Suggestions] with *Übersicht* [Overview] (the clean-up
-  screen): one row per
+- **Vorschläge** [Suggestions], one card (since 18 November 2026; until then
+  a separate clean-up card with a table and a list): *Platz, der frei werden
+  kann · 357 MB*; a bar of the whole library — one segment per category that
+  could go, then *Gute Fotos* and *Gute Videos*, paler; then one row per
   category — *Duplikate*, *Fast gleiche*, *Ähnliche Videos*, *Missglückt*,
-  *Screenshots*, *Unwichtige Fotos* (once the AI has seen photos) — with two of
-  its photos, how many could go and the space on the right, the most space
-  first. Categories with nothing left in one line: *Erledigt: Duplikate,
-  Screenshots*.
+  *Screenshots*, *Unwichtige Fotos* (once the AI has seen photos) — with two
+  of its photos, how many could go and, on the right, **its colour's dot**
+  (its segment in the bar) and the space, the most space first. At its foot
+  two cells, *Fotos 95 · 31 können weg* and *Videos 6 · 3 können weg*
+  (*Fotos* opens *Monat für Monat*, *Videos* all videos), the free space on
+  the device, *Bisher freigegeben*, and **Jetzt aufräumen** [Clean up now]
+  (the clean-up screen). Categories with nothing left in one line under it:
+  *Erledigt: Duplikate, Screenshots*.
 - **Weitermachen** [Carry on]: *Später entscheiden* with the number on the
   pile (see *Review*) and *Monat für Monat* with *38 % durchgesehen* and a
   thin bar — the photos in months gone through, as a share of all photos
   (rounded down, so 100 % only once every month is done) — each unless it is
   the next step already.
 - **Aus deiner Mediathek** [From your library] with *Ordnen*: small tiles for
-  *An diesem Tag* and the latest trip (*Letzte Reise · 15 Fotos*).
+  *An diesem Tag* and the latest trip (*Letzte Reise · 15 Fotos*); when only
+  one of them exists, one wide photo.
 - **Mehr Platz** [More space]: *Große Dateien* [Large files], *Fotos verkleinern* [Smaller photos], on the iPhone
   *Live Photos*, *Chats & soziale Medien* — rows with a photo.
 - *Geschützt* [Protected] at the end.
 
 ### Ordnen [Organise]
-- The number of trips and photos under the title.
+- The number of trips and photos under the title; while the facts load, the
+  page's shape as soft placeholders.
+- **Suchen** [Search] as a field at the top (*Was ist auf dem Foto? · Hund,
+  Strand, Kassenzettel …*) once the AI has vectors to search; a tap opens
+  *Suchen*. (Until 18 November 2026 a magnifier in the bar.)
 - **An diesem Tag** [On this day]: when photos were taken on today's date in
   earlier years, one of them as a large photo with the years; *Ansehen* [Look
   back] reviews them (extra shots and blurry ones suggested for deleting).
 - **Reisen** [Trips]: every trip as a tile, four to a row, newest first (a
   photo from the middle of the trip, a check once its album is made; under it
-  the place, the dates and the photo count — a renamed trip shows its name);
+  the place, the dates and the photo count — a renamed trip shows its name;
+  long dates wrap instead of being cut);
   *Alle Reisen (12)* [All trips] only when trips are hidden (they sit at the
   end of that list).
 - **Auf deinen Fotos** [On your photos]: the on-device AI's categories
-  (landscape, food, …), each with a photo and its count.
+  (landscape, food, …) as photo cards, three to a row, the name and the count
+  white on the photo's shade.
 
 ## Trips
 - Found by themselves: photos taken more than 50 km from home over at least

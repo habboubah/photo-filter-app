@@ -26,9 +26,12 @@ interface Props {
 }
 
 /**
- * The "Ordnen" tab: the photos to keep and look back on. On this day as a
- * photo, every trip as a tile, four to a row (each becomes an album or
- * folder), what the on-device AI saw on the photos.
+ * The "Ordnen" tab: the photos to keep and look back on. Search first, as a
+ * field (what is on the photo — the on-device AI), then On this day as a
+ * large photo, every trip as a tile, four to a row (each becomes an album or
+ * folder; all of them in view at once), and what the AI saw on the photos as
+ * larger photo cards, three to a row, the name on the photo. While the facts
+ * load, the page's shape breathes instead of a blank screen.
  */
 export function OrganizeView(p: Props) {
   const { t } = p;
@@ -43,11 +46,25 @@ export function OrganizeView(p: Props) {
       title={t.tabOrganize}
       subtitle={subtitle}
       tabbed
-      actions={<>
-        {p.onSearch && <IconButton label={t.searchOpen} icon={Search} tone="bar" onClick={p.onSearch} />}
-        <IconButton label={t.settings} icon={Settings} tone="bar" onClick={p.onSettings} />
-      </>}
+      actions={<IconButton label={t.settings} icon={Settings} tone="bar" onClick={p.onSettings} />}
     >
+      {/* Search as a field, the way into the library by what is on the photos. */}
+      {loaded && p.onSearch && (
+        <button
+          type="button" onClick={() => { tapLight(); p.onSearch!(); }}
+          aria-label={`${t.searchOpen}: ${t.searchLabel}`}
+          className="w-full min-h-control rounded-full card ps-4 pe-5 py-2.5 flex items-center gap-3 text-start press focus-visible:ring-focus"
+        >
+          <Search className="w-5 h-5 shrink-0 text-fg-mute" strokeWidth={2.4} aria-hidden="true" />
+          <span className="min-w-0 flex-1" aria-hidden="true">
+            <span className="block text-body text-fg wrap-compound">{t.searchLabel}</span>
+            <span className="block text-caption text-fg-mute wrap-compound">{t.searchPlaceholder}</span>
+          </span>
+        </button>
+      )}
+
+      {!loaded && <OrganizeSkeleton label={t.loading} />}
+
       {loaded && p.onThisDay.photos > 0 && p.onThisDay.cover && (
         <button
           type="button" data-tip="tip.widget" onClick={() => { tapLight(); p.onOnThisDay(); }}
@@ -97,18 +114,19 @@ export function OrganizeView(p: Props) {
       {loaded && p.categories.length > 0 && (
         <section aria-labelledby="categories-h">
           <SectionHead id="categories-h" title={t.categoriesTitle} />
-          <div className="grid grid-cols-4 gap-x-[8px] gap-y-[12px]">
+          <div className="grid grid-cols-3 gap-[8px]">
             {p.categories.map(c => (
               <button
                 key={c.label} type="button" onClick={() => { tapLight(); p.onCategory(c.label); }}
                 aria-label={`${t[`aiLabel_${c.label}`]}, ${plural(t, 'photos', c.count)}`}
-                className="min-w-0 self-start text-start press focus-visible:ring-focus rounded-sm"
+                className="relative block aspect-[4/5] rounded-[16px] overflow-hidden bg-surface text-start press focus-visible:ring-focus"
               >
-                <span className="relative block aspect-square rounded-sm overflow-hidden bg-surface">
-                  <Thumb id={c.cover} className="!rounded-none absolute inset-0" />
+                <Thumb id={c.cover} className="!rounded-none absolute inset-0" />
+                <span className="absolute inset-0 photo-shade" aria-hidden="true" />
+                <span className="absolute inset-x-0 bottom-0 px-2.5 pb-2 text-on-color" aria-hidden="true">
+                  <span className="block title-face text-label font-bold leading-tight line-clamp-2 hyphens-auto">{t[`aiLabel_${c.label}`]}</span>
+                  <span className="block text-caption font-semibold opacity-90 num">{num(t, c.count)}</span>
                 </span>
-                <span className="mt-1.5 px-0.5 text-caption font-semibold text-fg leading-tight line-clamp-2 hyphens-auto">{t[`aiLabel_${c.label}`]}</span>
-                <span className="block px-0.5 text-caption text-fg-mute num truncate">{num(t, c.count)}</span>
               </button>
             ))}
           </div>
@@ -127,7 +145,7 @@ function TripTile({ trip, t, onOpen }: { trip: Trip; t: Strings; onOpen: () => v
       aria-label={fmt(t.openTrip, { name: trip.title })}
       className="min-w-0 self-start text-start press focus-visible:ring-focus rounded-sm"
     >
-      <span className="relative block aspect-square rounded-sm overflow-hidden bg-surface">
+      <span className="relative block aspect-square rounded-[12px] overflow-hidden bg-surface">
         {cover && <Thumb id={cover} className="!rounded-none absolute inset-0" />}
         {trip.album && (
           <span className="absolute top-1.5 end-1.5 w-6 h-6 inline-flex items-center justify-center rounded-full glass text-keep" title={t.albumBadge}>
@@ -138,8 +156,25 @@ function TripTile({ trip, t, onOpen }: { trip: Trip; t: Strings; onOpen: () => v
       </span>
       {/* The place and the dates on lines of their own (a renamed trip: its name, then the dates), so neither is cut in two. */}
       <span className="mt-1.5 px-0.5 text-caption font-semibold text-fg leading-tight line-clamp-2 hyphens-auto">{trip.title === trip.autoTitle ? trip.place : trip.title}</span>
-      <span className="block px-0.5 text-caption text-fg-mute truncate">{trip.dates}</span>
+      <span className="block px-0.5 text-caption text-fg-mute leading-tight line-clamp-2">{trip.dates}</span>
       <span className="block px-0.5 text-caption text-fg-mute num truncate">{plural(t, 'photos', trip.ids.length)}</span>
     </button>
+  );
+}
+
+/** Ordnen while the facts load: the search field, a row of trip tiles and the photo cards as soft shapes. */
+function OrganizeSkeleton({ label }: { label: string }) {
+  return (
+    <div role="status" aria-label={label} className="space-y-6 skeleton">
+      <div className="h-[56px] rounded-full bg-surface" />
+      <div className="space-y-3">
+        <div className="h-5 w-24 rounded-full bg-surface" />
+        <div className="grid grid-cols-4 gap-[8px]">{[0, 1, 2, 3].map(i => <div key={i} className="aspect-square rounded-[12px] bg-surface" />)}</div>
+      </div>
+      <div className="space-y-3">
+        <div className="h-5 w-40 rounded-full bg-surface" />
+        <div className="grid grid-cols-3 gap-[8px]">{[0, 1, 2].map(i => <div key={i} className="aspect-[4/5] rounded-[16px] bg-surface" />)}</div>
+      </div>
+    </div>
   );
 }
