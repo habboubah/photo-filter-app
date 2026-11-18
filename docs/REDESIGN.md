@@ -80,6 +80,29 @@ deleting. → The **day streak** on home's clean-up card is gone from the UI
 | Tips | One primitive, one list, one queue; replay in Settings | `src/ui/Tip.tsx`, `src/tips.ts`, `src/components/HowView.tsx`, `SettingsView.tsx` |
 | Scripts | The captures and checks start past the first run unless they ask for it; new ui-review screens for it | `scripts/lib/shots.mjs`, `scripts/privacy-check.mjs`, `ios/AppReviewRecorder/scenes.json` |
 
+**Built (18 November 2026)**, each step a commit on `redesign-first-run`:
+all of Part 1. Decisions taken on the way:
+
+- The welcome shows only while the photo access was never asked for; an
+  install that already has access never sees it (it can replay it).
+- The reveal's button starts a review of the recommended category at once
+  (a group's best shot first, then its extra shots), so the guided review
+  follows the reveal without a list screen in between. Which category is
+  home's choice; where the button leads is the reveal's own.
+- A gesture counts as done whichever way the decision was made (swipe,
+  button, arrow key), and whichever of the three was made — nobody is asked
+  to keep or mark a photo just to learn a gesture.
+- A tip points at its real control and waits until that control is on
+  screen: the tip about *Zum Löschen vorgemerkt* shows once home is scrolled
+  to its card. Home's order is Part 2's.
+- The first run's strings are their own chunk (`translations.firstRun.ts`):
+  the main bundle grew by 2 kB instead of 12 and stays in its budget.
+- `ui-review` got the first run's screens (50–60) and a large-text variant.
+- Still stale from the "Album" redesign, not from this one: scenes 3 and 4
+  of `ios/AppReviewRecorder/scenes.json` use the labels of 17 November
+  (`npm run rehearse:app-review` stops at "Best"). The rehearsal starts past
+  the first run; the scenes are Part 2's last step, as the brief has it.
+
 **Part 2 — after the checkpoint** (Phase 3 of the brief): home (greeting,
 the next step first), review and groups (full-bleed, zoom, undo snackbar),
 confirmation sheets, trips (one menu), empty states, the motion pass

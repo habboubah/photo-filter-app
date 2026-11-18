@@ -66,7 +66,8 @@ are rem, so they follow the system's text size (`dynamicType.ts`).
 | Role | Class | Size | Used for |
 |---|---|---|---|
 | Display | `text-display display` via `<BigNumber>` | 48–68 px | one figure per screen (space to free, a review's result) |
-| Title | `text-title title-face font-bold` | 34 | a screen's large title, a first-run headline |
+| Title | `text-title title-face font-bold` | 34 | a screen's large title |
+| Title 1 | `text-title1 title-face font-bold` | 28 | a first-run headline (welcome, first scan, reveal) |
 | Title 2 | `text-title2 title-face font-bold` | 22 | section headings, a card's name |
 | Heading | `text-heading title-face font-bold` | 20 | a dialog's or empty state's title |
 | Body | `text-body` | 17 | rows, paragraphs, buttons |
@@ -150,7 +151,9 @@ alone.
 `Away`, `Empty`, `Dock`, `TabBar`, `Sheet`, `Confirm`, `Button`, `IconButton`,
 `Field`, `Toast`, `Progress`, `SwitchRow`, `Segmented`, `Badge`, `BigNumber`,
 `SortMenu`, `StorageBar`, `Thumb`, `PhotoGrid`, `Mosaic`, `PlayOver`, and for
-the first run: `Tip`, `CountUp`, `Ring`, `Dots`, `PhotoFrame`.
+the first run `TipHost` (`ui/Tip.tsx`) and, in `ui/FirstRun.tsx`, `Dots`,
+`CountUp`, `Ring`, `PhotoFrame`, `Foot` (a first-run screen's action, stuck
+to the bottom with a fade above it).
 
 - **One prominent button per screen** (`Button` primary, in the `Dock` or at
   the foot). A second action goes under it as `variant="ghost"`.
@@ -179,17 +182,25 @@ The first five minutes teach the value and the three gestures by doing
 - **Reveal** (`RevealView`, lazy): what was found per category with its space
   in home's units, and one recommended first step — the same choice as home's
   next-step card (`src/logic/nextStep.ts`).
-- **Guided review**: the hand shows one gesture per card until the user has
-  done it (right, left, up), each confirmed with a word and a haptic; then
-  the buttons, undo and *Schützen* as tips. The summary counts up and says
-  where the marked photos wait.
-- **Safety moments**: before the first real delete, the three safety nets in
-  one small illustration (`SafetyNets`); protection explained once, where it
-  matters.
+- **Guided review** (`ReviewGuide.tsx`): the hand shows one gesture per card
+  until the user has done it (right, left, up — by swipe, button or key),
+  each decision named in a word with its haptic; then the buttons and undo,
+  and what a suggestion is, as tips. The summary counts up and says where
+  the marked photos wait.
+- **Safety moments** (`SafetyNets.tsx`): before the first real delete, the
+  three safety nets in one small illustration; protection explained once, on
+  the first summary (`ProtectInfo`).
 - **Tips** (`src/ui/Tip.tsx`, the list in `src/tips.ts`): one at a time from
   one queue, pointing at the real control (`data-tip`), dismissed with one
   tap, never blocking, read by TalkBack / VoiceOver. No screen builds its
   own. *Einstellungen › So funktioniert Bildklar* replays all of it.
 
 What was seen is a view preference (`bildklar-welcome`, `bildklar-seen` in
-localStorage): losing it only shows a hint again.
+localStorage, `src/logic/firstRun.ts`): losing it only shows a hint again.
+An install that was scanned, has reviewed or has deleted before this version
+skips the first scan's screen, the gesture hints and the safety nets.
+
+The first run's German and English strings are a chunk of their own
+(`src/translations.firstRun.ts`), loaded together with each screen that
+shows them (`withFirstRun` in `App.tsx`) — a new first-run string goes
+there, and a screen that uses one is loaded through `withFirstRun`.

@@ -78,7 +78,8 @@ scenes follow the switch (docs/PLAN.md, *Pricing*).
 - **Shared primitives** in `src/ui/` (`Screen`, `SectionHead`, `Group`, `Row`, `MenuRow`,
   `IconTile`, `Next`, `Away`, `Dock`, `TabBar`, `StorageBar`, `Empty`, `Sheet`, `Confirm`, `Button`,
   `IconButton`, `Field`, `Toast`, `Progress`, `SwitchRow`, `Segmented`,
-  `Badge`, `Thumb`, `PhotoGrid`, `Mosaic`, `SortMenu`, `haptics`). Compose them.
+  `Badge`, `Thumb`, `PhotoGrid`, `Mosaic`, `SortMenu`, `haptics`; for the first
+  run `TipHost`, `Dots`, `CountUp`, `Ring`, `PhotoFrame`, `Foot`). Compose them.
 - **Screens opened less often are lazy** (`lazy()` in `App.tsx`, under one
   `<Suspense>`): the main bundle has a budget (`scripts/perf-check.mjs`). A new
   screen is lazy unless home needs it at once.
@@ -95,6 +96,15 @@ scenes follow the switch (docs/PLAN.md, *Pricing*).
   Android `VideoPlayer.kt` (a full-screen VideoView). Never hand a video to
   another app (no `ACTION_VIEW`). A big picture of a video takes `<PlayOver>`;
   a `PhotoGrid` without `onOpen` plays its video tiles by itself.
+- **The first run** (docs/DESIGN.md): the welcome (`WelcomeView`), the first
+  scan's screen (`FirstScanView`) and its reveal (`RevealView`) are root-level
+  steps in `App.tsx` (`root`), shown once; the guided review (`ReviewGuide`),
+  the safety moments (`SafetyNets`) and the tips are one-time too. What was
+  seen is `store.seen` (`src/logic/firstRun.ts`, `bildklar-seen`). **A tip is
+  an entry in `src/tips.ts` and a `data-tip="<id>"` on its control** — one
+  host (`ui/Tip.tsx`), one at a time; no screen builds its own hint. Home's
+  next step and the reveal's recommendation are one choice
+  (`src/logic/nextStep.ts`).
 - **The user's decisions** (`src/logic/state.ts`) go through `normalizeState()`
   and are saved by the native plugin as a file — not localStorage (iOS may
   clear it on a full phone). Add fields as optional; bump `SCHEMA_VERSION`
@@ -175,6 +185,12 @@ scenes follow the switch (docs/PLAN.md, *Pricing*).
   through `bytes(t, n)` — never hand-built. Arabic's extra forms (two: صورتان,
   few: 3–10 صور) live in `EXTRA_PLURALS`; a new `_one`/`_other` pair needs its
   Arabic `_two` / `_few` there too.
+- **The first run's strings** (the welcome, the photo access, the first scan,
+  the reveal, the guided review, the safety moments, the tips, *So
+  funktioniert Bildklar*) are German and English in `src/translations.firstRun.ts`,
+  their own chunk (Arabic has them in its one block). A screen that shows one
+  is loaded through `withFirstRun` in `App.tsx`; code in the main bundle must
+  not read them at render time (`loadFirstRun` lays them in when the screen comes).
 - **Android's wording**: a string that names the iPhone, Apple Photos, an
   album or "Zuletzt gelöscht" gets a twin in `androidStrings` (a test fails
   otherwise). Albums are "Ordner" on Android.
@@ -334,7 +350,7 @@ Android keeps the layout and swaps the material, through
 | The licences list (after adding or updating a dependency) | `npm run licences` |
 | The demo's real photos (keeps the manifest), then the AI's scores and the facts | `npm run demo-photos && npm run ai:demo` |
 | A real test library (~560 CC0 photos and videos, dates and places) / onto the simulator / onto Android / into `npm run dev` | `npm run test-photos` / `test-photos:sim` / `test-photos:android` / `demo-library` |
-| Every screen before and after a UI change | `npm run ui-review` (→ `screenshots/review/`) |
+| Every screen before and after a UI change (the first run and large text included) | `npm run ui-review` (→ `screenshots/review/`; `-- --only 54-first-scan --variant de-light` for one) |
 | Store screenshots: raw (iPhone words / Android words) / framed | `npm run screenshots` (`-- --android`) / `npm run store-screenshots` |
 | The App Store preview video | `npm run app-preview` (needs ffmpeg) |
 | App Store preview video | `npm run app-preview` |

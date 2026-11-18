@@ -702,6 +702,8 @@ export default function App() {
   // An install that has gone through reviews before this version knows the gestures.
   useEffect(() => {
     if (store.stateReady && Object.keys(state.ledger).length > 0) store.markSeen(...GESTURES);
+    // And one that has deleted before has met the system's dialog and the 30 days.
+    if (store.stateReady && state.freed.count > 0) store.markSeen(MOMENTS.safety);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [store.stateReady]);
   // The one tip that is due (src/tips.ts): the first unseen one of this screen whose moment has come.

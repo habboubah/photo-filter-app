@@ -171,6 +171,8 @@ function Trip({ t }: { t: Strings }) {
 function BestShot({ t }: { t: Strings }) {
   const reduce = useReducedMotion();
   const shots = [dog1, dog2, dog3];
+  // The finger comes in from the series' start towards its last photo — from the other side right to left.
+  const side = t.dir === 'rtl' ? -1 : 1;
   return (
     <div className="w-full">
       <div className="relative grid grid-cols-3 gap-2">
@@ -202,12 +204,12 @@ function BestShot({ t }: { t: Strings }) {
             </PhotoFrame>
           </motion.div>
         ))}
-        {/* The finger: comes up to the third photo, taps, and leaves. Physical (right), as a hand is. */}
+        {/* The finger: comes up to the third photo, taps, and leaves. */}
         {!reduce && (
           <motion.span
-            className="absolute right-[6%] bottom-[8%] w-11 h-11 rounded-full glass text-fg inline-flex items-center justify-center"
-            initial={{ opacity: 0, x: -70, y: 60, scale: 1 }}
-            animate={{ opacity: [0, 1, 1, 1, 0], x: [-70, 0, 0, 0, 0], y: [60, 0, 0, 0, 8], scale: [1, 1, 0.86, 1, 1] }}
+            className="absolute end-[6%] bottom-[8%] w-11 h-11 rounded-full glass text-fg inline-flex items-center justify-center"
+            initial={{ opacity: 0, x: -70 * side, y: 60, scale: 1 }}
+            animate={{ opacity: [0, 1, 1, 1, 0], x: [-70 * side, 0, 0, 0, 0], y: [60, 0, 0, 0, 8], scale: [1, 1, 0.86, 1, 1] }}
             transition={{ duration: 1.5, delay: 1.2, times: [0, 0.45, 0.58, 0.72, 1], ease: 'easeOut' }}
           >
             <Pointer className="w-5 h-5" strokeWidth={2.2} />

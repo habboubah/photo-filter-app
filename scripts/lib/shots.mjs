@@ -504,7 +504,7 @@ export async function measure(page, wanted) {
 }
 
 /**
- * Capture `screens` for each variant ({ id, lang, theme?, viewport? }) into
+ * Capture `screens` for each variant ({ id, lang, theme?, viewport?, platform?, fontScale? }) into
  * `<outDir>/<id>/<name>.png`. With `marks`, a screen that names marks also
  * gets `<name>.marks.json` next to it. Returns the names that could not be
  * reached.
@@ -531,6 +531,13 @@ export async function capture({ variants, screens, outDir, clean = true, onlyNam
         locale: LOCALE[v.lang] ?? v.lang, colorScheme: 'light', hasTouch: true, isMobile: true,
       });
       if (v.platform === 'android') await ctx.addInitScript(() => localStorage.setItem('bildklar-dev-platform', 'android'));
+      // Large text, as the system's setting gives it on a phone (src/dynamicType.ts scales the root font size there).
+      if (v.fontScale) {
+        await ctx.addInitScript(scale => {
+          const timer = setInterval(() => { if (document.documentElement) document.documentElement.style.fontSize = `${scale * 100}%`; }, 40);
+          setTimeout(() => clearInterval(timer), 4000);
+        }, v.fontScale);
+      }
       const page = await ctx.newPage();
       page.on('pageerror', e => console.error(`[${v.id}] page error:`, e.message));
 
