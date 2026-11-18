@@ -642,6 +642,8 @@ export const ar: Strings = {
   // The first scan and what it found (src/components/FirstScanView.tsx, RevealView.tsx)
   firstScanFound: 'ما وُجد حتى الآن',
   firstScanLook: 'تصفّح في الأثناء',
+  firstScanFirstFind: 'وجدناها بالفعل',
+  firstScanFirstFindBody: 'ستقارن بينها بعد قليل – يقترح Bildklar صورة، والقرار لك.',
   firstScanCards: 'ما يفعله Bildklar لك',
   firstScanCardNext: 'التلميح التالي',
   scanCardTripsTitle: 'رحلات تُرتَّب تلقائيًا',

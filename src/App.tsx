@@ -1149,6 +1149,7 @@ export default function App() {
       return (
         <FirstScanView
           t={t} scan={store.scan} onLookAround={endFirstScan}
+          firstFind={firstOf ? { ids: firstOf.ids, suggested: firstOf.suggested } : null}
           found={{ trips: trips.filter(x => !x.ignored).length, similar: similarGroups.length, duplicates: dupGroups.length, screenshots: shots.length }}
         />
       );
