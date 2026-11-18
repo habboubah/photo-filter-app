@@ -174,7 +174,8 @@ export const SCREENS = [
   },
   {
     name: '02-home', store: true,
-    marks: () => ({ cleanup: 'section[aria-labelledby="cleanup-h"]', tiles: 'main div.grid' }),
+    // The Suggestions card's head: the space that could go and the library's bar (the store set lifts it out).
+    marks: () => ({ cleanup: 'section[aria-labelledby="found-h"] > div > div:first-child', tiles: 'main div.grid' }),
   },
   {
     // The list of all trips once there are more than the "Ordnen" tab shows (three; the demo has four).

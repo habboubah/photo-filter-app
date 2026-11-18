@@ -87,7 +87,7 @@ store screen) and `npm run screenshots` measures them.
      "callouts": [ { "mark": "cleanup", "scale": 1.14 } ] }
    ```
 2. Make the screen a store screen and name the mark in `scripts/lib/shots.mjs`
-   (`store: true`, `marks: () => ({ cleanup: 'section[aria-labelledby="cleanup-h"]' })`)
+   (`store: true`, `marks: () => ({ cleanup: 'section[aria-labelledby="found-h"] > div > div:first-child' })`)
    and capture it: `npm run screenshots -- --only 19-dark` (and `--android`).
 3. Add `"dark": { "headline": "…", "subline": "…" }` to **every**
    `config/copy.<locale>.json`.
