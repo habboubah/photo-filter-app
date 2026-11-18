@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { AnimatePresence } from 'motion/react';
-import { Archive } from 'lucide-react';
+import { Archive, Check } from 'lucide-react';
 import type { Confidence, Photo } from '../types';
 import { Strings, bytes, fmt, plural } from '../translations';
 import { blurLevel } from '../logic/blur';
@@ -23,7 +23,7 @@ export type FailedReason = 'blurry' | 'dark' | 'bright';
  * photos that are only maybe blurry. A tap opens one large; its circle picks
  * it, and the picked ones go to "Zum Löschen vorgemerkt" at once.
  */
-export function FailedView({ t, blurry, dark, bright, sort, onSort, onBack, onReview, onAside }: {
+export function FailedView({ t, blurry, dark, bright, sort, onSort, onBack, onReview, onAside, onKeep }: {
   t: Strings;
   blurry: Photo[];
   dark: Photo[];
@@ -35,6 +35,8 @@ export function FailedView({ t, blurry, dark, bright, sort, onSort, onBack, onRe
   onReview: (photos: Photo[]) => void;
   /** The picked photos into "Zum Löschen vorgemerkt" (nothing is deleted). */
   onAside: (photos: Photo[]) => void;
+  /** The picked photos kept: off this list, never suggested again (undo in the toast). */
+  onKeep: (photos: Photo[]) => void;
 }) {
   const [open, setOpen] = useState<string | null>(null);
   const [picked, setPicked] = useState<Set<string>>(() => new Set());
@@ -108,9 +110,15 @@ export function FailedView({ t, blurry, dark, bright, sort, onSort, onBack, onRe
         <Dock>
           {chosen.length > 0 ? (
             <>{/* Into "Zum Löschen vorgemerkt": nothing is deleted here, so teal and the archive, never red. */}
-              <Button full size="lg" icon={Archive} onClick={() => { onAside(chosen); setPicked(new Set()); }}>
-                {`${t.aside} · ${plural(t, 'photos', chosen.length)} · ${bytes(t, chosenBytes)}`}
-              </Button>
+              <div className="grid gap-1">
+                <Button full size="lg" icon={Archive} onClick={() => { onAside(chosen); setPicked(new Set()); }}>
+                  {`${t.aside} · ${plural(t, 'photos', chosen.length)} · ${bytes(t, chosenBytes)}`}
+                </Button>
+                {/* Not junk after all: off the list for good, like "Alle behalten" on the groups. */}
+                <Button full variant="ghost" icon={Check} onClick={() => { onKeep(chosen); setPicked(new Set()); }}>
+                  {`${t.keep} · ${plural(t, 'photos', chosen.length)}`}
+                </Button>
+              </div>
             </>
           ) : (
             <Button full size="lg" onClick={() => onReview(list)}>{`${t.reviewBlurry} · ${plural(t, 'photos', list.length)} · ${bytes(t, total)}`}</Button>

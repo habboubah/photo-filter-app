@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { AnimatePresence } from 'motion/react';
-import { Archive } from 'lucide-react';
+import { Archive, Check } from 'lucide-react';
 import type { Photo } from '../types';
 import { Strings, bytes, fmt, plural } from '../translations';
 import { isOldShot } from '../logic/screenshots';
@@ -18,7 +18,7 @@ import { SortButton } from './SortButton';
  * old ones (the ones the clean-up card counts). A tap opens one large; its
  * circle picks it, and the picked ones go to "Zum Löschen vorgemerkt" at once.
  */
-export function ScreenshotsView({ t, photos, now, sort, onSort, onBack, onReview, onAside }: {
+export function ScreenshotsView({ t, photos, now, sort, onSort, onBack, onReview, onAside, onKeep }: {
   t: Strings;
   photos: Photo[];
   now: number;
@@ -28,6 +28,8 @@ export function ScreenshotsView({ t, photos, now, sort, onSort, onBack, onReview
   onReview: (photos: Photo[]) => void;
   /** The picked screenshots into "Zum Löschen vorgemerkt" (nothing is deleted). */
   onAside: (photos: Photo[]) => void;
+  /** The picked photos kept: off this list, never suggested again (undo in the toast). */
+  onKeep: (photos: Photo[]) => void;
 }) {
   const [filter, setFilter] = useState<'old' | 'all'>('old');
   const [open, setOpen] = useState<string | null>(null);
@@ -70,9 +72,15 @@ export function ScreenshotsView({ t, photos, now, sort, onSort, onBack, onReview
         <Dock>
           {chosen.length > 0 ? (
             <>{/* Into "Zum Löschen vorgemerkt": nothing is deleted here, so teal and the archive, never red. */}
-              <Button full size="lg" icon={Archive} onClick={() => { onAside(chosen); setPicked(new Set()); }}>
-                {`${t.aside} · ${plural(t, 'photos', chosen.length)} · ${bytes(t, chosenBytes)}`}
-              </Button>
+              <div className="grid gap-1">
+                <Button full size="lg" icon={Archive} onClick={() => { onAside(chosen); setPicked(new Set()); }}>
+                  {`${t.aside} · ${plural(t, 'photos', chosen.length)} · ${bytes(t, chosenBytes)}`}
+                </Button>
+                {/* Not junk after all: off the list for good, like "Alle behalten" on the groups. */}
+                <Button full variant="ghost" icon={Check} onClick={() => { onKeep(chosen); setPicked(new Set()); }}>
+                  {`${t.keep} · ${plural(t, 'photos', chosen.length)}`}
+                </Button>
+              </div>
             </>
           ) : (
             <Button full size="lg" onClick={() => onReview(list)}>{`${t.reviewScreenshots} · ${plural(t, 'photos', list.length)} · ${bytes(t, total)}`}</Button>

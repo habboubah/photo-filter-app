@@ -692,6 +692,13 @@ export default function App() {
     show(t.keepAllDone, { label: t.undo, run: () => store.removeKept(ids) });
   };
 
+  /** "Behalten" on a picked set (unimportant photos, screenshots, failed shots): kept, off the list, never suggested again; undo takes it back. */
+  const keepPhotos = (list: Photo[]) => {
+    const ids = list.map(p => p.id).filter(id => !state.kept.includes(id));
+    store.addKept(ids);
+    show(t.keptDone, { label: t.undo, run: () => store.removeKept(ids) });
+  };
+
   /** The one next step after the first task: the next group to compare, else home's own next step. */
   const taskNext = (): TaskNext | null => {
     if (firstOf) {
@@ -891,6 +898,7 @@ export default function App() {
             startReview(list.flatMap(p => (dark.has(p.id) ? reviewExposure([p], 'dark') : bright.has(p.id) ? reviewExposure([p], 'bright') : reviewBlurry([p]))));
           }}
           onAside={list => toBin(list.map(p => p.id))}
+          onKeep={keepPhotos}
         />
       );
     }
@@ -900,6 +908,7 @@ export default function App() {
           t={t} {...sorting('screenshots')} photos={shots} now={now} onBack={() => setShowScreenshots(false)}
           onReview={(list: Photo[]) => startReview(reviewScreenshots(list))}
           onAside={list => toBin(list.map(p => p.id))}
+          onKeep={keepPhotos}
         />
       );
     }
@@ -957,6 +966,7 @@ export default function App() {
           t={t} {...sorting('utility')} photos={utility} progress={aiSeen} onBack={() => setShowUtility(false)}
           onReview={(list: Photo[]) => startReview(reviewUtility(list))}
           onAside={list => toBin(list.map(p => p.id))}
+          onKeep={keepPhotos}
         />
       );
     }
