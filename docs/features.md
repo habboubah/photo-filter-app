@@ -84,9 +84,11 @@ tab again scrolls to its top; Android's back button goes from *Ordnen* to
 - **An diesem Tag** [On this day]: when photos were taken on today's date in
   earlier years, one of them as a large photo with the years; *Ansehen* [Look
   back] reviews them (extra shots and blurry ones suggested for deleting).
-- **Reisen** [Trips]: the newest three as large cards (a photo from the
-  middle of the trip as the cover, the name, photos and size, *Album
-  erstellt* once made); *Alle Reisen (4)* [All trips] opens the full list.
+- **Reisen** [Trips]: every trip as a tile, four to a row, newest first (a
+  photo from the middle of the trip, a check once its album is made; under it
+  the place, the dates and the photo count — a renamed trip shows its name);
+  *Alle Reisen (12)* [All trips] only when trips are hidden (they sit at the
+  end of that list).
 - **Auf deinen Fotos** [On your photos]: the on-device AI's categories
   (landscape, food, …), each with a photo and its count.
 

@@ -213,11 +213,12 @@ scenes follow the switch (docs/PLAN.md, *Pricing*).
   `<BigNumber>` (number large, unit small and quiet). Fraunces is no longer
   in the app; the store-screenshot and preview-video tools still use it for
   their headlines.
-- Photo cards (a category on *Aufräumen*, a trip and *An diesem Tag* on
-  *Ordnen*, the word cards on *Suchen*, three or four to a row): the photos
-  fill the card, the name and the figure lie white on `photo-shade` at its
-  foot. Smaller tiles, four to a row (the AI's categories on *Ordnen*), carry
-  the name and the count **under** the photo, as Photos does. A chip on a
+- Photo cards (a category on *Aufräumen*, *An diesem Tag* on *Ordnen*, the
+  word cards on *Suchen*, three or four to a row):
+  the photos fill the card, the name and the figure lie white on
+  `photo-shade` at its foot. Smaller tiles, four to a row (the trips and the
+  AI's categories on *Ordnen*), carry the name and the count **under** the
+  photo, as Photos does. A chip on a
   photo is `glass` (or `bg-veil` for small facts like a date).
 - Settings-style rows lead with an `IconTile`: a white symbol on the hue's
   solid squircle (`data-hue` → `bg-hue-solid`), as in iOS Settings. Hues:
