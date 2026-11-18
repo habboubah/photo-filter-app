@@ -117,6 +117,7 @@ will do. It never decorates and never delays a tap.
 | What the finger moves (the review card, a sheet, the welcome's pages) | follows 1:1; released with a spring that takes the finger's velocity; bounce ≤ 0.2 and only after a flick |
 | An illustration that explains (welcome, the first scan's cards, a safety moment) | springs with bounce 0, 0.5–0.7 s per move, 60–90 ms stagger, 1.2–2 s in all, then it rests — it never loops |
 | A number counting up (`<CountUp>`) | 0.6–0.9 s, ease-out; the final value is in the DOM for screen readers at once |
+| A shared element (a photo into the zoom viewer and back) | motion `layoutId`, spring, bounce 0, 0.4 s |
 | A gesture hint (the guided review's hand) | one slow pass in the gesture's direction, a pause, again; it stops the moment the card is touched |
 
 Rules: transform and opacity only (the one exception is a progress ring's
@@ -161,8 +162,19 @@ to the bottom with a fade above it).
   paragraph; its subtitle carries the count and the size.
 - **Sheets** float inset from the edges; the confirm button is teal with
   `sheen`, red only when it deletes.
-- **Empty states**: an illustration or the app's icon, one line of what is
-  missing, the action that fixes it (`Empty`).
+- **Empty states** (`Empty`): two photo frames and a mark on the one in
+  front (green check: nothing to do; teal icon: nothing here yet), one line,
+  and the way on — an action or `back`. Never an emoji.
+- **Before a real delete** (`components/DeleteSheet`): one sheet for every
+  place that deletes — thumbnails, count, size, where it lands — and the one
+  red button. A new delete goes through it.
+- **A photo large** (`ui/Zoom`): opened from the magnifier on a photo; the
+  picture is a shared element (`zoomLayoutId`) that grows out of its tile.
+  Tap zooms on the spot, drag pans.
+- **Loading**: the shape of what comes, breathing softly (`skeleton`), never
+  a spinner on a blank page.
+- **Home's order**: greeting, the one next step, what is marked for
+  deletion, the storage overview, the categories, the rest.
 
 ## The first run
 

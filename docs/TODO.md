@@ -60,6 +60,23 @@ real iPhone and a real Android phone, please check:
       scan screen; each tip shows once. If that is too much for people who
       know the app, say so: one line hides all hints for existing installs.
 
+## 0a3. The polish (18 November 2026): check it on your phones
+
+- [ ] **Home**: the greeting, the next step first — does the storage card
+      further down still feel reachable?
+- [ ] **Review**: the full-bleed card, the named decision with *Rückgängig*
+      (is it in the way of the photo?), the spring when the card leaves.
+- [ ] **Groß ansehen**: on a real photo the larger picture (2048 px) should
+      look sharper than the review's; tap to zoom, drag to move. Android's
+      thumbnail loader may cap the size — say if it stays soft there.
+- [ ] **After a smaller copy** (video or photos): the question about the
+      original is a sheet with the photos now.
+- [ ] **Store set and preview video** show the old home until you run
+      `npm run store-screenshots` and `npm run app-preview` on the Mac.
+- [ ] **The App Review recording**: scenes 3 and 4 were rewritten for the
+      new labels and pass the rehearsal; run `npm run record:app-review` on
+      the iPhone before the next submission.
+
 ## 0b. The launch phase: free first, sell later
 
 Since 17 November 2026 nothing is for sale (`UNLOCK_ON_SALE = false` in
