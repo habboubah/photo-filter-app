@@ -491,7 +491,7 @@ function Summary({ t, session, byId, bin, chips, android, protectNote, onProtect
       )}
       {/* Exactly what is chosen: the photos themselves (the last tile counts the rest). */}
       {ids.length > 0 && (
-        <div className="grid grid-cols-4 min-[600px]:grid-cols-6 gap-[4px] mt-6" role="list" aria-label={bin ? plural(t, 'deleteN', ids.length) : `${t.binAdd} · ${plural(t, 'photos', ids.length)}`}>
+        <div className="grid grid-cols-4 gap-[4px] mt-6" role="list" aria-label={bin ? plural(t, 'deleteN', ids.length) : `${t.binAdd} · ${plural(t, 'photos', ids.length)}`}>
           {ids.slice(0, 12).map((id, i) => (
             <div key={id} role="listitem" className="relative aspect-square rounded-[10px] overflow-hidden">
               <Thumb id={id} className="!rounded-none" />

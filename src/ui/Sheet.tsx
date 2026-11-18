@@ -45,7 +45,7 @@ export function Sheet({ open, title, closeLabel, onClose, action, children }: Pr
 
   return createPortal(
     <div
-      className="fixed inset-x-0 top-0 z-50 flex items-end sm:items-center justify-center transition-[height,top] duration-200 ease-out"
+      className="fixed inset-x-0 top-0 z-50 flex items-end justify-center transition-[height,top] duration-200 ease-out"
       style={vv ? { height: vv.height, top: vv.top } : { bottom: 0 }}
     >
       <motion.div
@@ -64,7 +64,7 @@ export function Sheet({ open, title, closeLabel, onClose, action, children }: Pr
         dragConstraints={{ top: 0, bottom: 0 }}
         dragElastic={{ top: 0, bottom: 0.6 }}
         onDragEnd={(_, info) => { if (info.offset.y > 120 || info.velocity.y > 600) onClose(); }}
-        className="relative bg-surface w-[calc(100%-16px)] max-w-lg mb-[max(8px,var(--safe-area-inset-bottom,env(safe-area-inset-bottom)))] rounded-xl shadow-e3 max-h-[calc(92%-8px)] overflow-y-auto overscroll-contain"
+        className="relative bg-surface w-[calc(100%-16px)] max-w-column mb-[max(8px,var(--safe-area-inset-bottom,env(safe-area-inset-bottom)))] rounded-xl shadow-e3 max-h-[calc(92%-8px)] overflow-y-auto overscroll-contain"
       >
         <div className="sticky top-0 z-10 bg-surface">
           <div className="flex justify-center pt-2 pb-1 cursor-grab touch-none" onPointerDown={e => dragControls.start(e)}>
