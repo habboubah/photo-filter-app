@@ -414,7 +414,7 @@ export function useAppStore() {
       const newPhase = !start || start.phase !== p.phase || start.total !== p.total;
       if (newPhase) start = phaseStart.current = { phase: p.phase, total: p.total, at: now, done: p.done };
       const left = secondsLeft(start!, { at: now, done: p.done }, p.total);
-      setScan(s => ({ ...s, ...p, running: true, left }));
+      setScan(s => ({ ...s, ...p, videos: p.videos, videosDone: p.videosDone, running: true, left }));
       // Analysing: the photos are all listed by now; what is analysed shows up as it comes, not only at the end.
       if (p.phase === 'analyse' && (newPhase || now - lastRead.current > analyseReloadMs(factCount.current))) {
         lastRead.current = now;

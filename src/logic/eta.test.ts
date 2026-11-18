@@ -25,7 +25,9 @@ describe('secondsLeft', () => {
 describe('etaWords', () => {
   it('rounds the way people say it', () => {
     expect(etaWords(0)).toEqual({ kind: 'soon' });
-    expect(etaWords(59)).toEqual({ kind: 'soon' });
+    expect(etaWords(9)).toEqual({ kind: 'soon' });
+    expect(etaWords(12)).toEqual({ kind: 'seconds', seconds: 20 });
+    expect(etaWords(59)).toEqual({ kind: 'seconds', seconds: 60 });
     expect(etaWords(61)).toEqual({ kind: 'minutes', minutes: 2 });
     expect(etaWords(14 * 60)).toEqual({ kind: 'minutes', minutes: 14 });
     expect(etaWords(67 * 60)).toEqual({ kind: 'hours', hours: 1, minutes: 5 });

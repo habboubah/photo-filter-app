@@ -82,8 +82,40 @@ export function etaText(t: Strings, seconds: number | null | undefined): string 
   if (seconds === null || seconds === undefined) return '';
   const w = etaWords(seconds);
   if (w.kind === 'soon') return t.scanEtaSoon;
+  if (w.kind === 'seconds') return fmt(t.scanEtaSeconds, { n: num(t, w.seconds) });
   if (w.kind === 'minutes') return fmt(t.scanEtaMinutes, { n: num(t, w.minutes) });
   return w.minutes ? fmt(t.scanEtaHours, { h: num(t, w.hours), m: num(t, w.minutes) }) : fmt(t.scanEtaHoursOnly, { h: num(t, w.hours) });
+}
+
+/** A scan's photos and videos apart — how many of each are done in this phase — or null while counting (or from an older native build). */
+export function scanSplit(scan: ScanView): { photos: { done: number; total: number }; videos: { done: number; total: number } } | null {
+  if (scan.phase === 'list' || scan.total === 0 || scan.videos === undefined) return null;
+  const videos = Math.min(scan.videos, scan.total);
+  const videosDone = Math.min(scan.videosDone ?? 0, videos);
+  return {
+    photos: { done: Math.max(0, Math.min(scan.done - videosDone, scan.total - videos)), total: scan.total - videos },
+    videos: { done: videosDone, total: videos },
+  };
+}
+
+/** The two counts under a scan's bar: *Fotos 1.234 von 5.000 · Videos 20 von 80* (videos only if there are any). */
+export function ScanSplit({ t, scan, center }: { t: Strings; scan: ScanView; center?: boolean }) {
+  const split = scanSplit(scan);
+  if (!split) return null;
+  const cells = [
+    { key: 'photos', label: t.scanPhotos, ...split.photos },
+    ...(split.videos.total > 0 ? [{ key: 'videos', label: t.scanVideos, ...split.videos }] : []),
+  ];
+  return (
+    <dl className={`flex flex-wrap gap-x-6 gap-y-1 ${center ? 'justify-center' : ''}`}>
+      {cells.map(c => (
+        <div key={c.key} className="flex items-baseline gap-1.5">
+          <dt className="text-caption text-fg-mute">{c.label}</dt>
+          <dd className="text-caption font-bold text-fg num">{fmt(t.scanOf, { done: num(t, c.done), total: num(t, c.total) })}</dd>
+        </div>
+      ))}
+    </dl>
+  );
 }
 
 /** A category's name and what its screen counts (groups or photos) — for home's rows and the reveal after the first scan. */
@@ -354,18 +386,21 @@ function ScanCard({ t, scan, first }: { t: Strings; scan: ScanView; first: boole
   const where = counting ? t.scanList
     : ai ? fmt(t.scanAi, { done: num(t, scan.done), total: num(t, scan.total) })
       : fmt(t.scanAnalyse, { done: num(t, scan.done), total: num(t, scan.total) });
-  const eta = counting ? '' : etaText(t, scan.left);
+  const eta = counting ? '' : etaText(t, scan.left) || t.scanEtaWait;
   const line = [where, eta].filter(Boolean).join(' · ');
+  const share = counting ? null : scan.done / scan.total;
   return (
     <section className="rounded-md card p-4 space-y-3" aria-live="polite" aria-atomic="true">
       <div className="flex items-center gap-3">
         <IconTile icon={Sparkles} hue="mint" />
         <div className="min-w-0 flex-1">
           <p className="text-label font-bold text-fg wrap-compound">{ai ? t.scanAiTitle : t.scanTitle}</p>
-          <p className="text-caption text-fg-mute num wrap-prose">{line}</p>
+          <p className="text-caption text-fg-mute num wrap-prose">{counting ? where : eta}</p>
         </div>
+        {share !== null && <span className="shrink-0 title-face text-title3 font-bold text-fg num" aria-hidden="true">{percent(t, Math.floor(share * 100))}</span>}
       </div>
-      <Progress value={counting ? null : scan.done / scan.total} label={line} />
+      <Progress value={share} label={line} />
+      {counting ? null : scanSplit(scan) ? <ScanSplit t={t} scan={scan} /> : <p className="text-caption text-fg-mute num wrap-prose">{where}</p>}
       {first && <p className="text-caption text-fg-mute wrap-prose">{t.scanFirstHint}</p>}
     </section>
   );

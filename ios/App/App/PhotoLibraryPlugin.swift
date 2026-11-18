@@ -323,8 +323,10 @@ public class PhotoLibraryPlugin: CAPPlugin, CAPBridgedPlugin, PHPhotoLibraryChan
     private func analyse(_ store: ScanStore) {
         let total = store.pendingCount()
         guard total > 0 else { return }
+        let videos = store.pendingVideoCount()
         var done = 0
-        emit("scanProgress", ["phase": "analyse", "done": 0, "total": total])
+        var videosDone = 0
+        emit("scanProgress", ["phase": "analyse", "done": 0, "total": total, "videos": videos, "videosDone": 0])
         while !cancelled {
             let ids = store.pending(limit: Self.batch)
             if ids.isEmpty { break }
@@ -343,7 +345,8 @@ public class PhotoLibraryPlugin: CAPPlugin, CAPBridgedPlugin, PHPhotoLibraryChan
             }
             store.store(results)
             done += ids.count
-            emit("scanProgress", ["phase": "analyse", "done": min(done, total), "total": total])
+            videosDone += ids.filter { byId[$0]?.mediaType == .video }.count
+            emit("scanProgress", ["phase": "analyse", "done": min(done, total), "total": total, "videos": videos, "videosDone": min(videosDone, videos)])
         }
     }
 
@@ -390,8 +393,10 @@ public class PhotoLibraryPlugin: CAPPlugin, CAPBridgedPlugin, PHPhotoLibraryChan
         guard let embedder else { return }
         let total = store.aiPendingCount()
         guard total > 0 else { return }
+        let videos = store.aiPendingVideoCount()
         var done = 0
-        emit("scanProgress", ["phase": "ai", "done": 0, "total": total])
+        var videosDone = 0
+        emit("scanProgress", ["phase": "ai", "done": 0, "total": total, "videos": videos, "videosDone": 0])
         while !cancelled {
             if ProcessInfo.processInfo.thermalState.rawValue >= ProcessInfo.ThermalState.serious.rawValue { break }
             let ids = store.aiPending(limit: Self.aiBatch)
@@ -424,7 +429,8 @@ public class PhotoLibraryPlugin: CAPPlugin, CAPBridgedPlugin, PHPhotoLibraryChan
             }
             store.storeAI(results)
             done += results.count
-            emit("scanProgress", ["phase": "ai", "done": min(done, total), "total": total])
+            videosDone += results.filter { byId[$0.id]?.mediaType == .video }.count
+            emit("scanProgress", ["phase": "ai", "done": min(done, total), "total": total, "videos": videos, "videosDone": min(videosDone, videos)])
         }
     }
 

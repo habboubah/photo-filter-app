@@ -180,6 +180,7 @@ final class ScanStore {
     }
     func count() -> Int { count("SELECT COUNT(*) FROM asset") }
     func pendingCount() -> Int { count("SELECT COUNT(*) FROM asset WHERE fv < \(FeatureMath.featureVersion)") }
+    func pendingVideoCount() -> Int { count("SELECT COUNT(*) FROM asset WHERE fv < \(FeatureMath.featureVersion) AND video = 1") }
 
     /// What the AI still has to look at, newest first: analysed photos with a local copy (a hash), no screenshots;
     /// videos too (their poster frame: lookalike videos and search), not screen recordings.
@@ -219,6 +220,13 @@ final class ScanStore {
 
     func aiPendingCount() -> Int {
         guard let stmt = prepare("SELECT COUNT(*) FROM asset WHERE \(Self.aiWanted)") else { return 0 }
+        defer { sqlite3_finalize(stmt) }
+        bind(stmt, 1, Int64(ImageEmbedder.aiVersion))
+        return sqlite3_step(stmt) == SQLITE_ROW ? Int(sqlite3_column_int64(stmt, 0)) : 0
+    }
+
+    func aiPendingVideoCount() -> Int {
+        guard let stmt = prepare("SELECT COUNT(*) FROM asset WHERE \(Self.aiWanted) AND video = 1") else { return 0 }
         defer { sqlite3_finalize(stmt) }
         bind(stmt, 1, Int64(ImageEmbedder.aiVersion))
         return sqlite3_step(stmt) == SQLITE_ROW ? Int(sqlite3_column_int64(stmt, 0)) : 0
