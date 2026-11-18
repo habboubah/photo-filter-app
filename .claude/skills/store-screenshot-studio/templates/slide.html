@@ -89,9 +89,21 @@
     img.src = phone.rawUrl;
     img.alt = d.headline;
   };
+  if (d.art) {
+    // The feature graphic draws a picture (the icon's art) instead of a phone.
+    body.dataset.art = '';
+    const stage = document.querySelector('.stage');
+    stage.replaceChildren();
+    const art = document.createElement('img');
+    art.className = 'art';
+    art.alt = '';
+    art.src = d.art;
+    stage.append(art);
+  } else {
   fill(document.querySelector('.device.main'), d.phone);
   const second = document.querySelector('.device.second');
   if (d.second) fill(second, d.second); else second.remove();
+  }
 
   // ---- call-outs ----
   // x/y/w/h are fractions of the capture, radius a fraction of its width,

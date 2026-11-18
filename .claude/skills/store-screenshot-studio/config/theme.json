@@ -14,8 +14,17 @@
     "text": "Figtree",
     "css": "assets/fonts/fonts.css"
   },
-  "//backgrounds": "Presets referenced by slide.background: one flat colour and what stands on it. fill = the canvas; ink = the headline; inkSoft = the subline; shade = the colour every shadow is mixed from (a darker tone of the fill, never grey); chip / chipInk / tick = a point's pill, its text and its tick; ribbon / ribbonInk = the corner ribbon (unused: Bildklar has an in-app purchase). teal is the icon's own colour (--t-accent-fill) with white on it — the set's colour; paper the app's page (a shade darker, so the white phone screen stands off it) with the app's ink; night the app's dark page, for the screen shown in dark mode.",
+  "//backgrounds": "Presets referenced by slide.background: one flat colour and what stands on it. fill = the canvas; ink = the headline; inkSoft = the subline; shade = the colour every shadow is mixed from (a darker tone of the fill, never grey); chip / chipInk / tick = a point's pill, its text and its tick; ribbon / ribbonInk = the corner ribbon (unused: Bildklar has an in-app purchase). teal is the icon's own colour (--t-accent-fill) with white on it — the set's colour; paper the app's page (a shade darker, so the white phone screen stands off it) with the app's ink; night the app's dark page, for the screen shown in dark mode. mint is the broom icon's flat background (assets/icon-master.png, #8AE1B7), so the icon's art sits on it with no edge — the feature graphic's colour.",
   "backgrounds": {
+    "mint": {
+      "fill": "#8AE1B7",
+      "ink": "#0E2B26",
+      "inkSoft": "#1F4D44",
+      "shade": "#1F5C45",
+      "chip": "#FFFFFF",
+      "chipInk": "#1D2427",
+      "tick": "#1C6B65"
+    },
     "teal": {
       "fill": "#1C6B65",
       "ink": "#FFFFFF",
