@@ -3,7 +3,7 @@ import type { CleanupSummary } from '../types';
 /*
  * Home's one next step, and the first step the reveal after the first scan
  * recommends — one choice, so the two never disagree:
- *   1. progress month by month exists and a month is left → go on with it;
+ *   1. progress month by month exists (a month done, or one left part-way) and a month is left → go on with it;
  *   2. photos wait on the decide-later pile → decide them;
  *   3. something was found to clean up → the category that frees the most;
  *   4. nothing found and no scan running → month by month, the newest first.
@@ -49,6 +49,8 @@ export function rankCategories(found: Partial<Record<FoundKey, Found>>, summary:
 export function nextStepKind(i: {
   /** Months gone through to their end. */
   monthsDone: number;
+  /** A month was left part-way (AppState.monthAt). */
+  monthStarted?: boolean;
   /** A month not gone through yet exists. */
   hasNextMonth: boolean;
   /** Photos on the decide-later pile. */
@@ -57,7 +59,7 @@ export function nextStepKind(i: {
   categories: number;
   scanning: boolean;
 }): StepKind | null {
-  if (i.monthsDone > 0 && i.hasNextMonth) return 'month';
+  if ((i.monthsDone > 0 || i.monthStarted) && i.hasNextMonth) return 'month';
   if (i.later > 0) return 'later';
   if (i.categories > 0) return 'category';
   if (i.hasNextMonth && !i.scanning) return 'start';

@@ -32,6 +32,13 @@ export interface AppState {
   owned: boolean;
   /** Months ("2026-03") gone through to the end in "Month by month". */
   months: string[];
+  /**
+   * Months left part-way (docs/ux-research.md, idea B): month → the time of the
+   * last photo decided in it. A month resumes after that photo; its progress is
+   * the share of its photos up to it. Cleared when the month is done. Added
+   * 18 November 2026 (older files have none).
+   */
+  monthAt: Record<string, number>;
   /** What the app has moved to Recently Deleted / the Trash so far (not in a dry run). */
   freed: { count: number; bytes: number };
   /** Days ("2026-11-16") with a clean-up (src/logic/streak.ts addDay). Kept, but no longer shown: the streak left home on 18 November 2026. */
@@ -63,6 +70,7 @@ export const emptyState = (): AppState => ({
   kept: [],
   owned: false,
   months: [],
+  monthAt: {},
   freed: { count: 0, bytes: 0 },
   days: [],
   freeUsed: 0,
@@ -145,6 +153,11 @@ export function normalizeState(raw: unknown): AppState {
   if (isObj(raw.sort)) for (const [k, v] of Object.entries(raw.sort)) if (isSortKey(v)) s.sort[k] = v;
   s.owned = raw.owned === true;
   s.months = [...new Set(strings(raw.months).filter(k => /^\d{4}-\d{2}$/.test(k)))];
+  if (isObj(raw.monthAt)) {
+    for (const [k, v] of Object.entries(raw.monthAt)) {
+      if (/^\d{4}-\d{2}$/.test(k) && typeof v === 'number' && Number.isFinite(v) && !s.months.includes(k)) s.monthAt[k] = v;
+    }
+  }
   if (isObj(raw.freed)) {
     const count = raw.freed.count;
     const bytes = raw.freed.bytes;

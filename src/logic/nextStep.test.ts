@@ -15,6 +15,8 @@ describe('the one next step', () => {
   it('goes on month by month once there is progress', () => {
     expect(nextStepKind({ ...base, monthsDone: 2, later: 5, categories: 3 })).toBe('month');
     expect(nextStepKind({ ...base, monthsDone: 2, hasNextMonth: false, later: 5 })).toBe('later');
+    // A month left part-way is progress too.
+    expect(nextStepKind({ ...base, monthStarted: true, later: 5, categories: 3 })).toBe('month');
   });
 
   it('then what waits, then what frees the most, then the newest month', () => {

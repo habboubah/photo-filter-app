@@ -60,6 +60,26 @@ export function progress(months: Month[], done: Set<string>): number {
   return all ? Math.floor((seen * 100) / all) : 0;
 }
 
+/**
+ * A month left part-way (AppState.monthAt): what is still to go through — the
+ * photos after the last one decided, in time order. All of it when the month
+ * was never started, or when nothing comes after that photo any more (photos
+ * deleted since): then it starts again from the beginning.
+ */
+export function monthRest(m: Month, at: number | undefined, time: (id: string) => number | undefined): string[] {
+  if (at === undefined) return m.ids;
+  const rest = m.ids.filter(id => (time(id) ?? 0) > at);
+  return rest.length ? rest : m.ids;
+}
+
+/** How far into a month the user is, 0–1: 1 when it is done, else the share of its photos up to the last one decided. */
+export function monthShare(m: Month, done: boolean, at: number | undefined, time: (id: string) => number | undefined): number {
+  if (done) return 1;
+  if (at === undefined || !m.ids.length) return 0;
+  const seen = m.ids.filter(id => (time(id) ?? 0) <= at).length;
+  return seen >= m.ids.length ? 0 : seen / m.ids.length;
+}
+
 export interface OnThisDay {
   /** Photos in time order, newest year first. */
   ids: string[];

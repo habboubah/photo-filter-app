@@ -259,6 +259,18 @@ export const SCREENS = [
     },
   },
   { name: '24-months', run: async (page, w) => { await page.click(`button:has-text("${w.t.monthsCard}")`); await pause(page, 700); } },
+  {
+    // A month left part-way: three photos kept, the review closed — the tile shows the share and "Continue".
+    name: '45-months-resume', run: async (page, w) => {
+      await page.click(`button:has-text("${w.t.monthsCard}")`);
+      await pause(page, 700);
+      await page.click('main [data-tip="tip.months"] button >> nth=4');
+      await pause(page, 900);
+      for (let i = 0; i < 3; i++) { await page.keyboard.press('ArrowRight'); await pause(page, 450); }
+      await page.click(`button${aria(w.t.close)}`);
+      await pause(page, 900);
+    },
+  },
   { name: '25-home-end', run: async page => { await page.evaluate(() => window.scrollTo(0, 900)); await pause(page, 400); } },
   { name: '26-large', run: async (page, w) => { await page.click(`button:has-text("${w.t.largeTile}")`); await pause(page, 700); } },
   {
