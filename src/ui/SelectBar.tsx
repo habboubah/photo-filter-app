@@ -23,7 +23,7 @@ export function SelectBar({ text, all, none, onAll, onNone, labels, tip }: {
   const link = 'shrink-0 min-h-[44px] px-1 text-label font-bold text-accent focus-visible:ring-focus rounded-full press';
   return (
     <div data-tip={tip} className="flex items-center gap-x-4 gap-y-0 flex-wrap px-1 pb-1">
-      <p className="min-w-0 flex-1 basis-[10rem] text-label text-fg-mute wrap-prose" aria-live="polite">{text}</p>
+      <p className="min-w-0 flex-1 basis-[6rem] text-label text-fg-mute wrap-prose" aria-live="polite">{text}</p>
       <div className="flex items-center gap-4 ms-auto">
         {!none && <button type="button" onClick={() => { tapLight(); onNone(); }} className={link}>{labels.none}</button>}
         {!all && <button type="button" onClick={() => { tapLight(); onAll(); }} className={link}>{labels.all}</button>}
