@@ -168,8 +168,6 @@ Auf einen Blick siehst du, wie viel Platz jede Art belegt. Beim Durchgehen wisch
 
 MONAT FÜR MONAT
 Geh deine Mediathek Monat für Monat durch und sieh, wie viel schon geschafft ist. „An diesem Tag“ zeigt dir, was du vor Jahren fotografiert hast – auch als Widget. Auf Wunsch erinnert dich Bildklar einmal pro Woche.
-
-Gemacht von einem Vater mit viel zu vielen Kinderfotos. Auf Deutsch, Englisch und Arabisch.
 ```
 
 **EN:**
@@ -215,8 +213,6 @@ See at a glance how much space each kind takes up. Going through them, swipe rig
 
 MONTH BY MONTH
 Go through your library a month at a time and see how much you have done. "On this day" shows what you photographed years ago – also as a widget. If you like, Bildklar reminds you once a week.
-
-Made by a father with far too many photos of his kids. In German, English and Arabic.
 ```
 
 **AR:**
@@ -262,8 +258,6 @@ Made by a father with far too many photos of his kids. In German, English and Ar
 
 شهرًا بعد شهر
 راجع مكتبتك شهرًا بعد شهر: اسحب يمينًا للاحتفاظ ويسارًا للتحديد للحذف – ويمكن التراجع عن كل خطوة. و«في مثل هذا اليوم» يريك ما صوّرته في السنوات الماضية.
-
-صنعه أب لديه صور أطفال كثيرة جدًا. بالعربية والألمانية والإنجليزية.
 ```
 
 ### 2.4 What's New (4000)
@@ -428,8 +422,6 @@ Auf einen Blick siehst du, wie viel Platz jede Art belegt. Beim Durchgehen wisch
 
 MONAT FÜR MONAT
 Geh deine Mediathek Monat für Monat durch und sieh, wie viel schon geschafft ist. „An diesem Tag“ zeigt dir, was du vor Jahren fotografiert hast – auch als Widget auf dem Startbildschirm. Auf Wunsch erinnert dich Bildklar einmal pro Woche.
-
-Gemacht von einem Vater mit viel zu vielen Kinderfotos. Auf Deutsch, Englisch und Arabisch.
 ```
 
 **EN:**
@@ -474,8 +466,6 @@ See at a glance how much space each kind takes up. Going through them, swipe rig
 
 MONTH BY MONTH
 Go through your library a month at a time and see how much you have done. "On this day" shows what you photographed years ago – also as a home-screen widget. If you like, Bildklar reminds you once a week.
-
-Made by a father with far too many photos of his kids. In German, English and Arabic.
 ```
 
 **AR:**
@@ -520,8 +510,6 @@ Made by a father with far too many photos of his kids. In German, English and Ar
 
 شهرًا بعد شهر
 راجع مكتبتك شهرًا بعد شهر: اسحب يمينًا للاحتفاظ ويسارًا للتحديد للحذف – ويمكن التراجع عن كل خطوة. و«في مثل هذا اليوم» يريك ما صوّرته في السنوات الماضية.
-
-صنعه أب لديه صور أطفال كثيرة جدًا. بالعربية والألمانية والإنجليزية.
 ```
 
 ### 3.3 Store settings
