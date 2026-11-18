@@ -515,6 +515,15 @@ export const FIRST_RUN_SCREENS = [
     },
     wait: 1400,
   },
+  {
+    // Marked for deletion as a review tray: every staged photo, the dock reviews the selection (never deletes by itself).
+    name: '64-bin', prefs: { seen: ['*'] }, run: async (page, w) => {
+      await markTwo(page, w);
+      await pause(page, 5200); // the toast of the marking is gone
+      await page.click('button[data-tip="tip.bin"]');
+    },
+    wait: 900,
+  },
   { name: '60-how', run: async (page, w) => { await openSettings(page, w); await page.click(`main button:has-text("${w.t.howTitle}")`); }, wait: 800 },
 ];
 

@@ -198,9 +198,6 @@ export function GroupView({ t, group, byId, kept, verdicts, debug, onBack, onPic
                 className="absolute end-2 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full glass text-fg inline-flex items-center justify-center press focus-visible:ring-focus">
                 <ChevronRight className="w-6 h-6 rtl:rotate-180" strokeWidth={2.4} aria-hidden="true" />
               </button>
-              <span className="absolute bottom-3 end-3 px-2.5 py-1 rounded-full bg-veil text-on-color text-caption font-bold num" aria-hidden="true">
-                {`${num(t, at + 1)} / ${num(t, group.ids.length)}`}
-              </span>
             </>
           )}
           {debug && photo && (
@@ -260,7 +257,7 @@ export function GroupView({ t, group, byId, kept, verdicts, debug, onBack, onPic
         </div>
 
         <figcaption className="px-1 space-y-1" aria-live="polite">
-          <p className="text-caption text-fg-mute num">{[when(focus), photo ? bytes(t, photo.bytes) : null].filter(Boolean).join(' · ')}</p>
+          <p className="text-caption text-fg-mute num">{[group.ids.length > 1 ? `${num(t, at + 1)} / ${num(t, group.ids.length)}` : null, when(focus), photo ? bytes(t, photo.bytes) : null].filter(Boolean).join(' · ')}</p>
           {reason && <p className="text-label text-fg wrap-prose">{reason}</p>}
           {changed && focus === group.best && <p className="text-label text-fg-mute wrap-prose">{t.groupChangedNote}</p>}
         </figcaption>

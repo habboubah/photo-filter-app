@@ -43,7 +43,7 @@ export function FirstTaskSheet({ t, done, next, onUndo, onOpenBin, onClose }: {
     <Sheet open title={aside ? t.taskAsideTitle : t.taskKeptTitle} closeLabel={t.close} onClose={onClose}>
       {/* Where everything went: the photo that stays on the start side, what was put aside in the tray. */}
       <div className="flex items-stretch gap-3">
-        <div className="w-[38%] shrink-0" aria-hidden="true">
+        <div className="w-[34%] shrink-0" aria-hidden="true">
           <span className="relative block aspect-[3/4] rounded-[14px] overflow-hidden bg-surface-2">
             <Thumb id={done.keep} className="!rounded-none" />
             <span className="absolute top-1.5 start-1.5 w-7 h-7 rounded-full bg-keep text-keep-ink ring-2 ring-on-color inline-flex items-center justify-center">
@@ -58,7 +58,7 @@ export function FirstTaskSheet({ t, done, next, onUndo, onOpenBin, onClose }: {
             className="min-w-0 flex-1 rounded-[14px] glass-flat p-3 flex flex-col text-start press focus-visible:ring-focus"
             aria-label={`${t.binTitle}, ${plural(t, 'photos', done.ids.length)}. ${t.taskOpenBin}`}
           >
-            <span className="relative flex-1 min-h-[96px]" aria-hidden="true">
+            <span className="relative block w-full aspect-[5/3]" aria-hidden="true">
               {shown.map((id, i) => (
                 <motion.span
                   key={id}
@@ -74,7 +74,7 @@ export function FirstTaskSheet({ t, done, next, onUndo, onOpenBin, onClose }: {
             </span>
             <span className="mt-2 flex items-center gap-1.5 text-label font-bold text-fg" aria-hidden="true">
               <Archive className="w-4 h-4 shrink-0" strokeWidth={2.4} />
-              <span className="min-w-0 flex-1 wrap-compound">{t.binTitle}</span>
+              <span className="min-w-0 flex-1 wrap-prose">{t.binTitle}</span>
               <ChevronRight className="w-4 h-4 shrink-0 text-fg-faint rtl:rotate-180" />
             </span>
             <span className="text-caption text-fg-mute num" aria-hidden="true">{`${plural(t, 'photos', done.ids.length)} · ${bytes(t, done.bytes)}`}</span>
