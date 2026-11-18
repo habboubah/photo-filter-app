@@ -79,7 +79,7 @@ export function OrganizeView(p: Props) {
       {loaded && p.onThisDay.photos > 0 && p.onThisDay.cover && (
         <button
           type="button" data-tip="tip.widget" onClick={() => { tapLight(); p.onOnThisDay(); }}
-          className="relative block w-full aspect-[4/3] rounded-lg overflow-hidden bg-surface text-start press focus-visible:ring-focus"
+          className="relative block w-full aspect-[4/3] @lg/page:aspect-[16/9] rounded-lg overflow-hidden bg-surface text-start press focus-visible:ring-focus"
         >
           <Thumb id={p.onThisDay.cover} size={LARGE} className="!rounded-none absolute inset-0" />
           <span className="absolute inset-0 photo-shade" aria-hidden="true" />
@@ -107,7 +107,8 @@ export function OrganizeView(p: Props) {
             ) : undefined}
           />
           {visible.length ? (
-            <div className="grid grid-cols-4 gap-x-[8px] gap-y-[12px]">
+            /* Four to a row on a phone, three on the narrowest, more on a foldable (container queries on the page). */
+            <div className="grid grid-cols-3 @xs/page:grid-cols-4 @lg/page:grid-cols-5 @2xl/page:grid-cols-6 gap-x-[8px] gap-y-[12px]">
               {visible.map(trip => <TripTile key={trip.key} trip={trip} t={t} onOpen={() => p.onTrip(trip.key)} />)}
             </div>
           ) : (
@@ -132,7 +133,7 @@ export function OrganizeView(p: Props) {
               </button>
             ) : undefined}
           />
-          <div className="grid grid-cols-4 gap-x-[8px] gap-y-[12px]">
+          <div className="grid grid-cols-3 @xs/page:grid-cols-4 @lg/page:grid-cols-5 @2xl/page:grid-cols-6 gap-x-[8px] gap-y-[12px]">
             {shownAlbums.map(a => (
               <button
                 key={a.id} type="button" onClick={() => { tapLight(); p.onAlbum(a.id); }}
@@ -155,7 +156,7 @@ export function OrganizeView(p: Props) {
       {loaded && p.categories.length > 0 && (
         <section aria-labelledby="categories-h">
           <SectionHead id="categories-h" title={t.categoriesTitle} />
-          <div className="grid grid-cols-3 gap-[8px]">
+          <div className="grid grid-cols-3 @lg/page:grid-cols-4 @2xl/page:grid-cols-5 gap-[8px]">
             {p.categories.map(c => (
               <button
                 key={c.label} type="button" onClick={() => { tapLight(); p.onCategory(c.label); }}
@@ -210,11 +211,11 @@ function OrganizeSkeleton({ label }: { label: string }) {
       <div className="h-[56px] rounded-full bg-surface" />
       <div className="space-y-3">
         <div className="h-5 w-24 rounded-full bg-surface" />
-        <div className="grid grid-cols-4 gap-[8px]">{[0, 1, 2, 3].map(i => <div key={i} className="aspect-square rounded-[12px] bg-surface" />)}</div>
+        <div className="grid grid-cols-3 @xs/page:grid-cols-4 @lg/page:grid-cols-5 @2xl/page:grid-cols-6 gap-[8px]">{[0, 1, 2, 3].map(i => <div key={i} className="aspect-square rounded-[12px] bg-surface" />)}</div>
       </div>
       <div className="space-y-3">
         <div className="h-5 w-40 rounded-full bg-surface" />
-        <div className="grid grid-cols-3 gap-[8px]">{[0, 1, 2].map(i => <div key={i} className="aspect-[4/5] rounded-[16px] bg-surface" />)}</div>
+        <div className="grid grid-cols-3 @lg/page:grid-cols-4 @2xl/page:grid-cols-5 gap-[8px]">{[0, 1, 2].map(i => <div key={i} className="aspect-[4/5] rounded-[16px] bg-surface" />)}</div>
       </div>
     </div>
   );

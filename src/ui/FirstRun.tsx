@@ -120,13 +120,15 @@ export function PhotoFrame({ src, className = '', children }: { src: string; cla
  * The foot of a first-run screen: its one action (and a quieter second one)
  * in thumb reach. It sticks to the bottom of a screen that is taller than
  * the phone; what scrolls under it fades into the page. `inset`: the
- * screen's side padding in px, so the foot runs edge to edge.
+ * screen's side margin (`px-step` or `px-page`, which narrow under 360 px),
+ * so the foot runs edge to edge.
  */
-export function Foot({ inset = 24, children }: { inset?: number; children: React.ReactNode }) {
+export function Foot({ inset = 'step', children }: { inset?: 'step' | 'page'; children: React.ReactNode }) {
+  const pad = `var(--spacing-${inset})`;
   return (
-    <div className="sticky bottom-0 z-10 mt-auto" style={{ marginInline: -inset }}>
+    <div className="sticky bottom-0 z-10 mt-auto" style={{ marginInline: `calc(-1 * ${pad})` }}>
       <div className="h-8 bg-linear-to-b from-transparent to-bg pointer-events-none" aria-hidden="true" />
-      <div className="bg-bg pb-safe-8" style={{ paddingInline: inset }}>{children}</div>
+      <div className="bg-bg pb-safe-8" style={{ paddingInline: pad }}>{children}</div>
     </div>
   );
 }

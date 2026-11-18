@@ -69,8 +69,8 @@ export function FirstScanView({ t, scan, found, firstFind, onLookAround }: {
   ];
 
   return (
-    <div className="min-h-screen mx-auto max-w-xl flex flex-col safe-top">
-      <main className="flex-1 flex flex-col px-6 pt-6">
+    <div className="min-h-screen mx-auto max-w-column flex flex-col safe-top">
+      <main className="flex-1 flex flex-col px-step pt-6">
         <div className="flex flex-col items-center text-center">
           <Ring value={share} size={116} stroke={9} label={[where, eta].filter(Boolean).join(' · ')}>
             {share === null
@@ -86,7 +86,8 @@ export function FirstScanView({ t, scan, found, firstFind, onLookAround }: {
 
         <section className="mt-6" aria-labelledby="found-so-far">
           <h2 id="found-so-far" className="px-1 pb-2 text-label font-semibold text-fg-mute">{t.firstScanFound}</h2>
-          <dl className="rounded-md card px-1 py-3 grid grid-cols-4">
+          {/* Four in a row; two by two on the narrowest phones, so no word is broken in two. */}
+          <dl className="rounded-md card px-1 py-3 grid grid-cols-2 gap-y-3 min-[360px]:grid-cols-4 min-[360px]:gap-y-0">
             {tiles.map(x => (
               <div key={x.key} className="min-w-0 flex flex-col-reverse items-center text-center">
                 <dt className="text-caption text-fg-mute wrap-compound leading-tight mt-0.5">{x.label}</dt>

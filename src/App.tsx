@@ -1143,7 +1143,7 @@ export default function App() {
     <div className="font-sans text-fg min-h-screen bg-bg overflow-x-clip">
       {store.storageError && (
         <div role="alert" className="bg-neg-dim text-neg px-4 py-2 safe-top">
-          <div className="mx-auto max-w-xl flex items-center gap-2">
+          <div className="mx-auto max-w-column flex items-center gap-2">
             <AlertTriangle className="w-4 h-4 shrink-0" aria-hidden="true" />
             <span className="text-caption font-bold flex-1">{t.deleteFailed}</span>
           </div>

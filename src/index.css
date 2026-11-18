@@ -107,6 +107,17 @@
 
   --spacing-tap: 44px;
 
+  /* Adaptive layout (docs/DESIGN.md): the page's side margin and the large
+     title's, in px as iOS keeps its layout margins when text grows — 16 / 20
+     on a phone, 12 / 16 on the narrowest (under 360 px, see below). */
+  --spacing-page: 16px;
+  --spacing-title: 20px;
+  /* A full-screen step's margin (the first run, the review's end): 24 px, 20 px when narrow. */
+  --spacing-step: 24px;
+  /* The page column: a phone's width, wider on a foldable or a tablet (where
+     Android 16 runs the app at any size and either way round). */
+  --container-column: 36rem;
+
   --ease-out-soft: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
 }
@@ -292,6 +303,35 @@
 [data-hue="stone"] { --hue-bg: var(--t-stone-bg); --hue-ink: var(--t-stone-ink); --hue-solid: var(--t-stone-solid); }
 [data-hue="cyan"]  { --hue-bg: var(--t-cyan-bg);  --hue-ink: var(--t-cyan-ink);  --hue-solid: var(--t-cyan-solid); }
 [data-hue="pink"]  { --hue-bg: var(--t-pink-bg);  --hue-ink: var(--t-pink-ink);  --hue-solid: var(--t-pink-solid); }
+
+/* ============ Adaptive layout ============================================= */
+/* Three widths, one layout (docs/DESIGN.md, *Adaptive layout*):
+     narrow  — under 360 px (iPhone SE 1st gen., small Android phones, split
+               screen): tighter margins, the large titles a step smaller.
+     phone   — 360–699 px: the design as drawn.
+     wide    — 700 px and up (a foldable open, a tablet, a wide window): the
+               page column grows; grids add columns by their own width
+               (container queries on the page, `@container/page` in ui/Screen,
+               and logic/layout.ts for the photo grids).
+   Heights adapt where a screen is one fixed picture (the review, a group's
+   viewer): the photo takes what is left, down to a floor, and the buttons
+   stay on screen. */
+/* `narrow:` and `short:` for the rare component that changes shape there
+   (the review's buttons, a stat tile); everything else follows the tokens. */
+@custom-variant narrow (@media (width < 360px));
+@custom-variant short (@media (height < 640px));
+@media (width < 360px) {
+  :root {
+    --spacing-page: 12px;
+    --spacing-title: 16px;
+    --spacing-step: 20px;
+    --text-title: 1.75rem;  --text-title--line-height: 2.125rem;
+    --text-title1: 1.5rem;  --text-title1--line-height: 1.875rem;
+    --text-title2: 1.25rem; --text-title2--line-height: 1.625rem;
+  }
+}
+@media (width >= 700px) { :root { --container-column: 44rem; } }
+@media (width >= 1000px) { :root { --container-column: 50rem; } }
 
 /* ============ Utilities =================================================== */
 

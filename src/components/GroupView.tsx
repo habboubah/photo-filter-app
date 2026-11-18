@@ -121,7 +121,7 @@ export function GroupView({ t, group, byId, kept, verdicts, debug, onBack, onPic
             onDragEnd={(_, info) => { if (info.offset.x < -60) move(1); else if (info.offset.x > 60) move(-1); }}
             initial={{ opacity: 0.4 }} animate={{ opacity: 1 }} transition={{ duration: 0.18 }}
             style={{ aspectRatio: ratio }}
-            className="max-h-[56vh] w-full mx-auto touch-pan-y"
+            className="max-h-[56vh] short:max-h-[36vh] w-full mx-auto touch-pan-y"
           >
             <motion.div layoutId={zoomLayoutId(focus)} className="w-full h-full">
               <Thumb id={focus} size={LARGE} alt={`${when(focus)}. ${state(focus)}`} className="!rounded-none !object-contain !bg-transparent" />

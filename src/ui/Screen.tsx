@@ -57,7 +57,7 @@ export function Screen({ title, eyebrow, subtitle, onBack, backLabel, actions, i
   }, []);
 
   return (
-    <div className={`relative isolate mx-auto w-full max-w-xl min-h-screen ${docked ? 'pb-safe-dock' : tabbed ? 'pb-safe-tabs' : 'pb-16'}`}>
+    <div className={`relative isolate mx-auto w-full max-w-column min-h-screen ${docked ? 'pb-safe-dock' : tabbed ? 'pb-safe-tabs' : 'pb-16'}`}>
       <header className="sticky top-0 z-30 safe-top">
         {/* Scroll edge: once content passes under the bar, it fades into the page behind the buttons and the title. */}
         <div
@@ -66,7 +66,7 @@ export function Screen({ title, eyebrow, subtitle, onBack, backLabel, actions, i
         />
         {/* Sides size to their content and the title takes what is left, so a
             wide action can never sit on top of it. */}
-        <div className="relative px-[16px] min-h-[54px] grid grid-cols-[minmax(44px,auto)_minmax(0,1fr)_minmax(44px,auto)] gap-2 items-center">
+        <div className="relative px-page min-h-[54px] grid grid-cols-[minmax(44px,auto)_minmax(0,1fr)_minmax(44px,auto)] gap-2 items-center">
           <div className="justify-self-start">
             {onBack && (
               <button
@@ -91,11 +91,11 @@ export function Screen({ title, eyebrow, subtitle, onBack, backLabel, actions, i
         </div>
       </header>
 
-      {top && <div className="px-[16px] pt-1 pb-5">{top}</div>}
+      {top && <div className="px-page pt-1 pb-5">{top}</div>}
 
-      {/* Margins in px, as iOS keeps its layout margins when text grows (1rem = 16px at the default size). */}
+      {/* Margins in px, as iOS keeps its layout margins when text grows (1rem = 16px at the default size); tighter under 360 px (index.css, Adaptive layout). */}
       {hideTitle ? <h1 className="sr-only">{title}</h1> : (
-      <div className="px-[20px] pt-0.5 pb-4 flex items-center gap-4">
+      <div className="px-title pt-0.5 pb-4 flex items-center gap-4">
         {leading}
         <div className="min-w-0 flex-1">
           {eyebrow && <p className="eyebrow text-fg-mute mb-0.5">{eyebrow}</p>}
@@ -106,8 +106,9 @@ export function Screen({ title, eyebrow, subtitle, onBack, backLabel, actions, i
       </div>
       )}
 
-      {/* Its cards rise into place one after another as the screen appears (index.css: rise-children). */}
-      <main className={`px-[16px] space-y-6 ${still ? '' : 'rise-children'}`}>{children}</main>
+      {/* Its cards rise into place one after another as the screen appears (index.css: rise-children).
+          A container: grids inside count their columns by its width (`@xs/page:grid-cols-4`), not the screen's. */}
+      <main className={`@container/page px-page space-y-6 ${still ? '' : 'rise-children'}`}>{children}</main>
 
       {info && (
         <Sheet open={about} title={title} closeLabel={info.close} onClose={() => setAbout(false)}>
@@ -336,7 +337,7 @@ export function Dock({ children }: { children: React.ReactNode }) {
   }, []);
   return createPortal(
     <div ref={box} className="fixed inset-x-0 bottom-0 z-20 pointer-events-none">
-      <div className="mx-auto w-full max-w-xl px-[16px] pt-10 pb-dock dock-fade">
+      <div className="mx-auto w-full max-w-column px-page pt-10 pb-dock dock-fade">
         <div className="pointer-events-auto">{children}</div>
       </div>
     </div>,

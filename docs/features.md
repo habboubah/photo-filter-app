@@ -740,6 +740,12 @@ then *Mehr Platz* and *Geschützt*.
   (*Durchgehen · 7 Fotos · 20 MB* [Go through · 7 photos · 20 MB]).
 - Dark mode, Larger Text (iPhone Dynamic Type; Android's font scale), VoiceOver
   / TalkBack labels on every photo and button, reduced motion.
+- **Every screen size**: on the smallest phones (320 px wide, or a short
+  screen in split screen) the margins and the large titles are a little
+  smaller, tiles sit three to a row so names stay whole, and the review's
+  photo makes room so its buttons stay on screen; on a foldable or a tablet
+  the page is wider and more photos fit in a row, at the size they have on a
+  phone.
 - Android words it Android's way (folders, the Trash, Google Play).
 - **Sorting lists**: Screenshots, Large files, Live Photos, Failed shots,
   Unimportant photos and a category have a sort menu at the top right —

@@ -28,10 +28,11 @@ export function WelcomeView({ t, onDone }: { t: Strings; onDone: () => void }) {
     { icon: Lock, hue: 'mint', title: t.welcomePrivateTitle, body: t.welcomePrivate },
   ];
   return (
-    <div className="min-h-screen mx-auto max-w-xl flex flex-col safe-top" aria-label={t.welcomeLabel}>
-      <main className="flex-1 flex flex-col px-6 pt-6 min-h-0">
+    <div className="min-h-screen mx-auto max-w-column flex flex-col safe-top" aria-label={t.welcomeLabel}>
+      <main className="flex-1 flex flex-col px-step pt-6 min-h-0">
         <div className="flex-1 flex flex-col justify-center pb-4">
-        <div className="mx-auto w-full max-w-[340px]" aria-hidden="true">
+        {/* Smaller on a short screen (an SE, split screen), so the points and the button still fit. */}
+        <div className="mx-auto w-full max-w-[340px] short:max-w-[230px]" aria-hidden="true">
           <BestShot t={t} />
         </div>
         <h1 className="title-face text-title1 font-bold text-fg wrap-compound mt-7 text-balance">{t.welcomeTitle}</h1>

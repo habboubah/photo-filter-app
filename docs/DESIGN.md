@@ -43,6 +43,41 @@ Android's set is laid over the same tokens by `[data-platform="android"]`.
 There is never an Android-only fork of a component, and no Material dynamic
 colour: the warm palette is the palette.
 
+## Adaptive layout
+
+One layout on every screen size, from a 320 px phone to a foldable open or a
+tablet (Android 16 runs the app there at any size and either way round, even
+though it asks for portrait). It adapts through tokens and container
+queries, never through a fork of a screen (`src/index.css`, *Adaptive layout*).
+
+| Width | Who | What changes |
+|---|---|---|
+| **narrow**, < 360 px | iPhone SE (1st gen.), small Android phones, split screen | page margin 12 px (16 beside a large title, 20 on a first-run step); `title` 28, `title1` 24, `title2` 20 px; grids of four show three; two-by-two where four stats sat in a row; the review's end tiles become rows |
+| **phone**, 360–699 px | every current iPhone and most Android phones | the design as drawn; the page column at most 36 rem |
+| **wide**, ≥ 700 px | a foldable open, a tablet, a wide window | the page column grows to 44 rem (50 rem from 1000 px); grids add columns, photos keep their phone size |
+
+- **The page column** is `max-w-column` (`--container-column`); the page's
+  margins are `px-page` / `px-title` / `px-step` (`--spacing-*`). Never a
+  literal `max-w-xl` or `px-[16px]` on a screen's shell.
+- **Grids count their columns by their own width**, not the screen's: the
+  page's `<main>` is `@container/page` (`ui/Screen`), so a tile grid is
+  `grid-cols-3 @xs/page:grid-cols-4 @lg/page:grid-cols-5 @2xl/page:grid-cols-6`
+  (the trips, the albums), the categories and the word cards add one or two
+  from `@lg` / `@md`, the months go to three. The container sizes are rem, so
+  with Larger Text a grid shows fewer, larger tiles. A `PhotoGrid` takes its
+  phone count as `columns` and fits as many photos of that size as its width
+  holds (`gridColumns`, `src/logic/layout.ts`: never fewer than three, at
+  most twice the phone count).
+- **Heights**: `short:` (< 640 px tall — the first SE, split screen) for a
+  screen that is one fixed picture: the review's photo takes what is left
+  down to a floor (`clamp(150px, 36vh, 300px)`) and its round buttons are a
+  step smaller, so they stay on screen; a group's viewer is at most 36 vh;
+  the welcome's illustration is smaller. Everything else scrolls.
+- `narrow:` and `short:` are for the rare component that changes shape
+  there; everything else follows the tokens.
+- `npm run ui-review` shows every screen at 320 × 568 (`de-light-320`) and
+  840 × 1000 (`en-android-wide`) too.
+
 ## Colour tokens
 
 Only tokens, never a literal colour in a component. After any change:
@@ -87,8 +122,9 @@ Arabic.
 
 A 4 px base. The steps in use: 4 · 8 · 12 · 16 · 20 · 24 · 32 · 48.
 
-- Page margin 16 px (20 px beside a large title); margins are px so they hold
-  when text grows.
+- Page margin 16 px (20 px beside a large title, 24 px on a first-run step):
+  `px-page`, `px-title`, `px-step`, 4 px less on a narrow screen (*Adaptive
+  layout*); margins are px so they hold when text grows.
 - Between sections 24 px (`space-y-6`); inside a card 16–24 px; between a
   label and its sub line 2–4 px; between tiles 2–4 px (photos sit close).
 - Touch targets ≥ 44 px, **48 px for anything new** (`min-h-control`).

@@ -121,11 +121,11 @@ export function ReviewView({ t, session, finished, byId, debug, bin = false, alb
   }, [done, onDecide, onUndo]);
 
   return (
-    <div className="min-h-screen mx-auto max-w-xl flex flex-col safe-top">
+    <div className="min-h-screen mx-auto max-w-column flex flex-col safe-top">
       {/* With large text the undo moves to its own line rather than squeezing the count. */}
       <header className="px-[12px] min-h-[54px] py-1 flex flex-wrap gap-2 items-center">
         <IconButton label={t.close} icon={X} tone="bar" onClick={onClose} />
-        <div className="text-center flex-1 min-w-[7em]">
+        <div className="text-center flex-1 min-w-[7em] narrow:min-w-[5em]">
           <p className="text-label font-bold text-fg num" aria-live="polite">
             {done ? t.reviewDoneTitle : fmt(t.reviewProgress, { i: num(t, session.index + 1), n: num(t, session.items.length) })}
           </p>
@@ -176,7 +176,7 @@ export function ReviewView({ t, session, finished, byId, debug, bin = false, alb
                 <FolderPlus className="w-4 h-4" aria-hidden="true" />{row.length ? t.reviewAlbums : t.fileIntoAlbum}
               </button>
             </div>}
-            <div className="px-5 pb-safe-8 pt-3">
+            <div className="px-5 pb-safe-8 short:pb-3 pt-3 short:pt-2">
               {/* Physical, like the swipe: set aside on the left, keep on the right — also right to left.
                   Setting aside is quiet (nothing is deleted); red only where it deletes for real (from "Zum Löschen vorgemerkt"). */}
               <div dir="ltr" data-tip="tip.buttons" className="flex justify-center items-end gap-6">
@@ -186,7 +186,7 @@ export function ReviewView({ t, session, finished, byId, debug, bin = false, alb
                 <RoundButton label={t.later} tone="later" icon={Clock} onClick={() => onDecide('later')} />
                 <RoundButton label={t.keep} tone="keep" icon={Check} onClick={() => onDecide('keep')} />
               </div>
-              <div className="flex flex-wrap justify-between items-center gap-x-3 mt-4">
+              <div className="flex flex-wrap justify-between items-center gap-x-3 mt-4 short:mt-1">
                 {/* The swipe in words while it is being learned (and in the bin, where left deletes for real); then the labelled buttons say it. */}
                 {bin || guide?.gesture
                   ? <p className="text-caption text-fg-mute wrap-prose flex-1 min-w-[12rem]">{bin ? t.swipeHintBin : t.swipeHint}</p>
@@ -299,8 +299,9 @@ function Card({ t, item, photo, debug, bin, guide, said, onUndo, onDecide, onPro
           <Shield className="w-4 h-4" strokeWidth={2.4} aria-hidden="true" />{t.protect}
         </button>
       </div>
-      {/* Full-bleed: the photo takes the whole width of the screen. */}
-      <div className="relative flex-1 min-h-[300px] -mx-[12px]">
+      {/* Full-bleed: the photo takes the whole width of the screen, and the height that is left —
+          on a short screen (an SE, split screen) down to its floor, so the buttons stay in reach. */}
+      <div className="relative flex-1 min-h-[clamp(150px,36vh,300px)] -mx-[12px]">
       <motion.div
         drag="x"
         dragSnapToOrigin
@@ -392,11 +393,12 @@ function Card({ t, item, photo, debug, bin, guide, said, onUndo, onDecide, onPro
 }
 
 const ROUND_TONE = {
-  neg: 'w-[66px] h-[66px] bg-neg text-neg-ink sheen',
+  /* A step smaller on a short screen (an SE, split screen): the photo keeps more of the height. */
+  neg: 'w-[66px] h-[66px] short:w-[56px] short:h-[56px] bg-neg text-neg-ink sheen',
   /** Setting aside: quiet, not red — nothing is deleted. */
-  aside: 'w-[66px] h-[66px] glass text-fg',
-  keep: 'w-[66px] h-[66px] bg-keep text-keep-ink sheen',
-  later: 'w-[54px] h-[54px] glass text-accent',
+  aside: 'w-[66px] h-[66px] short:w-[56px] short:h-[56px] glass text-fg',
+  keep: 'w-[66px] h-[66px] short:w-[56px] short:h-[56px] bg-keep text-keep-ink sheen',
+  later: 'w-[54px] h-[54px] short:w-[46px] short:h-[46px] glass text-accent',
 } as const;
 
 function RoundButton({ label, tone, icon: Icon, onClick }: { label: string; tone: keyof typeof ROUND_TONE; icon: typeof Check; onClick: () => void }) {
@@ -433,7 +435,7 @@ function Summary({ t, session, byId, bin, chips, android, protectNote, onProtect
   const restored = bin ? session.items.filter(i => session.decisions[i.id] === 'keep').length : 0;
   const sizeOf = (list: string[]) => list.reduce((s, id) => s + (byId.get(id)?.bytes ?? 0), 0);
   return (
-    <main className="flex-1 flex flex-col px-6 pb-safe-8 pt-6">
+    <main className="flex-1 flex flex-col px-step pb-safe-8 pt-6">
       {/* Done, calmly: a soft check, then the figures count up. No confetti, nothing to collect. */}
       <motion.span
         className="w-12 h-12 rounded-full bg-keep text-keep-ink sheen inline-flex items-center justify-center mb-4" aria-hidden="true"
@@ -457,14 +459,16 @@ function Summary({ t, session, byId, bin, chips, android, protectNote, onProtect
         <p className="text-body text-fg-mute wrap-prose num">{fmt(t.reviewDoneVideos, { videos: plural(t, 'videos', split.videos.length), size: bytes(t, sizeOf(split.videos)) })}</p>
       )}
       {!bin && (keptCount > 0 || ids.length > 0 || later > 0) && (
-        <dl className="mt-5 grid grid-cols-3 gap-2" aria-label={t.summaryRecap}>
+        /* Three tiles side by side; on the narrowest phones three rows (the number, then its word), so no word is broken. */
+        <dl className="mt-5 grid grid-cols-1 gap-1.5 min-[360px]:grid-cols-3 min-[360px]:gap-2" aria-label={t.summaryRecap}>
           {[
             { icon: Check, label: t.keep, n: keptCount, tone: 'text-keep' },
             { icon: Archive, label: t.summaryMarked, n: ids.length, tone: 'text-fg' },
             { icon: Clock, label: t.later, n: later, tone: 'text-accent' },
           ].map(({ icon: Icon, label, n, tone }) => (
-            <div key={label} className="rounded-md card px-3 py-3 flex flex-col-reverse">
-              <dt className="flex items-center gap-1 text-caption text-fg-mute wrap-compound">
+            <div key={label} className="@container rounded-md card px-3 py-3 narrow:py-2 flex flex-row-reverse justify-end items-center gap-3 min-[360px]:flex-col-reverse min-[360px]:items-stretch min-[360px]:gap-0">
+              {/* The symbol above the word in a narrow tile, so the word is never broken in two. */}
+              <dt className="flex flex-col items-start @[5.75rem]:flex-row @[5.75rem]:items-center gap-1 text-caption text-fg-mute wrap-compound">
                 <Icon className={`w-3.5 h-3.5 shrink-0 ${tone}`} strokeWidth={2.8} aria-hidden="true" />{label}
               </dt>
               <dd className="title-face text-title2 font-bold text-fg num"><CountUp value={n} format={v => num(t, v)} /></dd>
@@ -487,7 +491,7 @@ function Summary({ t, session, byId, bin, chips, android, protectNote, onProtect
       )}
       {/* Exactly what is chosen: the photos themselves (the last tile counts the rest). */}
       {ids.length > 0 && (
-        <div className="grid grid-cols-4 gap-[4px] mt-6" role="list" aria-label={bin ? plural(t, 'deleteN', ids.length) : `${t.binAdd} · ${plural(t, 'photos', ids.length)}`}>
+        <div className="grid grid-cols-4 min-[600px]:grid-cols-6 gap-[4px] mt-6" role="list" aria-label={bin ? plural(t, 'deleteN', ids.length) : `${t.binAdd} · ${plural(t, 'photos', ids.length)}`}>
           {ids.slice(0, 12).map((id, i) => (
             <div key={id} role="listitem" className="relative aspect-square rounded-[10px] overflow-hidden">
               <Thumb id={id} className="!rounded-none" />

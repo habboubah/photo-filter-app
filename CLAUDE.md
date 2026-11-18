@@ -299,6 +299,15 @@ scenes follow the switch (docs/PLAN.md, *Pricing*).
   (*Durchgehen · 6 Dateien · 585 MB*).
 - Type scale in rem (follows Dynamic Type, `dynamicType.ts`); touch targets
   44 px. No `hover:` styles.
+- **Adaptive layout** (docs/DESIGN.md): one layout from 320 px to a tablet.
+  A screen's shell uses `max-w-column` and `px-page` / `px-title` /
+  `px-step` (tokens that narrow under 360 px and widen from 700 px) — never
+  `max-w-xl` or `px-[16px]`. A grid counts columns by the page's width
+  (`@container/page` on `Screen`'s main: `grid-cols-3 @xs/page:grid-cols-4
+  @lg/page:grid-cols-5 …`), a `PhotoGrid`'s `columns` is the phone count
+  (`gridColumns`, `src/logic/layout.ts`). `narrow:` (< 360 px wide) and
+  `short:` (< 640 px tall) only where a component changes shape; a screen
+  that is one fixed picture keeps its buttons on screen when short.
 
 ### Android — "Album" (18 November 2026, docs/REDESIGN.md)
 Android keeps the layout and swaps the material, through
@@ -413,7 +422,8 @@ promoting to production stay manual. Checklists: `docs/APP_STORE_RELEASE.md`,
    `npm run android:debug`; Swift changes need a build in Xcode (`npm run build:ios`).
 3. `npm run dev` and exercise the change at phone width (375–430 px).
 4. A screen changed → `npm run ui-review` before and after; look at day,
-   night, the iPhone SE and the small Android phone.
+   night, the iPhone SE, the small Android phone, 320 × 568 and the wide
+   (foldable) variant.
 5. The decisions' shape changed → old state files still load (`normalizeState`).
 6. Keep the docs true (all in `docs/`): a feature → `docs/features.md` and the
    What's New in `store/listing.md`; a rule → this file; anything for Ahmad →
