@@ -4,14 +4,14 @@ Every feature, as the user sees it (German labels, English in brackets).
 
 ## First start and photo access
 - **Welcome** (the first start only; again from *Einstellungen › So
-  funktioniert Bildklar*): four short pages, each one line and an illustration
-  of photo frames that animates what it says — *Ordnung in Zehntausenden
-  Fotos* (a pile settles into a grid), *Reisen – für dich gefunden* (a stack
-  becomes a trip), *Das beste Foto vorgeschlagen. Du entscheidest.* (the
-  app's sparkle, then a finger picks another: the green check), *Privat:
-  Alles bleibt auf deinem Handy* (a phone with a lock; no cloud, no account).
-  *Überspringen* on every page, dots, swipe or *Weiter*. Its photos are the
-  app's own eight; under reduced motion each illustration shows its end state.
+  funktioniert Bildklar*): one screen. *Finde die Fotos, die du behalten
+  willst* [Find the photos worth keeping] over a series of three photos — the
+  app's sparkle, then a finger picks another: the green check — and three
+  lines: *Ähnliche Aufnahmen im Vergleich*, *Deine Reisen, schon sortiert*,
+  *Nur auf deinem Handy* (no account, no cloud, nothing deleted without you).
+  One button, *Los geht's* [Get started]. Its photos are the app's own three;
+  under reduced motion the illustration shows its end state. (Until 18
+  November 2026: four pages.)
 - **Photo access**: *Darf Bildklar deine Fotos sehen?* — why (to find trips
   and similar photos on the phone), *Nichts wird hochgeladen*, *Nichts ändert
   sich ohne dich*, and both ways to answer under *Du hast die Wahl*: *Alle
@@ -27,14 +27,30 @@ Every feature, as the user sees it (German labels, English in brackets).
   long it still takes, *Schon gefunden* (trips, near-identical, duplicates,
   screenshots, counting up as they are found) and five cards that explain the
   app while it works (trips, the best shot, month by month, marking before
-  deleting, privacy; they turn by themselves or on a tap). *Schon mal
-  umsehen* [Look around meanwhile] goes to home, where the slim card carries
-  on. Every later scan is only the slim card.
-- **What it found** (once, when the first scan has analysed every photo): the
-  space that could be freed — *wenn du willst* — one recommended first step
-  (the same choice as home's next-step card, src/logic/nextStep.ts) with
-  *Jetzt durchsehen*, everything found per category with count and size, the
-  trips, and the quiet second way *Erst mal umsehen*.
+  deleting, privacy; they turn by themselves or on a tap). As soon as the
+  scan has found a group of near-identical photos, its real photos take the
+  cards' place: *Schon entdeckt* [Found already] — *3 Fotos, fast gleich* —
+  *Gleich vergleichst du sie*. *Schon mal umsehen* [Look around meanwhile]
+  goes to home, where the slim card carries on. Every later scan is only the
+  slim card.
+- **What it found** (once, when the first scan has analysed every photo): it
+  leads with one task, not with a storage figure. When a group of
+  near-identical photos exists (the newest of two to six, src/logic/nextStep.ts
+  `firstGroup`): its photos side by side, the app's pick with the sparkle,
+  *Dein erster Schritt · 3 Fotos, fast gleich · Bildklar schlägt eines vor –
+  du wählst, welches bleibt*, and **Deine erste Gruppe vergleichen** [Compare
+  your first group]. Without one: home's next step (the category that frees
+  the most, or a month) with *Jetzt durchsehen*. Under it everything found per
+  category with count and size, the trips, and the quiet second way *Erst mal
+  umsehen*.
+- **The first group**: the group's screen (see *Similar photos*), its tip
+  explaining the sparkle and *Dieses behalten*. After *Die anderen zum
+  Löschen vormerken* or *Alle behalten*, once, a sheet says what happened:
+  **Erledigt – nichts gelöscht** [Done – nothing deleted], the photo that
+  stays with its green check, what was put aside moving into *Zum Löschen
+  vorgemerkt* (a tap opens it), that nothing is deleted until it is confirmed
+  there; **one next step** (*Nächste Gruppe vergleichen* — or home's next
+  step when no group is left) and *Rückgängig* [Undo].
 - **One-time tips**: the first time a feature is on screen, one short hint
   points at its control — the review's buttons and undo, what a suggestion
   is, where the marked photos wait, the bin, a group's sparkle, quick clean,
@@ -183,7 +199,12 @@ is marked for deletion, then the storage overview and the rest in order.
   the largest copy, the sharpest, else *insgesamt am besten*), for another
   what is worse about it (*Unschärfer als das beste*). **Dieses behalten**
   [Keep this one] makes the photo looked at the one to keep (the app
-  remembers and learns); *Zurück zum Vorschlag* undoes it. **Die anderen
+  remembers and learns); *Zurück zum Vorschlag* undoes it.
+  **Nebeneinander** [Side by side] puts the photo that stays next to another
+  one of the group, the same size: a tap on a spot zooms **both** to it, a
+  drag moves both (to compare a face across two frames); the strip at its
+  foot picks what it is compared with, *Dieses behalten* switches.
+  **Die anderen
   zum Löschen vormerken · 1 Foto · 2,8 MB** [Mark the others for deletion]
   puts them into *Zum Löschen vorgemerkt* (nothing is deleted);
   *Durchgehen* reviews them one by one; *Alle behalten* [Keep all] keeps
@@ -363,10 +384,16 @@ is marked for deletion, then the storage overview and the rest in order.
 
 ## Month by month
 - The header shows the same figure: *38 % durchgesehen · 7 von 18 Monaten*, and a ring beside the title that fills with it.
-- Every month of the library, newest first, with a photo, the number of photos
-  and the size; a month gone through to its end is marked *Durchgesehen* [Done].
+- Every month of the library, newest first, as a **photo tile**, two to a row:
+  its cover with the month's name on it, the number of photos and the size,
+  and how far into it you are — *Noch offen* [Not started], a bar with
+  *16 % durchgesehen* and *Weitermachen* [Continue] on the cover, or
+  *Durchgesehen* [Done] with a check.
 - A tap reviews the month: extra shots, blurry photos and old screenshots are
-  suggested for deleting, the rest for keeping.
+  suggested for deleting, the rest for keeping. **Left part-way, a month
+  remembers its place** (the last photo decided; src/logic/months.ts) and
+  goes on there next time; home's next step offers *Weiter mit Juli 2026*
+  with the month's own bar. (Since 18 November 2026.)
 - **Videos** join the month (and *An diesem Tag*) in time order: a copy of
   another video → delete; a screen recording older than 30 days → delete;
   every other video → keep, with its length and size (*2:14 · 480 MB*). A
@@ -440,6 +467,12 @@ is marked for deletion, then the storage overview and the rest in order.
   **Löschen vormerken · 4 Fotos** — nothing is deleted yet (*Noch wird nichts
   gelöscht …*); see *Marked for deletion*.
 - Photos you kept against the suggestion are remembered and not suggested again.
+- **Closed before the end** (✕): what was marked by then is put into *Zum
+  Löschen vorgemerkt* — it said *Löschen vormerken*, so it is not forgotten —
+  with a toast and *Rückgängig*; nothing is deleted. Until 18 November 2026
+  those marks were dropped. (On the summary, *Fertig* instead of *Löschen
+  vormerken* still leaves them unmarked: that is the summary's own choice.) A month remembers where it was left (see *Month
+  by month*).
 - **Into albums while swiping** (free for now, later the unlock): a row of album chips
   under the photo (the last used first) and *+ Neues Album* [New album]. A tap
   keeps the photo, files it into that album and moves on; undo takes it out
@@ -467,14 +500,18 @@ is marked for deletion, then the storage overview and the rest in order.
   bestätigst hier* → 3. *Dein iPhone fragt noch einmal* (Android: *Android
   fragt noch einmal*), then the photos stay 30 days in *Zuletzt gelöscht* /
   the Trash. *Verstanden – weiter* leads to the usual sheet with the red button.
-- Its own section on *Aufräumen* opens it: the photos, the last put aside
-  first, each with its size (a video with its length). A tap selects one;
-  **Zurücklegen · 2 Fotos** [Put back] returns them to where they were (with
-  undo), *Nur diese löschen* [Delete only these] deletes just them.
-- With nothing selected: **12 Fotos löschen · 340 MB** — the one red button
-  of the app. It first opens a sheet with **exactly what goes** (the photos,
+- Its own section on *Aufräumen* opens it — a **review tray**: the photos, the
+  last put aside first, each with its size (a video with its length). A tap
+  selects one; **Zurücklegen · 2 Fotos** [Put back] returns them to where
+  they were (with undo), *Nur diese prüfen* [Review only these] opens the
+  delete sheet for just them.
+- With nothing selected: **Auswahl prüfen · 12 Fotos · 340 MB** [Review
+  selection] — the screen's button never deletes itself (since 18 November
+  2026; before, it was the red *12 Fotos löschen*). It opens a sheet with
+  **exactly what goes** (the photos,
   their count and size; *Sie kommen in den Papierkorb … Danach fragt Android
-  noch einmal nach*), **Löschen** or **Abbrechen** (or a swipe down); then
+  noch einmal nach*) and the one red button of the app, **12 Fotos löschen**,
+  or **Abbrechen** (or a swipe down); then
   the system's dialog → Recently Deleted (iPhone) / the Trash (Android) — the
   only place that deletes. *Noch einmal durchgehen* [Go through them again]:
   a review without a suggestion, swiped left is deleted at the end (red

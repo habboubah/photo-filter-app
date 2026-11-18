@@ -20,7 +20,8 @@ Calm, photo-first, private, never pushy.
   quiet units everywhere (`bytes()`).
 - **Marking is not deleting.** *Löschen vormerken* is teal or quiet glass with
   an archive icon. Red and the trash icon appear only where a tap really
-  deletes (the bin's confirm sheet and its dock).
+  deletes: the delete sheet's one button. The bin's dock reviews the
+  selection (*Auswahl prüfen*), it never deletes by itself.
 - Sentence case in every language. German strings are long: they wrap, a
   button is never truncated.
 
@@ -151,7 +152,8 @@ alone.
 `SectionHead`, `Group`, `Row`, `MenuRow`, `ActionRow`, `IconTile`, `Next`,
 `Away`, `Empty`, `Dock`, `TabBar`, `Sheet`, `Confirm`, `Button`, `IconButton`,
 `Field`, `Toast`, `Progress`, `SwitchRow`, `Segmented`, `Badge`, `BigNumber`,
-`SortMenu`, `StorageBar`, `Thumb`, `PhotoGrid`, `Mosaic`, `PlayOver`, and for
+`SortMenu`, `StorageBar`, `Thumb`, `PhotoGrid`, `Mosaic`, `PlayOver`,
+`CompareView` (`ui/Compare.tsx`), and for
 the first run `TipHost` (`ui/Tip.tsx`) and, in `ui/FirstRun.tsx`, `Dots`,
 `CountUp`, `Ring`, `PhotoFrame`, `Foot` (a first-run screen's action, stuck
 to the bottom with a fade above it).
@@ -171,6 +173,21 @@ to the bottom with a fade above it).
 - **A photo large** (`ui/Zoom`): opened from the magnifier on a photo; the
   picture is a shared element (`zoomLayoutId`) that grows out of its tile.
   Tap zooms on the spot, drag pans.
+- **Two photos side by side** (`ui/Compare`, *Nebeneinander* in a group): the
+  photo that stays and another of the group, the same size and aligned —
+  upright ones next to each other, wide ones one above the other. **One zoom
+  for both**: a tap on a spot of either zooms both to it, a drag moves both
+  (shared motion values). The one that stays wears the green check, the
+  app's pick the sparkle; a strip picks the other photo; *Dieses behalten*
+  switches. Made so a parent can compare a child's face across two frames.
+- **A month** (`MonthTile` in `components/MonthsView`): a photo tile, two to
+  a row — the cover with the month's name on its shade, photos and size, and
+  how far in: *Noch offen*, a thin bar with *16 % durchgesehen* and a glass
+  *Weitermachen* chip, or the green *Durchgesehen*. In words as well as in
+  the bar.
+- **The review tray** (`BinView`): every staged photo in view, a tap selects
+  what goes back (*Zurücklegen*); the dock's *Auswahl prüfen* opens the
+  delete sheet — the only red button. Reviewing and deleting are two steps.
 - **Loading**: the shape of what comes, breathing softly (`skeleton`), never
   a spinner on a blank page.
 - **Home's order**: greeting, the one next step, what is marked for
@@ -181,19 +198,30 @@ to the bottom with a fade above it).
 The first five minutes teach the value and the three gestures by doing
 (docs/REDESIGN.md, "The first five minutes").
 
-- **Welcome** (`WelcomeView`, lazy): four pages, one line each, an
-  illustration of photo frames that animates what the line says, *Überspringen*
-  on every page, dots, swipe or *Weiter*. Its photos are eight small
-  licence-clean WebPs in `src/assets/welcome/` — never the user's, never the
-  demo library's.
+- **Welcome** (`WelcomeView`, lazy): one screen — the benefit as the
+  headline (*Finde die Fotos, die du behalten willst*), a series of three
+  where the sparkle (the app) and then the green check (you) appear, three
+  lines with a hue tile each (similar shots compared, trips sorted, only on
+  the phone) and one button. No tour: the gestures are taught on the first
+  real card. Its photos are three small licence-clean WebPs in
+  `src/assets/welcome/` — never the user's, never the demo library's.
 - **Photo access** (`PermissionView`): why, in three plain lines; both paths
   named honestly (all photos, selected photos); denied is no dead end.
 - **First scan** (`FirstScanView`, lazy): a ring, what was found so far
   counting up, how long it still takes, five rotating cards that explain the
-  features, and *Schon mal umsehen*. Later scans are the slim card on home.
-- **Reveal** (`RevealView`, lazy): what was found per category with its space
-  in home's units, and one recommended first step — the same choice as home's
-  next-step card (`src/logic/nextStep.ts`).
+  features — replaced by the first group's real photos (*Schon entdeckt*) as
+  soon as one exists — and *Schon mal umsehen*. Later scans are the slim card
+  on home. Nothing on it is invented: no group, no photos.
+- **Reveal** (`RevealView`, lazy): leads with one task, never with a storage
+  figure — the first group of near-identical photos (`firstGroup` in
+  `src/logic/nextStep.ts`), its photos side by side with the sparkle on the
+  app's pick, and *Deine erste Gruppe vergleichen*; without a group, home's
+  next step. Then what was found per category with its space in home's units.
+- **The first task** (`GroupView` opened from the reveal, then
+  `components/FirstTaskSheet`): after the first group, once, a sheet says
+  what happened — the photo that stays with its check, the others moving into
+  the *Zum Löschen vorgemerkt* tray, *nothing deleted* in its title — and
+  offers one next step and *Rückgängig*. Every later group is a toast.
 - **Guided review** (`ReviewGuide.tsx`): the hand shows one gesture per card
   until the user has done it (right, left, up — by swipe, button or key),
   each decision named in a word with its haptic; then the buttons and undo,

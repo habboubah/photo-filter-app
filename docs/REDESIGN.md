@@ -1,3 +1,54 @@
+# Redesign — the first task, a private library (18 November 2026, evening)
+
+Ahmad's brief (Android first): Bildklar should feel like a beautiful private
+photo library, not a utility that pressures people to delete. The test: within
+five minutes a first-time user understands what Bildklar offers, completes
+**one useful task**, and knows exactly whether anything was deleted. The
+research is its own file, `docs/ux-research.md` (six apps, one interaction
+each, with sources; the three ideas adopted: A compare the first group, B a
+month as a resumable bite, C the pile as a review tray). Builds on the two
+redesigns of the same day below; no detection logic, native code, privacy
+guarantee or delete path changed.
+
+## What changed
+
+| Area | Before | Now | Where |
+|---|---|---|---|
+| Welcome | Four pages | **One screen**: *Finde die Fotos, die du behalten willst*, a series with the sparkle and the check, three lines, one button; the five photos no longer shown removed | `WelcomeView.tsx`, `src/assets/welcome/` |
+| First scan | Counts and rotating feature cards | The first group's **real photos** replace the cards as soon as a group exists (*Schon entdeckt*) | `FirstScanView.tsx` |
+| Reveal | Led with *357 MB Platz, der frei werden kann* | Leads with **the first group** (newest of two to six) and *Deine erste Gruppe vergleichen*; no group → home's next step; no total figure | `RevealView.tsx`, `nextStep.ts` `firstGroup` (+ tests) |
+| First task | — | The group screen, then once a sheet: **Erledigt – nichts gelöscht**, what stays, what moved into the tray, one next step, undo | `FirstTaskSheet.tsx`, `App.tsx` |
+| Comparing | One large photo + a strip, flip to compare | **Nebeneinander**: two photos aligned, one tap zooms both to the same spot, a drag moves both | `src/ui/Compare.tsx`, `GroupView.tsx` |
+| Months | A list with a "done" mark | **Photo tiles** with the real share gone through; a month left part-way resumes after its last decided photo; home's next step shows the month's bar | `MonthsView.tsx` (`MonthTile`), `months.ts` `monthRest` / `monthShare` (+ tests), `AppState.monthAt` |
+| Leaving a review early | Marks were silently dropped | What was marked is **put aside** (toast with undo) — it said *Löschen vormerken* | `App.tsx` `closeReview` |
+| The bin | Its dock was the red *12 Fotos löschen* | A **review tray**: the dock says *Auswahl prüfen* and opens the delete sheet, whose button is the only red one | `BinView.tsx` |
+
+## Decided, and why
+
+- **"Set aside" stays *Zum Löschen vormerken* / *Marked for deletion*.** The
+  brief says *Set aside*; the app renamed this the day before after long
+  wording work, and every screen, tip, store text and the App Review
+  recording use it. The meaning the brief asks for — not deleted, can come
+  back — is said on every screen that marks.
+- **Leaving early puts marks aside instead of asking.** A question on ✕
+  would add a step to every exit; putting aside is safe (nothing is
+  deleted) and undoable, and it is what the button said.
+- **The month's place is a time, not an index**: photos deleted or added in
+  the month since do not shift where it resumes.
+- **The first find shows no button**: a group can still grow while the scan
+  runs; it is opened from the reveal, once the photos are analysed.
+- **The total figure left the reveal**, not home: home is the overview and
+  keeps its storage card further down.
+
+## Open
+
+- Nothing was run on a phone or an emulator (no Android SDK in the cloud
+  workspace): see `docs/TODO.md` 0a4.
+- The store set and the preview video show the four-page welcome and the old
+  reveal until they are made again on the Mac.
+
+---
+
 # Redesign — the first five minutes, calm and clear (18 November 2026, afternoon)
 
 Ahmad's brief: Bildklar should feel like a calm, premium photo app, not a

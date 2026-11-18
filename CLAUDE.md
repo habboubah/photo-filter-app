@@ -18,6 +18,7 @@ the root; every other document lives in `docs/` (only `README.md` stays here):
 | `docs/PLAN.md` | The concept: architecture, data model, platform mapping, design, the decisions and why |
 | `docs/DEVELOPMENT.md` | The project layout, the single checks, the native tests, the demo library, the test library, the city table, icons |
 | `docs/DESIGN.md` | The design system: tone, tokens, type, spacing, motion, component states, the first run |
+| `docs/ux-research.md` | Six comparable apps, one interaction each with sources, and the three ideas adopted |
 | `docs/features.md` | Every feature, as the user sees it |
 | `docs/TODO.md` | What only Ahmad can do: devices, Xcode, the stores, photos |
 | `docs/APP_STORE_RELEASE.md`, `docs/ANDROID_RELEASE.md` | The store releases step by step |
@@ -100,7 +101,9 @@ scenes follow the switch (docs/PLAN.md, *Pricing*).
   scan's screen (`FirstScanView`) and its reveal (`RevealView`) are root-level
   steps in `App.tsx` (`root`), shown once; the guided review (`ReviewGuide`),
   the safety moments (`SafetyNets`) and the tips are one-time too. What was
-  seen is `store.seen` (`src/logic/firstRun.ts`, `bildklar-seen`). **A tip is
+  seen is `store.seen` (`src/logic/firstRun.ts`, `bildklar-seen`). The first
+  useful task is comparing one group (`firstGroup` in `src/logic/nextStep.ts`):
+  the reveal opens it, `FirstTaskSheet` says once what happened. **A tip is
   an entry in `src/tips.ts` and a `data-tip="<id>"` on its control** — one
   host (`ui/Tip.tsx`), one at a time; no screen builds its own hint. Home's
   next step and the reveal's recommendation are one choice
@@ -152,8 +155,10 @@ scenes follow the switch (docs/PLAN.md, *Pricing*).
   finder (`lib` is the library without the bin; `all` has it) and wait in
   `AppState.bin`. Only the bin's screen (and a review started from it) calls
   `deletePhotos` → the system's dialog, after a sheet that shows exactly what
-  goes and its size (BinView). A new place that deletes goes through `toBin`
-  too. Marking for deletion is never styled as deleting: no red, no trash icon
+  goes and its size (BinView: its dock only *reviews* the selection, the
+  sheet's button deletes). A review closed early puts what was marked by then
+  into the bin too (`closeReview`). A new place that deletes goes through
+  `toBin` too. Marking for deletion is never styled as deleting: no red, no trash icon
   (`Archive` and teal or quiet glass); red (`neg`, `destructive`) is only
   for what really deletes. (Exception: the originals after a smaller copy or a Live Photo
   made a still — the copy is already saved.)
