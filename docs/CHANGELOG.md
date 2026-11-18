@@ -13,8 +13,8 @@ only how the app is now. (Started 18 November 2026; older history is in git.)
 - **Behalten on the lists**: *Unwichtige Fotos*, *Bildschirmfotos* and
   *Missglückt* offer *Behalten* under *Zum Löschen vormerken* for the picked
   photos — kept, off the list, never suggested again (undo in the toast).
-- **The group card's buttons** sit side by side under the date as two tinted
-  pills: *Alle behalten* green, *Ohne Stern vormerken* red (Ahmad's choice).
+- **The group card's buttons** sit side by side under the date, words only
+  (no background): *Alle behalten* green, *Ohne Stern vormerken* red (Ahmad's choice).
 
 ## 18 November 2026, late night — never wider than a phone
 

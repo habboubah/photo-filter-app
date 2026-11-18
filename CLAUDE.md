@@ -182,7 +182,7 @@ scenes follow the switch (docs/PLAN.md, *Pricing*).
   (`Archive` and teal or quiet glass); red (`neg`, `destructive`) is only
   for what really deletes. (Exception: the originals after a smaller copy or a Live Photo
   made a still — the copy is already saved — and, by Ahmad's choice, the group
-  card's *Ohne Stern vormerken*, a red-tinted pill beside the green *Alle behalten*.)
+  card's *Ohne Stern vormerken*, red words beside the green *Alle behalten*.)
 - A new asset (a plain photo made from a Live Photo, a smaller copy of a video
   or of a photo) needs the user's tap and a confirmation in the app; the original stays and
   goes only through the system's delete dialog afterwards. The copy keeps the
