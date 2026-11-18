@@ -1,11 +1,12 @@
 {
   "locale": "de",
   "dir": "ltr",
+  "ribbon": "Gratis · Werbefrei",
   "appName": "Bildklar KI: Foto Reiniger",
   "slides": {
     "home": {
-      "headline": "Fotos aufräumen mit KI",
-      "subline": "Doppeltes, Missglücktes und Ähnliches finden – auf deinem Gerät",
+      "headline": "Bildklar",
+      "subline": "Mehr Platz, weniger Fotochaos",
       "points": [
         "Duplikate & Missglückte",
         "KI sortiert deine Fotos",

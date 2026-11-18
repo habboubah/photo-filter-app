@@ -17,12 +17,12 @@
   "//callouts": "Each lifts one piece of the slide's own capture: { mark, scale, tilt, shift, anchor, pad, radius }. mark: a name from <capture>.marks.json (named in scripts/lib/shots.mjs, written by `npm run screenshots`), so the piece is found in every language and follows the app when a screen changes. scale: how much bigger than in the phone (1.1–1.5). tilt: degrees. shift: [x, y] in screen widths. anchor: the edge that stays put while it grows (center, top, bottom, start, end, top-start …). pad: grow the piece on every side, in capture widths (for a piece that has no card of its own). radius: its corner, in capture widths, when the mark's own is not wanted. A fixed \"crop\": [x, y, w, h] (fractions of the capture) works too, but is the same spot in every language.",
   "slides": [
     {
-      "//": "The opening slide says what the app is: home (the clean-up card, the tiles, the trips) in front, a trip behind it. No call-out: two phones are enough.",
+      "//": "The opening slide says what the app is, like the feature graphic: the mint of the icon, the icon itself above the name, the promise (subline) and the features (points); home in front, a trip behind it. On Google Play it carries the red ribbon (Free · No Ads). No call-out: two phones are enough.",
       "id": "home",
       "raw": "02-home.png",
       "layout": "top",
       "device": "iphone",
-      "background": "teal",
+      "background": "mint",
       "phone": {
         "width": 34,
         "nudge": [
@@ -39,7 +39,9 @@
           0.005
         ],
         "tilt": -5
-      }
+      },
+      "icon": "assets/icon-master.png",
+      "subline": true
     },
     {
       "//": "The first two trip cards lifted out: the place names are the promise.",
@@ -300,8 +302,9 @@
         "review",
         "blurry"
       ],
-      "ribbon": false,
-      "rawDir": "screenshots/{locale}-android"
+      "ribbon": "first",
+      "rawDir": "screenshots/{locale}-android",
+      "//ribbon": "The red corner ribbon on the first slide (copy files' \"ribbon\": Free · No Ads). True while Bildklar is free with no ads (UNLOCK_ON_SALE = false in src/logic/allowance.ts): take it off (false) the day the unlock goes on sale. Play only asks to avoid \"Free\" (reference/store-specs.md); the App Store rejects it, so iphone stays false."
     }
   ],
   "//featureGraphic": "Google Play feature graphic, exactly 1024x500 JPEG. No phone: Google's 'highly recommended' guidelines say to avoid device imagery here (support.google.com/googleplay/android-developer/answer/9866151). art: a picture from the repo drawn on the end side instead — the broom icon, on the mint background that is its own flat colour, so it has no visible edge. Its copy is the featureGraphic block of every copy file (headline = the name, subline = the promise, points). Without art it falls back to a phone of `slide`'s screen (rawDir, device, phone: width in percent of the height, tilt, nudge). stickers: x in widths, y in heights, size in heights.",

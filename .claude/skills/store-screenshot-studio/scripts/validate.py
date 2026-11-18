@@ -27,8 +27,9 @@ PLAY_MAX_BYTES = 8 * 1024 * 1024
 BANNED = ["download now", "download today", "best app", "#1", "number one",
           "must have", "must-have", "amazing", "revolutionary", "click here"]
 MAX_HEADLINE_WORDS = 5
-# The ribbon's band shows about a dozen letters; a point is one pill on one line.
-MAX_RIBBON_CHARS = 12
+# The ribbon's band shows about a dozen letters, its long form (two words,
+# "Free · No Ads") about twenty; a point is one pill on one line.
+MAX_RIBBON_CHARS = 20
 MAX_POINT_CHARS = 28
 MAX_POINTS = 5
 # Composition (reference/composition.md).

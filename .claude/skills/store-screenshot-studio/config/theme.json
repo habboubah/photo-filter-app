@@ -23,7 +23,9 @@
       "shade": "#1F5C45",
       "chip": "#FFFFFF",
       "chipInk": "#1D2427",
-      "tick": "#1C6B65"
+      "tick": "#1C6B65",
+      "ribbon": "#C8102E",
+      "ribbonInk": "#FFFFFF"
     },
     "teal": {
       "fill": "#1C6B65",

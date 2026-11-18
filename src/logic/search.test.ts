@@ -50,9 +50,10 @@ describe('search by words', () => {
     const words = list.map(e => file.concepts[e.concept].en[0]);
     expect(list.length).toBeGreaterThan(0);
     expect(list.length).toBeLessThanOrEqual(EXAMPLE_COUNT);
-    // The demo has a child, a birthday and snow; no cat, no baby in a bath. The family words come first.
+    // The demo has a child, a birthday and snow; no cat, no baby in a bath. The family words come first
+    // (since 19 Nov 2026 no demo photo reads as a baby: the sandbox shot became pancakes).
     expect(words).toEqual(expect.arrayContaining(['birthday', 'snow']));
-    expect(words[0]).toBe('baby');
+    expect(words[0]).toBe('child');
     expect(words).not.toContain('cat');
     expect(words).not.toContain('bath');
     expect(new Set(list.map(e => e.cover)).size).toBe(list.length);

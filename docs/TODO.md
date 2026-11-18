@@ -210,7 +210,9 @@ photos, Live Photos — and deleting has no limit.
       line in `android/app/src/main/AndroidManifest.xml` (without the
       permission no purchase can work on Android), `UNLOCK_ON_SALE = true`, the store
       texts with the purchase (`store/listing.md`, git history before
-      17 Nov 2026), the album slide in the store screenshots, the album scene
+      17 Nov 2026), the album slide in the store screenshots, the red
+      *Gratis · Werbefrei* ribbon off the first Play screenshot (`"ribbon": false`
+      for `play-phone` in the store-screenshot skill's config), the album scene
       in the App Review recording, the in-app purchase submitted **with** that
       version, Play's content rating answered again. Users from the free
       phase keep deleting without a limit and keep the extras; nobody loses
