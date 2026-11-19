@@ -106,7 +106,7 @@ https://appstoreconnect.apple.com → **Apps** → **+** → **New App** [Neue A
 | Field | Value |
 |---|---|
 | Platforms | ✅ iOS |
-| Name | `Bildklar KI: Foto Reiniger` (the English name: `store/listing.md`). Taken? See Troubleshooting. |
+| Name | `Bildklar KI: Fotos aufräumen` (the English name: `store/listing.md`). Taken? See Troubleshooting. |
 | Primary language | German [Deutsch] |
 | Bundle ID | `com.habboubah.bildklar` (pick it from the menu; missing → see below) |
 | SKU | `bildklar-001` |
@@ -161,13 +161,13 @@ cp -R ../photo-filter-app/store/privacy/. bildklar/
 Add this line to `index.html`, under the Pizza Driver Log entry:
 
 ```html
-  <li><a href="bildklar/">Bildklar KI: Foto Reiniger</a></li>
+  <li><a href="bildklar/">Bildklar KI: Fotos aufräumen</a></li>
 ```
 
 and this to `README.md`:
 
 ```markdown
-- Bildklar KI: Foto Reiniger / Bildklar AI: Photo Cleaner (code name bildklar)
+- Bildklar KI: Fotos aufräumen / Bildklar AI: Photo Cleaner (code name bildklar)
   - English: https://habboubah.github.io/privacy-policy/bildklar/
   - Deutsch: https://habboubah.github.io/privacy-policy/bildklar/de/
 ```

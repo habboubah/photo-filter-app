@@ -47,6 +47,12 @@ every changed screen in the demo. Not run on a phone — please:
 - [ ] **Read the Arabic store texts** in `store/listing.md` (2.1, 2.2, 2.3,
       3.1, 3.2) and `release-notes/2.0.16/ar.txt`, then add Arabic in both
       consoles if you want the Arabic listing.
+- [ ] **The new German store name** *Bildklar KI: Fotos aufräumen* (was
+      *Foto Reiniger*, 19 Nov 2026): change it in App Store Connect (App
+      Information › Name, German) and the Play Console (Main store listing,
+      de-DE), with the new German keywords (`store/listing.md` 2.1), and
+      republish the German privacy page (`store/privacy/de/index.html`, its
+      title and footer carry the name).
 - [ ] **The privacy-first store texts** (18 Nov 2026, late evening,
       `store/listing.md`): new App Store subtitle *Doppelte Fotos – 100%
       offline* (was *Doppelte Fotos & Reisealben*), keywords, promotional
@@ -235,7 +241,7 @@ try (`npm run android:debug`):
 ## 1. Before anything else
 
 - [ ] **Reserve the name.** The app is now **Bildklar** (store name *Bildklar KI:
-      Foto Reiniger* / *Bildklar AI: Photo Cleaner*, bundle id
+      Fotos aufräumen* / *Bildklar AI: Photo Cleaner*, bundle id
       `com.habboubah.bildklar`, purchase `com.habboubah.bildklar.unlock`).
       Register the new bundle id under Certificates, Identifiers & Profiles,
       then App Store Connect → Apps → + → New App with that name, and *Create

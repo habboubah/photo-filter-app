@@ -1135,7 +1135,7 @@ final class SceneRunner {
         /// The app's name in the list, and the buttons in its row (same height on screen).
         func row() -> (title: XCUIElement, update: XCUIElement?, open: XCUIElement?)? {
             // TestFlight lists the App Store name, which starts with the icon's
-            // ("Bildklar KI: Foto Reiniger", "Bildklar AI: Photo Cleaner").
+            // ("Bildklar KI: Fotos aufräumen", "Bildklar AI: Photo Cleaner").
             let titles = testFlight.staticTexts.matching(NSCompoundPredicate(orPredicateWithSubpredicates:
                 names.map { NSPredicate(format: "label BEGINSWITH %@", $0) })).allElementsBoundByIndex
                 .filter { $0.exists && !$0.frame.isEmpty }

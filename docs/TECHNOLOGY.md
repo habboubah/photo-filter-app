@@ -7,7 +7,7 @@ and decisions), `docs/AI.md` (the model, thresholds and measurements) and
 
 ## The app in one paragraph
 
-Bildklar (*Bildklar KI: Foto Reiniger* / *Bildklar AI: Photo Cleaner*) is a
+Bildklar (*Bildklar KI: Fotos aufräumen* / *Bildklar AI: Photo Cleaner*) is a
 photo organizer for parents on iPhone and Android. It scans the photo library
 **on the phone**, turns trips into albums (iPhone) or folders (Android), finds
 duplicates, near-identical shots, blurry, too dark or too bright photos, large

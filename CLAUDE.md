@@ -27,7 +27,7 @@ the root; every other document lives in `docs/` (only `README.md` stays here):
 | `store/listing.md` | Every store listing text, App Store and Google Play, in one file |
 
 ## What this app is
-**Bildklar** (*Bildklar KI: Foto Reiniger* / *Bildklar AI: Photo Cleaner*; code
+**Bildklar** (*Bildklar KI: Fotos aufräumen* / *Bildklar AI: Photo Cleaner*; code
 name **bildklar**, bundle id `com.habboubah.bildklar`): a photo organizer for
 parents on iPhone and Android. It scans the photo library on the device, turns
 trips into albums (iPhone) or folders (Android), finds near-identical and

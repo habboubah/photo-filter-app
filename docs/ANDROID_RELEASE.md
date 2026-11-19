@@ -51,7 +51,7 @@ release asks. Delete that line to be asked again.
 1. The Google Play developer account that ships Fahrtwerk and Spartopf. (A
    personal account created after November 2023 must run a **closed test with
    12 testers for 14 days** before a new app may go to production.)
-2. *Create app*: name *Bildklar KI: Foto Reiniger*, default language German, App,
+2. *Create app*: name *Bildklar KI: Fotos aufräumen*, default language German, App,
    Free (free to download — the unlock is an in-app product). The package name
    `com.habboubah.bildklar` is fixed by the first upload.
 3. Fill in *Store listing*, *Data safety* and *App content* from

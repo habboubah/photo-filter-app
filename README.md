@@ -2,7 +2,7 @@
 
 A photo organizer for parents, for iPhone and Android: trips become albums,
 near-identical and blurry photos get cleaned up — all on the device.
-German *Bildklar KI: Foto Reiniger*, English *Bildklar AI: Photo Cleaner*; code
+German *Bildklar KI: Fotos aufräumen*, English *Bildklar AI: Photo Cleaner*; code
 name bildklar. Bundle id `com.habboubah.bildklar`.
 
 ## Setup
