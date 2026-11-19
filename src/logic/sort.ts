@@ -20,6 +20,7 @@ export const SORT_DEFAULT = {
   category: 'newest',
   album: 'newest',
   apps: 'newest',
+  month: 'oldest',
 } as const satisfies Record<string, SortKey>;
 export type SortScreen = keyof typeof SORT_DEFAULT;
 

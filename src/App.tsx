@@ -21,13 +21,13 @@ import {
 } from './logic/review';
 import { aiProgress, categories, findSensitive, findUtility, type MemoryLabel } from './logic/ai';
 import { findScreenshots, isOldShot, oldShots } from './logic/screenshots';
-import { duration, findLarge, findLive } from './logic/large';
+import { COMPRESS_MIN, duration, findLarge, findLive } from './logic/large';
 import { buildMonths, monthRest, monthShare, onThisDay, progress } from './logic/months';
 import { findExposure } from './logic/exposure';
 import { sortFor, type SortScreen } from './logic/sort';
 import { likeProtected, protectedIds } from './logic/protect';
-import { findCompressible } from './logic/compress';
-import { APPS_TILE_MIN, groupBySource, reviewSource } from './logic/sources';
+import { findCompressible, videoSaving } from './logic/compress';
+import { APPS_TILE_MIN, groupBySource, reviewSource, sourceName, type Source } from './logic/sources';
 import { cleanParts } from './logic/smartClean';
 import { type Verdict, groupVerdict } from './logic/confidence';
 import { adjustItems, strictUtility } from './logic/ledger';
@@ -97,7 +97,6 @@ const TipHost = lazy(() => withFirstRun(import('./ui/Tip')).then(m => ({ default
 const WelcomeView = lazy(() => withFirstRun(import('./components/WelcomeView')).then(m => ({ default: m.WelcomeView })));
 const FirstScanView = lazy(() => withFirstRun(import('./components/FirstScanView')).then(m => ({ default: m.FirstScanView })));
 // The one sheet that asks before a real delete (the bin has it built in; here it follows a smaller copy).
-const DeleteSheet = lazy(() => import('./components/DeleteSheet').then(m => ({ default: m.DeleteSheet })));
 const HowView = lazy(() => withFirstRun(import('./components/HowView')).then(m => ({ default: m.HowView })));
 const RevealView = lazy(() => withFirstRun(import('./components/RevealView')).then(m => ({ default: m.RevealView })));
 const FirstTaskSheet = lazy(() => withFirstRun(import('./components/FirstTaskSheet')).then(m => ({ default: m.FirstTaskSheet })));
@@ -195,6 +194,8 @@ export default function App() {
   const large = useMemo(() => findLarge(lib.photos), [lib]);
   const live = useMemo(() => findLive(lib.photos), [lib]);
   const compressible = useMemo(() => findCompressible(lib.photos, kept), [lib, kept]);
+  // Videos verkleinern: the videos big enough to be worth a smaller copy, the largest first.
+  const compressibleVideos = useMemo(() => lib.photos.filter(p => p.video && p.bytes >= COMPRESS_MIN && !kept.has(p.id)).sort((a, b) => b.bytes - a.bytes), [lib, kept]);
   // "Chats & soziale Medien" (src/logic/sources.ts): Android by folder, the iPhone by the apps' own albums.
   const sources = useMemo(() => groupBySource(lib.photos, isAndroid() ? undefined : store.appAlbums), [lib, store.appAlbums]);
   const sourcesBytes = useMemo(() => sources.reduce((s, g) => s + g.bytes, 0), [sources]);
@@ -243,10 +244,15 @@ export default function App() {
   const [showQuickClean, setShowQuickClean] = useState(false);
   const [showMonths, setShowMonths] = useState(false);
   const [monthsShown, setMonthsShown] = useState(24);
+  // Monat für Monat › one month: its photos to pick from.
+  const [monthOpen, setMonthOpen] = useState<string | null>(null);
   const [showLarge, setShowLarge] = useState(false);
   const [showLive, setShowLive] = useState(false);
   const [showCompress, setShowCompress] = useState(false);
+  const [showCompressVideos, setShowCompressVideos] = useState(false);
   const [showApps, setShowApps] = useState(false);
+  // Chats & soziale Medien › one app: its photos to pick from.
+  const [appSource, setAppSource] = useState<Source | null>(null);
   const [showUtility, setShowUtility] = useState(false);
   const [category, setCategory] = useState<MemoryLabel | null>(null);
   // Ordnen › Alben: the album (Android: folder) open, by its id.
@@ -326,13 +332,16 @@ export default function App() {
     ['quickClean', showQuickClean, () => setShowQuickClean(false)],
     // Fotos verkleinern opens from the large files: above them in the stack.
     ['compress', showCompress, () => setShowCompress(false)],
+    ['compressVideos', showCompressVideos, () => setShowCompressVideos(false)],
     ['large', showLarge, () => setShowLarge(false)],
     ['videos', showVideos, () => setShowVideos(false)],
     ['utility', showUtility, () => setShowUtility(false)],
     ['live', showLive, () => setShowLive(false)],
+    ['appSource', !!appSource, () => setAppSource(null)],
     ['apps', showApps, () => setShowApps(false)],
     ['album', !!albumKey, () => setAlbumKey(null)],
     ['category', !!category, () => setCategory(null)],
+    ['month', !!monthOpen, () => setMonthOpen(null)],
     ['months', showMonths, () => setShowMonths(false)],
     ['trips', showTrips, () => setShowTrips(false)],
     ['search', showSearch, () => setShowSearch(false)],
@@ -532,15 +541,22 @@ export default function App() {
 
   /* ------------------------- videos, smaller photos, Live Photos (src/useMediaTools.ts) */
 
-  const { compressing, afterCompress, setAfterCompress, photoRun, afterPhotos, setAfterPhotos, compressPhotos, compress, liveConfirm, setLiveConfirm, convertLive } = useMediaTools({
-    t, store, show, trash, onPhotosDone: () => setShowCompress(false), onLiveDone: () => setShowLive(false),
+  const { compressing, photoRun, compressPhotos, compressVideos, liveConfirm, setLiveConfirm, convertLive } = useMediaTools({
+    t, store, show, trash,
+    // The originals of the smaller copies wait in Zum Löschen vorgemerkt (the copies are saved already), with undo.
+    aside: (ids, saved) => {
+      if (!ids.length) return;
+      store.binAdd(ids);
+      show(fmt(t.compressAsideDone, { size: bytes(t, saved) }), { label: t.undo, run: () => store.binRemove(ids) });
+    },
+    onPhotosDone: () => setShowCompress(false), onVideosDone: () => setShowCompressVideos(false), onLiveDone: () => setShowLive(false),
   });
 
   /* -------------------------------------------- albums (src/useAlbums.ts) */
 
   const { albumList, setAlbumList, chips, fileAlbums, organizeAlbums, albumMembers, albumPick, setAlbumPick, fileInto } = useAlbums({
     t, store, show, recent: state.recentAlbums, byId: lib.byId,
-    want: (tab === 'organize' && !!photos) || !!albumKey || !!category,
+    want: (tab === 'organize' && !!photos) || !!albumKey || !!category || !!appSource || !!monthOpen,
   });
   const onFile = (album: string) => needUnlock(() => setReview(r => (r ? { ...r, session: fileTo(r.session, album) } : r)));
 
@@ -717,6 +733,7 @@ export default function App() {
           t={t} id={likeId} vectors={store.vectors} byId={byId}
           onBack={() => setLikeId(null)} onOpen={setLikeId}
           onReview={ids => { setLikeId(null); startReview(reviewFound(ids)); }}
+          onAside={list => toBin(list.map(p => p.id))}
         />
       );
     }
@@ -841,6 +858,7 @@ export default function App() {
           onBack={() => setTripKey(null)}
           onCreateAlbum={() => needUnlock(() => setAlbumFor(trip))}
           onReview={() => startReview(reviewTrip(trip.ids, groups, byId, kept, undefined, cos))}
+          onAside={list => toBin(list.map(p => p.id))}
           onRename={name => store.updateTrips(e => setName(e, trip.key, name))}
           onSplit={at => { store.updateTrips(e => addSplit(e, trip.key, at)); show(t.tripSplit); }}
           onMerge={other => {
@@ -870,7 +888,7 @@ export default function App() {
           t={t} groups={similarGroups} videoGroups={videoGroups} byId={byId} kept={kept} shown={similarShown}
           onMore={() => setSimilarShown(n => n + 40)}
           onBack={() => setShowSimilar(false)} onOpen={setGroupKey}
-          onKeepAll={keepGroup} onAsideOthers={(_, ids, keep) => toBin(ids, keep)}
+          onKeepAll={keepGroup} onAsideOthers={(_, ids, keep) => toBin(ids, keep)} onAsideAll={(ids, keep) => toBin(ids, keep)}
         />
       );
     }
@@ -880,7 +898,7 @@ export default function App() {
           t={t} kind="duplicate" groups={dupGroups} byId={byId} kept={kept} shown={duplicatesShown}
           onMore={() => setDuplicatesShown(n => n + 40)}
           onBack={() => setShowDuplicates(false)} onOpen={setGroupKey}
-          onKeepAll={keepGroup} onAsideOthers={(_, ids, keep) => toBin(ids, keep)}
+          onKeepAll={keepGroup} onAsideOthers={(_, ids, keep) => toBin(ids, keep)} onAsideAll={(ids, keep) => toBin(ids, keep)}
         />
       );
     }
@@ -926,20 +944,29 @@ export default function App() {
     if (showCompress) {
       return (
         <CompressView
-          t={t} photos={compressible.photos} screenshots={compressible.screenshots}
+          t={t} kind="photos" photos={compressible.photos} screenshots={compressible.screenshots}
           onBack={() => setShowCompress(false)}
           onRun={list => needUnlock(() => { void compressPhotos(list); })}
+          onAside={list => toBin(list.map(p => p.id))}
+        />
+      );
+    }
+    if (showCompressVideos) {
+      return (
+        <CompressView
+          t={t} kind="videos" photos={compressibleVideos}
+          onBack={() => setShowCompressVideos(false)}
+          onRun={list => needUnlock(() => { void compressVideos(list); })}
+          onAside={list => toBin(list.map(p => p.id))}
         />
       );
     }
     if (showLarge) {
       return (
         <LargeView
-          t={t} {...sorting('large')} photos={large} canCompress
-          smaller={compressible.photos.length + compressible.screenshots.length > 0 ? { saving: compressible.saving, onOpen: () => setShowCompress(true) } : null}
+          t={t} {...sorting('large')} photos={large}
           onBack={() => setShowLarge(false)}
           onReview={(list: Photo[]) => startReview(reviewLarge(list))}
-          onCompress={p => needUnlock(() => { void compress(p); })}
           onDelete={p => toBin([p.id])}
           onAside={list => toBin(list.map(p => p.id))}
         />
@@ -948,10 +975,9 @@ export default function App() {
     if (showVideos) {
       return (
         <LargeView
-          t={t} {...sorting('large')} photos={allVideos} videosOnly canCompress
+          t={t} {...sorting('large')} photos={allVideos} videosOnly
           onBack={() => setShowVideos(false)}
           onReview={(list: Photo[]) => startReview(reviewLarge(list))}
-          onCompress={p => needUnlock(() => { void compress(p); })}
           onDelete={p => toBin([p.id])}
           onAside={list => toBin(list.map(p => p.id))}
         />
@@ -967,17 +993,30 @@ export default function App() {
         />
       );
     }
+    if (appSource) {
+      // One app's photos: picked from like every other grid (AlbumView), *Durchgehen* for the review.
+      return (
+        <AlbumView
+          t={t} {...sorting('apps')} title={sourceName(appSource, { download: t.sourceDownload, other: t.sourceOther })}
+          intro={t.appsSourceIntro} photos={sources.find(g => g.source === appSource)?.photos ?? []} loading={false}
+          onBack={() => setAppSource(null)}
+          onReview={list => startReview(reviewSource(list, kept))}
+          onAside={list => toBin(list.map(p => p.id))}
+          onAlbum={l => needUnlock(() => setAlbumPick({ ids: l.map(p => p.id) }))}
+        />
+      );
+    }
     if (showApps) {
       return (
         <AppsView
           t={t} groups={sources} {...sorting('apps')}
           onBack={() => setShowApps(false)}
-          onReview={list => startReview(reviewSource(list, kept))}
+          onOpen={setAppSource}
         />
       );
     }
     if (showLive) {
-      return <LiveView t={t} {...sorting('live')} photos={live} onBack={() => setShowLive(false)} onConvert={list => needUnlock(() => setLiveConfirm(list))} />;
+      return <LiveView t={t} {...sorting('live')} photos={live} onBack={() => setShowLive(false)} onConvert={list => needUnlock(() => setLiveConfirm(list))} onAside={list => toBin(list.map(p => p.id))} />;
     }
     if (albumKey) {
       const a = albumList?.find(x => x.id === albumKey);
@@ -989,6 +1028,7 @@ export default function App() {
           onBack={() => setAlbumKey(null)}
           onReview={l => startReview(reviewTrip(l.map(p => p.id), groups, byId, kept, undefined, cos))}
           onAside={l => toBin(l.map(p => p.id))}
+          onAlbum={l => needUnlock(() => setAlbumPick({ ids: l.map(p => p.id) }))}
         />
       );
     }
@@ -1001,12 +1041,27 @@ export default function App() {
         />
       );
     }
+    if (monthOpen) {
+      // One month's photos, picked from like every other grid; *Durchgehen* is the month's review (it goes on where it was left).
+      const m = months.find(x => x.key === monthOpen);
+      const list = (m?.ids ?? []).flatMap(id => lib.byId.get(id) ?? []);
+      return (
+        <AlbumView
+          t={t} {...sorting('month')} intro={t.monthIntro} photos={list} loading={false}
+          title={m ? new Date(m.year, m.month, 1).toLocaleDateString(t.locale, { month: 'long', year: 'numeric' }) : ''}
+          onBack={() => setMonthOpen(null)}
+          onReview={() => openMonth(monthOpen)}
+          onAside={l => toBin(l.map(p => p.id))}
+          onAlbum={l => needUnlock(() => setAlbumPick({ ids: l.map(p => p.id) }))}
+        />
+      );
+    }
     if (showMonths) {
       return (
         <MonthsView
           t={t} months={months} done={doneMonths} at={state.monthAt} byId={byId} shown={monthsShown}
           onMore={() => setMonthsShown(n => n + 24)}
-          onBack={() => setShowMonths(false)} onOpen={openMonth}
+          onBack={() => setShowMonths(false)} onOpen={setMonthOpen}
         />
       );
     }
@@ -1016,6 +1071,7 @@ export default function App() {
           t={t} lang={language} vectors={store.vectors} byId={byId} aiSeen={aiSeen}
           onBack={() => setShowSearch(false)} onOpen={setLikeId}
           onReview={ids => startReview(reviewFound(ids))}
+          onAside={list => toBin(list.map(p => p.id))}
         />
       );
     }
@@ -1088,6 +1144,7 @@ export default function App() {
           onThisDay={{ photos: today.ids.length, years: today.years, cover: today.ids[0] }}
           categories={cats.slice(0, 8).map(c => ({ label: c.label, count: c.photos.length, cover: c.photos[0].id }))}
           onSettings={() => setShowSettings(true)}
+          scan={store.scan} onRescan={() => void store.rescanAll()}
           onSearch={() => setShowSearch(true)}
           onOnThisDay={() => startReview(reviewTrip(today.ids, groups, byId, kept, undefined, cos))}
           onTrips={() => setShowTrips(true)}
@@ -1106,6 +1163,9 @@ export default function App() {
         liveCount={isAndroid() ? 0 : live.length} liveCover={live[0]?.id}
         apps={sourcesBytes >= APPS_TILE_MIN ? { bytes: sourcesBytes, cover: sources[0]?.photos[0]?.id } : null}
         onApps={() => setShowApps(true)}
+        smallerPhotos={compressible.photos.length + compressible.screenshots.length > 0 ? { saving: compressible.saving, cover: compressible.photos[0]?.id ?? compressible.screenshots[0]?.id } : null}
+        smallerVideos={compressibleVideos.length ? { saving: compressibleVideos.reduce((n, p) => n + videoSaving(p), 0), cover: compressibleVideos[0].id } : null}
+        onSmallerPhotos={() => setShowCompress(true)} onSmallerVideos={() => setShowCompressVideos(true)}
         storage={store.storage} freedBytes={state.freed.bytes}
         months={{ done: months.filter(m => doneMonths.has(m.key)).length, total: months.length, pct }}
         later={{ count: laterPile.length, cover: laterPile[0] }}
@@ -1229,30 +1289,6 @@ export default function App() {
         onCancel={() => setLiveConfirm(null)}
       />
 
-      {/* After a smaller copy was saved: may the original go? The sheet shows it, its size and where it lands. */}
-      {afterCompress && (
-        <Suspense fallback={null}>
-          <DeleteSheet
-            t={t} photos={[all.byId.get(afterCompress.id)].filter((p): p is Photo => !!p)}
-            title={t.compressDeleteTitle} lead={fmt(t.compressDeleteBody, { before: bytes(t, afterCompress.before), after: bytes(t, afterCompress.after) })}
-            confirmLabel={t.deleteVideo} cancelLabel={t.compressKeep}
-            onConfirm={() => { const a = afterCompress; setAfterCompress(null); void trash([a.id]); }}
-            onCancel={() => { setAfterCompress(null); show(t.compressKept); }}
-          />
-        </Suspense>
-      )}
-      {afterPhotos && (
-        <Suspense fallback={null}>
-          <DeleteSheet
-            t={t} photos={afterPhotos.from.map(id => all.byId.get(id)).filter((p): p is Photo => !!p)}
-            title={fmt(t.compressPhotosDone, { size: bytes(t, afterPhotos.saved) })} lead={fmt(t.compressPhotosDoneBody, { photos: plural(t, 'photos', afterPhotos.from.length) })}
-            confirmLabel={t.deleteOriginals} cancelLabel={t.keepBoth}
-            onConfirm={() => { const a = afterPhotos; setAfterPhotos(null); void trash(a.from); }}
-            onCancel={() => { setAfterPhotos(null); show(t.compressPhotosKept); }}
-          />
-        </Suspense>
-      )}
-
       <Sheet open={!!photoRun} title={t.compressingPhotos} closeLabel={t.close} onClose={() => {}}>
         <div className="space-y-3 pb-2">
           <p className="text-label text-fg-mute num">{photoRun ? fmt(t.compressingPhotosBody, { done: Math.round(photoRun.progress * photoRun.total), total: photoRun.total }) : ''}</p>
@@ -1262,7 +1298,7 @@ export default function App() {
 
       <Sheet open={!!compressing} title={t.compressing} closeLabel={t.close} onClose={() => {}}>
         <div className="space-y-3 pb-2">
-          <p className="text-label text-fg-mute">{t.compressing}</p>
+          <p className="text-label text-fg-mute num">{compressing ? fmt(t.compressingPhotosBody, { done: compressing.done + 1, total: compressing.total }) : ''}</p>
           <Progress value={compressing?.progress ?? null} label={t.compressing} />
         </div>
       </Sheet>
@@ -1270,7 +1306,7 @@ export default function App() {
       {/* The one tip that is due: loaded (with its words) only when there is one. */}
       {due && !taskDone && <Suspense fallback={null}><TipHost t={t} tip={due} onSeen={store.markSeen} /></Suspense>}
 
-      <Toast toast={toast} onDone={hide} raised={screen === 'bin' ? 'high' : ['trip', 'group', 'blurry', 'screenshots', 'utility', 'quickClean', 'large', 'live', 'compress', 'review', 'search', 'like'].includes(screen)} />
+      <Toast toast={toast} onDone={hide} raised={screen === 'bin' ? 'high' : ['trip', 'group', 'blurry', 'screenshots', 'utility', 'quickClean', 'large', 'live', 'compress', 'compressVideos', 'review', 'search', 'like'].includes(screen)} />
     </div>
     </PlayerContext.Provider>
   );

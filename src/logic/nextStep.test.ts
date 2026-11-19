@@ -42,6 +42,14 @@ describe('the categories, the one that frees the most first', () => {
     expect(ranked[2].gain).toEqual({ count: 3, bytes: 75 });
   });
 
+  it('puts the duplicates right before the near-identical photos, whatever they free', () => {
+    const s = summary({ similar: { count: 2, bytes: 7700, groups: 1 }, blurry: stat(2, 5800), duplicates: { count: 2, bytes: 223, groups: 1 } });
+    const ranked = rankCategories({
+      similar: { items: 1, covers: [] }, failed: { items: 2, covers: [] }, duplicates: { items: 1, covers: [] },
+    }, s);
+    expect(ranked.map(c => c.key)).toEqual(['duplicates', 'similar', 'failed']);
+  });
+
   it('knows no gain without a summary', () => {
     expect(gainOf(null, 'similar')).toEqual({ count: 0, bytes: 0 });
     expect(rankCategories({ similar: { items: 2, covers: [] } }, null)[0].gain.bytes).toBe(0);

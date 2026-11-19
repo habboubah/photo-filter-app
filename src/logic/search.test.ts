@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { EXAMPLE_COUNT, EXAMPLE_WORDS, FALLBACK_WORDS, TRY_WORDS, WORD_SECTIONS, conceptByWord, filterConcepts, wordSections, conceptWord, examples, likeThis, normalize, pickExamples, search, suggest, type WordFile } from './search';
+import { chosenScores, finds, EXAMPLE_COUNT, EXAMPLE_WORDS, FALLBACK_WORDS, TRY_WORDS, WORD_SECTIONS, conceptByWord, filterConcepts, wordSections, conceptWord, examples, likeThis, normalize, pickExamples, search, suggest, type WordFile } from './search';
 import { Vectors } from './vectors';
 import wordFile from '../search/words.json';
 import facts from '../native/demo/facts.json';
@@ -30,6 +30,22 @@ describe('search by words', () => {
     expect(hits.every((h, i) => i === 0 || h.z <= hits[i - 1].z)).toBe(true);
     expect(search(vectors, file, [])).toEqual([]);
     expect(search(Vectors.empty(), file, [conceptOf('receipt')])).toEqual([]);
+  });
+
+  it('offers a word only when it finds a photo, alone or with the chosen words', () => {
+    // Every word agrees with search: on its own, and added to a chosen one.
+    const receipt = conceptOf('receipt');
+    const chosen = chosenScores(vectors, file, [receipt]);
+    const withNone = file.concepts.map((_, c) => finds(vectors, file, c, null));
+    const withReceipt = file.concepts.map((_, c) => finds(vectors, file, c, chosen));
+    withNone.forEach((ok, c) => expect(ok).toBe(search(vectors, file, [c]).length > 0));
+    withReceipt.forEach((ok, c) => expect(ok).toBe(search(vectors, file, [receipt, c]).length > 0));
+    // The demo library has some words and not others.
+    expect(withNone.some(Boolean)).toBe(true);
+    expect(withNone.every(Boolean)).toBe(false);
+    expect(finds(vectors, file, receipt, null, () => false)).toBe(false);
+    expect(finds(Vectors.empty(), file, receipt, null)).toBe(false);
+    expect(chosenScores(vectors, file, [])).toBeNull();
   });
 
   it('shows the concept\'s word in the app\'s language', () => {

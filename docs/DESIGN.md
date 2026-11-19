@@ -18,13 +18,12 @@ Calm, photo-first, private, never pushy.
 - **No pressure.** No storage alarms, no red counts, no streaks, no
   leaderboards, no confetti, no "only today". Space is stated in the same
   quiet units everywhere (`bytes()`).
-- **Marking is not deleting.** *Löschen vormerken* is teal or quiet glass with
-  an archive icon. Two exceptions by Ahmad's call (18 November 2026): a group
-  card's *Ohne Stern zum Löschen vormerken* is red words with the trash icon
-  (no fill; *Alle behalten* beside it is green words with a check), and the bin's *Diese löschen* is red text — it leads to
-  the delete sheet. Red and the trash icon appear only where a tap really
-  deletes: the delete sheet's one button. The bin's dock reviews the
-  selection (*Auswahl prüfen*), it never deletes by itself.
+- **Marking is not deleting.** *Löschen vormerken* is red with the archive
+  icon — red by Ahmad's call (19 November 2026), the archive because nothing
+  is deleted: the photos wait in *Zum Löschen vorgemerkt*. The trash icon
+  appears only where a tap leads to really deleting: the bin's *Alle
+  löschen* / *Ausgewählte löschen* (they open the delete sheet) and the
+  sheet's one button.
 - Sentence case in every language. German strings are long: they wrap, a
   button is never truncated.
 
@@ -224,9 +223,17 @@ to the bottom with a fade above it).
   how far in: *Noch offen*, a thin bar with *16 % durchgesehen* and a glass
   *Weitermachen* chip, or the green *Durchgesehen*. In words as well as in
   the bar.
-- **The review tray** (`BinView`): every staged photo in view, a tap selects
-  what goes back (*Zurücklegen*); the dock's *Auswahl prüfen* opens the
-  delete sheet — the only red button. Reviewing and deleting are two steps.
+- **The review tray** (`BinView`): every staged photo in view; a tap opens
+  one, *Auswählen* picks. The dock's red *Alle löschen* / *Ausgewählte
+  löschen* open the delete sheet, whose button deletes; *Zurücklegen* puts
+  picked ones back. Reviewing and deleting are two steps. A quiet card says
+  how to get a deleted photo back (iPhone and Android in their own words).
+- **Picking from a grid** (`src/ui/pick.tsx`), the same everywhere, as in
+  Photos: a row right above the photos — the filter as a pill, the order as
+  a pill with its name, *Auswählen* — never in the bar. Not picking, a tap
+  opens the photo as a window of clear glass over the page (`glass-clear`;
+  blurred on the iPhone) that a tap beside it closes; picking, a tap picks
+  and the Dock's red *Löschen vormerken* takes them.
 - **Loading**: the shape of what comes, breathing softly (`skeleton`), never
   a spinner on a blank page.
 - **Home's order**: greeting, *Vorschläge* first (Ahmad: the space you could

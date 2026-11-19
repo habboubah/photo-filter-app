@@ -100,7 +100,7 @@
     {"pause": 1.5},
     {"tap": "Marked for deletion", "role": "button"},
     {"pause": 2},
-    {"tap": "Review selection"},
+    {"tap": "Delete all"},
     {"pause": 1.5},
     {"note": "The sheet shows exactly what goes; its red button asks iOS."},
     {"tap": ["Delete 2 photos", "Delete 2 files"]},

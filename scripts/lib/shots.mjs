@@ -422,7 +422,14 @@ export const SCREENS = [
     },
   },
   // Fotos verkleinern: the photos that qualify, the largest saving first.
-  { name: '34-compress', run: async (page, w) => { await page.click(`button:has-text("${w.t.largeTile}")`); await pause(page, 700); await page.click(`button:has-text("${w.t.compressPhotosTile}")`); await pause(page, 800); } },
+  // Aufräumen › Mehr Platz › Fotos verkleinern (on home since 19 November 2026), picking.
+  {
+    name: '34-compress', run: async (page, w) => {
+      await page.click(`main button:has-text("${w.t.compressPhotosTile}")`); await pause(page, 800);
+      await page.click(`button[aria-pressed]:has-text("${w.t.selectMode}")`); await page.click(`button:has-text("${w.t.pickAll}")`); await pause(page, 500);
+    },
+  },
+  { name: '34-compress-videos', run: async (page, w) => { await page.click(`main button:has-text("${w.t.compressVideosTile}")`); await pause(page, 800); } },
   // Aufräumen › Geschützt (the last rows of home): one album switched on (the demo's family album).
   {
     name: '33-protected', run: async (page, w) => {

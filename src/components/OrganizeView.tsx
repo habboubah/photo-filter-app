@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Check, FolderOpen, History, MapPin, Search, Settings } from 'lucide-react';
 import type { Trip } from '../types';
+import type { ScanView } from '../store';
 import type { MemoryLabel } from '../logic/ai';
 import { Strings, fmt, num, plural } from '../translations';
 import { LARGE } from '../thumbs';
@@ -8,6 +9,7 @@ import { Screen, SectionHead } from '../ui/Screen';
 import { IconButton } from '../ui/Button';
 import { tapLight } from '../ui/haptics';
 import { Thumb } from '../ui/Photo';
+import { RescanButton } from './RescanButton';
 
 interface Props {
   t: Strings;
@@ -18,6 +20,9 @@ interface Props {
   /** The on-device AI's categories (src/logic/ai.ts), the largest first. */
   categories: { label: MemoryLabel; count: number; cover: string }[];
   onSettings: () => void;
+  scan: ScanView;
+  /** *Neu durchsuchen*, as on Aufräumen (RescanButton). */
+  onRescan: () => void;
   /** Suchen (src/components/SearchView.tsx); absent until the AI has vectors to search. */
   onSearch?: () => void;
   onOnThisDay: () => void;
@@ -33,7 +38,8 @@ interface Props {
 const ALBUMS_SHOWN = 8;
 
 /**
- * The "Ordnen" tab: the photos to keep and look back on. Search first, as a
+ * The "Ordnen" tab: the photos to keep and look back on. Its bar has
+ * *Neu durchsuchen* and search, as Aufräumen's does. Search first, as a
  * field (what is on the photo — the on-device AI), then On this day as a
  * large photo, every trip as a tile, four to a row (each becomes an album or
  * folder; all of them in view at once), the albums the phone already has
@@ -57,7 +63,11 @@ export function OrganizeView(p: Props) {
       title={t.tabOrganize}
       subtitle={subtitle}
       tabbed
-      actions={<IconButton label={t.settings} icon={Settings} tone="bar" onClick={p.onSettings} />}
+      actions={<>
+        {loaded && p.photoCount! > 0 && <RescanButton t={t} scan={p.scan} onRescan={p.onRescan} />}
+        {p.onSearch && <IconButton label={t.searchOpen} icon={Search} tone="bar" onClick={p.onSearch} />}
+        <IconButton label={t.settings} icon={Settings} tone="bar" onClick={p.onSettings} />
+      </>}
     >
       {/* Search as a field, the way into the library by what is on the photos. */}
       {loaded && p.onSearch && (

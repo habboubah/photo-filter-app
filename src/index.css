@@ -159,6 +159,8 @@
   --t-glass-sheen: rgb(255 255 255 / 0.55);
   --t-glass-hi:    rgb(255 255 255 / 0.95);
   --t-glass-edge:  rgb(0 0 0 / 0.09);
+  /* The photo window (ZoomView windowed): clear glass, the page shows through (19 November 2026). */
+  --t-glass-clear: rgb(255 255 255 / 0.42);
 
   --t-scrim:    rgb(0 0 0 / 0.32);
   --t-shadow-1: rgb(0 0 0 / 0.06);
@@ -205,6 +207,8 @@
   --t-glass-sheen: rgb(255 255 255 / 0.10);
   --t-glass-hi:    rgb(255 255 255 / 0.18);
   --t-glass-edge:  rgb(255 255 255 / 0.10);
+  /* The photo window (ZoomView windowed): clear glass, the page shows through (19 November 2026). */
+  --t-glass-clear: rgb(36 36 40 / 0.5);
 
   --t-scrim:    rgb(0 0 0 / 0.6);
   --t-shadow-1: rgb(0 0 0 / 0.4);
@@ -257,6 +261,8 @@
   --t-glass-sheen: rgb(255 255 255 / 0);
   --t-glass-hi:    rgb(255 255 255 / 0);
   --t-glass-edge:  rgb(60 50 35 / 0.12);
+  /* The photo window (ZoomView windowed): clear glass, the page shows through (19 November 2026). */
+  --t-glass-clear: rgb(250 247 242 / 0.86);
 
   --t-scrim:    rgb(24 18 10 / 0.36);
   --t-shadow-1: rgb(40 30 15 / 0.06);
@@ -290,6 +296,8 @@
   --t-glass-sheen: rgb(255 255 255 / 0);
   --t-glass-hi:    rgb(255 255 255 / 0.06);
   --t-glass-edge:  rgb(255 255 255 / 0.09);
+  /* The photo window (ZoomView windowed): clear glass, the page shows through (19 November 2026). */
+  --t-glass-clear: rgb(36 34 30 / 0.88);
 
   --t-scrim:    rgb(0 0 0 / 0.6);
   --t-shadow-1: rgb(0 0 0 / 0.4);
@@ -403,6 +411,18 @@
   background-color: var(--t-glass);
   background-image: linear-gradient(to bottom, var(--t-glass-sheen), transparent 58%);
   box-shadow: inset 0 1px 0 var(--t-glass-hi), inset 0 0 0 0.5px var(--t-glass-edge), var(--shadow-e2);
+}
+/* Clear glass for the photo window over the page (ZoomView windowed): far more see-through than
+   `glass`. Only here, and only on the iPhone, a real backdrop blur — iOS 27's material, which
+   WKWebView draws well; Android's WebView never gets one (it keeps a frosted fill instead). */
+@utility glass-clear {
+  background-color: var(--t-glass-clear);
+  background-image: linear-gradient(to bottom, var(--t-glass-sheen), transparent 40%);
+  box-shadow: inset 0 1px 0 var(--t-glass-hi), inset 0 0 0 0.5px var(--t-glass-edge), var(--shadow-e2);
+}
+:root:not([data-platform="android"]) .glass-clear {
+  -webkit-backdrop-filter: blur(28px) saturate(1.7);
+  backdrop-filter: blur(28px) saturate(1.7);
 }
 /* The same material inside a card or a sheet: no shadow of its own. */
 @utility glass-flat {

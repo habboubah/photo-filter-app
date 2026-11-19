@@ -31,3 +31,26 @@ export function SelectBar({ text, all, none, onAll, onNone, labels, tip }: {
     </div>
   );
 }
+
+/**
+ * *Auswählen* / *Fertig* [Select / Done], as in Photos: off, a tap on a photo
+ * opens it; on, a tap picks it. A pill in the row above the grid (src/ui/pick.tsx),
+ * not in the bar (Ahmad, 19 November 2026).
+ */
+export function SelectToggle({ on, onChange, labels, tip }: {
+  on: boolean;
+  onChange: (on: boolean) => void;
+  labels: { select: string; done: string };
+  /** A first-run tip anchored here (`data-tip`). */
+  tip?: string;
+}) {
+  return (
+    <button
+      type="button" data-tip={tip} aria-pressed={on}
+      onClick={() => { tapLight(); onChange(!on); }}
+      className={`h-tap px-4 shrink-0 inline-flex items-center rounded-full text-label font-bold press focus-visible:ring-focus ${on ? 'bg-accent-dim text-accent' : 'bg-surface text-fg'}`}
+    >
+      {on ? labels.done : labels.select}
+    </button>
+  );
+}

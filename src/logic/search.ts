@@ -100,6 +100,45 @@ export function search(vectors: Vectors, file: WordFile, concepts: number[], all
   return hits.sort((a, b) => b.z - a.z).slice(0, SEARCH_LIMIT);
 }
 
+/* ------------------------------------------------- words that find something */
+
+/*
+ * Suchen only offers words that find a photo in this library (19 November
+ * 2026): with nothing chosen, a word on its own; with words chosen, the word
+ * together with them (search's mean logit, the same SEARCH_MIN and `allowed`).
+ * So no chip, suggestion or word in the sheet leads to an empty result.
+ */
+
+/** The chosen concepts' scores summed per slot (null with none chosen): what `finds` adds a word to. */
+export interface Chosen { sum: Float64Array; n: number }
+
+export function chosenScores(vectors: Vectors, file: WordFile, concepts: number[]): Chosen | null {
+  const queries = concepts.map(c => query(file, c)).filter((q): q is Float64Array => !!q);
+  if (!queries.length || !vectors.size) return null;
+  const sum = new Float64Array(vectors.size);
+  for (const q of queries) {
+    const sc = vectors.scores(q);
+    for (let i = 0; i < sc.length; i++) sum[i] += sc[i];
+  }
+  return { sum, n: queries.length };
+}
+
+/** Whether searching for `concept` (with the chosen ones, if any) finds at least one photo `allowed` lets through. */
+export function finds(vectors: Vectors, file: WordFile, concept: number, chosen: Chosen | null, allowed?: (id: string) => boolean): boolean {
+  const q = query(file, concept);
+  if (!q || !vectors.size) return false;
+  const sc = vectors.scores(q);
+  const n = (chosen?.n ?? 0) + 1;
+  const base = chosen?.sum;
+  const { bias } = file;
+  const ids = vectors.ids;
+  for (let i = 0; i < sc.length; i++) {
+    const z = ((base ? base[i] : 0) + sc[i]) / n + bias;
+    if (z >= SEARCH_MIN && (!allowed || allowed(ids[i]))) return true;
+  }
+  return false;
+}
+
 /* ------------------------------------------------------------ examples */
 
 /*

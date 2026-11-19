@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowDownUp } from 'lucide-react';
+import { ArrowDownUp, ChevronDown } from 'lucide-react';
 import { tapLight } from './haptics';
 
 /** A progress track; without a total it shows a soft sweep instead. */
@@ -79,7 +79,40 @@ export function Badge({ tone = 'accent', children, className = '' }: { tone?: 'a
  * opens the system's own picker (a native select lies invisibly over it), so
  * VoiceOver reads one pop-up button with the current order.
  */
-export function SortMenu<V extends string>({ label, value, options, onChange }: {
+export function SortMenu<V extends string>({ label, value, options, onChange, inline }: {
+  label: string;
+  value: V;
+  options: { value: V; label: string }[];
+  onChange: (value: V) => void;
+  /** In the row above a grid (src/ui/pick.tsx): a pill on the page with the current order written out, not a round bar button. */
+  inline?: boolean;
+}) {
+  const current = options.find(o => o.value === value)?.label ?? '';
+  return (
+    <label className={`relative h-tap shrink-0 inline-flex items-center justify-center rounded-full text-fg press focus-within:ring-focus ${
+      inline ? 'gap-1.5 ps-3 pe-4 narrow:w-tap narrow:px-0 bg-surface text-label font-bold' : 'w-tap glass'}`}>
+      <ArrowDownUp className={inline ? 'w-[17px] h-[17px]' : 'w-[20px] h-[20px]'} strokeWidth={2.1} aria-hidden="true" />
+      {/* Under 360 px the order keeps its icon only, so the row above a grid stays one line. */}
+      {inline && <span aria-hidden="true" className="narrow:hidden">{current}</span>}
+      {/* 17px: WebKit zooms the page into a focused control under 16px. */}
+      <select
+        aria-label={`${label}: ${current}`}
+        value={value}
+        onChange={e => { tapLight(); onChange(e.target.value as V); }}
+        className="absolute inset-0 w-full h-full opacity-0 appearance-none cursor-pointer text-body"
+      >
+        {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+      </select>
+    </label>
+  );
+}
+
+/**
+ * A filter in the row above a grid (src/ui/pick.tsx), as a pill like the sort:
+ * the current choice written out, the system's own menu to change it
+ * (19 November 2026; before, a Segmented switch above the row).
+ */
+export function FilterMenu<V extends string>({ label, value, options, onChange }: {
   label: string;
   value: V;
   options: { value: V; label: string }[];
@@ -87,9 +120,9 @@ export function SortMenu<V extends string>({ label, value, options, onChange }: 
 }) {
   const current = options.find(o => o.value === value)?.label ?? '';
   return (
-    <label className="relative h-tap w-tap shrink-0 inline-flex items-center justify-center rounded-full glass text-fg press focus-within:ring-focus">
-      <ArrowDownUp className="w-[20px] h-[20px]" strokeWidth={2.1} aria-hidden="true" />
-      {/* 17px: WebKit zooms the page into a focused control under 16px. */}
+    <label className="relative h-tap shrink-0 inline-flex items-center justify-center gap-1 ps-4 pe-3 rounded-full bg-surface text-fg text-label font-bold press focus-within:ring-focus">
+      <span aria-hidden="true">{current}</span>
+      <ChevronDown className="w-[17px] h-[17px]" strokeWidth={2.4} aria-hidden="true" />
       <select
         aria-label={`${label}: ${current}`}
         value={value}

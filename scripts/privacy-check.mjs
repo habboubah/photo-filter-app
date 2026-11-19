@@ -185,6 +185,7 @@ try {
     await pause(page, 400);
     await page.click(`button[aria-label^="${w.t.binTitle}"]`);
     await pause(page, 600);
+    await page.click(`button[aria-pressed]:has-text("${w.t.selectMode}")`);
     await page.click(`button[aria-label$="${w.t.notSelected}"] >> nth=0`);
     await page.click(`button:has-text("${w.t.binRestore}")`);
     await pause(page, 400);

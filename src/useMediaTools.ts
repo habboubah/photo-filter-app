@@ -11,24 +11,28 @@ import { batches, tally } from './logic/compress';
  * 18 November 2026): a video made smaller, photos made smaller in batches,
  * Live Photos turned into stills. Each makes a copy first; the original goes
  * only through the system's dialog afterwards (CLAUDE.md, Safety rules) —
- * `trash` is App.tsx's, the one way to delete.
+ * `trash` is App.tsx's, the one way to delete. The originals of smaller
+ * copies go into *Zum Löschen vorgemerkt* (`aside`, 19 November 2026; before,
+ * a sheet asked at once), and from there through the system's dialog.
  */
-export function useMediaTools({ t, store, show, trash, onPhotosDone, onLiveDone }: {
+export function useMediaTools({ t, store, show, trash, aside, onPhotosDone, onVideosDone, onLiveDone }: {
   t: Strings;
   store: ReturnType<typeof useAppStore>;
   show: (label: string) => void;
   trash: (ids: string[]) => Promise<boolean>;
-  /** Photos were made smaller: their screen can close (the question about the originals follows). */
+  /** The originals of the smaller copies into *Zum Löschen vorgemerkt*; `saved` is what the copies saved. */
+  aside: (ids: string[], saved: number) => void;
+  /** Photos were made smaller: their screen can close. */
   onPhotosDone: () => void;
+  /** Videos were made smaller: their screen can close. */
+  onVideosDone: () => void;
   /** Live Photos became stills and the originals went: their screen can close. */
   onLiveDone: () => void;
 }) {
-  // Making a video smaller: progress while it runs, then the question whether the original may go.
-  const [compressing, setCompressing] = useState<{ id: string; progress: number } | null>(null);
-  const [afterCompress, setAfterCompress] = useState<{ id: string; before: number; after: number } | null>(null);
+  // Making videos smaller, one after the other: which one, and how far it is.
+  const [compressing, setCompressing] = useState<{ id: string; progress: number; done: number; total: number } | null>(null);
   // Photos made smaller, in batches: where the run is (the progress events count within one batch).
   const [photoRun, setPhotoRun] = useState<{ total: number; progress: number } | null>(null);
-  const [afterPhotos, setAfterPhotos] = useState<{ from: string[]; saved: number } | null>(null);
   const run = useRef({ batch: 0, batches: 1, stop: false });
   useEffect(() => {
     const handle = PhotoLibrary.addListener('compressProgress', e => {
@@ -67,20 +71,27 @@ export function useMediaTools({ t, store, show, trash, onPhotosDone, onLiveDone 
     store.startScan();
     if (run.current.stop) show(fmt(t.compressPhotosStopped, { photos: plural(t, 'photos', count) }));
     onPhotosDone();
-    setAfterPhotos({ from: results.map(r => r.from), saved });
+    aside(results.map(r => r.from), saved);
   };
-  const compress = async (p: Photo) => {
-    setCompressing({ id: p.id, progress: 0 });
-    try {
-      const r = await PhotoLibrary.compressVideo({ id: p.id });
-      if (!r.created) { show(t.compressNoGain); return; }
-      store.startScan();
-      setAfterCompress({ id: p.id, before: r.before, after: r.after });
-    } catch {
-      show(t.compressFailed);
-    } finally {
-      setCompressing(null);
+  /** The picked videos made smaller one by one (each a copy next to its original); then the originals into the bin. */
+  const compressVideos = async (list: Photo[]) => {
+    const from: string[] = [];
+    let saved = 0;
+    let failed = false;
+    for (const [i, p] of list.entries()) {
+      setCompressing({ id: p.id, progress: 0, done: i, total: list.length });
+      try {
+        const r = await PhotoLibrary.compressVideo({ id: p.id });
+        if (r.created) { from.push(p.id); saved += Math.max(0, r.before - r.after); }
+      } catch {
+        failed = true;
+      }
     }
+    setCompressing(null);
+    if (!from.length) { show(failed ? t.compressFailed : t.compressNoGain); return; }
+    store.startScan();
+    onVideosDone();
+    aside(from, saved);
   };
 
   const [liveConfirm, setLiveConfirm] = useState<Photo[] | null>(null);
@@ -98,5 +109,5 @@ export function useMediaTools({ t, store, show, trash, onPhotosDone, onLiveDone 
     }
   };
 
-  return { compressing, afterCompress, setAfterCompress, photoRun, afterPhotos, setAfterPhotos, compressPhotos, compress, liveConfirm, setLiveConfirm, convertLive };
+  return { compressing, photoRun, compressPhotos, compressVideos, liveConfirm, setLiveConfirm, convertLive };
 }

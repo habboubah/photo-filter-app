@@ -131,7 +131,8 @@ then *Mehr Platz* and *Geschützt*.
   *Duplikate*, *Fast gleiche* (with the similar videos), *Missglückt*,
   *Screenshots*, *Unwichtige Fotos* (once the AI has seen photos) — with two
   of its photos, how many could go and, on the right, the space, the most
-  space first. At its foot
+  space first — but *Duplikate* always right before *Fast gleiche* (exact
+  copies are the safest to let go; since 19 November 2026). At its foot
   **Jetzt aufräumen** [Clean up now]
   (quick clean, see *Clean-up*). Categories with nothing left in one line under it:
   *Erledigt: Duplikate, Screenshots*.
@@ -139,13 +140,16 @@ then *Mehr Platz* and *Geschützt*.
   a thin bar — the photos in months gone through, as a share of all photos
   (rounded down, so 100 % only once every month is done) — and *Später
   entscheiden* with the number on the pile (see *Review*); then *Große Dateien* [Large files]
-  (*Fotos verkleinern* opens from there), on the iPhone *Live Photos*, *Chats &
-  soziale Medien* (only when such photos exist) — rows with a photo.
+  on the iPhone *Live Photos*, *Chats & soziale Medien* (only when such photos
+  exist), **Fotos verkleinern** and **Videos verkleinern** (only when there is
+  something to gain; since 19 November 2026) — rows with a photo.
 - *Geschützt* [Protected] at the end.
 
 ### Ordnen [Organise]
 - The number of trips and photos under the title; while the facts load, the
-  page's shape as soft placeholders.
+  page's shape as soft placeholders. Its bar has *Neu durchsuchen* [Scan
+  again] (asks first, spins while a scan runs) and the magnifier for
+  *Suchen*, as *Aufräumen*'s does (since 19 November 2026).
 - **Suchen** [Search] as a field at the top (*Was ist auf dem Foto? · Hund,
   Strand, Kassenzettel …*) once the AI has vectors to search; a tap opens
   *Suchen*. (Until 18 November 2026 a magnifier in the bar.)
@@ -161,14 +165,15 @@ then *Mehr Platz* and *Geschützt*.
 - **Alben** [Albums] (Android: **Ordner** [Folders], since 18 November 2026):
   the albums the phone already has, four to a row like the trips — the newest
   photo of each, its name and count under it; the last used first, then the
-  largest; *Alle zeigen (n)* past eight. A tap opens the album: its photos
-  (sortable), a tap opens one large, the circle picks (*Alle auswählen* /
-  *Alle abwählen*), *Löschen vormerken* for the picked ones, *Durchgehen* to
-  review the album. Nothing in the album itself changes there.
+  largest; *Alle zeigen (n)* past eight. A tap opens the album, a grid like
+  every other (*Everywhere › Picking from a grid*): *Löschen vormerken* for
+  the picked ones, **Zum Album hinzufügen** [Add to album] (Android: **In
+  Ordner verschieben** [Move to folder], after Android's dialog) under it,
+  *Durchgehen* to review the album. Nothing in the album itself changes there.
 - **Auf deinen Fotos** [On your photos]: the on-device AI's categories
   (landscape, food, …) as photo cards, three to a row, the name and the count
-  white on the photo's shade. A category opens like an album: a tap opens a
-  photo large, the circle picks; as with a trip, **Album erstellen · 41 Fotos**
+  white on the photo's shade. A category opens like an album (*Auswählen*
+  picks, the photo opened has no mark button here); as with a trip, **Album erstellen · 41 Fotos**
   makes an album (Android: a folder, the photos move there after Android's
   dialog) of all of it, named after the category (the name can be changed),
   and with photos picked **Zum Album hinzufügen** [Add to album] opens a sheet
@@ -234,6 +239,10 @@ then *Mehr Platz* and *Geschützt*.
   archive icon, **Ohne Stern vormerken** [Mark unstarred] — every photo without a star goes to *Zum Löschen vorgemerkt*
   (nothing is deleted yet), the starred ones are kept from now on — each with
   undo, without opening the group. A tap on the photos still opens it.
+- **Alle ohne Stern vormerken · 12 Fotos · 48 MB** [Mark all unstarred], red,
+  in the Dock (since 19 November 2026; duplicates too): *Ohne Stern
+  vormerken* for every group of the list at once — the starred photos stay,
+  with undo.
 - **The best shot**: the sharpest, well exposed one; on the iPhone also the
   best face and open eyes, on Android the best faces (the YuNet face
   detector, on the phone). A favourite always wins. **It learns**: after ten
@@ -273,19 +282,13 @@ then *Mehr Platz* and *Geschützt*.
   *Videos*, *Fotos*. Each tile shows its size (≈ where the iPhone can only
   estimate) and a video's length. Nothing is suggested for deleting;
   *Durchgehen* reviews them with every suggestion on keep.
-- **Choose several to mark** (since 18 November 2026): every tile has a
-  circle at its top corner; tap it to select the file. With any selected the
-  button reads **Löschen vormerken · 2 Dateien · 265 MB** [Mark for deletion]
-  (into *Zum Löschen vorgemerkt*, nothing is deleted) with *Auswahl aufheben*
-  under it.
-- A tap elsewhere on a tile opens the file: date, size, length, a play button
-  on a video's picture, **Video verkleinern** [Make video smaller] for videos
-  of 30 MB or more, and *Löschen vormerken*.
-- **Making a video smaller** (free for now, later the unlock): a copy at about a third of the
-  bitrate (iPhone: HEVC at most 1080p; Android: HEVC where the phone can, 2–8
-  Mbit/s) is saved next to the original with its date and place, with progress
-  while it runs. Not saved when it would not be at least 20 % smaller. Then
-  *Original löschen?* → the system's dialog, or keep both.
+- *Alle* / *Videos* / *Fotos* is a pill in the row above the grid, beside
+  the order and *Auswählen* (*Everywhere › Picking from a grid*); with files
+  picked the red **Löschen vormerken · 2 Dateien · 265 MB** [Mark for
+  deletion] puts them into *Zum Löschen vorgemerkt* (nothing is deleted).
+- A tap on a tile opens the file: date, size, length, a play button on a
+  video's picture, and *Löschen vormerken*. (Making a video smaller is home's
+  *Videos verkleinern* since 19 November 2026.)
 - **Duplicate videos**: the same length (± 0.5 s), shape and poster frame,
   listed under *Duplikate*.
 - Videos are not part of trips, near-identical groups or the blurry list.
@@ -322,45 +325,63 @@ then *Mehr Platz* and *Geschützt*.
   curated demo has pictures only, so its videos say *Dieses Video lässt sich
   hier nicht abspielen.*
 
-## Smaller photos (*Fotos verkleinern*, free for now, later the unlock)
-- A row at the top of *Große Dateien*, *Fotos verkleinern · bis zu 3,1 GB*
-  [Smaller photos · up to …], when there is something to gain (estimate: half of a camera JPEG, 70 % of a PNG).
+## Smaller photos and videos (*Fotos verkleinern*, *Videos verkleinern*, free for now, later the unlock)
+- Two rows on home's *Mehr Platz* (since 19 November 2026; before, photos
+  from the top of *Große Dateien* and a video from its sheet, one at a time):
+  *Fotos verkleinern · bis zu 3,1 GB* (estimate: half of a camera JPEG, 70 %
+  of a PNG) and *Videos verkleinern · bis zu 1,2 GB* (estimate: 60 % of each
+  video), each only when there is something to gain.
 - Which photos: JPEG or PNG, at least 1 MB, not RAW/ProRAW, not edited (re-saving
   would bake the edit in), not a Live Photo, not protected. PNG screenshots are
-  their own tab.
-- A grid, the largest saving first, all selected (a tap leaves one out; *Alle* /
-  *Keine*), then **42 Fotos verkleinern** → a progress sheet → *1,2 GB gespart —
-  Originale löschen?* [… saved — delete the originals?] → the system's dialog.
-- iPhone: re-saved as HEIC (quality 0.8) with all metadata (EXIF, GPS,
+  behind the filter pill (*Fotos* / *Screenshots*). Which videos: 30 MB or
+  more, not kept, the largest first.
+- A grid, the largest saving first, picked like every grid (*Everywhere ›
+  Picking from a grid*; *Alle auswählen* takes them all). Only while picking
+  the Dock shows **42 Fotos verkleinern · bis zu 1,2 GB** / **3 Videos
+  verkleinern · bis zu 900 MB** → a progress sheet (*2 von 3* for videos) →
+  the smaller copies are saved and **the originals go into *Zum Löschen
+  vorgemerkt*** with a toast *1,2 GB gespart – die Originale liegen in „Zum
+  Löschen vorgemerkt“* and undo; they are deleted only from there (the bin's
+  sheet, then the system's dialog). A tap outside picking opens a photo large
+  or plays a video, with *Löschen vormerken*.
+- Photos — iPhone: re-saved as HEIC (quality 0.8) with all metadata (EXIF, GPS,
   orientation, date), as a new photo with the same date, place, favourite flag,
   in the same albums. Android: HEIC through HeifWriter where the phone has an
   HEVC encoder, else JPEG at quality 82; EXIF, date taken and folder kept.
-- A copy is kept only when it is at least 30 % smaller. Works in batches of 20
+  A copy is kept only when it is at least 30 % smaller. Works in batches of 20
   and stops cleanly when the app goes to the background.
+- Videos — a copy at about a third of the bitrate (iPhone: HEVC at most 1080p;
+  Android: HEVC where the phone can, 2–8 Mbit/s) next to the original with its
+  date and place, one after the other. Not saved when it would not be at
+  least 20 % smaller.
 
 ## Live Photos (iPhone)
-- Every Live Photo, newest first, with the estimated saving (≈ 3 MB each).
-  **In Fotos umwandeln** [Make plain photos] (free for now, later the unlock) → a
+- Every Live Photo, newest first, with the estimated saving (≈ 3 MB each), a
+  grid to pick from as everywhere. Only once photos are picked does the Dock
+  show anything (since 19 November 2026; before, one button converted all):
+  the red *Löschen vormerken* and under it **In normale Fotos umwandeln · 12
+  Fotos · ≈ 36 MB** [Make plain photos] (free for now, later the unlock) → a
   confirmation → each becomes a plain photo (the picture as edited, date,
   place, favourite flag, albums) → the system's dialog moves the Live Photos to
-  Recently Deleted. Declined: both stay.
+  Recently Deleted. Declined: both stay. The (i) says what is kept, what
+  goes, and how it differs from marking for deletion.
 
 ## Screenshots
-- Every screenshot and screen recording, newest first; *Älter als 30 Tage* [Older than 30 days]
-  (the ones the clean-up card counts) or *Alle* [All]. *Durchgehen* reviews
-  them, all suggested for deleting. Favourites and kept ones are left out.
-- A tap on a screenshot opens it large (zoom in, drag). Its circle picks it;
-  with some picked the button becomes *Löschen vormerken · 3 Fotos · 4 MB*
-  [Mark for deletion] (into *Zum Löschen vorgemerkt*, nothing is deleted) and
-  *Auswahl aufheben* [Clear selection] goes under it.
+- Every screenshot and screen recording, newest first; a pill above the grid
+  filters by age: **Alle** [All] (the default), **> 1 Monat**, **> 3 Monate**,
+  **> 6 Monate** (src/logic/age.ts; home's clean-up card still counts those
+  older than 30 days). *Durchgehen* reviews them, all suggested for deleting.
+  Favourites and kept ones are left out.
+- Picking works as everywhere (*Everywhere › Picking from a grid*): the red
+  *Löschen vormerken · 3 Fotos · 4 MB*, *Behalten* under it.
 
 ## Unimportant photos (on-device AI)
 - *Unwichtige Fotos* [Unimportant photos] on home: receipts, documents,
   whiteboards and notes, photos of a screen, saved screenshots, memes, QR
   codes and accidental shots, found by the AI on the phone (SigLIP 2, docs/AI.md).
   Chips filter by kind (*Kassenzettel · 2*); *Durchgehen* reviews them, each
-  suggested for deleting with its reason (*KI: Kassenzettel*). A tap opens a
-  photo large; the circle picks it and *Löschen vormerken* marks the picked ones.
+  suggested for deleting with its reason (*KI: Kassenzettel*). Picking works
+  as everywhere (*Everywhere › Picking from a grid*).
 - What the AI looks for (33 labels, docs/AI.md): receipts, documents,
   whiteboards, photos of a screen, saved chats, memes, QR and barcodes,
   accidental shots, tickets, product photos (taken while shopping), parking
@@ -383,7 +404,11 @@ then *Mehr Platz* and *Geschützt*.
   247 concepts in German, English and Arabic (*Hund*, *Strand*, *Kassenzettel*,
   *Geburtstag*, and for parents *Baby*, *Baden*, *Schlafen*, *erste Schritte*,
   *Schnuller*, *Laternenumzug* …); tap one. Several words find photos that
-  show all of them.
+  show all of them. **Only words that find something are offered**
+  (since 19 November 2026) — in the suggestions, the words to try and the
+  sheet of all words, and with words chosen only those that still find a
+  photo together with them — so no word leads to an empty result. The
+  library is checked a few words at a time in the background.
 - *In deinen Fotos* [In your photos]: before anything is typed, up to 16
   cards (three to a row, four on a wider screen) with words your library really has (of about 60), each with its best
   photo: first up to six family words (*Baby*, *Kind*, *Familie*, *Zwillinge*,
@@ -394,14 +419,15 @@ then *Mehr Platz* and *Geschützt*.
 - **Wonach du suchen kannst** [What you can search for], first on the screen
   (above *In deinen Fotos*, since 18 November 2026) and still there while a
   search is shown (without the words already chosen; a tap adds one): a few
-  words to try, and **Alle 247 Wörter** [All words]: a sheet with every
-  word by theme (*Familie und Menschen*, *Feste*, *Baby-Momente*, *Tiere*,
+  words to try, and **Alle n Wörter** [All n words] (n: as many as find
+  something): a sheet with those words by theme (*Familie und Menschen*, *Feste*, *Baby-Momente*, *Tiere*,
   *Essen und Trinken*, *Orte und Natur*, *Dokumente und Belege* … — the
   sections of ml/words.yaml) and a field that narrows it by any form of a
   word (*Kuchen* finds *Geburtstag*). A tap searches for it.
 - Found by the on-device AI from each photo's vector, best match first (at
-  most 500); a grid, and *Durchgehen · 24 Fotos* [Go through] reviews them
-  with no suggestion.
+  most 500); a grid to pick from as everywhere — a photo opened large has
+  *Ähnliche Fotos zeigen* and *Löschen vormerken* — and *Durchgehen · 24
+  Fotos* [Go through] reviews them with no suggestion.
 - Ready once the AI has seen the photos (*42 % sind schon fertig*). An
   unknown word says so. Nothing is sent anywhere.
 
@@ -434,12 +460,14 @@ then *Mehr Platz* and *Geschützt*.
 
 ## Month by month
 - The header shows the same figure: *38 % durchgesehen · 7 von 18 Monaten*, and a ring beside the title that fills with it.
-- Every month of the library, newest first, as a **photo tile**, two to a row:
-  its cover with the month's name on it, the number of photos and the size,
-  and how far into it you are — *Noch offen* [Not started], a bar with
-  *16 % durchgesehen* and *Weitermachen* [Continue] on the cover, or
-  *Durchgesehen* [Done] with a check.
-- A tap reviews the month: extra shots, blurry photos and old screenshots are
+- Every month of the library, newest first, **one card per row** like *Chats
+  & soziale Medien* (since 19 November 2026): two rows of its photos, the
+  month's name, the number of photos and the size, and how far into it you
+  are — *Noch offen* [Not started], a bar with *16 % durchgesehen* and
+  *Weitermachen* [Continue], or *Durchgesehen* [Done] with a check.
+- A tap opens the month: **all its photos** in a grid (oldest first,
+  sortable) to pick from as everywhere — the red *Löschen vormerken*, *Zum
+  Album hinzufügen* — and **Durchgehen** for its review: extra shots, blurry photos and old screenshots are
   suggested for deleting, the rest for keeping. **Left part-way, a month
   remembers its place** (the last photo decided; src/logic/months.ts) and
   goes on there next time; the next step after the first group offers *Weiter mit Juli 2026*
@@ -470,9 +498,8 @@ then *Mehr Platz* and *Geschützt*.
 - They are part of the clean-up card (*Zu dunkel oder zu hell*), the quick
   clean, *Alle durchgehen* and the reviews of a month, a trip and *An diesem Tag*.
 - The thresholds are provisional (`src/logic/exposure.ts`).
-- A tap opens a photo large (zoom in, drag); its circle picks it,
-  and the picked ones go to *Zum Löschen vorgemerkt* with *Löschen vormerken ·
-  n Fotos · size* (*Auswahl aufheben* under it).
+- *Sicher* / *Alle* is a pill above the grid; picking works as everywhere
+  (*Everywhere › Picking from a grid*), *Behalten* under the red button.
 
 ## Clean-up
 - Home's *Jetzt aufräumen* opens **Schnell aufräumen** [Quick clean] (the
@@ -564,21 +591,26 @@ then *Mehr Platz* and *Geschützt*.
   fragt noch einmal*), then the photos stay 30 days in *Zuletzt gelöscht* /
   the Trash. *Verstanden – weiter* leads to the usual sheet with the red button.
 - Its own section on *Aufräumen* opens it — a **review tray**: the photos, the
-  last put aside first, each with its size (a video with its length). A tap
-  selects one; **Zurücklegen · 2 Fotos** [Put back] returns them to where
-  they were (with undo); **Diese löschen · 19 MB** [Delete these], in red,
-  opens the delete sheet for just them (then the system's dialog).
-- With nothing selected: **Auswahl prüfen · 12 Fotos · 340 MB** [Review
-  selection] — the screen's button never deletes itself (since 18 November
-  2026; before, it was the red *12 Fotos löschen*). It opens a sheet with
+  last put aside first, each with its size (a video with its length). As in
+  Photos (since 19 November 2026), a tap opens a photo large (a video plays);
+  **Auswählen** [Select] above the grid switches to picking.
+- Not picking: **Alle löschen · 12 Fotos · 340 MB** [Delete all], red, and
+  **Fotos durchgehen** [Go through photos] under it. Picking: **Ausgewählte
+  löschen · 2 Fotos · 19 MB** [Delete selected], red, and **Zurücklegen · 2
+  Fotos** [Put back] under it, which returns them to where they were (with
+  undo). Neither red button deletes by itself: each opens a sheet with
   **exactly what goes** (the photos,
   their count and size; *Sie kommen in den Papierkorb … Den Platz bekommst du zurück, sobald du den Papierkorb leerst … Danach fragt Android
   noch einmal nach*) and the one red button of the app, **12 Fotos löschen**,
   or **Abbrechen** (or a swipe down); then
   the system's dialog → Recently Deleted (iPhone) / the Trash (Android) — the
-  only place that deletes. *Noch einmal durchgehen* [Go through them again]:
-  a review without a suggestion, swiped left is deleted at the end (red
+  only place that deletes. *Fotos durchgehen*: a review without a suggestion, swiped left is deleted at the end (red
   here), right goes back, *Später* stays in the list.
+- Under the photos a quiet card, **Gelöscht und doch gebraucht?** [Deleted,
+  but still needed?], says how to get a photo back (since 19 November 2026):
+  iPhone — *Fotos-App › Alben › „Zuletzt gelöscht“*, select, *Wiederherstellen*;
+  Android — the gallery app (e.g. Google Fotos › Sammlungen) › *Papierkorb*,
+  select, *Wiederherstellen*; 30 days either way.
 - Free deletes (before the unlock) are counted here, when the photos really
   go. It is kept with the decisions (it survives a restart); *Von vorn
   anfangen* [Start over] in Settings empties it too — the photos come back —
@@ -687,8 +719,10 @@ then *Mehr Platz* and *Geschützt*.
   of their own name (*WhatsApp*, *Telegram*, *Instagram*, *Snapchat* …); the
   photos in those albums are the app's. A photo saved from a chat without
   that album (the app's "save to Photos" off) is not found.
-- One card per app with the count and size; the sort menu sets the order
-  (newest or largest first) of the review a tap starts. Only memes, receipts,
+- One card per app: two rows of its photos, the count and size. A tap opens
+  the app's photos in a grid like every other (since 19 November 2026; it
+  started the review): *Auswählen* picks — the red *Löschen vormerken*, *Zum
+  Album hinzufügen* — and *Durchgehen* reviews in the grid's order. Only memes, receipts,
   documents and photos of screens (the AI's labels) are suggested for deleting;
   everything else comes with no suggestion — a photo of the grandchildren sent
   by the family is precious.
@@ -715,11 +749,22 @@ then *Mehr Platz* and *Geschützt*.
   like a favourite, so it becomes the best shot.
 
 ## Everywhere
-- **Picking from a grid** (Large files, Screenshots, Failed shots, Unimportant
-  photos, an album, a category, *Zum Löschen vorgemerkt*, Smaller photos): a
-  line above the grid says how many are picked (or how it works) with
-  **Alle auswählen** [Select all] while not all are and **Alle abwählen**
-  [Deselect all] while any is (`SelectBar`).
+- **Picking from a grid** (since 19 November 2026, `src/ui/pick.tsx`) — the
+  same on every grid of photos: large files, videos, screenshots, failed
+  shots, unimportant photos, Live Photos, an album, a chat app, a month, a
+  trip, a category, search results, *Ähnliche Fotos* and *Zum Löschen
+  vorgemerkt*. A row above the photos, under nothing but the title, holds
+  the filter pill (if the list has one), the order (*Neueste zuerst*) and
+  **Auswählen** [Select]. Not picking, a tap opens the photo as a window of
+  clear glass over the page (a tap beside it or on the page closes it; a
+  video opens in a sheet and plays there), with a red **Löschen vormerken**
+  for that one. Picking (*Fertig* ends it), a tap picks, the row says how
+  many with **Alle auswählen** / **Alle abwählen**, and the Dock's red
+  **Löschen vormerken · n · size** [Mark for deletion] takes them into *Zum
+  Löschen vorgemerkt* — red with the archive by Ahmad's choice: nothing is
+  deleted there. Not picking, the Dock keeps the screen's own button
+  (*Durchgehen …*); on *Live Photos*, *Fotos verkleinern* and *Videos
+  verkleinern* the Dock shows only while picking.
 - **Every screen's (i)** says in one line what the screen is for, then
   **So geht's** [How it works] with numbered steps — which tap does what,
   and that marking deletes nothing yet.
