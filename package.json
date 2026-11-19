@@ -29,6 +29,8 @@
     "android:key": "node scripts/release-android.js --make-key",
     "release:first": "node scripts/release.js --ios --keep-version",
     "release:dry": "node scripts/release.js --dry-run",
+    "store:listing": "node scripts/store-listing.mjs",
+    "store:listing:dry": "node scripts/store-listing.mjs --dry-run",
     "preview": "vite preview --port=3001 --host=0.0.0.0",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit",

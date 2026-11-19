@@ -64,7 +64,9 @@ release asks. Delete that line to be asked again.
    *Activate*. A one-time product; the app acknowledges each purchase.
    *Setup › License testing* → add your Google account: its purchases are free
    test purchases.
-5. Screenshots: `npm run screenshots && npm run store-screenshots`, then upload
+5. Screenshots: `npm run screenshots && npm run store-screenshots`, then
+   `npm run store:listing -- --android` (texts, screenshots, feature graphic and
+   icon, from the second release on — the app has to exist first), or upload
    `screenshots/store/play-phone/<de|en>/` and
    `screenshots/store/play-feature/<de|en>/feature-graphic.jpg` (1024 × 500).
    The app icon for the listing (512 × 512) is `store/play-icon-512.png`.

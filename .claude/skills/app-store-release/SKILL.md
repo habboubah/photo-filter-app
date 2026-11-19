@@ -54,6 +54,7 @@ Check, and stop with a clear message if one is missing:
 | Only the signed Android bundle, nothing uploaded | `npm run release:android -- --no-upload` |
 | Store screenshots: raw captures / the framed sets | `npm run screenshots && npm run screenshots -- --android` / `npm run store-screenshots` (once: `npx playwright install chromium`) |
 | The App Store preview video (DE + EN) | `npm run app-preview` (once: `brew install ffmpeg`; the `app-preview-video` skill) |
+| The listings into both consoles (texts, What's New, screenshots, video, Play graphics; App Store version, review notes, build) | `npm run store:listing:dry`, then `npm run store:listing -- --wait 30` |
 
 The script gates on `npm run check` (lint, security, tests, build, the privacy
 check, the bundle budget, the contrast audit, the store texts' lengths), decides the version, bumps

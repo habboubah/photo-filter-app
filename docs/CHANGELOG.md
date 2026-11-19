@@ -3,6 +3,16 @@
 What changed and what left, newest first — so `docs/features.md` can say
 only how the app is now. (Started 18 November 2026; older history is in git.)
 
+## 19 November 2026, night — the listing goes up by itself
+
+- **`npm run store:listing`** (`scripts/store-listing.mjs`): `store/listing.md`,
+  the release notes, the composed screenshots, the preview video (with its
+  poster frame) and Play's feature graphic and icon go into App Store Connect
+  and the Play Console through their APIs — no more pasting. On the App Store
+  it also makes or renames the version, sets the App Review notes and contact
+  and picks the processed build. Unchanged files are skipped;
+  `npm run store:listing:dry` checks everything without sending.
+
 ## 19 November 2026, evening
 
 - **Alle vormerken** on every group card (duplicates, near-identical): the
