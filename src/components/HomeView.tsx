@@ -1,5 +1,5 @@
 import type React from 'react';
-import { Aperture, Archive, CalendarDays, MapPin, X, Check, ChevronRight, Clock, FileVideo, Image as ImageIcon, ImagePlus, MessageCircle, Search, Settings, Shield, Sparkles, Video } from 'lucide-react';
+import { Aperture, Archive, Minimize2, CalendarDays, MapPin, X, Check, ChevronRight, Clock, FileVideo, Image as ImageIcon, ImagePlus, MessageCircle, Search, Settings, Shield, Sparkles, Video } from 'lucide-react';
 import type { CleanupSummary, Storage } from '../types';
 import type { Access } from '../native/photoLibrary';
 import type { ScanView } from '../store';
@@ -74,6 +74,11 @@ interface Props {
   onLarge: () => void;
   onLive: () => void;
   onApps: () => void;
+  /** Fotos / Videos verkleinern (src/components/CompressView.tsx), when there is something to gain: what it could save. */
+  smallerPhotos: { saving: number; cover?: string } | null;
+  smallerVideos: { saving: number; cover?: string } | null;
+  onSmallerPhotos: () => void;
+  onSmallerVideos: () => void;
 }
 
 /** How long a phase still takes, in words ("noch etwa 3 Min."); empty while too early to say. */
@@ -178,6 +183,9 @@ export function HomeView(p: Props) {
     { key: 'large', label: t.largeTile, value: p.large.count ? fmt(t.sizeAndCount, { size: bytes(t, p.large.bytes), count: plural(t, 'files', p.large.count) }) : plural(t, 'files', 0), cover: p.large.cover, icon: FileVideo, hue: 'stone', onClick: p.onLarge },
     ...(p.liveCount > 0 ? [{ key: 'live', label: t.liveTile, value: plural(t, 'photos', p.liveCount), cover: p.liveCover, icon: Aperture, hue: 'mint', onClick: p.onLive }] : []),
     ...(p.apps ? [{ key: 'apps', label: t.appsTile, value: bytes(t, p.apps.bytes), cover: p.apps.cover, icon: MessageCircle, hue: 'lilac', onClick: p.onApps }] : []),
+    // Smaller copies (19 November 2026; before, photos from the large files, a video from its sheet).
+    ...(p.smallerPhotos ? [{ key: 'smallerPhotos', label: t.compressPhotosTile, value: fmt(t.upTo, { size: bytes(t, p.smallerPhotos.saving) }), cover: p.smallerPhotos.cover, icon: Minimize2, hue: 'sky', onClick: p.onSmallerPhotos }] : []),
+    ...(p.smallerVideos ? [{ key: 'smallerVideos', label: t.compressVideosTile, value: fmt(t.upTo, { size: bytes(t, p.smallerVideos.saving) }), cover: p.smallerVideos.cover, icon: Minimize2, hue: 'cyan', onClick: p.onSmallerVideos }] : []),
   ];
   const showLater = p.later.count > 0;
   const showMonths = p.months.total > 0;

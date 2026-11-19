@@ -105,7 +105,7 @@ scenes follow the switch (docs/PLAN.md, *Pricing*).
   vormerken*, a video in a sheet); picking, a tap picks and the Dock's
   `<MarkButton>` marks. A list's filter is a pill (`FilterMenu`,
   `AgeFilter`), not a Segmented. A new grid of photos follows this; only
-  *Fotos verkleinern* (all picked from the start) and *Geschützt* differ.
+  *Geschützt* differs (a tap lifts a protection).
 - **Videos play inside the app**: `PlayerContext` (`src/ui/play.tsx`, provided
   in `App.tsx`). A big picture of a video (`<PlayOver>`: a large file's sheet,
   a group's viewer, the review card) plays it **in place**, a `<video>` in the
@@ -198,7 +198,8 @@ scenes follow the switch (docs/PLAN.md, *Pricing*).
   the originals after a smaller copy or a Live Photo made a still).
 - A new asset (a plain photo made from a Live Photo, a smaller copy of a video
   or of a photo) needs the user's tap and a confirmation in the app; the original stays and
-  goes only through the system's delete dialog afterwards. The copy keeps the
+  goes only through the system's delete dialog afterwards — a smaller copy's
+  original by way of *Zum Löschen vorgemerkt* (`aside` in `useMediaTools`). The copy keeps the
   original's date, place and favourite flag (and, for a still, its albums).
 - Deleted photos go to Recently Deleted (iPhone) / the Trash (Android) only —
   `deleteAssets` / `createTrashRequest`, never `createDeleteRequest`, never

@@ -42,6 +42,11 @@ only how the app is now. (Started 18 November 2026; older history is in git.)
   button converted all); the (i) explains what stays and what goes.
 - **The order pill** keeps only its icon under 360 px, so the row above a
   grid stays one line.
+- **Fotos verkleinern and Videos verkleinern** are rows on home's *Mehr
+  Platz* (photos were at the top of *Große Dateien*, a video was made smaller
+  from its sheet, one at a time). Both pick like every grid, several videos
+  in a row; the originals go into *Zum Löschen vorgemerkt* with undo instead
+  of a sheet asking to delete them at once. Their (i) says so.
 - **Home**: *Duplikate* always right before *Fast gleiche*.
 - **Ordnen**: *Neu durchsuchen* and the magnifier in the bar, as on
   *Aufräumen*.

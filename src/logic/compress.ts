@@ -35,6 +35,10 @@ export function canCompress(p: Photo, guard: Set<string>): boolean {
 /** What the photo would save, estimated from its size and format. */
 export const estimatedSaving = (p: Photo) => Math.round(p.bytes * (p.fmt === 'png' ? SAVING_PNG : SAVING_JPEG));
 
+/** What a smaller video copy saves, roughly (the copy is about 40 % of the original; src/useMediaTools.ts compressVideos). */
+export const SAVING_VIDEO = 0.6;
+export const videoSaving = (p: Photo) => Math.round(p.bytes * SAVING_VIDEO);
+
 export interface Compressible {
   photos: Photo[];
   screenshots: Photo[];

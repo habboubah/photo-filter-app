@@ -140,8 +140,9 @@ then *Mehr Platz* and *Geschützt*.
   a thin bar — the photos in months gone through, as a share of all photos
   (rounded down, so 100 % only once every month is done) — and *Später
   entscheiden* with the number on the pile (see *Review*); then *Große Dateien* [Large files]
-  (*Fotos verkleinern* opens from there), on the iPhone *Live Photos*, *Chats &
-  soziale Medien* (only when such photos exist) — rows with a photo.
+  on the iPhone *Live Photos*, *Chats & soziale Medien* (only when such photos
+  exist), **Fotos verkleinern** and **Videos verkleinern** (only when there is
+  something to gain; since 19 November 2026) — rows with a photo.
 - *Geschützt* [Protected] at the end.
 
 ### Ordnen [Organise]
@@ -285,14 +286,9 @@ then *Mehr Platz* and *Geschützt*.
   the order and *Auswählen* (*Everywhere › Picking from a grid*); with files
   picked the red **Löschen vormerken · 2 Dateien · 265 MB** [Mark for
   deletion] puts them into *Zum Löschen vorgemerkt* (nothing is deleted).
-- A tap elsewhere on a tile opens the file: date, size, length, a play button
-  on a video's picture, **Video verkleinern** [Make video smaller] for videos
-  of 30 MB or more, and *Löschen vormerken*.
-- **Making a video smaller** (free for now, later the unlock): a copy at about a third of the
-  bitrate (iPhone: HEVC at most 1080p; Android: HEVC where the phone can, 2–8
-  Mbit/s) is saved next to the original with its date and place, with progress
-  while it runs. Not saved when it would not be at least 20 % smaller. Then
-  *Original löschen?* → the system's dialog, or keep both.
+- A tap on a tile opens the file: date, size, length, a play button on a
+  video's picture, and *Löschen vormerken*. (Making a video smaller is home's
+  *Videos verkleinern* since 19 November 2026.)
 - **Duplicate videos**: the same length (± 0.5 s), shape and poster frame,
   listed under *Duplikate*.
 - Videos are not part of trips, near-identical groups or the blurry list.
@@ -329,21 +325,35 @@ then *Mehr Platz* and *Geschützt*.
   curated demo has pictures only, so its videos say *Dieses Video lässt sich
   hier nicht abspielen.*
 
-## Smaller photos (*Fotos verkleinern*, free for now, later the unlock)
-- A row at the top of *Große Dateien*, *Fotos verkleinern · bis zu 3,1 GB*
-  [Smaller photos · up to …], when there is something to gain (estimate: half of a camera JPEG, 70 % of a PNG).
+## Smaller photos and videos (*Fotos verkleinern*, *Videos verkleinern*, free for now, later the unlock)
+- Two rows on home's *Mehr Platz* (since 19 November 2026; before, photos
+  from the top of *Große Dateien* and a video from its sheet, one at a time):
+  *Fotos verkleinern · bis zu 3,1 GB* (estimate: half of a camera JPEG, 70 %
+  of a PNG) and *Videos verkleinern · bis zu 1,2 GB* (estimate: 60 % of each
+  video), each only when there is something to gain.
 - Which photos: JPEG or PNG, at least 1 MB, not RAW/ProRAW, not edited (re-saving
   would bake the edit in), not a Live Photo, not protected. PNG screenshots are
-  their own tab.
-- A grid, the largest saving first, all selected (a tap leaves one out; *Alle* /
-  *Keine*), then **42 Fotos verkleinern** → a progress sheet → *1,2 GB gespart —
-  Originale löschen?* [… saved — delete the originals?] → the system's dialog.
-- iPhone: re-saved as HEIC (quality 0.8) with all metadata (EXIF, GPS,
+  behind the filter pill (*Fotos* / *Screenshots*). Which videos: 30 MB or
+  more, not kept, the largest first.
+- A grid, the largest saving first, picked like every grid (*Everywhere ›
+  Picking from a grid*; *Alle auswählen* takes them all). Only while picking
+  the Dock shows **42 Fotos verkleinern · bis zu 1,2 GB** / **3 Videos
+  verkleinern · bis zu 900 MB** → a progress sheet (*2 von 3* for videos) →
+  the smaller copies are saved and **the originals go into *Zum Löschen
+  vorgemerkt*** with a toast *1,2 GB gespart – die Originale liegen in „Zum
+  Löschen vorgemerkt“* and undo; they are deleted only from there (the bin's
+  sheet, then the system's dialog). A tap outside picking opens a photo large
+  or plays a video, with *Löschen vormerken*.
+- Photos — iPhone: re-saved as HEIC (quality 0.8) with all metadata (EXIF, GPS,
   orientation, date), as a new photo with the same date, place, favourite flag,
   in the same albums. Android: HEIC through HeifWriter where the phone has an
   HEVC encoder, else JPEG at quality 82; EXIF, date taken and folder kept.
-- A copy is kept only when it is at least 30 % smaller. Works in batches of 20
+  A copy is kept only when it is at least 30 % smaller. Works in batches of 20
   and stops cleanly when the app goes to the background.
+- Videos — a copy at about a third of the bitrate (iPhone: HEVC at most 1080p;
+  Android: HEVC where the phone can, 2–8 Mbit/s) next to the original with its
+  date and place, one after the other. Not saved when it would not be at
+  least 20 % smaller.
 
 ## Live Photos (iPhone)
 - Every Live Photo, newest first, with the estimated saving (≈ 3 MB each), a
@@ -753,8 +763,8 @@ then *Mehr Platz* and *Geschützt*.
   **Löschen vormerken · n · size** [Mark for deletion] takes them into *Zum
   Löschen vorgemerkt* — red with the archive by Ahmad's choice: nothing is
   deleted there. Not picking, the Dock keeps the screen's own button
-  (*Durchgehen …*). *Fotos verkleinern* keeps its own grid (all picked from
-  the start).
+  (*Durchgehen …*); on *Live Photos*, *Fotos verkleinern* and *Videos
+  verkleinern* the Dock shows only while picking.
 - **Every screen's (i)** says in one line what the screen is for, then
   **So geht's** [How it works] with numbered steps — which tap does what,
   and that marking deletes nothing yet.
