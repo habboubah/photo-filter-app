@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { Archive, Check, ChevronRight, Star } from 'lucide-react';
 import type { Group, GroupKind, Photo } from '../types';
 import { Strings, fmt, num, plural } from '../translations';
-import { Empty, Screen } from '../ui/Screen';
+import { Dock, Empty, Screen } from '../ui/Screen';
+import { MarkButton } from '../ui/pick';
 import { Segmented } from '../ui/Controls';
 import { Thumb } from '../ui/Photo';
 import { tapLight } from '../ui/haptics';
@@ -18,13 +19,14 @@ const PAGE = 40;
  * has a grey star the user can switch on to keep it too. *Alle behalten*
  * keeps the whole group (it leaves the list); *Ohne Stern zum Löschen
  * vormerken* puts every photo without a star into *Zum Löschen vorgemerkt*
- * and keeps the starred ones — both with undo. It is teal with the archive,
- * like every other marking button: nothing is deleted here (red stayed only
- * a few hours on 18 November 2026). A tap on the photos opens the group to
+ * and keeps the starred ones — both with undo. It is red with the archive
+ * (Ahmad's choice): nothing is deleted here. A tap on the photos opens the group to
  * compare. The near-identical photos carry the similar videos too, behind a
- * *Fotos · Videos* switch (their own screen until 18 November 2026).
+ * *Fotos · Videos* switch (their own screen until 18 November 2026). The
+ * Dock's red *Alle ohne Stern vormerken* (19 November 2026) does *Ohne Stern vormerken*
+ * for every group of the list at once — the starred ones stay, with undo.
  */
-export function SimilarView({ t, kind = 'similar', groups: photoGroups, videoGroups = [], byId, kept, shown, onMore, onBack, onOpen, onKeepAll, onAsideOthers }: {
+export function SimilarView({ t, kind = 'similar', groups: photoGroups, videoGroups = [], byId, kept, shown, onMore, onBack, onOpen, onKeepAll, onAsideOthers, onAsideAll }: {
   t: Strings;
   kind?: GroupKind;
   groups: Group[];
@@ -40,6 +42,8 @@ export function SimilarView({ t, kind = 'similar', groups: photoGroups, videoGro
   onKeepAll: (group: Group) => void;
   /** Marks the group's photos without a star for deletion; `keep` are the ones the user starred (kept from now on). */
   onAsideOthers: (group: Group, ids: string[], keep: string[]) => void;
+  /** *Alle vormerken*: every group's photos without a star for deletion; `keep` are the ones the user starred. */
+  onAsideAll: (ids: string[], keep: string[]) => void;
 }) {
   const dup = kind === 'duplicate';
   const [part, setPart] = useState<'photos' | 'videos'>(() => (kind === 'similar' && !photoGroups.length && videoGroups.length ? 'videos' : 'photos'));
@@ -56,13 +60,22 @@ export function SimilarView({ t, kind = 'similar', groups: photoGroups, videoGro
     : dup
       ? { title: t.duplicatesTitle, intro: t.duplicatesIntro, none: t.noDuplicates, noneBody: t.noDuplicatesBody }
       : { title: t.similarTitle, intro: t.similarIntro, none: t.noGroups, noneBody: t.noGroupsBody };
-  const card = (g: Group) => {
-    const unit = g.kind === 'lookalike' || byId.get(g.ids[0])?.video ? 'videos' : 'photos';
+  /** A group as its card settles it: what is safe, what the user starred, what would go. */
+  const settle = (g: Group) => {
     // Safe already: the one to keep, a favourite, a photo kept before — they never go.
     const safe = (id: string) => id === g.best || kept.has(id) || !!byId.get(id)?.fav;
     const mine = stars[g.key] ?? [];
     const starred = (id: string) => safe(id) || mine.includes(id);
-    const others = g.ids.filter(id => !starred(id));
+    return { safe, mine, starred, others: g.ids.filter(id => !starred(id)) };
+  };
+  // Alle vormerken: every group of the list (not only those drawn so far).
+  const all = groups.map(settle);
+  const allOthers = all.flatMap(x => x.others).flatMap(id => byId.get(id) ?? []);
+  const allStarred = groups.flatMap((g, i) => all[i].mine.filter(id => g.ids.includes(id)));
+  const unitAll = (n: number) => plural(t, kind === 'lookalike' || part === 'videos' ? 'videos' : 'photos', n);
+  const card = (g: Group) => {
+    const unit = g.kind === 'lookalike' || byId.get(g.ids[0])?.video ? 'videos' : 'photos';
+    const { safe, mine, starred, others } = settle(g);
     const extra = others.length;
     const when = new Date(byId.get(g.ids[0])?.t ?? 0).toLocaleString(t.locale, { dateStyle: 'medium', timeStyle: 'short' });
     const count = plural(t, unit, g.ids.length);
@@ -135,7 +148,7 @@ export function SimilarView({ t, kind = 'similar', groups: photoGroups, videoGro
     );
   };
   return (
-    <Screen title={words.title} subtitle={plural(t, 'groups', groups.length)} onBack={onBack} backLabel={t.back} info={{ label: t.aboutScreen, close: t.close, how: t.infoHow, body: words.intro }}>
+    <Screen title={words.title} subtitle={plural(t, 'groups', groups.length)} onBack={onBack} backLabel={t.back} info={{ label: t.aboutScreen, close: t.close, how: t.infoHow, body: words.intro }} docked={allOthers.length > 0}>
       {kind === 'similar' && videoGroups.length > 0 && (
         <Segmented
           label={words.title} value={part} onChange={setPart}
@@ -150,6 +163,14 @@ export function SimilarView({ t, kind = 'similar', groups: photoGroups, videoGro
           <div className="space-y-[10px]">{visible.map(card)}</div>
           {visible.length < groups.length && <MoreOnScroll onMore={onMore} />}
         </>
+      )}
+      {allOthers.length > 0 && (
+        <Dock>
+          <MarkButton
+            t={t} photos={allOthers} label={t.asideAllGroups} count={l => unitAll(l.length)}
+            onClick={() => { onAsideAll(allOthers.map(p => p.id), allStarred); setStars({}); }}
+          />
+        </Dock>
       )}
     </Screen>
   );

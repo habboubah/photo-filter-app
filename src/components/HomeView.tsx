@@ -1,10 +1,9 @@
 import type React from 'react';
-import { useState } from 'react';
-import { Aperture, Archive, CalendarDays, MapPin, X, Check, ChevronRight, Clock, FileVideo, Image as ImageIcon, ImagePlus, MessageCircle, RefreshCw, Search, Settings, Shield, Sparkles, Video } from 'lucide-react';
+import { Aperture, Archive, CalendarDays, MapPin, X, Check, ChevronRight, Clock, FileVideo, Image as ImageIcon, ImagePlus, MessageCircle, Search, Settings, Shield, Sparkles, Video } from 'lucide-react';
 import type { CleanupSummary, Storage } from '../types';
 import type { Access } from '../native/photoLibrary';
 import type { ScanView } from '../store';
-import { Strings, ago, bytes, fmt, num, percent, plural } from '../translations';
+import { Strings, bytes, fmt, num, percent, plural } from '../translations';
 import { etaWords } from '../logic/eta';
 import { greetingAt } from '../logic/greeting';
 import { type Found, type FoundKey, rankCategories, type RankedCategory } from '../logic/nextStep';
@@ -15,7 +14,7 @@ import { StorageBar } from '../ui/StorageBar';
 import { tapLight } from '../ui/haptics';
 import { Thumb } from '../ui/Photo';
 import { isAndroid } from '../platform';
-import { Confirm } from '../ui/Sheet';
+import { RescanButton } from './RescanButton';
 
 export type { Found, FoundKey } from '../logic/nextStep';
 
@@ -153,7 +152,6 @@ export function categoryMeta(t: Strings, c: { key: FoundKey; items: number; gain
  */
 export function HomeView(p: Props) {
   const { t, summary } = p;
-  const [askRescan, setAskRescan] = useState(false);
   const firstScan = p.scan.running && !p.scan.lastScanAt;
   const loaded = p.photoCount !== null;
   const has = loaded && p.photoCount! > 0;
@@ -161,8 +159,6 @@ export function HomeView(p: Props) {
   const bigScan = p.scan.running && (firstScan || (p.scan.phase === 'analyse' && p.scan.total - p.scan.done > 50));
   const aiPass = p.scan.running && p.scan.phase === 'ai' && p.scan.total > 0;
   const analysing = p.scan.running && (firstScan || p.scan.phase === 'analyse');
-  const lastScan = p.scan.lastScanAt ? fmt(t.lastScan, { when: ago(t, p.scan.lastScanAt, Date.now()) }) : null;
-  const rescanLabel = p.scan.running ? `${t.rescan}: ${t.scanUpdating}` : lastScan ? `${t.rescan} (${lastScan})` : t.rescan;
   // The categories, each with the space it would free (from the summary, so every figure agrees: rankCategories).
   const words = categoryWords(t);
   const meta: Record<FoundKey, { label: string; icon: React.ComponentType<{ className?: string; strokeWidth?: number }>; hue: string; unit: 'groups' | 'photos'; onClick: () => void }> = {
@@ -196,13 +192,7 @@ export function HomeView(p: Props) {
       subtitle={has ? fmt(t.homeSub, { files: plural(t, 'files', p.photoCount!) }) : undefined}
       tabbed
       actions={<>
-        {has && (
-          <IconButton
-            label={rescanLabel} icon={RefreshCw} tone="bar" disabled={p.scan.running}
-            className={p.scan.running ? '[&>svg]:motion-safe:animate-spin' : ''}
-            onClick={() => { if (!p.scan.running) setAskRescan(true); }}
-          />
-        )}
+        {has && <RescanButton t={t} scan={p.scan} onRescan={p.onRescan} />}
         {p.onSearch && <IconButton label={t.searchOpen} icon={Search} tone="bar" onClick={p.onSearch} />}
         <IconButton label={t.settings} icon={Settings} tone="bar" onClick={p.onSettings} />
       </>}
@@ -307,11 +297,6 @@ export function HomeView(p: Props) {
           />
         </Group>
       )}
-      <Confirm
-        open={askRescan} title={t.rescanAllTitle} body={t.rescanAllBody}
-        confirmLabel={t.rescan} cancelLabel={t.cancel}
-        onConfirm={() => { setAskRescan(false); p.onRescan(); }} onCancel={() => setAskRescan(false)}
-      />
     </Screen>
   );
 }

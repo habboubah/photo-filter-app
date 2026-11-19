@@ -40,11 +40,20 @@ export const FOUND_KEYS: FoundKey[] = ['duplicates', 'similar', 'videos', 'faile
 
 export interface RankedCategory extends Found { key: FoundKey; gain: Gain }
 
-/** The categories that hold something, the one that frees the most first (then the one with the most items). */
+/**
+ * The categories that hold something, the one that frees the most first (then
+ * the one with the most items) — except that the duplicates always come right
+ * before the near-identical photos (Ahmad, 19 November 2026): exact copies are
+ * the safest to let go, so they are settled first.
+ */
 export function rankCategories(found: Partial<Record<FoundKey, Found>>, summary: CleanupSummary | null): RankedCategory[] {
-  return FOUND_KEYS.filter(k => (found[k]?.items ?? 0) > 0)
+  const ranked = FOUND_KEYS.filter(k => (found[k]?.items ?? 0) > 0)
     .map(k => ({ key: k, ...found[k]!, gain: gainOf(summary, k) }))
     .sort((a, b) => b.gain.bytes - a.gain.bytes || b.items - a.items);
+  const dup = ranked.findIndex(c => c.key === 'duplicates');
+  const similar = ranked.findIndex(c => c.key === 'similar');
+  if (dup > similar && similar >= 0) ranked.splice(similar, 0, ...ranked.splice(dup, 1));
+  return ranked;
 }
 
 export function nextStepKind(i: {

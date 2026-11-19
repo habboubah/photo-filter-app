@@ -54,6 +54,15 @@ export function sourceOf(p: Pick<Photo, 'dir' | 'shot' | 'rec'>): Source | null 
   return 'other';
 }
 
+/** The name shown for a source: the apps by their own names, the two catch-alls in the user's language. */
+export function sourceName(source: Source, words: { download: string; other: string }): string {
+  const names: Record<Source, string> = {
+    whatsapp: 'WhatsApp', telegram: 'Telegram', signal: 'Signal', instagram: 'Instagram', facebook: 'Messenger',
+    snapchat: 'Snapchat', tiktok: 'TikTok', download: words.download, other: words.other,
+  };
+  return names[source];
+}
+
 export interface SourceGroup { source: Source; photos: Photo[]; bytes: number }
 
 /**

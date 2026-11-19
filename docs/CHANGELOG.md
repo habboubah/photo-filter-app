@@ -3,6 +3,52 @@
 What changed and what left, newest first — so `docs/features.md` can say
 only how the app is now. (Started 18 November 2026; older history is in git.)
 
+## 19 November 2026, afternoon — picking like Photos
+
+- **Every grid of photos picks the same way** (`src/ui/pick.tsx`): large
+  files, videos, screenshots, failed shots, unimportant photos, Live Photos,
+  an album, a chat app, a month, a trip, a category, search, *Ähnliche Fotos*
+  and the bin. *Auswählen* / *Fertig* and the order (*Neueste zuerst*, now
+  a pill with its name) sit in a row above the photos, not in the bar; the
+  select circles show only while picking. Not picking, a tap opens the
+  photo — a window of clear glass over the page (blurred on the iPhone), a
+  tap beside it closes it — with a red *Löschen vormerken*; a video opens in
+  a sheet and plays there. *Ähnliche Fotos zeigen* moved into that window on
+  search and *Ähnliche Fotos* (a tap on a photo opened the look-alikes).
+- **Marking for deletion is red** with the archive icon in the Dock, the
+  opened photo and the large file's sheet (Ahmad's choice; it was teal).
+- **Filters are pills** beside the order: large files *Alle / Videos /
+  Fotos*, failed shots *Sicher / Alle*, and screenshots by age — *Alle* (the
+  new default), *> 1 Monat*, *> 3 Monate*, *> 6 Monate* (was *Älter als 30
+  Tage* first, then *Alle*).
+- **Zum Löschen vorgemerkt**: a tap opens a photo; *Auswählen* picks. The
+  Dock says *Alle löschen* (red) and *Fotos durchgehen*, or while picking
+  *Ausgewählte löschen* (red) and *Zurücklegen* (was *Auswahl prüfen*,
+  *Diese löschen*, *Noch einmal durchgehen*). Both red buttons still open
+  the sheet first. A card says how to get a deleted photo back, worded for
+  the iPhone and for Android.
+- **Chats & soziale Medien**: two rows of photos per app; a tap opens the
+  app's photos as a grid (it started the review), *Durchgehen* there; the
+  order sits above the cards. No grid starts in select mode.
+- **Monat für Monat**: one card per row like the chats (was two tiles to a
+  row); a tap opens the month's photos to pick from (it started the
+  review), *Durchgehen* there goes on where the month was left.
+- **Albums, chat apps, months**: picked photos go into another album
+  (Android: are moved into another folder).
+- **Near-identical and duplicates**: a red *Alle ohne Stern vormerken* in
+  the Dock does *Ohne Stern vormerken* for every group at once.
+- **Live Photos**: *In normale Fotos umwandeln* is for the picked photos,
+  under the red *Löschen vormerken*, and shows only while picking (one
+  button converted all); the (i) explains what stays and what goes.
+- **The order pill** keeps only its icon under 360 px, so the row above a
+  grid stays one line.
+- **Home**: *Duplikate* always right before *Fast gleiche*.
+- **Ordnen**: *Neu durchsuchen* and the magnifier in the bar, as on
+  *Aufräumen*.
+- **Suchen** offers only words that find a photo — alone, or together with
+  the words chosen — so no chip, suggestion or word in the sheet gives an
+  empty result.
+
 ## 19 November 2026 — the store texts
 
 - **German store name** *Bildklar KI: Fotos aufräumen* (was *Bildklar KI:

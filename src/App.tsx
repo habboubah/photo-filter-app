@@ -27,7 +27,7 @@ import { findExposure } from './logic/exposure';
 import { sortFor, type SortScreen } from './logic/sort';
 import { likeProtected, protectedIds } from './logic/protect';
 import { findCompressible } from './logic/compress';
-import { APPS_TILE_MIN, groupBySource, reviewSource } from './logic/sources';
+import { APPS_TILE_MIN, groupBySource, reviewSource, sourceName, type Source } from './logic/sources';
 import { cleanParts } from './logic/smartClean';
 import { type Verdict, groupVerdict } from './logic/confidence';
 import { adjustItems, strictUtility } from './logic/ledger';
@@ -243,10 +243,14 @@ export default function App() {
   const [showQuickClean, setShowQuickClean] = useState(false);
   const [showMonths, setShowMonths] = useState(false);
   const [monthsShown, setMonthsShown] = useState(24);
+  // Monat für Monat › one month: its photos to pick from.
+  const [monthOpen, setMonthOpen] = useState<string | null>(null);
   const [showLarge, setShowLarge] = useState(false);
   const [showLive, setShowLive] = useState(false);
   const [showCompress, setShowCompress] = useState(false);
   const [showApps, setShowApps] = useState(false);
+  // Chats & soziale Medien › one app: its photos to pick from.
+  const [appSource, setAppSource] = useState<Source | null>(null);
   const [showUtility, setShowUtility] = useState(false);
   const [category, setCategory] = useState<MemoryLabel | null>(null);
   // Ordnen › Alben: the album (Android: folder) open, by its id.
@@ -330,9 +334,11 @@ export default function App() {
     ['videos', showVideos, () => setShowVideos(false)],
     ['utility', showUtility, () => setShowUtility(false)],
     ['live', showLive, () => setShowLive(false)],
+    ['appSource', !!appSource, () => setAppSource(null)],
     ['apps', showApps, () => setShowApps(false)],
     ['album', !!albumKey, () => setAlbumKey(null)],
     ['category', !!category, () => setCategory(null)],
+    ['month', !!monthOpen, () => setMonthOpen(null)],
     ['months', showMonths, () => setShowMonths(false)],
     ['trips', showTrips, () => setShowTrips(false)],
     ['search', showSearch, () => setShowSearch(false)],
@@ -540,7 +546,7 @@ export default function App() {
 
   const { albumList, setAlbumList, chips, fileAlbums, organizeAlbums, albumMembers, albumPick, setAlbumPick, fileInto } = useAlbums({
     t, store, show, recent: state.recentAlbums, byId: lib.byId,
-    want: (tab === 'organize' && !!photos) || !!albumKey || !!category,
+    want: (tab === 'organize' && !!photos) || !!albumKey || !!category || !!appSource || !!monthOpen,
   });
   const onFile = (album: string) => needUnlock(() => setReview(r => (r ? { ...r, session: fileTo(r.session, album) } : r)));
 
@@ -717,6 +723,7 @@ export default function App() {
           t={t} id={likeId} vectors={store.vectors} byId={byId}
           onBack={() => setLikeId(null)} onOpen={setLikeId}
           onReview={ids => { setLikeId(null); startReview(reviewFound(ids)); }}
+          onAside={list => toBin(list.map(p => p.id))}
         />
       );
     }
@@ -841,6 +848,7 @@ export default function App() {
           onBack={() => setTripKey(null)}
           onCreateAlbum={() => needUnlock(() => setAlbumFor(trip))}
           onReview={() => startReview(reviewTrip(trip.ids, groups, byId, kept, undefined, cos))}
+          onAside={list => toBin(list.map(p => p.id))}
           onRename={name => store.updateTrips(e => setName(e, trip.key, name))}
           onSplit={at => { store.updateTrips(e => addSplit(e, trip.key, at)); show(t.tripSplit); }}
           onMerge={other => {
@@ -870,7 +878,7 @@ export default function App() {
           t={t} groups={similarGroups} videoGroups={videoGroups} byId={byId} kept={kept} shown={similarShown}
           onMore={() => setSimilarShown(n => n + 40)}
           onBack={() => setShowSimilar(false)} onOpen={setGroupKey}
-          onKeepAll={keepGroup} onAsideOthers={(_, ids, keep) => toBin(ids, keep)}
+          onKeepAll={keepGroup} onAsideOthers={(_, ids, keep) => toBin(ids, keep)} onAsideAll={(ids, keep) => toBin(ids, keep)}
         />
       );
     }
@@ -880,7 +888,7 @@ export default function App() {
           t={t} kind="duplicate" groups={dupGroups} byId={byId} kept={kept} shown={duplicatesShown}
           onMore={() => setDuplicatesShown(n => n + 40)}
           onBack={() => setShowDuplicates(false)} onOpen={setGroupKey}
-          onKeepAll={keepGroup} onAsideOthers={(_, ids, keep) => toBin(ids, keep)}
+          onKeepAll={keepGroup} onAsideOthers={(_, ids, keep) => toBin(ids, keep)} onAsideAll={(ids, keep) => toBin(ids, keep)}
         />
       );
     }
@@ -967,17 +975,30 @@ export default function App() {
         />
       );
     }
+    if (appSource) {
+      // One app's photos: picked from like every other grid (AlbumView), *Durchgehen* for the review.
+      return (
+        <AlbumView
+          t={t} {...sorting('apps')} title={sourceName(appSource, { download: t.sourceDownload, other: t.sourceOther })}
+          intro={t.appsSourceIntro} photos={sources.find(g => g.source === appSource)?.photos ?? []} loading={false}
+          onBack={() => setAppSource(null)}
+          onReview={list => startReview(reviewSource(list, kept))}
+          onAside={list => toBin(list.map(p => p.id))}
+          onAlbum={l => needUnlock(() => setAlbumPick({ ids: l.map(p => p.id) }))}
+        />
+      );
+    }
     if (showApps) {
       return (
         <AppsView
           t={t} groups={sources} {...sorting('apps')}
           onBack={() => setShowApps(false)}
-          onReview={list => startReview(reviewSource(list, kept))}
+          onOpen={setAppSource}
         />
       );
     }
     if (showLive) {
-      return <LiveView t={t} {...sorting('live')} photos={live} onBack={() => setShowLive(false)} onConvert={list => needUnlock(() => setLiveConfirm(list))} />;
+      return <LiveView t={t} {...sorting('live')} photos={live} onBack={() => setShowLive(false)} onConvert={list => needUnlock(() => setLiveConfirm(list))} onAside={list => toBin(list.map(p => p.id))} />;
     }
     if (albumKey) {
       const a = albumList?.find(x => x.id === albumKey);
@@ -989,6 +1010,7 @@ export default function App() {
           onBack={() => setAlbumKey(null)}
           onReview={l => startReview(reviewTrip(l.map(p => p.id), groups, byId, kept, undefined, cos))}
           onAside={l => toBin(l.map(p => p.id))}
+          onAlbum={l => needUnlock(() => setAlbumPick({ ids: l.map(p => p.id) }))}
         />
       );
     }
@@ -1001,12 +1023,27 @@ export default function App() {
         />
       );
     }
+    if (monthOpen) {
+      // One month's photos, picked from like every other grid; *Durchgehen* is the month's review (it goes on where it was left).
+      const m = months.find(x => x.key === monthOpen);
+      const list = (m?.ids ?? []).flatMap(id => lib.byId.get(id) ?? []);
+      return (
+        <AlbumView
+          t={t} {...sorting('month')} intro={t.monthIntro} photos={list} loading={false}
+          title={m ? new Date(m.year, m.month, 1).toLocaleDateString(t.locale, { month: 'long', year: 'numeric' }) : ''}
+          onBack={() => setMonthOpen(null)}
+          onReview={() => openMonth(monthOpen)}
+          onAside={l => toBin(l.map(p => p.id))}
+          onAlbum={l => needUnlock(() => setAlbumPick({ ids: l.map(p => p.id) }))}
+        />
+      );
+    }
     if (showMonths) {
       return (
         <MonthsView
           t={t} months={months} done={doneMonths} at={state.monthAt} byId={byId} shown={monthsShown}
           onMore={() => setMonthsShown(n => n + 24)}
-          onBack={() => setShowMonths(false)} onOpen={openMonth}
+          onBack={() => setShowMonths(false)} onOpen={setMonthOpen}
         />
       );
     }
@@ -1016,6 +1053,7 @@ export default function App() {
           t={t} lang={language} vectors={store.vectors} byId={byId} aiSeen={aiSeen}
           onBack={() => setShowSearch(false)} onOpen={setLikeId}
           onReview={ids => startReview(reviewFound(ids))}
+          onAside={list => toBin(list.map(p => p.id))}
         />
       );
     }
@@ -1088,6 +1126,7 @@ export default function App() {
           onThisDay={{ photos: today.ids.length, years: today.years, cover: today.ids[0] }}
           categories={cats.slice(0, 8).map(c => ({ label: c.label, count: c.photos.length, cover: c.photos[0].id }))}
           onSettings={() => setShowSettings(true)}
+          scan={store.scan} onRescan={() => void store.rescanAll()}
           onSearch={() => setShowSearch(true)}
           onOnThisDay={() => startReview(reviewTrip(today.ids, groups, byId, kept, undefined, cos))}
           onTrips={() => setShowTrips(true)}

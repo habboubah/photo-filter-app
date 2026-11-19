@@ -80,7 +80,9 @@ scenes follow the switch (docs/PLAN.md, *Pricing*).
 - **Shared primitives** in `src/ui/` (`Screen`, `SectionHead`, `Group`, `Row`, `MenuRow`,
   `IconTile`, `Next`, `Away`, `Dock`, `TabBar`, `StorageBar`, `Empty`, `Sheet`, `Confirm`, `Button`,
   `IconButton`, `Field`, `Toast`, `Progress`, `SwitchRow`, `Segmented`, `SelectBar`,
-  `Badge`, `Thumb`, `PhotoGrid`, `Mosaic`, `SortMenu`, `haptics`; for the first
+  `Badge`, `Thumb`, `PhotoGrid`, `Mosaic`, `SortMenu`, `FilterMenu`, `haptics`;
+  picking from a grid `usePick`, `PickBar`, `gridPick`, `MarkButton`,
+  `Opened`, `AgeFilter` (`src/ui/pick.tsx`); for the first
   run `TipHost`, `Dots`, `CountUp`, `Ring`, `PhotoFrame`, `Foot`). Compose them.
 - **Screens opened less often are lazy** (`lazy()` in `App.tsx`, under one
   `<Suspense>`): the main bundle has a budget (`scripts/perf-check.mjs`). A new
@@ -93,6 +95,17 @@ scenes follow the switch (docs/PLAN.md, *Pricing*).
   `PAGE` (2,000) rows; progress comes as `scanProgress` events. Thumbnails are
   files the native side writes; `<img>` loads them via `fileUrl()` (`Capacitor.convertFileSrc`).
 - **Grids are virtualised** (`PhotoGrid`). Never render a list of every photo.
+- **Every grid of photos picks the same way** (`src/ui/pick.tsx`, Ahmad,
+  19 November 2026), as Photos does: `usePick` for the state, `<PickBar>`
+  as the row right above the grid (the filter pill, the order as
+  `<SortButton inline>`, *Auswählen* / *Fertig*; while picking the count and
+  select all / deselect all) — never in the screen's bar — and
+  `{...gridPick(pick, open, label)}` on the `PhotoGrid`. Not picking, a tap
+  opens the photo (`<Opened>`: a windowed `ZoomView` with a red *Löschen
+  vormerken*, a video in a sheet); picking, a tap picks and the Dock's
+  `<MarkButton>` marks. A list's filter is a pill (`FilterMenu`,
+  `AgeFilter`), not a Segmented. A new grid of photos follows this; only
+  *Fotos verkleinern* (all picked from the start) and *Geschützt* differ.
 - **Videos play inside the app**: `PlayerContext` (`src/ui/play.tsx`, provided
   in `App.tsx`). A big picture of a video (`<PlayOver>`: a large file's sheet,
   a group's viewer, the review card) plays it **in place**, a `<video>` in the
@@ -175,14 +188,14 @@ scenes follow the switch (docs/PLAN.md, *Pricing*).
   finder (`lib` is the library without the bin; `all` has it) and wait in
   `AppState.bin`. Only the bin's screen (and a review started from it) calls
   `deletePhotos` → the system's dialog, after a sheet that shows exactly what
-  goes and its size (BinView: its dock only *reviews* the selection, the
-  sheet's button deletes). A review closed early puts what was marked by then
+  goes and its size (BinView: its red *Alle löschen* / *Ausgewählte
+  löschen* only open that sheet; the sheet's button deletes). A review closed early puts what was marked by then
   into the bin too (`closeReview`). A new place that deletes goes through
-  `toBin` too. Marking for deletion is never styled as deleting: no red, no trash icon
-  (`Archive` and teal or quiet glass); red (`neg`, `destructive`) is only
-  for what really deletes. (Exception: the originals after a smaller copy or a Live Photo
-  made a still — the copy is already saved — and, by Ahmad's choice, the group
-  card's *Ohne Stern vormerken*, red words beside the green *Alle behalten*.)
+  `toBin` too. Marking for deletion is red with the `Archive` icon, never
+  the trash (Ahmad's choice, 19 November 2026: `MarkButton`, the group
+  card's *Ohne Stern vormerken*, *Alle ohne Stern vormerken*); the trash
+  icon belongs to what really deletes (the bin's screen, the delete sheet,
+  the originals after a smaller copy or a Live Photo made a still).
 - A new asset (a plain photo made from a Live Photo, a smaller copy of a video
   or of a photo) needs the user's tap and a confirmation in the app; the original stays and
   goes only through the system's delete dialog afterwards. The copy keeps the
@@ -251,7 +264,9 @@ scenes follow the switch (docs/PLAN.md, *Pricing*).
   (24 px) — no border, no shadow. Corners are concentric: a photo inside a
   card takes the card's radius minus its inset.
 - **Glass, drawn — no `backdrop-filter`, no `filter: blur`** (Android's
-  WebView): `glass` for what floats (bar buttons, the tab bar, a secondary or
+  WebView). One exception: `glass-clear`, the photo window over the page
+  (`ZoomView windowed`), blurs what is behind it on the iPhone only
+  (`:root:not([data-platform="android"])`); Android gets a frosted fill. Otherwise: `glass` for what floats (bar buttons, the tab bar, a secondary or
   danger button, the toast, a chip on a photo), `glass-flat` for the same
   material inside a card or sheet, `sheen` on a prominent (teal / red / green)
   fill. Where content meets a floating bar it fades into the page
@@ -296,7 +311,7 @@ scenes follow the switch (docs/PLAN.md, *Pricing*).
 - A screen says what it is for behind an (i) in its bar (`<Screen info>`,
   a sheet, `how: t.infoHow`; the text's first line says what it is for, every
   further line is a numbered step), never in a paragraph above its content;
-  a grid you pick from has a `<SelectBar>` (select all / deselect all) above it; its subtitle carries the
+  a grid you pick from has a `<PickBar>` above it (*Every grid of photos picks the same way*); its subtitle carries the
   count and the size, its Dock button says what you get
   (*Durchgehen · 6 Dateien · 585 MB*).
 - Type scale in rem (follows Dynamic Type, `dynamicType.ts`); touch targets

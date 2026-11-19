@@ -9,6 +9,7 @@ import { Sheet } from '../ui/Sheet';
 import { Field } from '../ui/Field';
 import { PhotoGrid } from '../ui/Photo';
 import { isAndroid } from '../platform';
+import { MarkButton, Opened, PickBar, gridPick, usePick } from '../ui/pick';
 
 interface Props {
   t: Strings;
@@ -30,6 +31,8 @@ interface Props {
   /** Marked "Nie vorschlagen": none of its photos is ever suggested for deleting (src/logic/protect.ts). */
   isProtected: boolean;
   onProtect: (on: boolean) => void;
+  /** Picked or opened photos into "Zum Löschen vorgemerkt" (nothing is deleted). */
+  onAside: (photos: Photo[]) => void;
 }
 
 type SheetKind = null | 'actions' | 'rename' | 'split' | 'merge';
@@ -43,6 +46,9 @@ export function TripView(p: Props) {
   const dateLabel = (id: string) => new Date(timeOf(id)).toLocaleString(locale, { dateStyle: 'medium', timeStyle: 'short' });
   const days = tripDays(trip.ids, timeOf);
   const AlbumIcon = isAndroid() ? FolderPlus : ImagePlus;
+  const photos = trip.ids.flatMap(id => p.byId.get(id) ?? []);
+  const pick = usePick(photos);
+  const [open, setOpen] = useState<string | null>(null);
 
   const others = p.trips
     .filter(x => x.key !== trip.key)
@@ -71,11 +77,14 @@ export function TripView(p: Props) {
           </span>
         </div>
       )}
-      <PhotoGrid ids={trip.ids} label={dateLabel} />
+      <PickBar t={t} pick={pick} list={photos} count={n => plural(t, 'binPicked', n)} />
+      <PhotoGrid ids={trip.ids} label={dateLabel} {...gridPick(pick, setOpen, id => fmt(t.selectTile, { item: dateLabel(id) }))} />
 
       <Dock>
         <div className="grid gap-1">
-          {trip.album || !p.onCreateAlbum
+          {pick.selecting
+            ? <MarkButton t={t} photos={pick.chosen} count={l => plural(t, 'photos', l.length)} onClick={() => { p.onAside(pick.chosen); pick.select(false); }} />
+            : trip.album || !p.onCreateAlbum
             ? <Button full size="lg" onClick={p.onReview}>{t.reviewTrip}</Button>
             : <>
                 <Button full size="lg" icon={AlbumIcon} onClick={p.onCreateAlbum}>{t.createAlbum}</Button>
@@ -83,6 +92,7 @@ export function TripView(p: Props) {
               </>}
         </div>
       </Dock>
+      <Opened t={t} photo={open ? p.byId.get(open) ?? null : null} alt={open ? dateLabel(open) : ''} onClose={() => setOpen(null)} onAside={x => p.onAside([x])} />
 
       <Sheet open={sheet === 'actions'} title={t.editTrip} closeLabel={t.close} onClose={close}>
         <div className="space-y-5">
