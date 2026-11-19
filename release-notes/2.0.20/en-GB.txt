@@ -1,5 +1,6 @@
 Select like in the Photos app:
 • On every page of photos: “Select”, then mark several for deletion at once
+• Mark a whole group of similar photos at once
 • Tapping a photo opens it large, with the page still behind it
 • Make photos and videos smaller now on the home page; the originals wait in “Marked for deletion”
 • Month by month and chats show every photo to select from
