@@ -6,15 +6,16 @@ import { groupUtility, type UtilityLabel } from '../logic/ai';
 import { Dock, Empty, Screen } from '../ui/Screen';
 import { Button } from '../ui/Button';
 import { PhotoGrid } from '../ui/Photo';
+import { FilterMenu } from '../ui/Controls';
 import { MarkButton, Opened, PickBar, gridPick, usePick } from '../ui/pick';
-import { tapLight } from '../ui/haptics';
 import { sortPhotos, type SortKey } from '../logic/sort';
 import { SortButton } from './SortButton';
 
 /**
  * The utility photos the on-device AI found (src/logic/ai.ts): receipts,
  * documents, QR codes, photos of screens … newest first, filtered by what the
- * AI took them for, and "Go through" into the review. A tap opens a photo
+ * AI took them for (a pill beside the order, *Alle* first), and "Go
+ * through" into the review. A tap opens a photo
  * large; *Auswählen* picks (src/ui/pick.tsx), and the picked ones go to "Zum Löschen
  * vorgemerkt" at once. The AI only suggests: nothing is deleted without the
  * bin's sheet and the system's own dialog.
@@ -52,23 +53,9 @@ export function UtilityView({ t, photos, progress, sort, onSort, onBack, onRevie
           {fmt(t.utilityChecking, { seen: num(t, progress.seen), total: num(t, progress.total) })}
         </p>
       )}
-      {groups.length > 1 && (
-        <div role="radiogroup" aria-label={t.utilityTitle} className="flex gap-2 overflow-x-auto -mx-[16px] px-[16px] pb-1">
-          {[{ label: 'all' as const, count: photos.length }, ...groups.map(g => ({ label: g.label, count: g.photos.length }))].map(o => (
-            <button
-              key={o.label} type="button" role="radio" aria-checked={o.label === filter}
-              onClick={() => { tapLight(); setFilter(o.label); }}
-              className={`shrink-0 min-h-[44px] px-4 rounded-full text-label font-bold num transition-colors focus-visible:ring-focus ${
-                o.label === filter ? 'bg-accent-fill text-accent-fill-ink' : 'bg-surface-2 text-fg'}`}
-            >
-              {`${o.label === 'all' ? t.filterAll : t[`aiLabel_${o.label}`]} · ${num(t, o.count)}`}
-            </button>
-          ))}
-        </div>
-      )}
+      {photos.length > 0 && <PickBar t={t} pick={pick} list={shown} count={n => plural(t, 'binPicked', n)} sort={<SortButton inline t={t} value={sort} onChange={onSort} />} filter={groups.length > 1 && <FilterMenu label={t.utilityTitle} value={filter} onChange={setFilter} options={[{ value: 'all' as const, label: `${t.filterAll} · ${num(t, photos.length)}` }, ...groups.map(g => ({ value: g.label, label: `${t[`aiLabel_${g.label}`]} · ${num(t, g.photos.length)}` }))]} />} />}
       {shown.length === 0 ? <Empty title={t.noUtility} body={t.noUtilityBody} back={{ label: t.emptyBack, onClick: onBack }} /> : (
         <>
-          <PickBar t={t} pick={pick} list={shown} count={n => plural(t, 'binPicked', n)} sort={<SortButton inline t={t} value={sort} onChange={onSort} />} />
           <PhotoGrid
             ids={shown.map(p => p.id)}
             columns={4}

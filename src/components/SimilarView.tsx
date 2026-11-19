@@ -19,7 +19,8 @@ const PAGE = 40;
  * has a grey star the user can switch on to keep it too. *Alle behalten*
  * keeps the whole group (it leaves the list); *Ohne Stern zum Löschen
  * vormerken* puts every photo without a star into *Zum Löschen vorgemerkt*
- * and keeps the starred ones — both with undo. It is red with the archive
+ * and keeps the starred ones; *Alle vormerken* puts the whole group there,
+ * starred ones too (19 November 2026) — each with undo. It is red with the archive
  * (Ahmad's choice): nothing is deleted here. A tap on the photos opens the group to
  * compare. The near-identical photos carry the similar videos too, behind a
  * *Fotos · Videos* switch (their own screen until 18 November 2026). The
@@ -126,11 +127,12 @@ export function SimilarView({ t, kind = 'similar', groups: photoGroups, videoGro
           </span>
           <ChevronRight className="w-5 h-5 text-fg-faint rtl:rotate-180" aria-hidden="true" />
         </button>
-        {/* Settle it here, side by side under the date, words only: keep all, or mark everything without a star (the starred ones are kept). */}
-        <div className="grid grid-cols-2 gap-2 pt-2">
+        {/* Settle it here, side by side under the date, words only: keep all, mark everything without a star (the starred ones are
+            kept), or mark the whole group, starred ones too (Ahmad, 19 November 2026: the user's own choice, like picking in a grid). */}
+        <div className="grid grid-cols-3 gap-1 pt-2">
           <button
             type="button" onClick={() => { tapLight(); onKeepAll(g); }}
-            className="min-w-0 min-h-[44px] px-3 py-1.5 rounded-full text-label font-bold text-keep inline-flex items-center justify-center gap-1.5 press focus-visible:ring-focus"
+            className="min-w-0 min-h-[44px] px-2 py-1.5 rounded-full text-label font-bold text-keep inline-flex items-center justify-center gap-1.5 narrow:flex-col narrow:gap-0.5 press focus-visible:ring-focus"
           >
             <Check className="w-4 h-4 shrink-0" strokeWidth={3} aria-hidden="true" /><span className="wrap-prose leading-tight text-center">{t.keepAll}</span>
           </button>
@@ -138,10 +140,18 @@ export function SimilarView({ t, kind = 'similar', groups: photoGroups, videoGro
             type="button" disabled={!extra}
             onClick={() => { tapLight(); onAsideOthers(g, others, mine.filter(id => g.ids.includes(id))); setStars(s => { const { [g.key]: _, ...rest } = s; return rest; }); }}
             aria-label={`${t.groupAsideShort}, ${plural(t, unit, extra)}`}
-            className="min-w-0 min-h-[44px] px-3 py-1.5 rounded-full text-label font-bold text-neg inline-flex items-center justify-center gap-1.5 press focus-visible:ring-focus disabled:opacity-40"
+            className="min-w-0 min-h-[44px] px-2 py-1.5 rounded-full text-label font-bold text-neg inline-flex items-center justify-center gap-1.5 narrow:flex-col narrow:gap-0.5 press focus-visible:ring-focus disabled:opacity-40"
           >
             {/* Into "Zum Löschen vorgemerkt": red, since these photos are headed for deletion; the archive icon says nothing is deleted yet. */}
             <Archive className="w-4 h-4 shrink-0" strokeWidth={2.4} aria-hidden="true" /><span className="wrap-prose leading-tight text-center">{t.groupAsideShort}</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => { tapLight(); onAsideAll(g.ids, []); setStars(s => { const { [g.key]: _, ...rest } = s; return rest; }); }}
+            aria-label={`${t.groupAsideAll}, ${plural(t, unit, g.ids.length)}`}
+            className="min-w-0 min-h-[44px] px-2 py-1.5 rounded-full text-label font-bold text-neg inline-flex items-center justify-center gap-1.5 narrow:flex-col narrow:gap-0.5 press focus-visible:ring-focus"
+          >
+            <Archive className="w-4 h-4 shrink-0" strokeWidth={2.4} aria-hidden="true" /><span className="wrap-prose leading-tight text-center">{t.groupAsideAll}</span>
           </button>
         </div>
       </div>

@@ -239,6 +239,10 @@ then *Mehr Platz* and *Geschützt*.
   archive icon, **Ohne Stern vormerken** [Mark unstarred] — every photo without a star goes to *Zum Löschen vorgemerkt*
   (nothing is deleted yet), the starred ones are kept from now on — each with
   undo, without opening the group. A tap on the photos still opens it.
+- **Alle vormerken** [Mark all] on every group card (since 19 November 2026),
+  beside *Alle behalten* and *Ohne Stern vormerken*: the whole group, starred
+  photos too, goes to *Zum Löschen vorgemerkt* (with undo). Under 360 px the
+  three buttons put their icon above the words.
 - **Alle ohne Stern vormerken · 12 Fotos · 48 MB** [Mark all unstarred], red,
   in the Dock (since 19 November 2026; duplicates too): *Ohne Stern
   vormerken* for every group of the list at once — the starred photos stay,
@@ -379,7 +383,8 @@ then *Mehr Platz* and *Geschützt*.
 - *Unwichtige Fotos* [Unimportant photos] on home: receipts, documents,
   whiteboards and notes, photos of a screen, saved screenshots, memes, QR
   codes and accidental shots, found by the AI on the phone (SigLIP 2, docs/AI.md).
-  Chips filter by kind (*Kassenzettel · 2*); *Durchgehen* reviews them, each
+  A pill beside the order filters by kind — *Alle · 39* (the default),
+  *Kassenzettel · 10* … (chips until 19 November 2026); *Durchgehen* reviews them, each
   suggested for deleting with its reason (*KI: Kassenzettel*). Picking works
   as everywhere (*Everywhere › Picking from a grid*).
 - What the AI looks for (33 labels, docs/AI.md): receipts, documents,
