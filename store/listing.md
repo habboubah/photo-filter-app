@@ -299,27 +299,42 @@ on home, the full-bleed review with zoom and a named, undoable decision).
 | Contact phone | *your phone number, with +49* |
 | Attachment | Best **with** the screen recording (`npm run record:app-review`, see `ios/AppReviewRecorder/README.md`): it shows the scan, a trip and the deletion on a device with photos |
 
-**Notes for the reviewer** (English, paste as is):
+**Notes for the reviewer** (*App Review Information › Notes*, English,
+paste as is; updated 19 November 2026 for the current flow — the two tabs,
+*Marked for deletion*, search, Arabic, the widgets). The labels in quotes are
+the app's English strings, so the reviewer can find each button; after a
+renamed label or a changed flow, update this text with
+`ios/AppReviewRecorder/scenes.json`:
 ```
-Bildklar (German: "Bildklar KI: Fotos aufräumen") organizes the photo library on the device. There is no account, no server and no analytics; the app sends no data anywhere.
+Bildklar (German: "Bildklar KI: Fotos aufräumen") organizes and tidies the photo library on the device. There is no account, no sign-in, no server, no analytics and no ads. The app makes no network requests at all, so it works the same in airplane mode.
 
-Photo library access is the core of the app: it reads the dates, locations and small previews of the photos to find trips, near-identical photos and blurry photos. Limited Access works too (the app then shows only the selected photos and offers "Select photos"). Location data in the photos is used on the device only; place names come from a list built into the app.
+WHY PHOTO ACCESS
+Photo library access is the core of the app: it reads the dates, locations and small previews of the photos to find trips, near-identical photos, duplicates and failed shots. Limited Access works too: the app then shows only the selected photos, says so on the home screen and offers "Select photos". Location data in the photos is used on the device only; place names come from a list built into the app.
 
-How to try it (the device needs some photos; trips need photos with locations at least 50 km from where most photos were taken):
-1. Allow access. The scan runs on the home screen.
-2. Open the "Organise" tab and a trip: its photos; the "…" menu renames, splits, merges or hides it.
-3. Near-identical photos: open a group; the suggested best photo is marked. "Delete others" asks for confirmation, then iOS asks again.
-4. Blurry photos and the review (swipe right = keep, left = delete, undo button).
+BEFORE YOU START
+The device needs photos. Trips need photos with a location at least 50 km from where most photos were taken, over at least six hours. A few shots of the same scene taken seconds apart show the near-identical groups and the best shot.
 
-No in-app purchase in this version: everything the app shows is free, and deleting has no limit.
+HOW TO TRY IT
+1. First start: tap "Get started", then "Allow access to photos", and choose in the iOS dialog. The first scan shows its progress, then what it found.
+2. "Clean up" tab: "Suggestions" shows how much space could be freed, by category (Duplicates, Near-identical, Failed shots, Screenshots). Open a category.
+3. Near-identical photos: open a group. The green star marks the suggested best shot; tap a photo to compare it large. "Mark unstarred" puts the others into "Marked for deletion" – nothing is deleted yet.
+4. "Go through": swipe right = keep, left = mark for deletion, or use the "Keep", "Mark for deletion" and "Later" buttons; "Undo" at the top right.
+5. Deleting: on "Clean up", open "Marked for deletion" and tap "Review selection". A sheet shows exactly which photos go and how much space they take; its red button calls PHAssetChangeRequest.deleteAssets, and iOS asks for confirmation once more. The photos go to Recently Deleted.
+6. "Organise" tab: open a trip to see its photos; the "…" menu renames, splits, merges or hides it. "Create album" makes an album in Photos (the photos are not moved or copied). The field "What is in the photo?" searches by content with an on-device model.
+7. Settings (the round button at the top right): language, the weekly reminder (off by default; a local notification), "Start over".
 
-Safety: the app never deletes on its own. Deleted photos go to Recently Deleted (PHAssetChangeRequest.deleteAssets with the system confirmation). Photos are never changed or copied.
+NO IN-APP PURCHASE
+Nothing is for sale in this version: every feature is free and deleting has no limit.
 
-The Lock Screen widget shows numbers only, never a photo.
+SAFETY
+The app never deletes, moves or changes a photo on its own. Every delete needs a tap in the app and iOS's own confirmation, and goes to Recently Deleted for 30 days. Favourites are never suggested for deleting.
 
-The attached video shows all of this on a device with sample photos.
+WIDGETS
+The home-screen widget shows a photo from "On this day" or how much space could be freed; the Lock Screen widget shows numbers only, never a photo. The app writes both on the device (App Group), with no network.
 
-The app is in German and English and follows the device language.
+The attached screen recording shows the scan, a trip, near-identical photos and a deletion on an iPhone with sample photos.
+
+The app follows the device language: German, English or Arabic.
 ```
 
 ### 2.6 App Privacy (the "nutrition label")
@@ -450,6 +465,25 @@ Bildklar organizes the photo and video library on the device: it scans all photo
 Play may ask for a short video of the core flow: see `docs/TODO.md`, step 5.
 Also explained in the app's permission screen; with Android 14's *Select
 photos* the app works with the chosen photos only.
+
+**Testing notes for Google Play's review.** Play has no notes field while
+*App access* says *All functionality is available without special access*.
+Keep this text for when Play asks — with the photo and video permissions
+declaration, in a reply to a rejection, or under *App access › All or some
+functionality is restricted* if you ever need that (then add it there as the
+instructions):
+
+```text
+Bildklar organizes the photo and video library on the device. No account, no sign-in, no server, no ads; nothing is for sale in this version, and the app works the same offline.
+
+How to try it (the phone needs photos; trips need photos taken at least 50 km from home):
+1. "Get started", then "Allow access to photos" ("Select photos" on Android 14+ works too).
+2. "Clean up" tab: open a category (Duplicates, Near-identical, Failed shots, Screenshots). "Mark unstarred" or a swipe left puts photos into "Marked for deletion" – nothing is deleted yet.
+3. "Marked for deletion" › "Review selection" › the red button: Android's own dialog moves the photos to the Trash (MediaStore.createTrashRequest; 30 days).
+4. "Organise" tab: a trip › "Create folder" moves its photos to Pictures/Bildklar/<trip> after Android's dialog (createWriteRequest); nothing is copied.
+
+READ_MEDIA_IMAGES and READ_MEDIA_VIDEO: the app scans the whole library to find duplicates, near-identical photos and trips; the photo picker can't do this.
+```
 
 ### 3.6 Release notes (500 per language)
 
