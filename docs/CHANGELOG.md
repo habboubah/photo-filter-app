@@ -7,6 +7,8 @@ only how the app is now. (Started 18 November 2026; older history is in git.)
 
 - **Alle vormerken** on every group card (duplicates, near-identical): the
   whole group, starred photos too, into *Zum Löschen vorgemerkt*.
+- **The opened photo**, zoomed in, grows past its window over the whole
+  screen (it stayed clipped inside the window).
 - **Unwichtige Fotos**: the kind is a dropdown pill beside the order
   (*Alle · 39* by default), no longer a row of chips.
 

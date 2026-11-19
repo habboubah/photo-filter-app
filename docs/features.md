@@ -761,7 +761,8 @@ then *Mehr Platz* and *Geschützt*.
   vorgemerkt*. A row above the photos, under nothing but the title, holds
   the filter pill (if the list has one), the order (*Neueste zuerst*) and
   **Auswählen** [Select]. Not picking, a tap opens the photo as a window of
-  clear glass over the page (a tap beside it or on the page closes it; a
+  clear glass over the page (zoomed in, the photo grows past the window over
+  the whole screen; a tap beside it or on the page closes it; a
   video opens in a sheet and plays there), with a red **Löschen vormerken**
   for that one. Picking (*Fertig* ends it), a tap picks, the row says how
   many with **Alle auswählen** / **Alle abwählen**, and the Dock's red

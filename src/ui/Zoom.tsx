@@ -18,7 +18,8 @@ export const zoomLayoutId = (id: string) => `zoom-${id}`;
  * it sharp, are the eyes open. A tap zooms in on the spot tapped (and out
  * again); zoomed in, a drag moves the photo. The picture grows out of the
  * tile it was opened from (a shared element) and goes back into it. Closed
- * by its button, Escape, the system's back or a tap beside the photo. Asks for a larger picture
+ * by its button, Escape, the system's back or a tap beside the photo. As a
+ * window (`windowed`), a photo zoomed in grows past the window's edges. Asks for a larger picture
  * than the review shows, and shows that one until it is there. `onLike`
  * adds *Ähnliche Fotos zeigen* at its foot (from a review: it left the
  * review's card on 18 November 2026, to keep the busiest screen calm).
@@ -106,7 +107,8 @@ export function ZoomView({ id, alt, labels, onClose, onLike, action, windowed }:
     >
       {windowed && <div className="absolute inset-0 scrim opacity-60" onClick={() => { tapLight(); onClose(); }} aria-hidden="true" />}
       <div className={windowed
-        ? 'relative w-full max-w-column h-[min(78vh,44rem)] flex flex-col rounded-xl glass-clear overflow-hidden'
+        // Zoomed in, nothing clips: the photo grows past the window over the whole screen (Ahmad, 19 November 2026).
+        ? `relative w-full max-w-column h-[min(78vh,44rem)] flex flex-col rounded-xl glass-clear ${zoomed ? '' : 'overflow-hidden'}`
         : 'contents'}>
       <div onClick={outside} className={`relative z-10 px-[12px] min-h-[54px] pt-1 flex items-center justify-between gap-2 ${windowed ? 'pt-3' : 'safe-top'}`}>
         <button
@@ -122,7 +124,7 @@ export function ZoomView({ id, alt, labels, onClose, onLike, action, windowed }:
           {zoomed ? <ZoomOut className="w-6 h-6" strokeWidth={2.2} aria-hidden="true" /> : <ZoomIn className="w-6 h-6" strokeWidth={2.2} aria-hidden="true" />}
         </button>
       </div>
-      <div ref={stage} className="relative flex-1 min-h-0 overflow-hidden touch-none">
+      <div ref={stage} className={`relative flex-1 min-h-0 touch-none ${windowed && zoomed ? 'overflow-visible' : 'overflow-hidden'}`}>
         <motion.div
           layoutId={reduce ? undefined : zoomLayoutId(id)}
           className={`absolute inset-0 ${zoomed ? 'cursor-grab active:cursor-grabbing' : 'cursor-zoom-in'}`}
