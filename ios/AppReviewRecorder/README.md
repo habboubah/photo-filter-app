@@ -5,17 +5,23 @@ on a physical device … beginning with launching the app"): a UI test taps
 through Bildklar installed on your iPhone while iOS records the screen. About
 2 minutes; the video ends up in Photos (a video, so Bildklar itself ignores it).
 
-It is the shopping list's recorder (originally Spartopf's,
-`../budget-app/ios/AppReviewRecorder`), copied on 16 November 2026: the
-runner, the test and the scripts are the same, only `scenes.json` is
-Bildklar's. Five scenes, from the icon on the home screen to the settings:
+It is Spartopf's recorder (`../budget-app/ios/AppReviewRecorder`, first
+copied via the shopping list on 16 November 2026): the runner, the test and
+the scripts are kept in step with Spartopf's (checked 19 November 2026 —
+the same reset before every recording, update from TestFlight, stop when the
+app leaves the screen, `record:watch`). Only what names the app differs:
+`scenes.json`, the bundle ids in `make-project.rb`, the demo library in the
+rehearsal, and `app.iconName` may list one name per iPhone language.
+Bildklar's recording is the **typical flow** (Ahmad, 19 November 2026), not a
+tour of every feature. Five scenes, from the icon on the home screen to the
+settings:
 
 | Scene | Shows |
 |---|---|
-| 1 Launch and the scan | The icon, the photo permission (*Limit Access…* if iOS asks), the *Clean up* tab filling up, the clean-up card |
+| 1 Launch and the scan | The icon, the photo permission (*Limit Access…* if iOS asks), the *Clean up* tab filling up, *… could go* |
 | 2 A trip, found by itself | The *Organise* tab, *Paris* and its photos, back (nothing is for sale yet, so no album — `src/logic/allowance.ts`) |
-| 3 Near-identical photos and the best shot | A group, the suggested best photo, picking another one as the best |
-| 4 A review that deletes | *Clean up now* › *Go through all*: delete, keep, delete, *Finish*, *Delete 2 photos* → iOS's own *Delete* dialog → *2 photos deleted* |
+| 3 Near-identical photos and the best shot | *Near-identical*, a group, the photo that *Stays*, the other one in the zoom view |
+| 4 A review that marks, then deletes | *Clean up now* › *Go through all*: mark, keep, mark, *Finish*, *Mark for deletion · 2*; then *Marked for deletion* › *Review selection* › the sheet that shows what goes › *Delete 2 photos* (or *2 files*, when a video is second) → iOS's own *Delete* dialog → *… deleted* |
 | 5 Settings and the end | The settings down to *Privacy*, back home |
 
 The review notes (`store/listing.md`, 2.5) describe what the video leaves out.
@@ -70,7 +76,7 @@ and 5 are done.
 ## Every recording
 
 1. `npm run rehearse:app-review` — checks every step against the current
-   code in about 2 minutes.
+   code in about a minute.
 2. The build you submit has to be the one installed from **TestFlight**,
    and a build the scenes fit: `scenes.json` › `app.minVersion` (0.1.0). The
    run prints which build the iPhone has; an older one it **updates from
@@ -184,6 +190,15 @@ Any step with `"soft": true` may fail without stopping the recording.
 Deleted (in the Photos app), *Send feedback* and *Privacy* (mail and the
 browser), *Rate Bildklar* (not shown before the app is in the store), *Select
 photos* (iOS's picker), Android.
+
+**Won't appear during a run, though the app has them** (`src/useNudges.ts`):
+the rating prompt after a delete (iOS shows nothing in a TestFlight build),
+the weekly-reminder offer (only after a month is gone through, which the
+scenes don't do), the *Since …* card (only for five or more photos newer
+than the last visit — the demo photos are older) and the new-trip card (the
+trips count as seen once the first scan settles). If one ever shows on the
+iPhone, it is a sheet or card over the flow: close it with an `optional`
+step rather than leaving it in the video.
 
 **Left out to keep it short (about 2 minutes):** renaming, merging, splitting
 and hiding a trip, the list of all trips, the blurry list on its own
