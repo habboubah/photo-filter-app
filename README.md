@@ -131,8 +131,8 @@ One request runs every step: What's New, `npm run check`, screenshots,
 preview video, `npm run release`, `npm run store:listing`. Only
 **Add for Review** (App Store) and **promoting** the Play release stay yours.
 
-1. Once: save the skill `bildklar-full-release` (the card in Claude ›
-   *Save*). It then shows up in *Settings › Capabilities › Skills*.
+1. Once: save the skill `bildklar-full-release` from the card Claude
+   showed when it wrote it. After that it is one of your skills.
 2. On the **Mac** (Xcode builds the iPhone app there), open Claude Code in
    this folder:
    ```bash
