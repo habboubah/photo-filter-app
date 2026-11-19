@@ -125,6 +125,37 @@ npm run store:listing:dry  # the store texts, screenshots and video that would g
 npm run store:listing     # put them into App Store Connect and the Play Console
 ```
 
+### The whole release with Claude (skill `bildklar-full-release`)
+
+One request runs every step: What's New, `npm run check`, screenshots,
+preview video, `npm run release`, `npm run store:listing`. Only
+**Add for Review** (App Store) and **promoting** the Play release stay yours.
+
+1. Once: save the skill `bildklar-full-release` (the card in Claude ›
+   *Save*). It then shows up in *Settings › Capabilities › Skills*.
+2. On the **Mac** (Xcode builds the iPhone app there), open Claude Code in
+   this folder:
+   ```bash
+   cd ~/repos/photo-filter-app && claude
+   ```
+   or a Claude chat that is linked to this Mac and has this folder connected.
+3. Ask for it — either way works:
+   ```text
+   /bildklar-full-release
+   ```
+   ```text
+   Mach das komplette Release von Bildklar: Screenshots, Video, beide Stores, Listings.
+   ```
+   Add what is special this time, for example *„als minor-Version“*,
+   *„ohne neues Video“*, *„nur Google Play“* or *„die Release Notes sind
+   schon fertig“*.
+4. Claude shows the version and the German release notes before it builds,
+   and at the end says what went up and what is left (also in
+   `docs/TODO.md`). Submitting for review happens only when you say so.
+
+Before the first run: `.env.release` filled in (see `.env.release.example`),
+`npx playwright install chromium` and `brew install ffmpeg`.
+
 ## More
 
 Everything else is in [docs/](docs/): [the plan](docs/PLAN.md) (architecture,
