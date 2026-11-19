@@ -425,6 +425,7 @@ Android keeps the layout and swaps the material, through
 | App Store preview video | `npm run app-preview` |
 | App Review recording: rehearse / record | `npm run rehearse:app-review` / `npm run record:app-review` |
 | Release to both stores (TestFlight + Play internal) | `npm run release` (preview: `npm run release:dry`) |
+| The store listings into both consoles: texts, What's New, screenshots, preview video, Play's graphics; the App Store version, its review notes and build | `npm run store:listing` (preview: `npm run store:listing:dry`) |
 
 The screenshot and check scripts find their buttons by the app's own strings
 (`scripts/lib/shots.mjs` loads `src/translations.ts`), so a renamed label
@@ -436,7 +437,11 @@ Same pipeline as the shopping list: `scripts/release.js` ships **both stores
 on one version** (`--ios` / `--android` for one). It gates on `npm run check`,
 builds the web app once in `--mode native`, then Android (signed bundle →
 Play's internal track) and iOS (archive → TestFlight), then commits and tags.
-Credentials live in the gitignored `.env.release`. Submitting for review and
+Credentials live in the gitignored `.env.release`. `scripts/store-listing.mjs`
+(`npm run store:listing`) then puts `store/listing.md`, the release notes and
+the composed screenshots / preview video into both consoles through their
+APIs (unchanged files are skipped; only languages a console already has,
+unless `--add-languages`). Submitting for review and
 promoting to production stay manual. Checklists: `docs/APP_STORE_RELEASE.md`,
 `docs/ANDROID_RELEASE.md`.
 

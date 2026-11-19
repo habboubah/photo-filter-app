@@ -121,6 +121,8 @@ npm run release:dry      # what would happen; nothing built or sent
 npm run release          # both stores on one version
 npm run release:ios      # the App Store only (first upload: npm run release:first)
 npm run release:android  # Google Play only (once: npm run android:key)
+npm run store:listing:dry  # the store texts, screenshots and video that would go up; nothing sent
+npm run store:listing     # put them into App Store Connect and the Play Console
 ```
 
 ## More

@@ -347,10 +347,22 @@ npm run release:ios              # the App Store only
 first runs `npm run check` (lint, tests, the privacy check, the contrast
 audit) and stops if anything fails.
 
-Then in App Store Connect:
-1. Left, **+** next to *iOS App* → **New Version**, e.g. `1.0.1` (same as the terminal showed).
-2. Fill in **What's New** [Neue Funktionen] – examples in `store/listing.md`.
-3. Pick the **Build** → **Add for Review** → submit.
+Then the listing, without pasting:
+
+```bash
+npm run store:listing:dry        # what would be sent, and every file checked; nothing sent
+npm run store:listing -- --wait 30   # both consoles; waits up to 30 min for the build to process
+```
+
+It makes (or renames) the App Store version, fills in name, subtitle,
+keywords, promotional text, description and What's New
+(`release-notes/<version>/`) per language, uploads `screenshots/store/iphone/`
+and the preview video with its poster frame, sets the App Review notes and
+contact, and picks the processed build. Then in App Store Connect only:
+**Add for Review** → submit.
+
+By hand, if the script can't: **+** next to *iOS App* → **New Version**,
+**What's New** from `release-notes/`, pick the **Build** → **Add for Review**.
 
 Only redo screenshots/texts when something visible changed
 (`npm run screenshots && npm run store-screenshots`).
