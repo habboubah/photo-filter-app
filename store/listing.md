@@ -288,6 +288,11 @@ reveal, comparing the first group side by side with one zoom, the guided
 review, months that resume, the three safety nets, one-time tips and *So
 funktioniert Bildklar*; and the polish of the same day: the next step first
 on home, the full-bleed review with zoom and a named, undoable decision).
+Version 2.0.20: `release-notes/2.0.20/` (19 November 2026: selecting like
+Photos on every page of photos, a photo opened over the page, smaller photos
+and videos on home with the originals in *Zum Löschen vorgemerkt*, months and
+chats as grids, search words that always find something, how to get deleted
+photos back). If the release takes another number, rename the folder.
 
 ### 2.5 App Review information
 
