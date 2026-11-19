@@ -631,6 +631,7 @@ export const ar: Strings = {
   groupShow: 'عرض الصورة {i} من {n}، {date}',
   groupAsideOthers: 'تحديد الباقي',
   groupAsideShort: 'تحديد غير المميّزة',
+  groupAsideAll: 'تحديد الكل',
   groupStarKeep: 'احتفظ بهذه أيضًا: {date}',
   aside: 'تحديد للحذف',
   asideAllGroups: 'تحديد كل غير المميّزة',

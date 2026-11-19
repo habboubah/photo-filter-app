@@ -3,6 +3,13 @@
 What changed and what left, newest first — so `docs/features.md` can say
 only how the app is now. (Started 18 November 2026; older history is in git.)
 
+## 19 November 2026, evening
+
+- **Alle vormerken** on every group card (duplicates, near-identical): the
+  whole group, starred photos too, into *Zum Löschen vorgemerkt*.
+- **Unwichtige Fotos**: the kind is a dropdown pill beside the order
+  (*Alle · 39* by default), no longer a row of chips.
+
 ## 19 November 2026, afternoon — picking like Photos
 
 - **Every grid of photos picks the same way** (`src/ui/pick.tsx`): large
