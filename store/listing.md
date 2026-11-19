@@ -1,4 +1,4 @@
-# Store listing — Bildklar KI: Foto Reiniger
+# Store listing — Bildklar KI: Fotos aufräumen
 
 Everything to copy into **App Store Connect** and the **Google Play Console**,
 in German (primary), English and Arabic. Every text below fits the store's limit
@@ -46,7 +46,7 @@ and the album scene together with the switch.
 
 | Field | Deutsch | English |
 |---|---|---|
-| App name (30) | `Bildklar KI: Foto Reiniger` | `Bildklar AI: Photo Cleaner` |
+| App name (30) | `Bildklar KI: Fotos aufräumen` | `Bildklar AI: Photo Cleaner` |
 | Home-screen / launcher name | Bildklar | Bildklar |
 | Bundle ID / package | `com.habboubah.bildklar` | same |
 | Category | iOS: **Photo & Video** (secondary: Utilities) · Play: **Photography** | same |
@@ -79,7 +79,7 @@ offline" / "ohne Internet" is true and fine).
 
 | Field | Limit | Deutsch (primary) | English (U.K. and U.S.) |
 |---|---|---|---|
-| Name | 30 | `Bildklar KI: Foto Reiniger` | `Bildklar AI: Photo Cleaner` |
+| Name | 30 | `Bildklar KI: Fotos aufräumen` | `Bildklar AI: Photo Cleaner` |
 | Subtitle | 30 | `Doppelte Fotos – 100% offline` | `Duplicate photos, 100% offline` |
 
 The subtitle names the search people type most ("doppelte Fotos" /
@@ -88,9 +88,13 @@ The subtitle names the search people type most ("doppelte Fotos" /
 no other cleaner does — moved to the description's first lines and the
 keywords. Before 18 November 2026 (late evening): `Doppelte Fotos & Reisealben`.
 
+The German name was `Bildklar KI: Foto Reiniger` until 19 November 2026:
+the app organizes as much as it cleans, and "aufräumen" says both. "Reiniger"
+moved into the German keywords so the search for it still finds Bildklar.
+
 **Keywords** (100 bytes, comma-separated, no spaces after commas):
 
-- **DE:** `duplikate,ähnlich,unscharf,speicher,löschen,aufräumen,privat,datenschutz,urlaub,album,kinder`
+- **DE:** `duplikate,ähnlich,unscharf,speicher,löschen,reiniger,privat,datenschutz,urlaub,reise,album,kinder`
 - **EN:** `similar,blurry,storage,space,delete,clean,private,privacy,trip,travel,album,vacation,kids,family`
 
 Rules followed: no word repeated from the name or subtitle (Apple combines
@@ -297,7 +301,7 @@ on home, the full-bleed review with zoom and a named, undoable decision).
 
 **Notes for the reviewer** (English, paste as is):
 ```
-Bildklar (German: "Bildklar KI: Foto Reiniger") organizes the photo library on the device. There is no account, no server and no analytics; the app sends no data anywhere.
+Bildklar (German: "Bildklar KI: Fotos aufräumen") organizes the photo library on the device. There is no account, no server and no analytics; the app sends no data anywhere.
 
 Photo library access is the core of the app: it reads the dates, locations and small previews of the photos to find trips, near-identical photos and blurry photos. Limited Access works too (the app then shows only the selected photos and offers "Select photos"). Location data in the photos is used on the device only; place names come from a list built into the app.
 
@@ -365,7 +369,7 @@ development, not for selling a photo app.
 
 | Field | Limit | Deutsch | English |
 |---|---|---|---|
-| App name | 30 | `Bildklar KI: Foto Reiniger` | `Bildklar AI: Photo Cleaner` |
+| App name | 30 | `Bildklar KI: Fotos aufräumen` | `Bildklar AI: Photo Cleaner` |
 | Short description | 80 | `Doppelte Fotos finden, Reisen ordnen — offline, nichts verlässt dein Handy` | `Find duplicate photos, sort your trips — offline, nothing leaves your phone` |
 
 The short description says what the app does, not what it costs: Google's

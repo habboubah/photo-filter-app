@@ -24,7 +24,7 @@ const de = {
   dir: 'ltr',
 
   appName: 'Bildklar',
-  storeName: 'Bildklar KI: Foto Reiniger',
+  storeName: 'Bildklar KI: Fotos aufräumen',
   tagline: 'Reisen sortiert, Doppeltes und Unscharfes aufgeräumt',
   version: 'Version {v}',
   cancel: 'Abbrechen',

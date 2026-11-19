@@ -3,6 +3,15 @@
 What changed and what left, newest first — so `docs/features.md` can say
 only how the app is now. (Started 18 November 2026; older history is in git.)
 
+## 19 November 2026 — the store texts
+
+- **German store name** *Bildklar KI: Fotos aufräumen* (was *Bildklar KI:
+  Foto Reiniger*); "reiniger" is a German keyword now. The English name stays.
+- **One store description** per language for the App Store and Google Play,
+  privacy first (we never see your photos, offline, free for now, no ads),
+  naming neither iPhone nor Android; deleted photos wait in the phone's own
+  bin, not in the app. The "made by a father" line is gone.
+
 ## 18 November 2026, last — ready for production
 
 - **The dry run is gone**: the *Probelauf* switch (Einstellungen › Nur in der
