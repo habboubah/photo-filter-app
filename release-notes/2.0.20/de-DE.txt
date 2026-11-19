@@ -1,5 +1,6 @@
 Auswählen wie in der Fotos-App:
 • Auf jeder Seite mit Fotos: „Auswählen“, dann mehrere auf einmal zum Löschen vormerken
+• Eine ganze Gruppe ähnlicher Fotos auf einmal vormerken
 • Ein Foto antippen öffnet es groß – direkt darüber die Seite
 • Fotos und Videos verkleinern jetzt auf der Startseite, die Originale warten in „Zum Löschen vorgemerkt“
 • Monat für Monat und Chats zeigen alle Fotos zum Auswählen
