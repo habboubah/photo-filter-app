@@ -92,6 +92,8 @@ npm run test:android     # the Android feature code (gradlew)
 ## Screenshots
 
 ```bash
+npm run screenshots && npm run store-screenshots && npm run app-preview 
+
 npm run screenshots                               # raw captures → screenshots/de, en (App Store) and de-android, en-android (Google Play)
 npm run screenshots -- --only 02-home,06-group    # only some screens
 npm run screenshots -- --ios                      # only the iPhone ones (or --android: only Google Play's)
