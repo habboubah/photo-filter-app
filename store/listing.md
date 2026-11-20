@@ -305,44 +305,51 @@ photos back; in the evening a whole group marked at once). If the release takes 
 | Attachment | Best **with** the screen recording (`npm run record:app-review`, see `ios/AppReviewRecorder/README.md`): it shows a fresh install's first run, the scan, a trip and the deletion on an iPhone with the test photos |
 
 **Notes for the reviewer** (*App Review Information › Notes*, English,
-paste as is; updated 19 November 2026 for the current flow — the two tabs,
-*Marked for deletion*, search, Arabic, the widgets). The labels in quotes are
+paste as is; rewritten 20 November 2026 before the first submission: no
+placeholder, the labels of the current flow, and what Apple's *Provide
+information for a complete review* asks for — business model, the switched-off
+purchase code (guidelines 2.1(b), 2.5.19), external services, devices tested,
+regions, and what sets the app apart (4.3(b))). The labels in quotes are
 the app's English strings, so the reviewer can find each button; after a
 renamed label or a changed flow, update this text with
 `ios/AppReviewRecorder/scenes.json`:
 ```
-Bildklar (German: "Bildklar KI: Fotos aufräumen") organizes and tidies the photo library on the device. There is no account, no sign-in, no server, no analytics and no ads. The app makes no network requests at all, so it works the same in airplane mode.
+Bildklar organizes and tidies the photo library on the iPhone, for people with large libraries (typically parents). Everything runs on the device: no account, no sign-in, no server, no analytics, no ads, no third-party SDKs. The app makes no network requests at all, so it works the same in airplane mode.
+
+BUSINESS MODEL / IN-APP PURCHASE
+This version is free, has no limits and sells nothing. The binary contains the code for a planned one-time unlock (com.habboubah.bildklar.unlock), switched off at build time: no paywall, price or "Restore" is shown anywhere. The product exists in App Store Connect but is not part of this submission; it will be switched on only in a later version submitted for review together with the purchase.
+
+EXTERNAL SERVICES
+None. The image model (SigLIP 2, Apache 2.0) runs in ONNX Runtime inside the app; place names come from a built-in GeoNames list (CC BY 4.0).
 
 WHY PHOTO ACCESS
-Photo library access is the core of the app: it reads the dates, locations and small previews of the photos to find trips, near-identical photos, duplicates and failed shots. Limited Access works too: the app then shows only the selected photos, says so on the home screen and offers "Select photos". Location data in the photos is used on the device only; place names come from a list built into the app.
+Photo access is the core of the app: it reads dates, locations and small previews to find trips, near-identical photos, duplicates and failed shots. It writes only after a tap and iOS's own confirmation: albums, and deletes to Recently Deleted. Limited Access works too: the app then shows only the selected photos and offers "Select photos".
 
-BEFORE YOU START
-The device needs photos. Trips need photos with a location at least 50 km from where most photos were taken, over at least six hours. A few shots of the same scene taken seconds apart show the near-identical groups and the best shot.
+WHAT YOU NEED
+Photos on the device. For near-identical groups and the best shot, take 4-5 photos of one scene seconds apart; for "Failed shots" one shaky or covered photo; also two screenshots. Trips need photos with a location at least 50 km from where most photos were taken, over at least six hours – hard to make on a review device, so the attached screen recording shows one.
 
 HOW TO TRY IT
-1. First start: tap "Get started", then "Allow access to photos", and choose in the iOS dialog. The first scan shows its progress, then what it found.
-2. "Clean up" tab: "Suggestions" shows how much space could be freed, by category (Duplicates, Near-identical, Failed shots, Screenshots). Open a category.
-3. Near-identical photos: open a group. The green star marks the suggested best shot; tap a photo to compare it large. "Mark unstarred" puts the others into "Marked for deletion" – nothing is deleted yet.
-4. "Go through": swipe right = keep, left = mark for deletion, or use the "Keep", "Mark for deletion" and "Later" buttons; "Undo" at the top right.
-5. Deleting: on "Clean up", open "Marked for deletion" and tap "Review selection". A sheet shows exactly which photos go and how much space they take; its red button calls PHAssetChangeRequest.deleteAssets, and iOS asks for confirmation once more. The photos go to Recently Deleted.
-6. "Organise" tab: open a trip to see its photos; the "…" menu renames, splits, merges or hides it. "Create album" makes an album in Photos (the photos are not moved or copied). The field "What is in the photo?" searches by content with an on-device model.
-7. Settings (the round button at the top right): language, the weekly reminder (off by default; a local notification), "Start over".
-
-NO IN-APP PURCHASE
-Nothing is for sale in this version: every feature is free and deleting has no limit.
+1. "Get started", then "Allow access to photos", and choose in the iOS dialog. The first scan shows its progress, then what it found; "Compare your first group" opens a group of near-identical photos.
+2. In a group the green star marks the suggested best shot; tap a photo to compare it large. "Mark the rest" (on the Near-identical list: "Mark unstarred") puts the others into "Marked for deletion" – nothing is deleted yet.
+3. "Clean up" tab: "Suggestions" shows the space by category. "Clean up now", then "Go through all": swipe right = keep, left = mark for deletion, or the "Keep", "Mark for deletion" and "Later" buttons; "Undo" at the top right; "Finish" ends.
+4. Deleting: on "Clean up" open "Marked for deletion" and tap "Delete all". The first time a short note explains Recently Deleted ("Got it – continue"); a sheet then shows exactly what goes and its size. Its red button calls PHAssetChangeRequest.deleteAssets and iOS asks once more.
+5. "Organise" tab: open a trip; the "…" menu renames, splits, merges or hides it; "Create album" makes an album in Photos (nothing is moved or copied). "What is in the photo?" searches by content on the device.
+6. Settings (gear at the top right): language, the weekly reminder (off by default; a local notification, permission asked only when switched on), privacy policy, "Start over".
 
 SAFETY
-The app never deletes, moves or changes a photo on its own. Every delete needs a tap in the app and iOS's own confirmation, and goes to Recently Deleted for 30 days. Favourites are never suggested for deleting.
+The app never deletes, moves or changes a photo by itself. Favourites are never suggested.
 
 WIDGETS
-The home-screen widget shows a photo from "On this day" or how much space could be freed; the Lock Screen widget shows numbers only, never a photo. The app writes both on the device (App Group), with no network.
+The home-screen widget shows a photo from "On this day" or the space that could be freed; the Lock Screen widget shows numbers only. Both are written on the device (App Group).
 
-The attached screen recording shows a fresh install on an iPhone with sample photos: the first start, the first scan, near-identical photos, a trip and a deletion.
+WHAT IS DIFFERENT
+Unlike other cleaners, Bildklar finds trips by place and time and turns them into albums, searches photos by content with an on-device model, compares two shots side by side with one shared zoom, works fully offline without an account, and never deletes in one step: photos are put aside first.
 
-SAMPLE PHOTOS
-If the review device has few photos: a sample library of 563 public-domain (CC0) photos and videos with dates and places is at <LINK>. AirDrop or save them to Photos on the device, then open the app.
+TESTED ON
+iPhone 17 Pro, iOS 27. Works the same in every region offered (not China mainland). Follows the device language: German, English or Arabic (right to left).
 
-The app follows the device language: German, English or Arabic.
+SCREEN RECORDING
+The attachment shows a fresh install with sample photos: the first start, the first scan, near-identical photos, a trip and a deletion.
 ```
 
 ### 2.6 App Privacy (the "nutrition label")
@@ -366,7 +373,7 @@ access, no chat, no advertising). Not "Made for Kids". Result: **4+**.
 | Content rights ("contains third-party content?") | **Yes** — the place names come from GeoNames (CC BY 4.0, credited in *Einstellungen › Lizenzen*). Answer "Yes, and I have the rights" |
 | Export compliance / encryption | `ITSAppUsesNonExemptEncryption` = `NO` is already in `Info.plist` |
 | Advertising identifier (IDFA) | No |
-| Availability | All countries (the texts are German and English) |
+| Availability | All countries except China mainland (174 of 175; the texts are German and English) |
 | Pricing | Free (the app). The in-app purchase at 4,99 € (step 8g of `docs/APP_STORE_RELEASE.md`) may already exist, but is **not** added to a version until the unlock goes on sale — then pick Germany as base country and let Apple set the other prices |
 | Marketing URL | Optional — leave empty |
 | Devices | **iPhone only** (`TARGETED_DEVICE_FAMILY = 1`) — no iPad screenshots needed |
@@ -518,6 +525,16 @@ READ_MEDIA_IMAGES and READ_MEDIA_VIDEO: the app scans the whole library to find 
       the unlock goes on sale, it must be submitted **with** that version
       (App Store Connect › the version › *In-App Purchases* › +).
 - [ ] App Review attachment: the recording from `npm run record:app-review`.
+      The notes (2.5) say it is attached: don't submit without it, or take the
+      notes' SCREEN RECORDING section and the last clause of WHAT YOU NEED out.
+- [ ] The App Review notes in App Store Connect are 2.5's text (no `<LINK>` or
+      other placeholder — guideline 2.1(a)).
+- [ ] The latest **Apple Developer Program License Agreement** is accepted
+      (Apple revised it on 13 October 2026; submitting is blocked until the
+      Account Holder accepts it).
+- [ ] **Age rating**: the questionnaire's new questions (since 16 November
+      2026: *Shared Location*, *Dating and Relationships*) answered **No** —
+      still 4+.
 - [ ] Play: Photo and video permissions declaration and Data safety (3.4, 3.5).
 - [ ] **Google Play closed test:** a personal developer account created after
       13 Nov 2023 needs a closed test with **at least 12 testers for 14 days in
