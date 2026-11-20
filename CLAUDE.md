@@ -463,7 +463,10 @@ promoting to production stay manual. Checklists: `docs/APP_STORE_RELEASE.md`,
 Short, imperative, feature-focused summaries, no conventional-commit prefixes.
 
 ## Committing and merging (as in the shopping list)
-- **Commit without being asked**, on a branch off `main`, one commit per finished step.
+- **Commit after each job without asking**, on a branch off `main`, one commit per finished step.
 - **Merge into `main` when the job is finished** (`git merge --no-ff`), once
   the checks pass; then delete the merged branch.
-- **Never push** unless Ahmad asks for it.
+- **Push only on a release** (`npm run release`, or the listing run of the
+  full-release skill) or when Ahmad asks for it. Never push otherwise.
+- Before a commit, check the index: `git status` must show only the files of
+  the job (a staged file from elsewhere goes in its own commit or is left out).
