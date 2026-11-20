@@ -314,42 +314,29 @@ the app's English strings, so the reviewer can find each button; after a
 renamed label or a changed flow, update this text with
 `ios/AppReviewRecorder/scenes.json`:
 ```
-Bildklar organizes and tidies the photo library on the iPhone, for people with large libraries (typically parents). Everything runs on the device: no account, no sign-in, no server, no analytics, no ads, no third-party SDKs. The app makes no network requests at all, so it works the same in airplane mode.
+Bildklar sorts and cleans up the photo library on the iPhone. Besides duplicates and failed shots, it turns trips into albums and searches photos by what is in them. Everything runs on the device: no account, no sign-in, no server, no analytics, no ads. The app makes no network requests (it works in airplane mode); the image model and the place names are built in.
 
-BUSINESS MODEL / IN-APP PURCHASE
-This version is free, has no limits and sells nothing. The binary contains the code for a planned one-time unlock (com.habboubah.bildklar.unlock), switched off at build time: no paywall, price or "Restore" is shown anywhere. The product exists in App Store Connect but is not part of this submission; it will be switched on only in a later version submitted for review together with the purchase.
-
-EXTERNAL SERVICES
-None. The image model (SigLIP 2, Apache 2.0) runs in ONNX Runtime inside the app; place names come from a built-in GeoNames list (CC BY 4.0).
-
-WHY PHOTO ACCESS
-Photo access is the core of the app: it reads dates, locations and small previews to find trips, near-identical photos, duplicates and failed shots. It writes only after a tap and iOS's own confirmation: albums, and deletes to Recently Deleted. Limited Access works too: the app then shows only the selected photos and offers "Select photos".
+IN-APP PURCHASE
+None in this version: everything is free. The binary contains the code for a later one-time unlock, switched off at build time and never shown. It will be turned on only in a future version, submitted together with the in-app purchase.
 
 SAMPLE PHOTOS
-96 public-domain photos and videos with dates and places, including a trip to Paris (55 MB): https://habboubah.github.io/privacy-policy/bildklar/review/ – in Safari download the zip, tap it in Files to unzip, open "photos", Select All, Share › Save 96 Items, then open the app. Or take 4-5 shots of one scene seconds apart (near-identical groups), one shaky shot (failed shots) and two screenshots. A trip needs photos at least 50 km from where most were taken, over six hours or more.
+96 public-domain photos and videos with dates and places, including a trip to Paris: https://habboubah.github.io/privacy-policy/bildklar/review/
+In Safari, download the zip, tap it in Files to unzip, open "photos", tap Select All, then Share › Save 96 Items. Then open Bildklar.
 
 HOW TO TRY IT
-1. "Get started", then "Allow access to photos", and choose in the iOS dialog. The first scan shows its progress, then what it found; "Compare your first group" opens a group of near-identical photos.
-2. In a group the green star marks the suggested best shot; tap a photo to compare it large. "Mark the rest" (on the Near-identical list: "Mark unstarred") puts the others into "Marked for deletion" – nothing is deleted yet.
-3. "Clean up" tab: "Suggestions" shows the space by category. "Clean up now", then "Go through all": swipe right = keep, left = mark for deletion, or the "Keep", "Mark for deletion" and "Later" buttons; "Undo" at the top right; "Finish" ends.
-4. Deleting: on "Clean up" open "Marked for deletion" and tap "Delete all". The first time a short note explains Recently Deleted ("Got it – continue"); a sheet then shows exactly what goes and its size. Its red button calls PHAssetChangeRequest.deleteAssets and iOS asks once more.
-5. "Organise" tab: open a trip; the "…" menu renames, splits, merges or hides it; "Create album" makes an album in Photos (nothing is moved or copied). "What is in the photo?" searches by content on the device.
-6. Settings (gear at the top right): language, the weekly reminder (off by default; a local notification, permission asked only when switched on), privacy policy, "Start over".
+1. Tap "Get started", then "Allow access to photos". After the first scan, "Compare your first group" opens near-identical photos; the green star marks the suggested best shot.
+2. "Mark the rest" puts the others into "Marked for deletion". Nothing is deleted yet.
+3. "Clean up" tab › "Clean up now" › "Go through all": swipe right to keep, left to mark, or use the buttons. "Finish" ends.
+4. To delete: "Clean up" › "Marked for deletion" › "Delete all". A sheet shows exactly what goes, iOS asks once more, and the photos go to Recently Deleted.
+5. "Organise" tab: open the Paris trip; "Create album" adds an album in Photos. "What is in the photo?" searches by content.
 
-SAFETY
-The app never deletes, moves or changes a photo by itself. Favourites are never suggested.
-
-WIDGETS
-Home Screen: a photo from "On this day" or the space that could be freed; Lock Screen: numbers only. Written on the device (App Group).
-
-WHAT IS DIFFERENT
-Unlike other cleaners, Bildklar finds trips by place and time and turns them into albums, searches photos by content with an on-device model, compares two shots side by side with one shared zoom, works fully offline without an account, and never deletes in one step: photos are put aside first.
+PHOTO ACCESS
+Used to read dates, places and previews. The app writes only after a tap and iOS's own confirmation (albums, deleting). Limited Access is supported.
 
 TESTED ON
-iPhone 17 Pro, iOS 27. Works the same in every region offered (not China mainland). Follows the device language: German, English or Arabic (right to left).
+iPhone 17 Pro, iOS 27. Same in all regions. Languages: German, English, Arabic.
 
-SCREEN RECORDING
-Attached: a fresh install with the sample photos – first start, scan, near-identical photos, a trip and a deletion.
+The attached screen recording shows a fresh install with these sample photos.
 ```
 
 ### 2.6 App Privacy (the "nutrition label")
@@ -526,7 +513,7 @@ READ_MEDIA_IMAGES and READ_MEDIA_VIDEO: the app scans the whole library to find 
       (App Store Connect › the version › *In-App Purchases* › +).
 - [ ] App Review attachment: the recording from `npm run record:app-review`.
       The notes (2.5) say it is attached: don't submit without it, or take the
-      notes' SCREEN RECORDING section out.
+      notes' last line out.
 - [ ] The sample photos for the reviewer are online:
       https://habboubah.github.io/privacy-policy/bildklar/review/ (96 CC0 files
       from `test-photos/`, 55 MB, in the `privacy-policy` repo).
