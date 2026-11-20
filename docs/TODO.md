@@ -3,6 +3,27 @@
 What only you can do: a Mac with Xcode, your phones, the stores, the photos.
 In order. (State: 16 November 2026, after the first build by Claude.)
 
+## 0000. Store listings for 2.0.20 (20 November 2026): what is left
+
+Listing run (no app change since v2.0.20): the store texts, the composed
+screenshots, the App Store preview videos and the App Store version
+2.0.20 (build 28) went up with `npm run store:listing`. Checked here: the
+checks, the screenshots and both contact sheets, the preview validator.
+Not done by Claude — please:
+
+- [ ] **App Store Connect › Bildklar › 2.0.20**: set the preview poster
+      frames by hand (the API refused them while the videos were still
+      processing): German 00:00:17:06, English 00:00:15:03. Then look at it
+      and **Add for Review** → **Submit to App Review**.
+- [ ] **Google Play**: the listing changes are with Play's review; promote
+      the internal release to production when you are happy.
+- [ ] **Decide on the Play ribbon** "Gratis · Werbefrei" / "Free · No Ads"
+      on the first screenshot: it is on purpose while Bildklar is free
+      (`screenshots.config.json`, the Play target); the release checklist
+      says no "free" on a store screenshot. Keep it, or switch it off there
+      and run `npm run store-screenshots`.
+- [ ] **Arabic**: not sent (no approved Arabic set yet).
+
 ## 000. The layout adapts to the screen (18 November 2026, night): check it
 
 Built on the branch `adaptive-layout` and merged (the wide layout taken
