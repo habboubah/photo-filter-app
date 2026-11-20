@@ -90,6 +90,10 @@ final class AppReviewRecordingTests: XCTestCase {
         } catch {
             runner.attachScreenshot(named: "Where it stopped")
             runner.stopRecordingIfNeeded()
+            // A dialog left open (the photo access) is answered now, while the app is
+            // still installed: answered after the next run deletes it, iOS keeps the
+            // answer for the new install.
+            runner.clearLeftoverAlerts()
             XCTFail("\(error)")
         }
     }

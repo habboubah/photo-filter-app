@@ -157,10 +157,16 @@ final class SceneRunner {
     /// the app's own: scenes.json › preflight.reset). A reset that can't be
     /// played stops the run: nothing is filmed on an app that isn't empty.
     func preflight() throws {
+        clearLeftoverAlerts()
         if fresh {
             // Opening it here would use up nothing (the first run is only marked seen by
             // taps), but it would show the welcome once off camera in the iPhone's language.
             log("Preflight: \(spec.bundleId) was just installed from TestFlight – the recording starts with its first launch.")
+            // A photo dialog answered while the app was away (a leftover from a stopped
+            // run) sticks to the new install: the app would open on "No access". Ask
+            // the system to forget it, so the welcome and iOS's dialog come again.
+            app.resetAuthorizationStatus(for: .photos)
+            rest(1)
             return
         }
         log("Preflight: is \(spec.bundleId) installed, and can it be reset?")
@@ -628,6 +634,9 @@ final class SceneRunner {
     func tap(_ el: XCUIElement) throws {
         try reach(el)
         try waitUntilEnabled(el)
+        // A screen still sliding in moves its buttons: a tap at the old place hits
+        // nothing (the review's summary, 20 Nov 2026). Wait until it stands still.
+        _ = steady(el)
         let f = el.frame, area = visibleArea()
         let middle = CGPoint(x: f.midX, y: f.midY)
         // WebKit calls an element behind the keyboard hittable; the tap would land on a key.
@@ -1029,11 +1038,35 @@ final class SceneRunner {
         for root in [springboard, app] {
             let alert = root.alerts.firstMatch
             if alert.waitForExistence(timeout: root === springboard ? timeout : 1) {
-                for l in labels where alert.buttons[l].exists { alert.buttons[l].tap(); rest(0.8); return }
-                throw StepFailure("alert without \(labels)")
+                // iOS's photo dialog lists "Allow Full Access" twice in its tree:
+                // take the first of them that can be tapped.
+                for l in labels {
+                    let named = alert.buttons.matching(NSPredicate(format: "label == %@", l)).allElementsBoundByIndex.filter { $0.exists }
+                    if let b = named.first(where: { $0.isHittable }) ?? named.first { b.tap(); rest(0.8); return }
+                }
+                let have = alert.buttons.allElementsBoundByIndex.filter { $0.exists }.map { $0.label }
+                throw StepFailure("alert without \(labels) (it has: \(have.joined(separator: " | ")))")
             }
         }
         throw StepFailure("no system alert")
+    }
+
+    /// A system alert left over from an earlier run (a photo dialog that wasn't
+    /// answered stays on screen over every app, even after its app was deleted)
+    /// would swallow every tap: answer it with its "no" button.
+    func clearLeftoverAlerts() {
+        let no = system("dismiss", ["Don’t Allow", "Don't Allow", "Nicht erlauben", "Cancel", "Abbrechen", "Not Now", "Später", "OK"])
+        for _ in 0..<3 {
+            let alert = springboard.alerts.firstMatch
+            guard alert.waitForExistence(timeout: 1.5) else { return }
+            let buttons = alert.buttons.allElementsBoundByIndex.filter { $0.exists }
+            guard let b = no.lazy.compactMap({ l in buttons.first { $0.label == l } }).first else {
+                log("  a system alert is open (\(buttons.map { $0.label }.joined(separator: " | "))) – nothing to close it with"); return
+            }
+            log("  closing a system alert left over from before (\(b.label))")
+            b.tap()
+            rest(1)
+        }
     }
 
     /// A button in system UI shown over the app (the share sheet's Close).
@@ -1187,6 +1220,7 @@ final class SceneRunner {
         let actionWords = Set((install ? system("install", ["Install", "Installieren"]) : system("update", ["Update", "Aktualisieren"])).map { $0.lowercased() })
         let openWords = Set(system("open", ["Open", "Öffnen"]).map { $0.lowercased() })
         let verb = install ? "install" : "update"
+        clearLeftoverAlerts()
         testFlight.terminate()
         testFlight.activate()
         guard testFlight.wait(for: .runningForeground, timeout: 20) else {
@@ -1255,8 +1289,17 @@ final class SceneRunner {
         }
         let deadline = Date().addingTimeInterval(timeout)
         var last = Date()
+        var tapped = Date(), taps = 1
         while Date() < deadline {
             rest(2)
+            // Still Install / Update 20 s after the tap: it didn't take (something
+            // covered it) – close what covers it and tap again, three times at most.
+            if let now = row(), let again = now.action, Date().timeIntervalSince(tapped) > 20, taps < 3 {
+                clearLeftoverAlerts()
+                log("  the \(verb) didn't start – tapping again")
+                again.tap(); tapped = Date(); taps += 1
+                continue
+            }
             if let now = row(), now.action == nil, now.open != nil {
                 log("TestFlight: \(name) is \(install ? "installed" : "updated").")
                 rest(1)
