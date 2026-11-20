@@ -170,7 +170,8 @@ skipped, so running it again is safe.
 
 ## 9. Finish
 
-1. `git status` clean; `git log --oneline -3`. Never push unless asked.
+1. `git status` clean; `git log --oneline -3`. Push `main` to origin
+   (`git push origin main`) — a release run pushes; a listing run pushes too.
 2. A short dated section in `docs/TODO.md` with what is Ahmad's now:
    submit X.Y.Z for review, promote the Play release, the App Review recording
    if step 6 needed one, a poster frame or field the script could not set.
@@ -191,5 +192,5 @@ skipped, so running it again is safe.
   unfinished work mixed in.
 - Never print or commit `.env.release`, the `.p8`, the keystore or the
   service-account JSON.
-- Never submit for review, promote to production or push.
+- Never submit for review or promote to production. Push only as step 9 says.
 - Never add the Arabic listing or the in-app purchase on your own.
