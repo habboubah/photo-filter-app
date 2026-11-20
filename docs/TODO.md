@@ -3,6 +3,26 @@
 What only you can do: a Mac with Xcode, your phones, the stores, the photos.
 In order. (State: 16 November 2026, after the first build by Claude.)
 
+## 00000. Store listings for 2.0.20 (20 November 2026, third run): what is left
+
+Full-release run, listing run only (no app change since v2.0.20): screenshots,
+store set, both preview videos, the App Review rehearsal and the listings went
+up again. Not done by Claude — please:
+
+- [ ] **App Store Connect › Bildklar › 2.0.20**: set the preview poster frames
+      by hand (the API refused them, the videos were not yet complete):
+      German 00:00:17:06, English 00:00:17:05. Then **Add for Review** →
+      **Submit to App Review**.
+- [ ] **Google Play**: promote the internal release to production when happy.
+- [ ] **Play ribbon** "Gratis · Werbefrei" / "Free · No Ads" on the first
+      screenshot: still on purpose (see the second run below). Decide; the
+      release checklist says no "free" on a store screenshot.
+- [ ] **Uncommitted recorder work** (not part of the release, not run on a
+      phone): `scenes.json` (flow changes for the App Review recording),
+      `RecorderUITests/SceneRunner.swift` and `AppReviewRecordingTests.swift`
+      (leftover-alert handling). The rehearsal passed with `scenes.json`.
+      Commit them once a real recording run confirms them.
+
 ## 0000. Store listings for 2.0.20 (20 November 2026, second run): what is left
 
 Second listing run the same day (the App Review recorder's UI tests changed,
