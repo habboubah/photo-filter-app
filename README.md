@@ -150,9 +150,9 @@ The skill is in `docs/skills/bildklar-full-release/SKILL.md`.
    ```text
    Lies docs/skills/bildklar-full-release/SKILL.md und führe es komplett aus.
    ```
-3. Add what is special this time if you like: *„als minor-Version“*,
-   *„ohne neues Video“*, *„nur Google Play“*, *„nur die Listings“*. Without
-   that it takes the next patch version and decides the rest itself.
+3. Add what is special this time if you like: *„ohne neues Video“*,
+   *„nur Google Play“*, *„nur die Listings“*. It always takes the next patch
+   version (the last number); minor and major releases are not done.
 4. At the end it tells you what went up and what is left (also in
    `docs/TODO.md`). It never submits for review or pushes.
 

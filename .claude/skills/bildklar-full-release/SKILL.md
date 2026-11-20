@@ -19,8 +19,7 @@ The project's `CLAUDE.md`, `docs/APP_STORE_RELEASE.md` and
 `app-preview-video` and `app-review-recording` have the details of each step —
 read the one whose step fails, fix it and go on.
 
-Ahmad's wishes in the request win over the defaults: „als minor-Version",
-„ohne neues Video", „nur Google Play" (→ `--android` on both release and
+Ahmad's wishes in the request win over the defaults: „ohne neues Video", „nur Google Play" (→ `--android` on both release and
 listing), „nur die Listings", „die Release Notes sind schon fertig".
 
 ## Where it runs
@@ -58,10 +57,10 @@ with the steps and tick them off.
      build), do 2, 4, 5, 8 and 9. Say so in your first message: „Seit
      vA.B.C gibt es keine App-Änderung — ich bringe nur die Store-Seiten
      (Texte, Screenshots, Video) für A.B.C auf den neuesten Stand."
-5. The version of a release run: **patch** (A.B.C → A.B.C+1) by default —
-   Bildklar's line is 2.0.x, features included. **minor** only when Ahmad
-   says so. `npm run release:dry` (add `-- minor` if so) shows the version
-   **X.Y.Z** and the iOS build; use exactly those.
+5. The version of a release run: **always the patch** (A.B.C → A.B.C+1), the
+   last number only, features included. Never minor or major — the script
+   refuses them. `npm run release:dry` shows the version **X.Y.Z** and the iOS
+   build; use exactly those.
 
 ## 1. What's New for X.Y.Z (release run)
 
@@ -131,7 +130,7 @@ iPhone on the cable — note it for step 9; never block the release on it.
 ## 7. Build and upload both apps (release run)
 
 ```bash
-npm run release -- --skip-check      # step 3 just ran green; add `minor` if decided
+npm run release -- --skip-check      # step 3 just ran green; always patch, never minor
 ```
 
 Bumps `package.json` + the Xcode project, builds the web app once, ships the

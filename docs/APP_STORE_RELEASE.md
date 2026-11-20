@@ -336,7 +336,6 @@ or to your reply, and answer Apple's questions in the notes.
 cd ~/repos/photo-filter-app
 git status                       # everything committed?
 npm run release                  # bug fix:     2.0.1 -> 2.0.2, App Store and Google Play
-npm run release -- minor         # new feature: 2.0.x -> 2.1.0
 npm run release:ios              # the App Store only
 ```
 
