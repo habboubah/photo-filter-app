@@ -127,9 +127,16 @@ the first scan of 563 files.
 
 ## Status (20 November 2026)
 
-The fresh-install scenes pass the rehearsal against the test library. The
-old scenes' dry run on the iPhone (13:40, with Ahmad's own photos) stopped at
-*Open Paris* — expected, his library had no Paris. The fresh-install path
-(delete, TestFlight *Install*, `-AppleLanguages`, *Allow Full Access*) has
-not run on the iPhone yet: expect a round of fixes, start with `DRY_RUN=1`.
-When it has passed, replace this section with the date and the build.
+The fresh-install recording passed on Ahmad's iPhone with 2.0.20 (build 28),
+after a round of fixes from the dry runs: a photo dialog left over from a
+stopped run is answered while the app is still installed (answered after the
+delete, iOS keeps "Don't Allow" for the new install) and the photo permission
+is reset before the first launch; iOS lists *Allow Full Access* twice; taps
+wait until their button stands still; the summary's *Mark for deletion · 2*
+needs `"role": "button"` (an Other with the same label took the tap); the
+toast after the delete is gone too soon (*Freed so far* stays). The iPhone's
+first group has 2 photos and the bin 3, not the rehearsal's 3 and 4. New
+installs land in the App Library unless Settings › Home Screen › Newly
+Downloaded Apps is *Add to Home Screen*: the video then opens the app without
+its icon. Once, iOS dropped the trust in the developer certificate (Settings ›
+General › VPN & Device Management › Trust).
