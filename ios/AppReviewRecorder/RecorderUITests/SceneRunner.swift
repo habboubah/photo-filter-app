@@ -445,11 +445,15 @@ final class SceneRunner {
         for wanted in labels {
             for mode in modes {
                 let format = mode == .exact ? "label == %@" : mode == .prefix ? "label BEGINSWITH %@" : "label CONTAINS %@"
-                let found = scope.descendants(matching: .any).matching(NSPredicate(format: format, wanted)).allElementsBoundByIndex
+                let predicate = NSPredicate(format: format, wanted)
+                let found = scope.descendants(matching: .any).matching(predicate).allElementsBoundByIndex
                 guard !found.isEmpty else { continue }
-                let typed = found.map { ($0, $0.elementType) }
-                for type in allowed {
-                    let ofType = typed.filter { $0.1 == type }.map { $0.0 }
+                let types = Set(found.map { $0.elementType })
+                for type in allowed where types.contains(type) {
+                    // Query by type again: an index into the .any query points at another
+                    // element once the page changes (the AI's progress card updating while
+                    // the run taps: "Month by month" resolved to an Other, 20 Nov 2026).
+                    let ofType = scope.descendants(matching: type).matching(predicate).allElementsBoundByIndex
                     if ofType.count > nth, ofType[nth].exists { return uncovered(ofType, nth: nth) }
                 }
             }
