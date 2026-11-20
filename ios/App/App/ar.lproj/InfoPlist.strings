@@ -1,3 +1,3 @@
 /* The home-screen name and the permission text in this language; the store name is set in App Store Connect. */
 "CFBundleDisplayName" = "Bildklar";
-"NSPhotoLibraryUsageDescription" = "يتصفّح Bildklar صورك على هذا الـiPhone ليجد الرحلات والصور المتشابهة والضبابية. لا يغادر أي شيء جهازك.";
+"NSPhotoLibraryUsageDescription" = "يتصفّح Bildklar صورك على هذا الـiPhone ليجد الرحلات والصور المتشابهة والضبابية. ولا ينشئ ألبومات أو ينقل صورًا إلى «المحذوفة مؤخرًا» إلا عندما تلمس ذلك. لا يغادر أي شيء جهازك.";

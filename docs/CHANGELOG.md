@@ -3,6 +3,17 @@
 What changed and what left, newest first — so `docs/features.md` can say
 only how the app is now. (Started 18 November 2026; older history is in git.)
 
+## 20 November 2026 — before the first App Store submission
+
+- **App Review notes** (`store/listing.md` 2.5) rewritten: no placeholder
+  link, the current flow's labels, the switched-off purchase code, devices,
+  regions and what sets Bildklar apart; saved in App Store Connect.
+- **Photo permission text** (iPhone, de/en/ar): also says that albums and
+  moves to Recently Deleted happen only on a tap. Ships with the next build.
+- **Privacy policy** (`store/privacy/`): the on-device image model, the
+  smaller copies and stills (the page said the app never makes copies), and
+  "free for now" instead of a purchase that isn't on sale yet.
+
 ## 19 November 2026, night — the listing goes up by itself
 
 - **`npm run store:listing`** (`scripts/store-listing.mjs`): `store/listing.md`,

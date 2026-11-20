@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Bildklar looks at your photos on this iPhone to find trips, near-identical and blurry shots. Nothing leaves your device.</string>
+	<string>Bildklar looks at your photos on this iPhone to find trips, near-identical and blurry shots. Only when you tap, it makes albums or moves photos to Recently Deleted. Nothing leaves your device.</string>
 	<key>PHPhotoLibraryPreventAutomaticLimitedAccessAlert</key>
 	<true/>
 	<key>ITSAppUsesNonExemptEncryption</key>
