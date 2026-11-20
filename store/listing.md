@@ -325,8 +325,8 @@ None. The image model (SigLIP 2, Apache 2.0) runs in ONNX Runtime inside the app
 WHY PHOTO ACCESS
 Photo access is the core of the app: it reads dates, locations and small previews to find trips, near-identical photos, duplicates and failed shots. It writes only after a tap and iOS's own confirmation: albums, and deletes to Recently Deleted. Limited Access works too: the app then shows only the selected photos and offers "Select photos".
 
-WHAT YOU NEED
-Photos on the device. For near-identical groups and the best shot, take 4-5 photos of one scene seconds apart; for "Failed shots" one shaky or covered photo; also two screenshots. Trips need photos with a location at least 50 km from where most photos were taken, over at least six hours – hard to make on a review device, so the attached screen recording shows one.
+SAMPLE PHOTOS
+96 public-domain photos and videos with dates and places, including a trip to Paris (55 MB): https://habboubah.github.io/privacy-policy/bildklar/review/ – in Safari download the zip, tap it in Files to unzip, open "photos", Select All, Share › Save 96 Items, then open the app. Or take 4-5 shots of one scene seconds apart (near-identical groups), one shaky shot (failed shots) and two screenshots. A trip needs photos at least 50 km from where most were taken, over six hours or more.
 
 HOW TO TRY IT
 1. "Get started", then "Allow access to photos", and choose in the iOS dialog. The first scan shows its progress, then what it found; "Compare your first group" opens a group of near-identical photos.
@@ -340,7 +340,7 @@ SAFETY
 The app never deletes, moves or changes a photo by itself. Favourites are never suggested.
 
 WIDGETS
-The home-screen widget shows a photo from "On this day" or the space that could be freed; the Lock Screen widget shows numbers only. Both are written on the device (App Group).
+Home Screen: a photo from "On this day" or the space that could be freed; Lock Screen: numbers only. Written on the device (App Group).
 
 WHAT IS DIFFERENT
 Unlike other cleaners, Bildklar finds trips by place and time and turns them into albums, searches photos by content with an on-device model, compares two shots side by side with one shared zoom, works fully offline without an account, and never deletes in one step: photos are put aside first.
@@ -349,7 +349,7 @@ TESTED ON
 iPhone 17 Pro, iOS 27. Works the same in every region offered (not China mainland). Follows the device language: German, English or Arabic (right to left).
 
 SCREEN RECORDING
-The attachment shows a fresh install with sample photos: first start, a trip, every clean-up category, a review, deleting up to iOS's dialog (cancelled: nothing deleted), search.
+Attached: a fresh install with the sample photos – first start, scan, near-identical photos, a trip and a deletion.
 ```
 
 ### 2.6 App Privacy (the "nutrition label")
@@ -526,7 +526,10 @@ READ_MEDIA_IMAGES and READ_MEDIA_VIDEO: the app scans the whole library to find 
       (App Store Connect › the version › *In-App Purchases* › +).
 - [ ] App Review attachment: the recording from `npm run record:app-review`.
       The notes (2.5) say it is attached: don't submit without it, or take the
-      notes' SCREEN RECORDING section and the last clause of WHAT YOU NEED out.
+      notes' SCREEN RECORDING section out.
+- [ ] The sample photos for the reviewer are online:
+      https://habboubah.github.io/privacy-policy/bildklar/review/ (96 CC0 files
+      from `test-photos/`, 55 MB, in the `privacy-policy` repo).
 - [ ] The App Review notes in App Store Connect are 2.5's text (no `<LINK>` or
       other placeholder — guideline 2.1(a)).
 - [ ] The latest **Apple Developer Program License Agreement** is accepted
