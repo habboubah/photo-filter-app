@@ -127,31 +127,34 @@ npm run store:listing     # put them into App Store Connect and the Play Console
 
 ### The whole release with Claude (skill `bildklar-full-release`)
 
-One request runs every step: What's New, `npm run check`, screenshots,
-preview video, `npm run release`, `npm run store:listing`. Only
-**Add for Review** (App Store) and **promoting** the Play release stay yours.
+One request, and Claude does every step itself: What's New, `npm run check`,
+screenshots, preview video, `npm run release`, `npm run store:listing`. When
+nothing in the app changed since the last tag, it only brings the store pages
+(texts, screenshots, video) up to date. Only **Add for Review** (App Store) and
+**promoting** the Play release stay yours.
 
-1. Once: save the skill `bildklar-full-release` from the card Claude
-   showed when it wrote it. After that it is one of your skills.
-2. On the **Mac** (Xcode builds the iPhone app there), open Claude Code in
-   this folder:
-   ```bash
-   cd ~/repos/photo-filter-app && claude
+The skill is in `docs/skills/bildklar-full-release/SKILL.md`.
+
+1. On the **Mac** (Xcode and the keys are there), start Claude Code in this
+   folder: `cd ~/repos/photo-filter-app && claude` — or the desktop app's
+   *Code* tab with this folder as a local session.
+2. The first time, install the skill — paste:
+   ```text
+   Kopiere docs/skills/bildklar-full-release nach .claude/skills/bildklar-full-release.
    ```
-   or a Claude chat that is linked to this Mac and has this folder connected.
-3. Ask for it — either way works:
+   then start a new session (so it sees the skill). After that, always:
    ```text
    /bildklar-full-release
    ```
+   Without installing, this works too:
    ```text
-   Mach das komplette Release von Bildklar: Screenshots, Video, beide Stores, Listings.
+   Lies docs/skills/bildklar-full-release/SKILL.md und führe es komplett aus.
    ```
-   Add what is special this time, for example *„als minor-Version“*,
-   *„ohne neues Video“*, *„nur Google Play“* or *„die Release Notes sind
-   schon fertig“*.
-4. Claude shows the version and the German release notes before it builds,
-   and at the end says what went up and what is left (also in
-   `docs/TODO.md`). Submitting for review happens only when you say so.
+3. Add what is special this time if you like: *„als minor-Version“*,
+   *„ohne neues Video“*, *„nur Google Play“*, *„nur die Listings“*. Without
+   that it takes the next patch version and decides the rest itself.
+4. At the end it tells you what went up and what is left (also in
+   `docs/TODO.md`). It never submits for review or pushes.
 
 Before the first run: `.env.release` filled in (see `.env.release.example`),
 `npx playwright install chromium` and `brew install ffmpeg`.
