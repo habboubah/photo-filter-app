@@ -123,6 +123,12 @@ window, leave it open, then write in a new Claude session:
 
 Preparation: [ios/AppReviewRecorder/README.md](ios/AppReviewRecorder/README.md).
 
+The video too large to upload? Make it smaller (needs ffmpeg):
+
+```bash
+ffmpeg -i "ScreenRecording_11-20-2026 16.MP4" -vf "scale=-2:1280,fps=30" -c:v libx264 -preset veryfast -crf 30 -pix_fmt yuv420p -an -movflags +faststart app-review-small.mp4
+```
+
 ## Release
 
 ```bash
