@@ -185,6 +185,36 @@ skipped, so running it again is safe.
    - **Google Play**: Play Console › *Test and release* › the internal track
      › **Promote release** to production. The listing changes are already
      with Play's review.
+4. **End every run with a colour-coded summary** (markdown, emoji as colour,
+   in Ahmad's language). Use this shape, one line per item, no paragraphs:
+
+   ```
+   # 🚀 Release X.Y.Z — (release run | listing run)
+
+   ## 🟢 Ran
+   - ✅ Gates (`npm run check`) — passed
+   - ✅ Screenshots + store set — 36 files valid
+   - ✅ Preview videos — DE + EN valid
+   - ✅ Store listings — App Store 2.0.20 · Google Play de-DE, en-GB
+   - ⏭️ App Review recording — skipped (as asked)
+
+   ## 🟢 Worked
+   - 🎉 <what went up, with version, build, version code>
+
+   ## 🟡 Did not work / needs a look
+   - ⚠️ <step> — <error in one line> — <what was done about it>
+   - ❌ <anything that stopped or was skipped without a reason>
+
+   ## 🔵 What you need to do
+   - 👉 <action> — <where in the console / file>
+
+   ## 🟣 Notes
+   - 💡 <decision Claude made, e.g. listing run instead of a new build>
+   ```
+
+   Rules: 🟢 is only for what is verified; a step that was skipped goes under
+   🟡 or ⏭️, never ✅; a 409 or warning from a store is ⚠️ with the exact
+   value to set by hand; keep each line under ~15 words.
 
 ## Never
 
