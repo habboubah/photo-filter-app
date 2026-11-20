@@ -396,6 +396,9 @@ export const SCREENS = [
       await pause(page, 900);
       await page.locator('main button[style*="position: absolute"]').first().click();
       await pause(page, 900);
+      // The photo opens zoomed; its foot button shows every look-alike (LikeView).
+      await page.click(`button:has-text("${w.t.likeOpen}")`);
+      await pause(page, 900);
     },
     marks: () => ({ photo: 'main figure' }),
   },
