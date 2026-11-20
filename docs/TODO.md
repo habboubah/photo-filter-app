@@ -18,7 +18,8 @@ license agreement and the new age-rating questions are already done.
 - [ ] Then the poster frames and **Add for Review** as below.
 - [ ] **Publish the updated privacy policy** (`store/privacy/`, 20 Nov: the
       on-device AI, the smaller copies, "free for now"):
-      `cd ~/repos/privacy-policy && cp -R ../photo-filter-app/store/privacy/. bildklar/ && git commit -am "Bildklar: on-device AI, copies, free for now" && git push`
+      already copied and committed in `~/repos/privacy-policy` (221fb2a); only
+      `cd ~/repos/privacy-policy && git push` is left (the push needs your SSH key).
 - The photo permission text now also names albums and Recently Deleted
   (`InfoPlist.strings`): it ships with the next build, not with build 28.
 
