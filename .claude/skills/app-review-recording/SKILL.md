@@ -36,8 +36,9 @@ the screen, and the same scene file rehearsed against the web build first.
   `RECORDER_FRESH=1` (no preflight launch), and `launch` opens the app with
   `app.launchArguments` (`-AppleLanguages (en)`) so the first run is English
   whatever the iPhone's language. `REINSTALL=0` skips all that.
-- **The run changes the photo library for real**: scene 4 deletes four photos
-  (Recently Deleted) — the dry run too.
+- **Nothing is deleted** (Ahmad, 20 November 2026): scene 7 goes up to iOS's
+  own delete dialog and answers *Don't Allow*, so the same test photos serve
+  every run. Marking happens in the app only.
 - **Nothing is for sale** (`UNLOCK_ON_SALE` false): no paywall, no album tapped.
 - **The submitted build.** TestFlight installs the newest build this tester
   has; if it is older than `app.minVersion` the script stops.
@@ -86,19 +87,14 @@ same folder.
 
 ## What the recording shows
 
-Five scenes from a fresh install, in English (README's table): the home
-screen and the welcome, *Allow access to photos* → iOS's *Allow Full Access*
-· the first scan, the reveal, *Compare your first group*, *Mark the rest* →
-*Done – nothing deleted* · *Paris* on *Organise* · *Clean up now* › *Go through
-all*: mark, keep, mark, *Finish*; *Marked for deletion* › *Delete all* › *Three
-safety nets* › *Delete 4 photos* and iOS's own *Delete* · the settings down to
-*Privacy*. The README's last section lists what is left out; the Review Notes
-(`store/listing.md`, 2.5) describe the rest.
-
-Keep it short: a feature gets a step only when a reviewer can't judge the app
-without it, and when a step goes in, another one comes out. Rough length:
-about 2.5 s per action on the iPhone plus the pauses × `PACE` (0.65), plus
-the first scan of 563 files.
+Nine scenes from a fresh install, in English, about 4½ minutes (README's
+table; Ahmad, 20 November 2026: more features, the focus on *Clean up*, and
+Search; at most 5 minutes). Order matters: trips and *More space* come
+first because they need no AI; the suggestion categories wait for
+`"see": "Clean up now"` (the AI's progress card moves meanwhile — never a
+still screen). Keep pauses short (1–2.5 × `PACE`): the first video had 3–7 s
+stills and a 37 s freeze on the reveal. Tips are closed as they come
+(`{"optional": [{"tap": "Got it", "timeout": 1.2}, …]}`).
 
 ## Writing steps for this app
 
@@ -107,8 +103,11 @@ the first scan of 563 files.
   unique prefix and avoid commas ("Open Paris", not "Open Paris, May 2026").
 - A trip card's label is *Open {title}*; the title comes from the photos
   (place and month): the test photos make *Paris*.
-- The bin's count carries over: the first group's *Mark the rest* (2) plus
-  the review's two make *Delete 4 photos*; recheck it when a scene changes.
+- Counts differ between the web and the iPhone: tap by prefix (*Delete*,
+  *Mark for deletion · *) with `"role": "button"`.
+- Words the search suggests are capitalised on the iPhone (*Dog*): list both.
+- While the AI works, *Clean up now* is missing and *Done: Duplicates, …*
+  holds the category names as text: wait for *Clean up now*, not a name.
 - Sheets and confirmations are `aria-modal`: while one is open only it can be
   reached. A confirmation's button has the action's name (*Create album*,
   *Start over* twice).

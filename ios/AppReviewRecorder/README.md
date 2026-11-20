@@ -16,16 +16,21 @@ Bildklar's recording is the **typical flow** (Ahmad, 19 November 2026), not a
 tour of every feature, and it starts **from a fresh install** (Ahmad, 20
 November 2026): before every full run the script deletes Bildklar from the
 iPhone and installs it again from TestFlight, because only an install's first
-launch shows the welcome, the photo access and the first scan. Five scenes,
-from the home screen to the settings, about 3 minutes plus the first scan:
+launch shows the welcome, the photo access and the first scan. Nine scenes,
+about 4½ minutes (Ahmad, 20 November 2026: more of the app, the focus on what
+*Clean up* does, and Search; up to 5 minutes):
 
 | Scene | Shows |
 |---|---|
 | 1 Launch, the welcome and the photo access | The home screen, Bildklar opening in English (`app.launchArguments`), *Get started*, *Allow access to photos*, iOS's dialog → *Allow Full Access* |
-| 2 The first scan and what it found | The first scan's screen, *Here's what Bildklar found*, *Compare your first group*: the photo that *Stays*, another one, *Mark the rest* → *Done – nothing deleted* |
-| 3 A trip, found by itself | The *Organise* tab, *Paris* and its photos, back |
-| 4 A review that marks, then deletes | *Clean up now* › *Go through all*: mark, keep, mark, *Finish*, *Mark for deletion · 2*; then *Marked for deletion* › *Delete all* › *Three safety nets* › the sheet that shows what goes › *Delete 4 photos* (or *files*) → iOS's own *Delete* → *… deleted* |
-| 5 Settings and the end | The settings down to *Privacy*, back home |
+| 2 The first scan | The scan's screen and its hint cards, then the reveal, *Just look around* / *Go to the overview* |
+| 3 Trips, found by themselves | *Organise*, *Paris* and its photos — first, because trips need no AI while it still works |
+| 4 More space | *Large files*: a video plays in place; *Month by month*: a month |
+| 5 Suggestions, by category | Waits for the AI (its progress card moves), then *Duplicates* with its (i) sheet and *Mark unstarred*, *Near-identical*: a group, photo 2, *Side by side*; *Failed shots*: a blurry photo; *Unimportant photos* (when the AI has made it) |
+| 6 Clean up now | *Quick clean*'s switches, *Go through all*: mark, keep, later, undo, mark, *Finish*, *Mark for deletion · n* |
+| 7 Marked for deletion | *Delete all* › *Three safety nets* › the sheet that shows what goes › *Delete n photos* → iOS's own dialog, answered **Don't Allow**: nothing is deleted, so the test photos stay for the next recording |
+| 8 Search | *What is in the photo?*: *dog*, then *beach* |
+| 9 Settings and the end | The settings down to *Privacy*, back home |
 
 The review notes (`store/listing.md`, 2.5) describe what the video leaves out.
 
@@ -101,15 +106,14 @@ Mac).
    *Get started*).
 3. Connect the iPhone by cable, unlock it, **Do Not Disturb** on.
 4. **Dry run:** `DRY_RUN=1 npm run record:app-review` — everything except the
-   screen recording. **It does delete four photos** (the app can't tell a
-   dry run of the recorder from a real one).
-5. **Tidy up after the dry run:** Photos › Recently Deleted › recover the
-   four photos (or leave them: the next run finds other ones).
+   screen recording. Nothing is deleted: scene 7 answers iOS's delete dialog
+   with *Don't Allow*.
+5. Nothing to tidy up between runs: each full run reinstalls the app.
 6. **Record:** `npm run record:app-review`. Keep the phone unlocked and
    don't touch it.
 7. **Afterwards:** the video is in Photos. Trim it, AirDrop it to the Mac,
    upload it in App Store Connect › App Review Information › Attachment (or
-   attach it to the reply in the Resolution Center). Then tidy up as in step 5.
+   attach it to the reply in the Resolution Center). 
    If the file is too large to attach, make it smaller first:
 
    ```bash

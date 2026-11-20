@@ -349,7 +349,7 @@ TESTED ON
 iPhone 17 Pro, iOS 27. Works the same in every region offered (not China mainland). Follows the device language: German, English or Arabic (right to left).
 
 SCREEN RECORDING
-The attachment shows a fresh install with sample photos: the first start, the first scan, near-identical photos, a trip and a deletion.
+The attachment shows a fresh install with sample photos: first start, a trip, every clean-up category, a review, deleting up to iOS's dialog (cancelled: nothing deleted), search.
 ```
 
 ### 2.6 App Privacy (the "nutrition label")
