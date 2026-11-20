@@ -104,13 +104,22 @@ npm run app-preview                               # App Store preview video → 
 
 ## App Review recording
 
-iPhone on the cable, unlocked, Do Not Disturb on, the demo photos on it.
+iPhone on the cable, unlocked, Do Not Disturb on, **only the test photos on it**
+(`test-photos/`, AirDropped). Every full run deletes Bildklar and installs it
+again from TestFlight, so the first run is filmed.
 
 ```bash
 npm run rehearse:app-review          # checks every step against the code
 DRY_RUN=1 npm run record:app-review  # full run on the iPhone, without recording
 npm run record:app-review            # the real recording → video in Photos
+npm run record:watch                 # leave open: Claude starts the runs and reads the log
 ```
+
+To let Claude run and fix it: start `npm run record:watch` in a Terminal
+window, leave it open, then write in a new Claude session:
+
+> Run the App Review dry run through record:watch, read build/record-last.log,
+> fix every error and run it again until it passes. Then tell me to record.
 
 Preparation: [ios/AppReviewRecorder/README.md](ios/AppReviewRecorder/README.md).
 
