@@ -153,7 +153,7 @@
     {"tap": "Finish"},
     {"see": "All gone through"},
     {"pause": 3},
-    {"tap": ["Mark for deletion · 2 photos", "Mark for deletion · 2 files"]},
+    {"tap": ["Mark for deletion · 2 photos", "Mark for deletion · 2 files", "Mark for deletion · 2"], "role": "button"},
     {"pause": 2},
     {"tap": "Back"},
     {"pause": 1.5},
@@ -167,7 +167,7 @@
     {"pause": 1.5},
     {"systemAlert": ["Delete", "Löschen"], "timeout": 8},
     {"pause": 2.5},
-    {"see": ["photos deleted", "files deleted"]},
+    {"see": ["photos deleted", "files deleted", "Freed so far"]},
     {"pause": 2}
   ]},
   { "name": "Settings and the end", "steps": [
