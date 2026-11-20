@@ -3,6 +3,22 @@
 What only you can do: a Mac with Xcode, your phones, the stores, the photos.
 In order. (State: 16 November 2026, after the first build by Claude.)
 
+## 000000. Before submitting 2.0.20 (20 November 2026, the review check)
+
+Checked against Apple's guidelines (16 October 2026) and the other photo
+cleaners on the App Store. The review notes in App Store Connect still had
+the `<LINK>` placeholder and a button that doesn't exist ("Review selection");
+the new notes (`store/listing.md` 2.5) are saved in App Store Connect. The
+license agreement and the new age-rating questions are already done.
+
+- [ ] **Attach the App Review screen recording** (App Store Connect › 2.0.20 ›
+      App Review Information › Attachment): the field is empty, and the notes
+      say it is attached. AirDrop it from the iPhone's Photos; shrink it with
+      the ffmpeg line in `ios/AppReviewRecorder/README.md` if it is too large.
+- [ ] Then the poster frames and **Add for Review** as below.
+- [ ] Next build, optional: the photo permission text could also say that the
+      app makes albums and moves photos to Recently Deleted on a tap.
+
 ## 00000. Store listings for 2.0.20 (20 November 2026, third run): what is left
 
 Full-release run, listing run only (no app change since v2.0.20): screenshots,
