@@ -16,8 +16,11 @@ license agreement and the new age-rating questions are already done.
       say it is attached. AirDrop it from the iPhone's Photos; shrink it with
       the ffmpeg line in `ios/AppReviewRecorder/README.md` if it is too large.
 - [ ] Then the poster frames and **Add for Review** as below.
-- [ ] Next build, optional: the photo permission text could also say that the
-      app makes albums and moves photos to Recently Deleted on a tap.
+- [ ] **Publish the updated privacy policy** (`store/privacy/`, 20 Nov: the
+      on-device AI, the smaller copies, "free for now"):
+      `cd ~/repos/privacy-policy && cp -R ../photo-filter-app/store/privacy/. bildklar/ && git commit -am "Bildklar: on-device AI, copies, free for now" && git push`
+- The photo permission text now also names albums and Recently Deleted
+  (`InfoPlist.strings`): it ships with the next build, not with build 28.
 
 ## 00000. Store listings for 2.0.20 (20 November 2026, third run): what is left
 
