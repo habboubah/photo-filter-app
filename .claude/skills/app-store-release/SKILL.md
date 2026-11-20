@@ -49,7 +49,6 @@ Check, and stop with a clear message if one is missing:
 | The very first App Store upload (2.0.1, the version Google Play already has — kept as it is) | `npm run release:first` (see the guide) |
 | Bug-fix release (2.0.1 → 2.0.2), **both stores** on one version | `npm run release` |
 | The App Store only / Google Play only | `npm run release:ios` / `npm run release:android` |
-| Feature release (2.0.x → 2.1.0) | `npm run release -- minor` |
 | Re-upload the same version (a rejected build) | `npm run release:ios -- --keep-version` |
 | Only the signed Android bundle, nothing uploaded | `npm run release:android -- --no-upload` |
 | Store screenshots: raw captures / the framed sets | `npm run screenshots && npm run screenshots -- --android` / `npm run store-screenshots` (once: `npx playwright install chromium`) |

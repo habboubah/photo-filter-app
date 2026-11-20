@@ -4,7 +4,7 @@
 // Connect, lands in TestFlight) -> commit + tag. Submitting for App Review and
 // promoting to production on Google Play stay manual clicks in the consoles.
 //
-// Usage: node scripts/release.js [patch|minor|major] [--ios] [--android] [--keep-version] [--skip-check] [--dry-run]
+// Usage: node scripts/release.js [--ios] [--android] [--keep-version] [--skip-check] [--dry-run]
 //   no platform flag  both stores                       npm run release
 //   --ios             the App Store only                npm run release:ios
 //   --android         Google Play only                  npm run release:android
@@ -19,8 +19,8 @@
 // One version for both stores. A run takes a new version — unless none of the
 // stores it ships to has the current one yet: then it ships that one, so a
 // store that was left out (release:ios today, release:android tomorrow) or a
-// run that broke off catches up instead of opening a gap. Naming patch, minor
-// or major always takes a new version.
+// run that broke off catches up instead of opening a gap. Naming patch always
+// takes a new version. Minor and major are not releases here: refused.
 //
 // The starting version and build come from the highest of the Xcode project,
 // the v* git tags and what the stores already hold, so a release commit that
@@ -49,8 +49,13 @@ const args = process.argv.slice(2);
 const dryRun = args.includes('--dry-run');
 const keepVersion = args.includes('--keep-version');
 const skipCheck = args.includes('--skip-check');
+// Releases only ever bump the last number (patch). Minor and major are refused.
 const namedBump = args.find(a => ['patch', 'minor', 'major'].includes(a));
-const bumpType = namedBump || 'patch';
+if (namedBump && namedBump !== 'patch') {
+  console.error(`Refused: "${namedBump}" — Bildklar releases only bump the last number (patch). Run again without it.`);
+  process.exit(1);
+}
+const bumpType = 'patch';
 // No platform flag means both.
 const doAndroid = args.includes('--android') || !args.includes('--ios');
 const doIos = args.includes('--ios') || !args.includes('--android');
@@ -203,9 +208,7 @@ const onStore = {
 const catchUp = !keepVersion && !namedBump && targets.every(t => onStore[t] === false);
 let [major, minor, patch] = oldVersion.split('.').map(Number);
 if (!keepVersion && !catchUp) {
-  if (bumpType === 'major') [major, minor, patch] = [major + 1, 0, 0];
-  else if (bumpType === 'minor') [minor, patch] = [minor + 1, 0];
-  else patch += 1;
+  patch += 1;
 }
 const newVersion = `${major}.${minor}.${patch}`;
 // The iOS build number only ever goes up — App Store Connect refuses a reused one.
