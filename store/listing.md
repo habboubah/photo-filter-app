@@ -302,7 +302,7 @@ photos back; in the evening a whole group marked at once). If the release takes 
 | Contact first / last name | Ahmad Habboubah |
 | Contact email | ahmad.habboubah@gmail.com |
 | Contact phone | *your phone number, with +49* |
-| Attachment | Best **with** the screen recording (`npm run record:app-review`, see `ios/AppReviewRecorder/README.md`): it shows the scan, a trip and the deletion on a device with photos |
+| Attachment | Best **with** the screen recording (`npm run record:app-review`, see `ios/AppReviewRecorder/README.md`): it shows a fresh install's first run, the scan, a trip and the deletion on an iPhone with the test photos |
 
 **Notes for the reviewer** (*App Review Information › Notes*, English,
 paste as is; updated 19 November 2026 for the current flow — the two tabs,
@@ -337,7 +337,10 @@ The app never deletes, moves or changes a photo on its own. Every delete needs a
 WIDGETS
 The home-screen widget shows a photo from "On this day" or how much space could be freed; the Lock Screen widget shows numbers only, never a photo. The app writes both on the device (App Group), with no network.
 
-The attached screen recording shows the scan, a trip, near-identical photos and a deletion on an iPhone with sample photos.
+The attached screen recording shows a fresh install on an iPhone with sample photos: the first start, the first scan, near-identical photos, a trip and a deletion.
+
+SAMPLE PHOTOS
+If the review device has few photos: a sample library of 563 public-domain (CC0) photos and videos with dates and places is at <LINK>. AirDrop or save them to Photos on the device, then open the app.
 
 The app follows the device language: German, English or Arabic.
 ```

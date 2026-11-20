@@ -1,22 +1,24 @@
 #!/usr/bin/env bash
 # Records the App Review screen recording on the iPhone connected to this Mac.
 #
-# Runs the UI test in ios/AppReviewRecorder: it drives the Bildklar app
-# installed on the iPhone (the TestFlight build), starts the iOS screen recording from
-# Control Center, plays ios/AppReviewRecorder/scenes.json and stops the
-# recording. The video is then in the iPhone's Photos.
+# A full run first deletes Bildklar from the iPhone and installs it again from
+# TestFlight (the newest build this tester has), so the video shows the first
+# run: the welcome, the photo access, the first scan. Then the UI test in
+# ios/AppReviewRecorder starts the iOS screen recording from Control Center,
+# plays ios/AppReviewRecorder/scenes.json and stops the recording. The video is
+# then in the iPhone's Photos.
 #
 #   npm run record:app-review                       the whole recording
 #   DRY_RUN=1 npm run record:app-review             the same, without recording (try it first)
 #   FROM=5 TO=8 DRY_RUN=1 npm run record:app-review only scenes 5–8, no preflight
 #   PACE=1 npm run record:app-review                slower (default 0.65; 0.5 = faster)
 #   DEVICE=<udid> npm run record:app-review         if several iPhones are connected
-#   RESET=0 npm run record:app-review               don't reset: stop if the app isn't empty
-#   UPDATE=0 npm run record:app-review              don't update an older build from TestFlight: stop
+#   REINSTALL=0 npm run record:app-review           don't delete and reinstall: the app must be fresh
+#   UPDATE=0 npm run record:app-review              (with REINSTALL=0) don't update an older build: stop
 #
-# The app must start empty: a full run resets it in the app (Settings › Language ›
-# English, then Reset app) before the screen recording starts – every time,
-# without asking.
+# The iPhone must hold only the test photos (npm run test-photos), never your
+# own: the app gets Full Access on film. Deleting the app erases its decisions;
+# the photos stay.
 #
 # Before: ios/AppReviewRecorder/README.md, "Once" and "Every recording".
 set -euo pipefail
@@ -99,7 +101,57 @@ installed_build() { # sets $state (ok | old | missing | unknown) and $said
 SHOWN='\[recorder\]|error:|Test Case|\*\* TEST|Testing failed|Signing|provision'
 mkdir -p build
 installed_build
-if [ "$state" = "old" ] && [ "${UPDATE:-1}" = "1" ]; then
+
+# A full run starts from a fresh install: delete the app (devicectl; on the home
+# screen if that fails), then install it from TestFlight – only the first launch
+# of an install shows the welcome, the photo access and the first scan.
+REINSTALL="${REINSTALL:-1}"
+FRESH=0
+if [ "${FROM:-1}" = "1" ] && [ "$REINSTALL" = "1" ]; then
+  BUNDLE=$(node -e 'console.log(JSON.parse(require("fs").readFileSync(process.argv[1], "utf8")).app.bundleId)' "$SCENES")
+  DELETE_UI=0
+  if [ "$state" != "missing" ]; then
+    echo "Deleting $BUNDLE from the iPhone (its decisions go; the photos stay) …"
+    if xcrun devicectl device uninstall app --device "$DEVICE" "$BUNDLE" >/dev/null 2>&1; then
+      sleep 2
+      installed_build
+      [ "$state" = "missing" ] || [ "$state" = "unknown" ] || DELETE_UI=1
+    else
+      DELETE_UI=1
+    fi
+    [ "$DELETE_UI" = "1" ] && echo "devicectl couldn't delete it – the test deletes it on the home screen."
+  fi
+  echo "Installing it from TestFlight on the iPhone – keep it unlocked, don't touch it."
+  set +e
+  TEST_RUNNER_RECORDER_INSTALL=1 \
+  TEST_RUNNER_RECORDER_DELETE_UI="$DELETE_UI" \
+  xcodebuild test \
+    -project "$PROJECT" \
+    -scheme AppReviewRecorder \
+    -destination "id=$DEVICE" \
+    -allowProvisioningUpdates \
+    -allowProvisioningDeviceRegistration \
+    -only-testing:RecorderUITests/AppReviewRecordingTests/testInstallFromTestFlight \
+    -resultBundlePath "build/app-review-install-$(date +%Y%m%d-%H%M%S).xcresult" \
+    -collect-test-diagnostics never \
+    | grep --line-buffered -E "$SHOWN"
+  install_status=${PIPESTATUS[0]}
+  set -e
+  if [ "$install_status" -ne 0 ]; then
+    echo "Couldn't install it from TestFlight (see above). Nothing was recorded." >&2
+    exit 1
+  fi
+  sleep 3 # the new install registers with the system
+  installed_build
+  FRESH=1
+  if [ "$state" = "old" ]; then
+    echo "$said" >&2
+    echo "TestFlight installed an older build than the scenes need – the new one isn't available to this tester yet. Nothing was recorded." >&2
+    exit 1
+  fi
+fi
+
+if [ "$FRESH" = "0" ] && [ "$state" = "old" ] && [ "${UPDATE:-1}" = "1" ]; then
   echo "$said"
   echo "Updating it from TestFlight on the iPhone first – keep it unlocked, don't touch it."
   set +e
@@ -131,14 +183,9 @@ case "$state" in
   *) echo "(Couldn't read which build is on the iPhone – the preflight will tell.)" ;;
 esac
 
-# A full run always starts from a freshly reset app (FROM=n starts from the
-# state the phone is in). RESET=0: no reset, stop if the app isn't empty.
-RESET="${RESET:-1}"
-if [ "${FROM:-1}" = "1" ] && [ "$RESET" = "1" ]; then
-  echo "The app on the iPhone is reset first (every list, item and own suggestion is erased; its language becomes English)."
-fi
-[ "${DRY_RUN:-}" = "1" ] && echo "Dry run: nothing is recorded."
-echo "Turn on Do Not Disturb (a notification tapped by the run opens another app and ends up on the video). Keep the iPhone unlocked and don't touch it until the test ends. (Face ID is only asked for if the app's lock is on from before: then look at the iPhone when the run starts.)"
+[ "$FRESH" = "1" ] && echo "Freshly installed: the recording starts with its first launch."
+[ "${DRY_RUN:-}" = "1" ] && echo "Dry run: nothing is recorded (but the photos the scenes delete go to Recently Deleted)."
+echo "Turn on Do Not Disturb (a notification tapped by the run opens another app and ends up on the video). Keep the iPhone unlocked and don't touch it until the test ends."
 mkdir -p build
 
 set +e
@@ -146,7 +193,7 @@ TEST_RUNNER_RECORDER_PACE="${PACE:-0.65}" \
 TEST_RUNNER_RECORDER_FROM="${FROM:-1}" \
 TEST_RUNNER_RECORDER_TO="${TO:-}" \
 TEST_RUNNER_RECORDER_NO_VIDEO="${DRY_RUN:-0}" \
-TEST_RUNNER_RECORDER_RESET="${RESET:-0}" \
+TEST_RUNNER_RECORDER_FRESH="$FRESH" \
 xcodebuild test \
   -project "$PROJECT" \
   -scheme AppReviewRecorder \

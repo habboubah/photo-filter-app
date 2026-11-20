@@ -3,7 +3,7 @@
 # stand: start this once (npm run record:watch) and leave the window open.
 #
 # It waits for build/record-request. Its content picks the run – only these
-# settings are taken, anything else is ignored: DRY_RUN=1 FROM=n TO=n PACE=x.
+# settings are taken, anything else is ignored: DRY_RUN=1 REINSTALL=0 FROM=n TO=n PACE=x.
 # Each run's output goes to build/record-last.log, its state to
 # build/record-status ("running" or "done <exit code>"). Ctrl-C stops it.
 set -uo pipefail
@@ -18,6 +18,7 @@ while true; do
     for kv in $req; do
       case "$kv" in
         DRY_RUN=1|DRY_RUN=0) vars+=("$kv") ;;
+        REINSTALL=1|REINSTALL=0) vars+=("$kv") ;;
         FROM=[0-9]|FROM=[0-9][0-9]|TO=[0-9]|TO=[0-9][0-9]) vars+=("$kv") ;;
         PACE=[0-9].[0-9]|PACE=[0-9].[0-9][0-9]|PACE=[0-9]) vars+=("$kv") ;;
       esac
