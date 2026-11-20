@@ -1,59 +1,128 @@
 {
- "about": "The App Review screen recording for Bildklar (Bildklar KI: Fotos aufräumen / Bildklar AI: Photo Cleaner), one step per line, in the order a new user meets the app: the scan, a trip found by itself, near-identical photos and the best shot, a review that marks two photos for deletion, then deletes them from Marked for deletion — after the sheet that shows what goes — with iOS's own dialog, the settings. About 2 minutes. Nothing is for sale yet (UNLOCK_ON_SALE in src/logic/allowance.ts): no paywall, every feature free; the recording shows the trip, not its album (its Create album button stays untapped). To show the album, bring back the album scene (git history: \"A trip becomes an album\"). The iPhone UI test (RecorderUITests) plays this file on a real iPhone that has the demo photos and has given Bildklar Limited Access to only those; scripts/rehearse-app-review.mjs plays the same file against the web build to check every label first. Step keys: see README.md.",
+ "about": "The App Review screen recording for Bildklar (Bildklar KI: Fotos aufräumen / Bildklar AI: Photo Cleaner), one step per line, from a fresh install: before every full run the script deletes the app and installs it again from TestFlight, so the video shows the first run — the welcome, the photo access (Allow Full Access: the iPhone holds only the test photos, never your own), the first scan and what it found, the first group compared and its rest marked — then a trip found by itself, a review that marks two photos, deleting what is marked (the three safety nets, the sheet that shows what goes, iOS's own dialog) and the settings. About 3 minutes plus the first scan. app.launchArguments open it in English whatever the iPhone's language. Nothing is for sale yet (UNLOCK_ON_SALE in src/logic/allowance.ts). The iPhone UI test (RecorderUITests) plays this file; scripts/rehearse-app-review.mjs plays the same file against the web build (rehearsal.library \"test\": the test library the iPhone gets) to check every label first. Step keys: see README.md.",
  "app": {
   "bundleId": "com.habboubah.bildklar",
-  "iconName": ["Bildklar"],
-  "minVersion": "0.1.0"
+  "iconName": [
+   "Bildklar"
+  ],
+  "minVersion": "0.1.0",
+  "launchArguments": [
+   "-AppleLanguages",
+   "(en)",
+   "-AppleLocale",
+   "en_GB"
+  ]
  },
  "preflight": {
-  "mustSee": ["Clean up", "Aufräumen"],
-  "reset": [
-    {"tap": ["Settings", "Einstellungen"], "role": "button", "timeout": 20},
-    {"pause": 0.5},
-    {"select": "English", "in": ["Language", "Sprache"]},
-    {"pause": 0.5},
-    {"select": "Like the system", "in": "Appearance"},
-    {"optional": [{"tap": ["How Bildklar works", "So funktioniert Bildklar"]}, {"pause": 0.5}, {"tap": ["Hide every hint", "Alle Hinweise ausblenden"]}, {"pause": 0.5}, {"tap": "Back"}, {"pause": 0.5}]},
-    {"scrollTo": "Start over"},
-    {"tap": "Start over"},
-    {"pause": 1},
-    {"tap": "Start over"},
-    {"pause": 0.5},
-    {"tap": "Back"},
-    {"pause": 0.5}
+  "mustSee": [
+   "Get started",
+   "Los geht"
   ]
  },
  "system": {
-  "screenRecording": ["Screen Recording", "Bildschirmaufnahme", "Stop Recording", "Aufnahme stoppen"],
-  "chooseFile": ["Choose File", "Datei auswählen", "Browse", "Durchsuchen"],
-  "done": ["Done", "Fertig"],
-  "update": ["Update", "Aktualisieren"],
-  "open": ["Open", "Öffnen"],
-  "photoAccess": ["Allow Full Access", "Limit Access…", "Zugriff auf alle Fotos erlauben", "Zugriff beschränken …", "Don’t Allow", "Nicht erlauben"],
-  "delete": ["Delete", "Löschen"],
-  "signIn": ["Sign In", "Anmelden", "Use Existing Apple Account", "Bestehenden Apple Account verwenden"],
-  "purchase": ["Purchase", "Kaufen", "Buy", "OK"]
+  "screenRecording": [
+   "Screen Recording",
+   "Bildschirmaufnahme",
+   "Stop Recording",
+   "Aufnahme stoppen"
+  ],
+  "chooseFile": [
+   "Choose File",
+   "Datei auswählen",
+   "Browse",
+   "Durchsuchen"
+  ],
+  "done": [
+   "Done",
+   "Fertig"
+  ],
+  "update": [
+   "Update",
+   "Aktualisieren"
+  ],
+  "open": [
+   "Open",
+   "Öffnen"
+  ],
+  "photoAccess": [
+   "Allow Full Access",
+   "Limit Access…",
+   "Zugriff auf alle Fotos erlauben",
+   "Zugriff beschränken …",
+   "Don’t Allow",
+   "Nicht erlauben"
+  ],
+  "delete": [
+   "Delete",
+   "Löschen"
+  ],
+  "signIn": [
+   "Sign In",
+   "Anmelden",
+   "Use Existing Apple Account",
+   "Bestehenden Apple Account verwenden"
+  ],
+  "purchase": [
+   "Purchase",
+   "Kaufen",
+   "Buy",
+   "OK"
+  ],
+  "install": [
+   "Install",
+   "Installieren"
+  ],
+  "removeApp": [
+   "Remove App",
+   "App entfernen"
+  ],
+  "deleteApp": [
+   "Delete App",
+   "App löschen"
+  ]
  },
  "rehearsal": {
   "locale": "en-GB",
-  "localStorage": {
-   "bildklar-demo-access": "full",
-   "bildklar-demo-scanned": "1",
-   "bildklar-welcome": "1",
-   "bildklar-seen": "[\"*\"]",
-   "bildklar-demo-restorable": "1"
-  }
+  "library": "test",
+  "localStorage": {}
  },
  "scenes": [
-  { "name": "Launch and the scan", "steps": [
+  { "name": "Launch, the welcome and the photo access", "steps": [
     {"startRecording": true},
     {"launch": true},
+    {"see": "Find the photos worth keeping", "timeout": 20},
+    {"pause": 3},
+    {"tap": "Get started"},
     {"pause": 2},
-    {"optional": [{"systemAlert": ["Limit Access…", "Zugriff beschränken …"], "timeout": 3}, {"note": "The photo permission dialog was shown: the test can't pick photos in the system's picker — give Limited Access by hand before recording (README.md)."}]},
-    {"see": "Clean up", "timeout": 30},
+    {"see": "your choice"},
+    {"pause": 3},
+    {"tap": "Allow access to photos"},
+    {"pause": 1},
+    {"systemAlert": ["Allow Full Access", "Zugriff auf alle Fotos erlauben"], "timeout": 8},
+    {"optional": [{"systemAlert": ["Allow Full Access", "Zugriff auf alle Fotos erlauben"], "timeout": 3}]},
+    {"pause": 1}
+  ]},
+  { "name": "The first scan and what it found", "steps": [
+    {"see": "Found so far", "timeout": 20, "soft": true},
     {"pause": 4},
-    {"see": "could go", "timeout": 60},
-    {"pause": 2}
+    {"see": "Here’s what Bildklar found", "timeout": 300},
+    {"pause": 4},
+    {"tap": "Compare your first group"},
+    {"pause": 2},
+    {"optional": [{"tap": "Got it", "timeout": 3}, {"pause": 1}]},
+    {"see": "Stays"},
+    {"pause": 2},
+    {"tap": "Show photo 1 of"},
+    {"pause": 2},
+    {"tap": "Stays", "role": "button"},
+    {"pause": 1.5},
+    {"tap": "Mark the rest"},
+    {"pause": 2},
+    {"see": "Done – nothing deleted"},
+    {"pause": 3.5},
+    {"tap": "Close"},
+    {"pause": 1.5},
+    {"optional": [{"tap": "Back", "timeout": 2}, {"pause": 1.5}]}
   ]},
   { "name": "A trip, found by itself", "steps": [
     {"tap": "Organise", "role": "button"},
@@ -65,20 +134,6 @@
     {"tap": "Back"},
     {"pause": 1.5},
     {"tap": "Clean up", "role": "button"},
-    {"pause": 1.5}
-  ]},
-  { "name": "Near-identical photos and the best shot", "steps": [
-    {"tap": "Near-identical"},
-    {"pause": 1.5},
-    {"tap": "photos", "role": "button"},
-    {"pause": 2},
-    {"see": "Stays"},
-    {"pause": 1.5},
-    {"tap": "Show photo 2 of 2"},
-    {"pause": 2},
-    {"tap": "Back"},
-    {"pause": 1},
-    {"tap": "Back"},
     {"pause": 1.5}
   ]},
   { "name": "A review that marks, then deletes from Marked for deletion", "steps": [
@@ -103,11 +158,12 @@
     {"tap": "Delete all"},
     {"pause": 1.5},
     {"note": "The sheet shows exactly what goes; its red button asks iOS."},
-    {"tap": ["Delete 2 photos", "Delete 2 files"]},
+    {"optional": [{"see": "Three safety nets", "timeout": 3}, {"pause": 3.5}, {"tap": "Got it – continue"}, {"pause": 1.5}]},
+    {"tap": ["Delete 4 photos", "Delete 4 files", "Delete"], "role": "button"},
     {"pause": 1.5},
     {"systemAlert": ["Delete", "Löschen"], "timeout": 8},
     {"pause": 2.5},
-    {"see": "photos deleted"},
+    {"see": ["photos deleted", "files deleted"]},
     {"pause": 2}
   ]},
   { "name": "Settings and the end", "steps": [

@@ -8,8 +8,8 @@
 //   npm run rehearse:app-review -- 5 8       scenes 5 to 8 (5 > 1 continues from the last run)
 //   SNAP=1 npm run rehearse:app-review       also print what is on screen at the end
 //
-// It starts a Vite dev server with the demo library (scenes.json › rehearsal
-// sets its state: access granted, the library scanned, a purchase to restore). Native steps — Control Center, the home screen, Face
+// It starts a Vite dev server with the demo library (scenes.json › rehearsal:
+// which library, and any state to start from — none: a fresh install). Native steps — Control Center, the home screen, Face
 // ID, system alerts, the share sheet — are skipped; file pickers get the files in
 // ios/AppReviewRecorder/demo-files. A tap with "saveDownloadAs" keeps what it
 // downloads there under that name (for a scene that imports it again later).
@@ -18,7 +18,7 @@
 // (preflight.reset), from a filled app and from the empty one it leaves.
 // Screenshots of each scene end up in build/rehearsal/.
 import { createRequire } from 'node:module';
-import { readFileSync, rmSync, writeFileSync, mkdirSync, copyFileSync } from 'node:fs';
+import { readFileSync, rmSync, writeFileSync, mkdirSync, copyFileSync, existsSync } from 'node:fs';
 import { join, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createServer } from 'vite';
@@ -47,8 +47,17 @@ const ctx = await chromium.launchPersistentContext(profile, {
 const page = ctx.pages()[0] ?? await ctx.newPage();
 const cdp = await ctx.newCDPSession(page);
 page.on('dialog', d => d.accept());
-// The curated demo, never the test library `npm run dev` may show (src/native/demo/library.ts).
-await page.addInitScript(() => { try { localStorage.setItem('bildklar-demo-library', 'demo'); } catch { /* private mode */ } });
+// Which demo library: scenes.json › rehearsal.library — "test" is the test library the
+// iPhone gets (npm run test-photos, then npm run demo-library builds its web copy,
+// src/native/demo/test-library/), so trip names and groups match the phone; without
+// that copy, or with "demo", the curated 101 (src/native/demo/library.ts).
+const testBuilt = existsSync(join(root, 'src/native/demo/test-library/facts.json'));
+let library = spec.rehearsal?.library ?? 'demo';
+if (library === 'test' && !testBuilt) {
+  console.log('(No test library for the web yet – npm run test-photos && npm run demo-library. Rehearsing with the curated demo; trip names may differ from the iPhone.)');
+  library = 'demo';
+}
+await page.addInitScript(lib => { try { localStorage.setItem('bildklar-demo-library', lib); } catch { /* private mode */ } }, library);
 for (const [k, v] of Object.entries(spec.rehearsal?.localStorage ?? {})) {
   await page.addInitScript(([k, v]) => { try { if (localStorage.getItem(k) == null) localStorage.setItem(k, v); } catch { /* private mode */ } }, [k, v]);
 }

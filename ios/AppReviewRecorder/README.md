@@ -13,15 +13,18 @@ app leaves the screen, `record:watch`). Only what names the app differs:
 `scenes.json`, the bundle ids in `make-project.rb`, the demo library in the
 rehearsal, and `app.iconName` may list one name per iPhone language.
 Bildklar's recording is the **typical flow** (Ahmad, 19 November 2026), not a
-tour of every feature. Five scenes, from the icon on the home screen to the
-settings:
+tour of every feature, and it starts **from a fresh install** (Ahmad, 20
+November 2026): before every full run the script deletes Bildklar from the
+iPhone and installs it again from TestFlight, because only an install's first
+launch shows the welcome, the photo access and the first scan. Five scenes,
+from the home screen to the settings, about 3 minutes plus the first scan:
 
 | Scene | Shows |
 |---|---|
-| 1 Launch and the scan | The icon, the photo permission (*Limit Access…* if iOS asks), the *Clean up* tab filling up, *… could go* |
-| 2 A trip, found by itself | The *Organise* tab, *Paris* and its photos, back (nothing is for sale yet, so no album — `src/logic/allowance.ts`) |
-| 3 Near-identical photos and the best shot | *Near-identical*, a group, the photo that *Stays*, the other one in the zoom view |
-| 4 A review that marks, then deletes | *Clean up now* › *Go through all*: mark, keep, mark, *Finish*, *Mark for deletion · 2*; then *Marked for deletion* › *Review selection* › the sheet that shows what goes › *Delete 2 photos* (or *2 files*, when a video is second) → iOS's own *Delete* dialog → *… deleted* |
+| 1 Launch, the welcome and the photo access | The home screen, Bildklar opening in English (`app.launchArguments`), *Get started*, *Allow access to photos*, iOS's dialog → *Allow Full Access* |
+| 2 The first scan and what it found | The first scan's screen, *Here's what Bildklar found*, *Compare your first group*: the photo that *Stays*, another one, *Mark the rest* → *Done – nothing deleted* |
+| 3 A trip, found by itself | The *Organise* tab, *Paris* and its photos, back |
+| 4 A review that marks, then deletes | *Clean up now* › *Go through all*: mark, keep, mark, *Finish*, *Mark for deletion · 2*; then *Marked for deletion* › *Delete all* › *Three safety nets* › the sheet that shows what goes › *Delete 4 photos* (or *files*) → iOS's own *Delete* → *… deleted* |
 | 5 Settings and the end | The settings down to *Privacy*, back home |
 
 The review notes (`store/listing.md`, 2.5) describe what the video leaves out.
@@ -57,40 +60,51 @@ and 5 are done.
 
 ## Preparation (once per iPhone, before the first recording)
 
-1. **The demo photos.** About 60 licensed photos with GPS and dates
-   (`docs/TODO.md`, step 5) — the scenes expect a trip called **Paris**, at
-   least one group of near-identical photos and at least three photos the
-   review offers. AirDrop them to the iPhone (or import them on the Mac with
-   Photos and let iCloud sync — then check the dates and places survived).
-2. **Limited Access to only those:** Settings › Apps › Bildklar › Photos ›
-   **Limited Access** › select the demo photos. The video must not show your
-   own photos. (If iOS asks during scene 1, the runner taps *Limit Access…*;
-   then select the demo photos in the picker by hand once, and record again.)
+The video must not show your own photos, and the app gets **Full Access** on
+film: the iPhone holds **only the test photos** while you record.
+
+1. **Your own photos off the iPhone, safely.** If *iCloud Photos* is on
+   (Settings › your name › iCloud › Photos), deleting a photo on the iPhone
+   deletes it in iCloud and on every device — so don't delete: turn *iCloud
+   Photos* off on the iPhone and choose **Remove from iPhone**; your photos
+   stay in iCloud and come back when you turn it on again. If iCloud Photos is
+   off: copy everything to the Mac first (Image Capture or Photos › Import,
+   check the count), then delete on the iPhone and empty Recently Deleted.
+2. **The test photos** (`test-photos/`, 563 public-domain photos and videos —
+   made by `npm run test-photos`): trips with dates and places (Paris, Vienna,
+   Barcelona …), bursts of near-identical shots, blurry ones, an exact
+   duplicate, WhatsApp copies, screenshots, receipts and letters, videos. On
+   the Mac, Finder › the `test-photos` folder › select all but `credits.csv` ›
+   Share › AirDrop › your iPhone; they land in Photos with their dates and
+   places. (Not Finder's photo sync: synced photos can't be deleted on the
+   iPhone, and scene 4 deletes.) Keep iCloud Photos off while they are there.
 3. **Nothing to buy while the app is free** (`UNLOCK_ON_SALE` is false in
-   `src/logic/allowance.ts`). Every feature is free, so a trip shows
-   *Create album* for everyone — the scenes don't tap it (the album scene can
-   come back: git history, "A trip becomes an album"). When the unlock goes
-   on sale, buy it once with the TestFlight build again.
-4. **Record with the TestFlight build**, as App Review sees it.
+   `src/logic/allowance.ts`): a trip shows *Create album* for everyone — the
+   scenes don't tap it.
+4. **TestFlight** on the iPhone with Bildklar in its list (signed in as a
+   tester). The run installs the newest build that TestFlight offers.
+
+Afterwards: delete the test photos (Photos › Select › all), empty Recently
+Deleted, turn iCloud Photos on again (or import your photos back from the
+Mac).
 
 ## Every recording
 
 1. `npm run rehearse:app-review` — checks every step against the current
    code in about a minute.
-2. The build you submit has to be the one installed from **TestFlight**,
-   and a build the scenes fit: `scenes.json` › `app.minVersion` (0.1.0). The
-   run prints which build the iPhone has; an older one it **updates from
-   TestFlight by itself** before anything is reset or filmed (`UPDATE=0` only
-   says so and stops).
-   Every full run **resets Bildklar's decisions before the screen recording
-   starts**, without asking — Settings › Language › English, Appearance ›
-   Like the system, *Start over*. Your photos and the purchase stay.
+2. The build you submit has to be the newest one in **TestFlight** for
+   your tester account. Every full run **deletes Bildklar and installs it
+   again from TestFlight** before the screen recording starts, without
+   asking (`xcrun devicectl device uninstall`; if that fails, the test
+   deletes it on the home screen). Its decisions go; the photos stay.
+   `REINSTALL=0` skips that — then the app must be fresh (showing
+   *Get started*).
 3. Connect the iPhone by cable, unlock it, **Do Not Disturb** on.
 4. **Dry run:** `DRY_RUN=1 npm run record:app-review` — everything except the
-   screen recording. **It does delete the two photos** (the app can't tell a
+   screen recording. **It does delete four photos** (the app can't tell a
    dry run of the recorder from a real one).
 5. **Tidy up after the dry run:** Photos › Recently Deleted › recover the
-   two photos.
+   four photos (or leave them: the next run finds other ones).
 6. **Record:** `npm run record:app-review`. Keep the phone unlocked and
    don't touch it.
 7. **Afterwards:** the video is in Photos. Trim it, AirDrop it to the Mac,
@@ -117,13 +131,15 @@ several hundred MB for a full run): handy for looking at a dry run frame by
 frame, but `build/` fills up — delete old `app-review-recording-*.xcresult`
 now and then.
 
-**The first run on the iPhone will need fixes.** The scenes pass against the
+**The first fresh-install run on the iPhone will need fixes.** The scenes pass against the
 web build with the drawn demo library; the real photos, the scan's speed and
 system UI (the permission and delete dialogs) only show on the phone. Start
-with the dry run and expect a round or two. Likely spots: the trip's name
-(*Open Paris* — your photos may name it differently, e.g. a district), the
-group's button (scene 3 taps the first "… photos" button) and the scan's
-timeout (scene 1 waits 60 s for the clean-up card).
+with the dry run and expect a round or two. Likely spots: iOS's photo dialog (scene 1:
+*Allow Full Access*; iOS 18 may ask a second time), the app opening in
+German (then `-AppleLanguages` didn't reach the web view: set the iPhone to
+English for the recording), TestFlight's *Install* button, the first scan's
+timeout (scene 2 waits 300 s for the reveal) and the delete count (*Delete 4
+photos*, with *Delete* as the fallback).
 
 ## When it stops
 
@@ -135,9 +151,12 @@ The recording is stopped, so what was filmed so far is in Photos.
   from the demo library (the trip's name, the number of photos). Run the
   rehearsal: if it passes, look at the screenshot and change the step in
   `scenes.json` to what your photos show.
-- **Scene 1 times out** — the scan took longer than 60 s, or no clean-up card
-  appeared (no near-identical or blurry photos among the selected ones). Give
-  the step a longer `timeout`, or add photos that make a group.
+- **Scene 2 times out** — the first scan took longer than 300 s, or found no
+  group (then the reveal has no *Compare your first group*). Give the step a
+  longer `timeout`, or check the test photos are all on the iPhone.
+- **TestFlight** — "isn't in TestFlight's list" or "no Install button": open
+  TestFlight by hand once, sign in, accept the invitation; the
+  `app-review-install-*.xcresult` in `build/` has the screenshot.
 - **Scene 4: iOS's *Delete* dialog isn't tapped** — the dialog's button is
   named differently in your language: add it to the `systemAlert` list.
 - **It works in the rehearsal but not on the iPhone** — system UI or a
@@ -177,7 +196,7 @@ counts from 0 in screen order. While a sheet is open, only it can be reached.
 | `{"systemAlert": ["Allow", "Erlauben"], "timeout": 3}` | Taps a button in a permission alert; waits `timeout` seconds for it (4). iOS asks once per install: make it `soft` |
 | `{"systemTap": ["Close", "Schließen"]}` | Taps a button in system UI over the app (the share sheet) |
 | `{"startRecording": true}`, `{"stopRecording": true}` | Control Center's Screen Recording |
-| `{"launch": true}`, `{"home": true}`, `{"terminate": true}`, `{"appSwitcher": true}` | Home screen and app life cycle |
+| `{"launch": true}`, `{"home": true}`, `{"terminate": true}`, `{"appSwitcher": true}` | Home screen and app life cycle. `launch` with `app.launchArguments` in `scenes.json` shows the home screen, then opens the app with them (XCUIApplication.launch) |
 | `{"optional": [ … ]}` | Runs the steps only if the first one works |
 
 Any step with `"soft": true` may fail without stopping the recording.
@@ -195,14 +214,13 @@ photos* (iOS's picker), Android.
 the rating prompt after a delete (iOS shows nothing in a TestFlight build),
 the weekly-reminder offer (only after a month is gone through, which the
 scenes don't do), the *Since …* card (only for five or more photos newer
-than the last visit — the demo photos are older) and the new-trip card (the
+than the last visit — the test photos are older) and the new-trip card (the
 trips count as seen once the first scan settles). If one ever shows on the
 iPhone, it is a sheet or card over the flow: close it with an `optional`
 step rather than leaving it in the video.
 
-**Left out to keep it short (about 2 minutes):** renaming, merging, splitting
+**Left out to keep it short (about 3 minutes plus the first scan):** renaming, merging, splitting
 and hiding a trip, the list of all trips, the blurry list on its own
 (the review in scene 4 goes through blurry and near-identical photos
-together), undo in the review, *Start over* itself (every recording
-starts with it, before the screen recording does), dark mode, German. A scene
+together), undo in the review, *Start over*, dark mode, German. A scene
 for any of them comes back only when Ahmad asks.

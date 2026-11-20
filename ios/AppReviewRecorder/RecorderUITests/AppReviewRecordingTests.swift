@@ -12,7 +12,10 @@ import XCTest
 ///   RECORDER_FROM / RECORDER_TO   only these scenes (no preflight)
 ///   RECORDER_NO_VIDEO  1 = a dry run without the screen recording
 ///   RECORDER_RESET     1 = reset the app before the recording starts (preflight.reset)
+///   RECORDER_FRESH     1 = the app was just installed again: its first launch is filmed
 ///   RECORDER_UPDATE    1 = only update the app from TestFlight (testUpdateFromTestFlight)
+///   RECORDER_INSTALL   1 = only install the app from TestFlight (testInstallFromTestFlight);
+///                      with RECORDER_DELETE_UI=1 it first deletes it on the home screen
 final class AppReviewRecordingTests: XCTestCase {
     override func setUp() {
         continueAfterFailure = false
@@ -45,6 +48,27 @@ final class AppReviewRecordingTests: XCTestCase {
         }
     }
 
+    /// Not part of the recording: the script deletes the app (devicectl) and runs
+    /// this alone (RECORDER_INSTALL=1) to install it again from TestFlight, so the
+    /// recording starts with a first launch. RECORDER_DELETE_UI=1: delete it on
+    /// the home screen first (when devicectl couldn't).
+    func testInstallFromTestFlight() throws {
+        let env = ProcessInfo.processInfo.environment
+        guard env["RECORDER_INSTALL"] == "1" else {
+            throw XCTSkip("Only when the script asks for it (RECORDER_INSTALL=1).")
+        }
+        guard let spec = try loadSpec() else { return }
+        let runner = SceneRunner(spec: spec, pace: 1, noVideo: true)
+        do {
+            if env["RECORDER_DELETE_UI"] == "1" { try runner.deleteFromHomeScreen() }
+            try runner.installFromTestFlight()
+        } catch {
+            runner.attachScreenshot(named: "TestFlight – where it stopped")
+            XCUIDevice.shared.press(.home)
+            XCTFail("\(error)")
+        }
+    }
+
     func testRecordAppReview() throws {
         guard let spec = try loadSpec() else { return }
         let env = ProcessInfo.processInfo.environment
@@ -53,9 +77,10 @@ final class AppReviewRecordingTests: XCTestCase {
         let to = min(spec.scenes.count, Int(env["RECORDER_TO"] ?? "") ?? spec.scenes.count)
         let noVideo = env["RECORDER_NO_VIDEO"] == "1"
         let reset = env["RECORDER_RESET"] == "1"
+        let fresh = env["RECORDER_FRESH"] == "1"
         guard from <= to else { return XCTFail("RECORDER_FROM \(from) is after RECORDER_TO \(to)") }
 
-        let runner = SceneRunner(spec: spec, pace: pace, noVideo: noVideo, reset: reset)
+        let runner = SceneRunner(spec: spec, pace: pace, noVideo: noVideo, reset: reset, fresh: fresh && from == 1)
         runner.log("Scenes \(from)–\(to) of \(spec.scenes.count), pace \(pace)\(noVideo ? ", dry run" : "")")
         do {
             if from == 1 { try runner.preflight() }

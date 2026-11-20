@@ -413,13 +413,17 @@ tests pass — **but it has not run on a phone.**
       album, no paywall) and shows the app as a new user sees it. The studio's headlines are in
       `.claude/skills/store-screenshot-studio/config/copy.<de|en>.json`.
 - [ ] `npm run app-preview` (needs `brew install ffmpeg`).
-- [ ] **App Review recording** (`ios/AppReviewRecorder/README.md`): put the
-      demo photos on the iPhone, give Bildklar **Limited Access to only
-      those** (Settings › Apps › Bildklar › Photos › Limited Access), install
-      the TestFlight build (nothing to buy while the app is free), then
-      `npm run rehearse:app-review`, `DRY_RUN=1 npm run record:app-review`,
-      `npm run record:app-review`. After each run recover the two deleted
-      photos from *Zuletzt gelöscht*.
+- [ ] **App Review recording** (`ios/AppReviewRecorder/README.md`,
+      *Preparation*, 20 November 2026): take your own photos off the iPhone
+      (iCloud Photos on → turn it off with *Remove from iPhone*, never
+      delete; off → copy to the Mac first), AirDrop `test-photos/` (563 files)
+      to it, then `DRY_RUN=1 npm run record:app-review` and
+      `npm run record:app-review` — each full run deletes Bildklar and
+      installs it again from TestFlight, so the first run is on film.
+      Afterwards: delete the test photos, iCloud Photos back on.
+- [ ] **Sample photos for App Review**: upload `build/bildklar-test-photos.zip`
+      (iCloud Drive or Google Drive, a link anyone can open) and put the link
+      in place of `<LINK>` in the Review Notes (`store/listing.md` 2.5).
 - [ ] Play: the **Photo and video permissions** declaration (text in
       `store/listing.md` 3.5); if Play asks for a video, record the same flow
       on the Android phone: `adb shell screenrecord /sdcard/bildklar.mp4`

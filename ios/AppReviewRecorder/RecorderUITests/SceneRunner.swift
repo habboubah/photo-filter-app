@@ -81,6 +81,9 @@ struct RecordingSpec {
     let mustSeeFirst: [String]
     /// preflight.reset: steps that reset the app before every full run (never filmed).
     let resetSteps: [Step]
+    /// app.launchArguments: given to the app at the filmed launch (e.g. -AppleLanguages (en),
+    /// so a fresh install opens in English whatever the iPhone's language).
+    let launchArguments: [String]
 
     init(json data: Data) throws {
         guard case .object(let root) = try JSONDecoder().decode(JSONValue.self, from: data),
@@ -91,6 +94,7 @@ struct RecordingSpec {
         }
         self.bundleId = bundleId
         iconNames = (app["iconName"]?.strings ?? []).filter { !$0.isEmpty }
+        launchArguments = app["launchArguments"]?.strings ?? []
         self.scenes = scenes.compactMap { scene in
             guard case .object(let s) = scene, case .string(let name)? = s["name"], case .array(let steps)? = s["steps"] else { return nil }
             return SceneSpec(name: name, steps: steps.compactMap { if case .object(let o) = $0 { return Step(raw: o) } else { return nil } })
@@ -120,13 +124,17 @@ final class SceneRunner {
     let noVideo: Bool
     /// Reset the app with preflight.reset before the recording starts (every full run).
     let reset: Bool
+    /// The app was just deleted and installed again from TestFlight (the script did it):
+    /// its first launch is the filmed one, so the preflight doesn't open it.
+    let fresh: Bool
     private(set) var recording = false
 
-    init(spec: RecordingSpec, pace: Double, noVideo: Bool, reset: Bool = false) {
+    init(spec: RecordingSpec, pace: Double, noVideo: Bool, reset: Bool = false, fresh: Bool = false) {
         self.spec = spec
         self.pace = pace
         self.noVideo = noVideo
         self.reset = reset
+        self.fresh = fresh
         app = XCUIApplication(bundleIdentifier: spec.bundleId)
     }
 
@@ -149,6 +157,12 @@ final class SceneRunner {
     /// the app's own: scenes.json › preflight.reset). A reset that can't be
     /// played stops the run: nothing is filmed on an app that isn't empty.
     func preflight() throws {
+        if fresh {
+            // Opening it here would use up nothing (the first run is only marked seen by
+            // taps), but it would show the welcome once off camera in the iPhone's language.
+            log("Preflight: \(spec.bundleId) was just installed from TestFlight – the recording starts with its first launch.")
+            return
+        }
         log("Preflight: is \(spec.bundleId) installed, and can it be reset?")
         app.terminate()
         app.activate()
@@ -1056,7 +1070,14 @@ final class SceneRunner {
     func launchFromHomeScreen() {
         XCUIDevice.shared.press(.home)
         rest(0.8)
-        if let icon = homeScreenIcon() {
+        if !spec.launchArguments.isEmpty {
+            // Launch arguments (the app's language) only go with XCUIApplication.launch():
+            // the video shows the home screen with the icon, then the app opening.
+            if homeScreenIcon() == nil { log("  the \(spec.iconName) icon isn't on the home screen's pages") }
+            rest(1.5 * pace)
+            app.launchArguments = spec.launchArguments
+            app.launch()
+        } else if let icon = homeScreenIcon() {
             icon.tap()
         } else {
             log("  the \(spec.iconName) icon isn't on the home screen's pages – starting the app directly")
@@ -1115,16 +1136,57 @@ final class SceneRunner {
 
     /// Updates the app from TestFlight when the iPhone has an older build than
     /// the scenes need (scripts/record-app-review.sh checks that and runs this
-    /// before the recording): opens TestFlight, finds the app in its list and
-    /// taps Update in that row – never another app's – then waits until the row
-    /// says Open. Throws when TestFlight offers no update.
+    /// before the recording). Throws when TestFlight offers no update.
     func updateFromTestFlight(timeout: Double = 300) throws {
+        try fromTestFlight(install: false, timeout: timeout)
+    }
+
+    /// Installs the app from TestFlight after the script deleted it, so the
+    /// recording starts with a first launch (welcome, photo access, first scan).
+    func installFromTestFlight(timeout: Double = 300) throws {
+        try fromTestFlight(install: true, timeout: timeout)
+    }
+
+    /// Deletes the app on the home screen: long press on its icon › Remove App ›
+    /// Delete App › Delete. Only when `xcrun devicectl device uninstall` couldn't
+    /// (the script tries that first).
+    func deleteFromHomeScreen() throws {
+        XCUIDevice.shared.press(.home)
+        rest(1)
+        guard let icon = homeScreenIcon() else {
+            throw StepFailure("\(spec.iconName)'s icon isn't on the home screen's pages – delete the app by hand (or put its icon on the first page) and run again")
+        }
+        log("Deleting \(spec.iconName) on the home screen …")
+        icon.press(forDuration: 1.3)
+        rest(1)
+        let remove = system("removeApp", ["Remove App", "App entfernen"])
+        let deleteApp = system("deleteApp", ["Delete App", "App löschen"])
+        let delete = system("delete", ["Delete", "Löschen"])
+        guard let menuItem = remove.lazy.map({ self.springboard.buttons[$0] }).first(where: { $0.waitForExistence(timeout: 2) }) else {
+            XCUIDevice.shared.press(.home)
+            throw StepFailure("no \(remove.joined(separator: " | ")) in the icon's menu")
+        }
+        menuItem.tap()
+        rest(1)
+        try tapSystemAlert(deleteApp, timeout: 4)
+        // A second alert asks again ("Delete … ? Deleting this app will also delete its data.").
+        try? tapSystemAlert(delete, timeout: 4)
+        rest(2)
+        XCUIDevice.shared.press(.home)
+        rest(1)
+    }
+
+    /// TestFlight: finds the app in its list and taps Update (install: false)
+    /// or Install (install: true) in that row – never another app's – then
+    /// waits until the row says Open.
+    private func fromTestFlight(install: Bool, timeout: Double) throws {
         let testFlight = XCUIApplication(bundleIdentifier: "com.apple.TestFlight")
         let names = spec.iconNames
         let name = spec.iconName
         guard !names.isEmpty else { throw StepFailure("scenes.json needs app.iconName to find the app in TestFlight") }
-        let updateWords = Set(system("update", ["Update", "Aktualisieren"]).map { $0.lowercased() })
+        let actionWords = Set((install ? system("install", ["Install", "Installieren"]) : system("update", ["Update", "Aktualisieren"])).map { $0.lowercased() })
         let openWords = Set(system("open", ["Open", "Öffnen"]).map { $0.lowercased() })
+        let verb = install ? "install" : "update"
         testFlight.terminate()
         testFlight.activate()
         guard testFlight.wait(for: .runningForeground, timeout: 20) else {
@@ -1133,7 +1195,7 @@ final class SceneRunner {
         log("TestFlight: looking for \(name) …")
 
         /// The app's name in the list, and the buttons in its row (same height on screen).
-        func row() -> (title: XCUIElement, update: XCUIElement?, open: XCUIElement?)? {
+        func row() -> (title: XCUIElement, action: XCUIElement?, open: XCUIElement?)? {
             // TestFlight lists the App Store name, which starts with the icon's
             // ("Bildklar KI: Fotos aufräumen", "Bildklar AI: Photo Cleaner").
             let titles = testFlight.staticTexts.matching(NSCompoundPredicate(orPredicateWithSubpredicates:
@@ -1142,9 +1204,9 @@ final class SceneRunner {
             guard let title = titles.first else { return nil }
             let buttons = testFlight.buttons.allElementsBoundByIndex.filter { $0.exists && !$0.frame.isEmpty }
             let inRow = { (b: XCUIElement) in abs(b.frame.midY - title.frame.midY) < 60 }
-            let update = buttons.first { updateWords.contains($0.label.lowercased()) && inRow($0) }
+            let action = buttons.first { actionWords.contains($0.label.lowercased()) && inRow($0) }
             let open = buttons.first { openWords.contains($0.label.lowercased()) && inRow($0) }
-            return (title, update, open)
+            return (title, action, open)
         }
         /// What TestFlight shows, for the log when the row isn't as expected.
         func onScreen() -> String {
@@ -1156,13 +1218,13 @@ final class SceneRunner {
         // The list loads and asks the server for new builds: give it a while.
         var found = row()
         let listDeadline = Date().addingTimeInterval(25)
-        while (found == nil || (found!.update == nil && found!.open == nil)) && Date() < listDeadline {
+        while (found == nil || (found!.action == nil && found!.open == nil)) && Date() < listDeadline {
             rest(1)
             found = row()
         }
         // A build that came in since TestFlight last looked: wait a little for Open to turn into Update.
-        let offerDeadline = Date().addingTimeInterval(12)
-        while let f = found, f.update == nil, Date() < offerDeadline {
+        let offerDeadline = Date().addingTimeInterval(install ? 6 : 12)
+        while let f = found, f.action == nil, Date() < offerDeadline {
             rest(1.5)
             found = row()
             if f.open == nil && found?.open == nil { break }
@@ -1171,20 +1233,32 @@ final class SceneRunner {
             log("  TestFlight shows: \(onScreen())")
             throw StepFailure("\(name) isn't in TestFlight's list on the iPhone")
         }
-        guard let update = r.update else {
+        guard let action = r.action else {
             log("  TestFlight shows: \(onScreen())")
+            if install && r.open != nil {
+                // Still installed (the delete didn't happen): go on, the preflight can't be fresh then.
+                throw StepFailure("\(name) is still installed (its row in TestFlight says Open) – it wasn't deleted")
+            }
             throw StepFailure(r.open != nil
                 ? "TestFlight offers no update for \(name) (its row says Open) – the new build isn't available to this tester yet"
-                : "no Update button in \(name)'s row in TestFlight")
+                : "no \(install ? "Install" : "Update") button in \(name)'s row in TestFlight")
         }
-        log("TestFlight: updating \(name) …")
-        update.tap()
+        log("TestFlight: \(install ? "installing" : "updating") \(name) …")
+        action.tap()
+        rest(1.5)
+        // A first install can ask once more in an alert (Install / Continue). Only alerts:
+        // another app's row may also say Install.
+        let confirm = system("installConfirm", ["Install", "Installieren", "Continue", "Weiter"])
+        for root in [springboard, testFlight] {
+            let alert = root.alerts.firstMatch
+            if alert.exists, let b = confirm.lazy.map({ alert.buttons[$0] }).first(where: { $0.exists }) { b.tap(); rest(1) }
+        }
         let deadline = Date().addingTimeInterval(timeout)
         var last = Date()
         while Date() < deadline {
             rest(2)
-            if let now = row(), now.update == nil, now.open != nil {
-                log("TestFlight: \(name) is updated.")
+            if let now = row(), now.action == nil, now.open != nil {
+                log("TestFlight: \(name) is \(install ? "installed" : "updated").")
                 rest(1)
                 XCUIDevice.shared.press(.home)
                 rest(1)
@@ -1193,7 +1267,7 @@ final class SceneRunner {
             if Date().timeIntervalSince(last) > 30 { log("  … still downloading"); last = Date() }
         }
         log("  TestFlight shows: \(onScreen())")
-        throw StepFailure("the update of \(name) in TestFlight didn't finish within \(Int(timeout)) s")
+        throw StepFailure("the \(verb) of \(name) in TestFlight didn't finish within \(Int(timeout)) s")
     }
 
     // MARK: Screen recording
